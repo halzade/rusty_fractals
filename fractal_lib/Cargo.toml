@@ -1,0 +1,13 @@
+[package]
+name = "fractal_lib"
+version = "0.1.0"
+edition = "2021"
+authors = ["lukas"]
+keywords = ["fractal"]
+
+[dependencies]
+num_cpus = "0.2"
+
+
+[badges]
+maintenance = { status = "actively-developed" }
