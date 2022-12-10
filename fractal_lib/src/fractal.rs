@@ -1,11 +1,25 @@
 use crate::fractal_stats;
 
 pub const ITERATION_MAX: i32 = 6000;
+
+/**
+ * Image resolution height & width
+ *  800  600
+ * 1280  720
+ * 1080 1920 full HD high
+ * 1920 1080 full HD
+ * 2560 1440 quad HD
+ */
 pub const WIDTH_X: usize = 800;
 pub const HEIGHT_Y: usize = 800;
 
 // Delete shorter paths then this
 pub const TOLERATE_PATH_LENGTH_MIN: i32 = 4;
+/**
+ * 4 is quadrance from (0, 0)
+ * If intermediate calculation result [re,im] spirals beyond this boundary. Calculation stops as divergent.
+ */
+pub const CALCULATION_BOUNDARY : i32 = 4;
 
 pub const RESOLUTION_MULTIPLIER: i32 = 0; // TODO
 

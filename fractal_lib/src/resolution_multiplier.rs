@@ -1,4 +1,4 @@
-enum ResolutionMultiplier {
+pub enum ResolutionMultiplier {
     /**
      * Single point at the center of Mandelbrot pixel
      */

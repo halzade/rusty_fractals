@@ -7,6 +7,8 @@ pub mod fractal;
 pub mod fractal_stats;
 pub mod pixel_states;
 pub mod resolution_multiplier;
+pub mod color_palette;
+pub mod color_palettes;
 
 const PATH: &str = "/Fractals/";
 
