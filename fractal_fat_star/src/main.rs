@@ -1,25 +1,41 @@
-extern crate pretty_env_logger;
-#[macro_use]
-extern crate log;
-
 use fractal_lib::mem::Mem;
 
-fn main() {
-    println!("Hello, world!");
+struct FatStar {
+    name: String,
+    iteration_min: u32,
+    iteration_max: u32,
+    area_size: f64,
+    target_re: f64,
+    target_im: f64,
 }
 
-fn math(m: &mut Mem, origin_re: f64, origin_im: f64) {
-    m.square();
-    m.conjugation();
-    m.square();
-    m.plus(origin_re, origin_im);
+impl FatStar {
+    pub fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
+        m.square();
+        m.conjugation();
+        m.square();
+        m.plus(origin_re, origin_im);
+    }
 }
+
+fn main() {
+    let name = String::from("Fat Star");
+    println!("Fractal {}", name);
+
+    let fractal = FatStar { name, iteration_min: 42, iteration_max: 22000, area_size: 3.5, target_re: 0.0, target_im: 0.0 };
+    let mut m = fractal_lib::mem::Mem { re: 0.0, im: 0.0 };
+
+    fractal.math(&mut m, 1.0, 0.1);
+
+    println!("Finished.");
+}
+
 
 #[test]
 fn test_math() {
-    // m not mut, m should always be mound to this Mem
-    let mut m = fractal_lib::mem::Mem{ re: 0.0, im: 0.0 };
-    math(&mut m, 1.0, 0.1);
+    let fractal = FatStar { name: String::from("FatStar"), iteration_min: 42, iteration_max: 22000, area_size: 3.5, target_re: 0.0, target_im: 0.0 };
+    let mut m = fractal_lib::mem::Mem { re: 0.0, im: 0.0 };
+    fractal.math(&mut m, 1.0, 0.1);
     assert_eq!(m.re, 1.0);
     assert_eq!(m.im, 0.1);
 }

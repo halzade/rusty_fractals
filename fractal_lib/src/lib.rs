@@ -1,7 +1,3 @@
-extern crate pretty_env_logger;
-#[macro_use]
-extern crate log;
-
 pub mod mem;
 pub mod collatz_mem;
 pub mod domain;
@@ -25,17 +21,6 @@ const COLORING_THRESHOLD: i32 = 3;
 const REPEAT: bool = false;
 
 fn lib() {
-    pretty_env_logger::init();
-
-    info!("such information");
-    warn!("o_O");
-    error!("much error");
-
-    trace!("a trace example");
-    debug!("deboogging");
-    info!("such information");
-    warn!("o_O");
-    error!("boom");
 
     let mut m = mem::Mem { re: 0.0, im: 0.0 };
 

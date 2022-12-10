@@ -38,6 +38,11 @@ pub fn init(width_re: f64, center_re: f64, center_im: f64) -> DomainArea {
     let border_low_im = center_im - (width_im / 2.0);
     let border_high_im = center_im + (width_im / 2.0);
 
+    println!("border_low_re  {}", border_low_re);
+    println!("border_high_re {}", border_high_re);
+    println!("border_low_im  {}", border_low_im);
+    println!("border_high_im {}", border_high_im);
+
     /* Generate domain elements */
     let mut numbers_re: [f64; WIDTH_X] = [0.0; WIDTH_X];
     let mut numbers_im: [f64; HEIGHT_Y] = [0.0; HEIGHT_Y];
@@ -61,21 +66,32 @@ pub fn init(width_re: f64, center_re: f64, center_im: f64) -> DomainArea {
 
 #[test]
 fn test_init() {
-    let center_re = 0.0;
-    let center_im = 0.0;
-    let width_x = 1.0;
-    let da = init(width_x, center_re, center_im);
-    assert_eq!(da.border_low_re, -0.5);
-    assert_eq!(da.border_high_re, 0.5);
-    assert_eq!(da.border_low_im, -0.5);
-    assert_eq!(da.border_high_im, 0.5);
+    let area = init(1.0, 0.0, 0.0);
+    assert_eq!(area.border_low_re, -0.5);
+    assert_eq!(area.border_high_re, 0.5);
+    assert_eq!(area.border_low_im, -0.5);
+    assert_eq!(area.border_high_im, 0.5);
 }
 
 #[test]
-fn test_contains() {}
+fn test_contains() {
+    let area = init(1.0, 0.0, 0.0);
+    let y = area.contains(0.4, 0.4);
+    let n = area.contains(0.4, 1.5);
+    assert_eq!(y, true);
+    assert_eq!(n, false);
+}
 
 #[test]
-fn test_screen_to_domain_re() {}
+fn test_screen_to_domain_re() {
+    let area = init(1.0, 0.0, 0.0);
+    let r = area.screen_to_domain_re(500);
+    assert_eq!(r, 0.125);
+}
 
 #[test]
-fn test_screen_to_domain_im() {}
+fn test_screen_to_domain_im() {
+    let area = init(1.0, 0.0, 0.0);
+    let i = area.screen_to_domain_im(20);
+    assert_eq!(i, -0.475);
+}

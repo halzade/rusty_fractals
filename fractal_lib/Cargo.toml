@@ -8,6 +8,5 @@ keywords = ["fractal"]
 [dependencies]
 num_cpus = "0.2"
 
-
 [badges]
 maintenance = { status = "actively-developed" }

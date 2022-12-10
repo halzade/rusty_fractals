@@ -1,5 +1,3 @@
-extern crate pretty_env_logger;
-
 use crate::fractal_stats;
 
 pub const ITERATION_MAX: i32 = 6000;
