@@ -1,6 +1,8 @@
 use fractal_lib::mem::Mem;
 use fractal_lib::resolution_multiplier;
 use fractal_lib::color_palette;
+use fractal_lib::color_palettes::PALETTE_BLACK_TO_WHITE;
+use resolution_multiplier::ResolutionMultiplier::None;
 
 struct FatStar {
     name: String,
@@ -48,10 +50,10 @@ fn main() {
     let config = FractalConfig {
         resolution_width: 1920,
         resolution_height: 1080,
-        resolution_multiplier: resolution_multiplier::ResolutionMultiplier::None,
+        resolution_multiplier: None,
         repeat: false,
         save_images: false,
-        palette: fractal_lib::color_palettes::PALETTE_BLACK_TO_WHITE
+        palette: PALETTE_BLACK_TO_WHITE
     };
 
     let mut m = fractal_lib::mem::Mem { re: 0.0, im: 0.0 };
