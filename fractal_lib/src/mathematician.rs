@@ -2,11 +2,11 @@ use std::collections::HashSet;
 use crate::fractal::ITERATION_MAX;
 use crate::mem::Mem;
 
-pub(crate) struct Mathematician {
-    primes: HashSet<u32>,
-    fibonacci: HashSet<u32>,
-    perfect: HashSet<u32>,
-    square: HashSet<u32>,
+pub struct Mathematician {
+    pub primes: HashSet<u32>,
+    pub fibonacci: HashSet<u32>,
+    pub perfect: HashSet<u32>,
+    pub square: HashSet<u32>,
 }
 
 impl Mathematician {

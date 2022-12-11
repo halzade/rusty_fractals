@@ -2,6 +2,7 @@ use crate::resolution_multiplier;
 use crate::color_palette;
 use crate::mem::Mem;
 use crate::mem_collatz::MemCollatz;
+use crate::mem_euler::MemEuler;
 use crate::mem_phoenix::MemPhoenix;
 
 pub const ITERATION_MAX: u32 = 6000;
@@ -59,11 +60,15 @@ pub trait Math {
 }
 
 pub trait MathCollatz {
-    fn math(&self, m: &mut MemCollatz, origin_re: f64, origin_im: f64);
+    fn math(&self, mc: &mut MemCollatz, origin_re: f64, origin_im: f64);
 }
 
 pub trait MathPhoenix {
-    fn math(&self, m: &mut MemPhoenix, origin_re: f64, origin_im: f64);
+    fn math(&self, mp: &mut MemPhoenix, origin_re: f64, origin_im: f64);
+}
+
+pub trait MathEuler {
+    fn math(&self, me: &mut MemEuler, origin_re: f64, origin_im: f64);
 }
 
 // pub fn update(mut stats: fractal_stats::Stats) {

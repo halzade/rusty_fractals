@@ -4,11 +4,11 @@ use crate::mathematician::Mathematician;
 /**
  * Memory object for Euler fractal
  */
-struct MemEuler {
+pub struct MemEuler {
     pub m: Mem,
     pub it: u32,
-    math: Mathematician, // TODO separete primes, fibo, etc
-    spectra: Spectra,
+    pub math: Mathematician, // TODO separete primes, fibo, etc
+    pub spectra: Spectra
 }
 
 impl MemEuler {
@@ -28,7 +28,7 @@ impl MemEuler {
         self.m.square();
     }
 
-    fn euler(&mut self) {
+    pub fn euler(&mut self) {
         self.it += 1;
         if self.math.is_prime(&self.it) {
             self.m.re = 0.01 / self.m.re;
@@ -37,4 +37,5 @@ impl MemEuler {
     }
 }
 
-enum Spectra { Red, Green, Blue }
+// TODO
+pub enum Spectra { Red, Green, Blue }

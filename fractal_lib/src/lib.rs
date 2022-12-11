@@ -11,7 +11,7 @@ pub mod color_palette;
 pub mod color_palettes;
 pub mod mem_euler;
 pub mod mem_phoenix;
-mod mathematician;
+pub mod mathematician;
 
 const PATH: &str = "/Fractals/";
 
