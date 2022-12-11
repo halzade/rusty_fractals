@@ -3,7 +3,7 @@ use crate::mem::Mem;
 /**
  * Memory object for Phoenix fractal
  */
-pub(crate) struct MemPhoenix {
+pub struct MemPhoenix {
     pub m: Mem,
     // Values of previous calculation results
     prev_prev_re: f64,

@@ -5,7 +5,7 @@ use MandelbrotPixelState::{ActiveNew, Finished};
 pub struct MandelbrotElement {
     pub origin_re: f64,
     pub origin_im: f64,
-    pub value: i32,
+    pub value: u32,
     pub quad: f64,
     pub state: MandelbrotPixelState,
 }
@@ -15,7 +15,7 @@ impl MandelbrotElement {
         self.state == ActiveNew
     }
 
-    pub fn set_finished_state(&mut self, iterator: i32, q: f64) {
+    pub fn set_finished_state(&mut self, iterator: u32, q: f64) {
         self.state = Finished;
         self.quad = q;
         if iterator < 1 {
@@ -30,7 +30,7 @@ impl MandelbrotElement {
     }
 
     pub fn set_average_with(&mut self, e: MandelbrotElement) {
-        self.value = (((self.value + e.value) as f64) / 2.0) as i32;
+        self.value = (((self.value + e.value) as f64) / 2.0) as u32;
     }
 }
 

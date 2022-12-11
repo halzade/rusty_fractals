@@ -1,4 +1,3 @@
-use crate::fractal_stats;
 use crate::resolution_multiplier;
 use crate::color_palette;
 use crate::mem::Mem;

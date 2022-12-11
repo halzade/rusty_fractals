@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use crate::fractal::ITERATION_MAX;
 use crate::mem::Mem;
 
-struct Mathematician {
+pub(crate) struct Mathematician {
     primes: HashSet<u32>,
     fibonacci: HashSet<u32>,
     perfect: HashSet<u32>,
@@ -35,29 +35,29 @@ impl Mathematician {
         m.re = temp;
     }
 
-    fn is_prime(&self, n: &u32) -> bool {
+    pub fn is_prime(&self, n: &u32) -> bool {
         self.primes.contains(n)
     }
 
-    fn is_fibonacci(&self, n: &u32) -> bool {
+    pub fn is_fibonacci(&self, n: &u32) -> bool {
         self.fibonacci.contains(n)
     }
 
-    fn is_perfect(&self, n: &u32) -> bool {
+    pub fn is_perfect(&self, n: &u32) -> bool {
         self.perfect.contains(n)
     }
 
-    fn is_square(&self, n: &u32) -> bool {
+    pub fn is_square(&self, n: &u32) -> bool {
         self.square.contains(n)
     }
 
-    fn multiply_by(mut m: Mem, re: f64, im: f64) {
+    pub fn multiply_by(mut m: Mem, re: f64, im: f64) {
         let temp = (m.re * re) - (m.im * im);
         m.im = (m.re * im) + (re * m.im);
         m.re = temp;
     }
 
-    fn plus_invert(mut m: Mem) {
+    pub fn plus_invert(mut m: Mem) {
         let a = m.re;
         let b = m.im;
         let quad = (a * a) + (b * b);
@@ -65,7 +65,7 @@ impl Mathematician {
         m.im = m.im - (b / quad);
     }
 
-    fn minus_invert(mut m: Mem) {
+    pub fn minus_invert(mut m: Mem) {
         let a = m.re;
         let b = m.im;
         let quad = (a * a) + (b * b);
@@ -73,12 +73,12 @@ impl Mathematician {
         m.im = m.im + (b / quad);
     }
 
-    fn inner_product(mut m: Mem, re: f64, im: f64) {
+    pub fn inner_product(mut m: Mem, re: f64, im: f64) {
         m.re = m.re * re;
         m.im = m.im * im;
     }
 
-    fn inverse(mut m: Mem) {
+    pub fn inverse(mut m: Mem) {
         let q = m.quad();
         m.conjugation();
         m.re /= q;
@@ -86,14 +86,14 @@ impl Mathematician {
     }
 
     /** (a + ib)^3 */
-    fn binomial3(mut m: Mem) {
+    pub fn binomial3(mut m: Mem) {
         let temp = (m.re * m.re * m.re) - (3.0 * m.re * m.im * m.im);
         m.im = (3.0 * m.re * m.re * m.im) - (m.im * m.im * m.im);
         m.re = temp;
     }
 
     /** (a + ib)^4 */
-    fn binomial4(mut m: Mem) {
+    pub fn binomial4(mut m: Mem) {
         let temp = (m.re * m.re * m.re * m.re)
             - (6.0 * m.re * m.re * m.re * m.im)
             + (m.im * m.re * m.im * m.im);
@@ -103,7 +103,7 @@ impl Mathematician {
     }
 
     /** (a + ib)^5 */
-    fn binomial5(mut m: Mem) {
+    pub fn binomial5(mut m: Mem) {
         let temp = (m.re * m.re * m.re * m.re * m.re)
             - (10.0 * m.re * m.re * m.re * m.im * m.im)
             + (5.0 * m.re * m.im * m.im * m.im * m.im);
@@ -113,13 +113,13 @@ impl Mathematician {
         m.re = temp;
     }
 
-    fn reciprocal(mut m: Mem) {
+    pub fn reciprocal(mut m: Mem) {
         let scale = m.re * m.re + m.im * m.im;
         m.re = m.re / scale;
         m.im = -m.im / scale;
     }
 
-    fn circle_inversion(mut m: Mem, re: f64, im: f64) {
+    pub fn circle_inversion(mut m: Mem, re: f64, im: f64) {
         let d = (re * re) + (im * im);
         m.re = re / d;
         m.im = im / d;
@@ -176,7 +176,7 @@ fn is_perfect_init(num: u32) -> bool {
 pub fn init_primes() -> HashSet<u32> {
     print!("init_primes()");
     let mut primes: HashSet<u32> = HashSet::new();
-    for i in 0: u32..ITERATION_MAX {
+    for i in 0..ITERATION_MAX {
         if is_prime_init(i) {
             primes.insert(i);
         }
