@@ -41,7 +41,7 @@ fn main() {
 
     println!("Fractal {}", lotus.name);
 
-    let mut m = fractal_lib::mem::Mem { re: 0.0, im: 0.0 };
+    let mut m = Mem { re: 0.0, im: 0.0 };
     lotus.math(&mut m, 1.0, 0.1);
 
     println!("Finished.");

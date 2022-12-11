@@ -43,8 +43,8 @@ fn main() {
 
     println!("Fractal {}", collatz.name);
 
-    let m = fractal_lib::mem::Mem { re: 0.0, im: 0.0 };
-    let mut mc = fractal_lib::mem_collatz::MemCollatz { m, it: 1 };
+    let m = Mem { re: 0.0, im: 0.0 };
+    let mut mc = MemCollatz { m, it: 1 };
     collatz.math(&mut mc, 1.0, 0.1);
 
     println!("Finished.");
@@ -53,8 +53,8 @@ fn main() {
 #[test]
 fn test_math() {
     let collatz = CollatzConjecture { name: NAME.to_string() };
-    let m = fractal_lib::mem::Mem { re: 0.0, im: 0.0 };
-    let mut mc = fractal_lib::mem_collatz::MemCollatz { m, it: 1 };
+    let m = Mem { re: 0.0, im: 0.0 };
+    let mut mc = MemCollatz { m, it: 1 };
     collatz.math(&mut mc, 1.0, 0.1);
     assert_eq!(mc.re(), 2.0);
     assert_eq!(mc.im(), 1.1);

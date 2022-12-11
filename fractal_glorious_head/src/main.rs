@@ -68,7 +68,7 @@ fn main() {
 #[test]
 fn test_math() {
     let glorious_head = GloriousHead { name: NAME.to_string() };
-    let m = fractal_lib::mem::Mem { re: 0.0, im: 0.0 };
+    let m = Mem { re: 0.0, im: 0.0 };
     let mut mp = MemPhoenix { m, c: PHOENIX_INIT_C, p: PHOENIX_INIT_P, prev_prev_re: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_prev_im: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_re: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_im: PHOENIX_INIT_PHOENIX_INITIALIZER };
 
     glorious_head.math(&mut mp, 1.0, 0.1);

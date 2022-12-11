@@ -21,7 +21,7 @@ const SAVE_IMAGES: bool = false;
 const PALETTE: Palette = PALETTE_BLACK_TO_WHITE;
 
 struct FatStar {
-    pub name: String
+    pub name: String,
 }
 
 impl Math for FatStar {
@@ -42,7 +42,7 @@ fn main() {
 
     println!("Fractal {}", fat_star.name);
 
-    let mut m = fractal_lib::mem::Mem { re: 0.0, im: 0.0 };
+    let mut m = Mem { re: 0.0, im: 0.0 };
     fat_star.math(&mut m, 1.0, 0.1);
 
     println!("Finished.");
@@ -52,7 +52,7 @@ fn main() {
 #[test]
 fn test_math() {
     let fat_start = FatStar { name: NAME.to_string() };
-    let mut m = fractal_lib::mem::Mem { re: 0.0, im: 0.0 };
+    let mut m = Mem { re: 0.0, im: 0.0 };
     fat_start.math(&mut m, 1.0, 0.1);
     assert_eq!(m.re, 1.0);
     assert_eq!(m.im, 0.1);

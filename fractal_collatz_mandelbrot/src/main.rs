@@ -3,6 +3,7 @@ use fractal_lib::resolution_multiplier;
 use fractal_lib::color_palette;
 use fractal_lib::color_palettes::{PALETTE_BLUE_TO_WHITE, PALETTE_GRAY_TO_BLUE};
 use fractal_lib::fractal::{FractalConfig, FractalDefinition, MathCollatz};
+use fractal_lib::mem::Mem;
 use fractal_lib::mem_collatz::MemCollatz;
 use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::None;
@@ -41,7 +42,7 @@ fn main() {
 
     println!("Fractal {}", collatz.name);
 
-    let m = fractal_lib::mem::Mem { re: 0.0, im: 0.0 };
+    let m = Mem { re: 0.0, im: 0.0 };
     let mut mc = MemCollatz { m, it: 0 };
     collatz.math(&mut mc, 1.0, 0.1);
 
@@ -52,7 +53,7 @@ fn main() {
 #[test]
 fn test_math() {
     let collatz = CollatzConjectureMandelbrot { name: NAME.to_string() };
-    let m = fractal_lib::mem::Mem { re: 0.0, im: 0.0 };
+    let m = Mem { re: 0.0, im: 0.0 };
     let mut mc = MemCollatz { m, it: 0 };
     collatz.math(&mut mc, 1.0, 0.1);
     assert_eq!(mc.re(), 2.0);

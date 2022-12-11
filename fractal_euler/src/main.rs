@@ -1,7 +1,7 @@
 use color_palette::Palette;
 use fractal_lib::{mathematician, resolution_multiplier};
 use fractal_lib::color_palette;
-use fractal_lib::color_palettes::{Palette_3_RGB};
+use fractal_lib::color_palettes::{PALETTE_3_RGB};
 use fractal_lib::fractal::{FractalConfig, FractalDefinition, MathEuler};
 use fractal_lib::mathematician::Mathematician;
 use fractal_lib::mem::Mem;
@@ -21,7 +21,7 @@ const RESOLUTION_HEIGHT: u32 = 1080;
 const RESOLUTION_MULTIPLIER: ResolutionMultiplier = None;
 const REPEAT: bool = false;
 const SAVE_IMAGES: bool = false;
-const PALETTE: Palette = Palette_3_RGB;
+const PALETTE: Palette = PALETTE_3_RGB;
 
 struct Euler {
     pub name: String,
@@ -63,7 +63,7 @@ fn main() {
 #[test]
 fn test_math() {
     let euler = Euler { name: NAME.to_string() };
-    let m = fractal_lib::mem::Mem { re: 0.0, im: 0.0 };
+    let m = Mem { re: 0.0, im: 0.0 };
     let math = Mathematician {
         primes: mathematician::init_primes(),
         fibonacci: Default::default(),
