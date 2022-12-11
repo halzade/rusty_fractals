@@ -1,11 +1,27 @@
 use crate::mem::Mem;
 
-pub struct CollatzMem {
+pub struct MemCollatz {
     pub m: Mem,
-    it: i32,
+    pub it: i32,
 }
 
-impl CollatzMem {
+impl MemCollatz {
+    pub fn re(&self) -> f64 {
+        self.m.re
+    }
+
+    pub fn im(&self) -> f64 {
+        self.m.im
+    }
+
+    pub fn plus(&mut self, r: f64, i: f64) {
+        self.m.plus(r, i);
+    }
+
+    pub fn square(&mut self) {
+        self.m.square();
+    }
+
     pub fn collatz_conjecture(&mut self) {
         if self.it % 2 == 1 {
             self.m.re = 3.0 * self.m.re + 1.0;
@@ -25,7 +41,7 @@ impl CollatzMem {
 
 #[test]
 fn test_collatz_conjecture() {
-    let mut c = CollatzMem {
+    let mut c = MemCollatz {
         m: Mem { re: 0.0, im: 1.0 },
         it: 1,
     };
@@ -43,7 +59,7 @@ fn test_collatz_conjecture() {
 
 #[test]
 fn test_plus_collatz() {
-    let mut c = CollatzMem {
+    let mut c = MemCollatz {
         m: Mem { re: 0.0, im: 1.0 },
         it: 1,
     };

@@ -2,8 +2,10 @@ use crate::fractal_stats;
 use crate::resolution_multiplier;
 use crate::color_palette;
 use crate::mem::Mem;
+use crate::mem_collatz::MemCollatz;
+use crate::mem_phoenix::MemPhoenix;
 
-pub const ITERATION_MAX: i32 = 6000;
+pub const ITERATION_MAX: u32 = 6000;
 
 /**
  * Image resolution height & width
@@ -55,6 +57,14 @@ pub struct FractalConfig {
 
 pub trait Math {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64);
+}
+
+pub trait MathCollatz {
+    fn math(&self, m: &mut MemCollatz, origin_re: f64, origin_im: f64);
+}
+
+pub trait MathPhoenix {
+    fn math(&self, m: &mut MemPhoenix, origin_re: f64, origin_im: f64);
 }
 
 // pub fn update(mut stats: fractal_stats::Stats) {

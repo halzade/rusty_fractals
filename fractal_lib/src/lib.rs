@@ -1,5 +1,5 @@
 pub mod mem;
-pub mod collatz_mem;
+pub mod mem_collatz;
 pub mod domain;
 pub mod domain_area;
 pub mod domain_element;
@@ -9,6 +9,9 @@ pub mod pixel_states;
 pub mod resolution_multiplier;
 pub mod color_palette;
 pub mod color_palettes;
+mod mem_euler;
+mod mem_phoenix;
+mod mathematician;
 
 const PATH: &str = "/Fractals/";
 
