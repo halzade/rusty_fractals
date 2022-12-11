@@ -1,14 +1,18 @@
 use color_palette::Palette;
-use fractal_lib::mem::Mem;
 use fractal_lib::resolution_multiplier;
 use fractal_lib::color_palette;
-use fractal_lib::color_palettes::{PALETTE_BLACK_TO_WHITE, PALETTE_BLUE_TO_WHITE};
-use fractal_lib::fractal::{FractalConfig, FractalDefinition, Math};
+use fractal_lib::color_palettes::{PALETTE_BLUE_TO_WHITE};
+use fractal_lib::fractal::{FractalConfig, FractalDefinition, Math, MathPhoenix};
+use fractal_lib::mem::Mem;
 use fractal_lib::resolution_multiplier::ResolutionMultiplier::Square5;
 use resolution_multiplier::ResolutionMultiplier;
-use resolution_multiplier::ResolutionMultiplier::None;
+use fractal_lib::mem_phoenix::MemPhoenix;
 
 const NAME: &str = "Glorious Head";
+const PHOENIX_INIT_C: f64 = 0.35;
+const PHOENIX_INIT_P: f64 = -0.25;
+const PHOENIX_INIT_PHOENIX_INITIALIZER: f64 = 1.0;
+
 const ITERATION_MAX: u32 = 2500;
 const ITERATION_MIN: u32 = 8;
 const AREA_SIZE: f64 = 4.5;
@@ -25,30 +29,27 @@ struct GloriousHead {
     pub name: String,
 }
 
-impl Math for GloriousHead {
-    fn math(&self, m: &mut MemPhonenix, origin_re: f64, origin_im: f64) {
-        m.square();
+impl MathPhoenix for GloriousHead {
+    fn math(&self, mp: &mut MemPhoenix, origin_re: f64, origin_im: f64) {
+        mp.m.square();
 
-        m.re += c;
-        m.re += p * m.prev_prev_re;
-        m.im += p * m.prev_prev_im;
+        mp.m.re += mp.c;
+        mp.m.re += mp.p * mp.prev_prev_re;
+        mp.m.im += mp.p * mp.prev_prev_im;
 
         /* previous iteration */
-        m.prev_prev_re = m.prev_re;
-        m.prev_prev_im = m.prev_im;
-        m.prev_re = m.re;
-        m.prev_im = m.im;
+        mp.prev_prev_re = mp.prev_re;
+        mp.prev_prev_im = mp.prev_im;
+        mp.prev_re = mp.m.re;
+        mp.prev_im = mp.m.im;
 
-        m.plus(originRe, originIm);
+        mp.m.plus(origin_re, origin_im);
     }
 }
 
 fn main() {
     println!("Started");
 
-    c = 0.35;
-    p = -0.25;
-    phoenix_initializer = 1;
 
     let glorious_head = GloriousHead { name: NAME.to_string() };
     let definition = FractalDefinition { iteration_min: ITERATION_MIN, iteration_max: ITERATION_MAX, area_size: AREA_SIZE, target_re: TARGET_RE, target_im: TARGET_IM };
@@ -56,8 +57,10 @@ fn main() {
 
     println!("Fractal {}", glorious_head.name);
 
-    let mut m = fractal_lib::mem::Mem { re: 0.0, im: 0.0 };
-    glorious_head.math(&mut m, 1.0, 0.1);
+    let m = Mem { re: 0.0, im: 0.0 };
+    let mut mp = MemPhoenix { m, c: PHOENIX_INIT_C, p: PHOENIX_INIT_P, prev_prev_re: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_prev_im: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_re: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_im: PHOENIX_INIT_PHOENIX_INITIALIZER };
+
+    glorious_head.math(&mut mp, 1.0, 0.1);
 
     println!("Finished.");
 }
@@ -65,8 +68,11 @@ fn main() {
 #[test]
 fn test_math() {
     let glorious_head = GloriousHead { name: NAME.to_string() };
-    let mut m = fractal_lib::mem::Mem { re: 0.0, im: 0.0 };
-    glorious_head.math(&mut m, 1.0, 0.1);
-    assert_eq!(m.re, 1.0);
-    assert_eq!(m.im, 0.1);
+    let m = fractal_lib::mem::Mem { re: 0.0, im: 0.0 };
+    let mut mp = MemPhoenix { m, c: PHOENIX_INIT_C, p: PHOENIX_INIT_P, prev_prev_re: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_prev_im: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_re: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_im: PHOENIX_INIT_PHOENIX_INITIALIZER };
+
+    glorious_head.math(&mut mp, 1.0, 0.1);
+
+    assert_eq!(mp.re(), 1.1);
+    assert_eq!(mp.im(), -0.15);
 }

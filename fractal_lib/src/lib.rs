@@ -9,8 +9,8 @@ pub mod pixel_states;
 pub mod resolution_multiplier;
 pub mod color_palette;
 pub mod color_palettes;
-mod mem_euler;
-mod mem_phoenix;
+pub mod mem_euler;
+pub mod mem_phoenix;
 mod mathematician;
 
 const PATH: &str = "/Fractals/";

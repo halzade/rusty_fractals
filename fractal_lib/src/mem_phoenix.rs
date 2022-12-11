@@ -5,11 +5,13 @@ use crate::mem::Mem;
  */
 pub struct MemPhoenix {
     pub m: Mem,
+    pub c: f64,
+    pub p: f64,
     // Values of previous calculation results
-    prev_prev_re: f64,
-    prev_prev_im: f64,
-    prev_re: f64,
-    prev_im: f64,
+    pub prev_prev_re: f64,
+    pub prev_prev_im: f64,
+    pub prev_re: f64,
+    pub prev_im: f64,
 }
 
 impl MemPhoenix {
