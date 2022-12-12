@@ -1,0 +1,9 @@
+[package]
+name = "fractal_infinity_top"
+version = "0.1.0"
+edition = "2021"
+authors = ["lukas"]
+keywords = ["fractal"]
+
+[dependencies]
+fractal_lib = { path = "../fractal_lib" }

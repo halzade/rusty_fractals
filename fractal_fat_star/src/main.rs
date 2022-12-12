@@ -51,9 +51,9 @@ fn main() {
 
 #[test]
 fn test_math() {
-    let fat_start = FatStar { name: NAME.to_string() };
+    let fat_star = FatStar { name: NAME.to_string() };
     let mut m = Mem { re: 0.0, im: 0.0 };
-    fat_start.math(&mut m, 1.0, 0.1);
+    fat_star.math(&mut m, 1.0, 0.1);
     assert_eq!(m.re, 1.0);
     assert_eq!(m.im, 0.1);
 }
