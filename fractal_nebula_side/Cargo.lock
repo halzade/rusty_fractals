@@ -3,17 +3,17 @@
 version = 3
 
 [[package]]
-name = "fractal_collatz_mandelbrot"
-version = "0.1.0"
-dependencies = [
- "fractal_lib",
-]
-
-[[package]]
 name = "fractal_lib"
 version = "0.1.0"
 dependencies = [
  "num_cpus",
+]
+
+[[package]]
+name = "fractal_nebula_side"
+version = "0.1.0"
+dependencies = [
+ "fractal_lib",
 ]
 
 [[package]]

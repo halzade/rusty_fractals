@@ -1,5 +1,5 @@
 [package]
-name = "fractal_glorious_head"
+name = "fractal_nebula_top"
 version = "0.1.0"
 edition = "2021"
 authors = ["lukas"]
@@ -7,3 +7,4 @@ keywords = ["fractal"]
 
 [dependencies]
 fractal_lib = { path = "../fractal_lib" }
+

@@ -1,5 +1,5 @@
 [package]
-name = "rusty_fractals"
+name = "fractal_collatz_conjecture"
 version = "0.1.0"
 edition = "2021"
 authors = ["lukas"]
