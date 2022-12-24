@@ -1,11 +1,13 @@
 [package]
-name = "rusty_fractals"
+name = "rusty_fractals_core"
 version = "0.1.0"
 edition = "2021"
 authors = ["lukas"]
 keywords = ["fractal"]
 
 [dependencies]
+rusty_fractals_domain = { path = "../rusty_fractals_domain" }
+rusty_fractals_image = { path = "../rusty_fractals_image" }
 
 [badges]
 maintenance = { status = "actively-developed" }
