@@ -1,18 +1,6 @@
-pub mod mem;
-pub mod mem_collatz;
-pub mod domain;
-pub mod domain_area;
-pub mod domain_element;
-pub mod fractal;
-pub mod fractal_stats;
 pub mod pixel_states;
-pub mod resolution_multiplier;
 pub mod color_palette;
 pub mod color_palettes;
-pub mod mem_euler;
-pub mod mem_phoenix;
-pub mod mathematician;
-mod target;
 
 const PATH: &str = "/Fractals/";
 

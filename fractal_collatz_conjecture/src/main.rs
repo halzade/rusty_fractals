@@ -1,13 +1,12 @@
 use color_palette::Palette;
-use fractal_lib::mem::Mem;
-use fractal_lib::resolution_multiplier;
-use fractal_lib::color_palette;
-use fractal_lib::color_palettes::{PALETTE_BLACK_TO_WHITE, PALETTE_BLUE_TO_WHITE};
-use fractal_lib::fractal::{FractalConfig, FractalDefinition, Math, MathCollatz};
-use fractal_lib::mem_collatz::MemCollatz;
-use fractal_lib::resolution_multiplier::ResolutionMultiplier::Square3;
-use resolution_multiplier::ResolutionMultiplier;
-use resolution_multiplier::ResolutionMultiplier::None;
+use rusty_fractals_core::mem::Mem;
+use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, Math, MathCollatz};
+use rusty_fractals_core::mem_collatz::MemCollatz;
+use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier;
+use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier::None;
+use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier::Square3;
+use rusty_fractals_image::color_palettes::{PALETTE_BLACK_TO_WHITE, PALETTE_BLUE_TO_WHITE};
+use rusty_fractals_image::color_palette;
 
 const NAME: &str = "Collatz Conjecture";
 const ITERATION_MAX: u32 = 14800;

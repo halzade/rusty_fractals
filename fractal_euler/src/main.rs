@@ -1,13 +1,13 @@
 use color_palette::Palette;
-use fractal_lib::{mathematician, resolution_multiplier};
-use fractal_lib::color_palette;
-use fractal_lib::color_palettes::{PALETTE_3_RGB};
-use fractal_lib::fractal::{FractalConfig, FractalDefinition, MathEuler};
-use fractal_lib::mathematician::Mathematician;
-use fractal_lib::mem::Mem;
-use fractal_lib::mem_euler::{MemEuler, Spectra};
-use fractal_lib::resolution_multiplier::ResolutionMultiplier::None;
-use resolution_multiplier::ResolutionMultiplier;
+use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, MathEuler};
+use rusty_fractals_core::mem::Mem;
+use rusty_fractals_core::mem_euler::{MemEuler, Spectra};
+use rysty_fractals_core::mathematician::Mathematician;
+use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier::None;
+use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier;
+use rusty_fractals_image::color_palette;
+use rusty_fractals_image::color_palettes::{PALETTE_3_RGB};
+use rusty_fractals_core::mathematician::Mathematician;
 
 const NAME: &str = "Euler";
 
@@ -48,7 +48,7 @@ fn main() {
 
     let m = Mem { re: 0.0, im: 0.0 };
     let math = Mathematician {
-        primes: mathematician::init_primes(),
+        primes: Mathematician::init_primes(),
         fibonacci: Default::default(),
         perfect: Default::default(),
         square: Default::default(),
@@ -65,7 +65,7 @@ fn test_math() {
     let euler = Euler { name: NAME.to_string() };
     let m = Mem { re: 0.0, im: 0.0 };
     let math = Mathematician {
-        primes: mathematician::init_primes(),
+        primes: Mathematician::init_primes(),
         fibonacci: Default::default(),
         perfect: Default::default(),
         square: Default::default()

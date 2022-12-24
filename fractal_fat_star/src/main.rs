@@ -1,24 +1,13 @@
 use color_palette::Palette;
-use fractal_lib::mem::Mem;
-use fractal_lib::resolution_multiplier;
-use fractal_lib::color_palette;
-use fractal_lib::color_palettes::PALETTE_BLACK_TO_WHITE;
-use fractal_lib::fractal::{FractalConfig, FractalDefinition, Math};
+use rusty_fractals_core::mem::Mem;
+use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, Math};
+use rusty_fractals_domain::{domain, domain_area, resolution_multiplier};
+use rusty_fractals_image::color_palette;
+use rusty_fractals_image::color_palettes::PALETTE_BLACK_TO_WHITE;
 use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::None;
 
 const NAME: &str = "Fat Star";
-const ITERATION_MAX: u32 = 22000;
-const ITERATION_MIN: u32 = 42;
-const AREA_SIZE: f64 = 3.5;
-const TARGET_RE: f64 = 0.0;
-const TARGET_IM: f64 = 0.0;
-const RESOLUTION_WIDTH: u32 = 1920;
-const RESOLUTION_HEIGHT: u32 = 1080;
-const RESOLUTION_MULTIPLIER: ResolutionMultiplier = None;
-const REPEAT: bool = false;
-const SAVE_IMAGES: bool = false;
-const PALETTE: Palette = PALETTE_BLACK_TO_WHITE;
 
 struct FatStar {
     pub name: String,
@@ -37,9 +26,22 @@ fn main() {
     println!("Started");
 
     let fat_star = FatStar { name: NAME.to_string() };
-    let definition = FractalDefinition { iteration_min: ITERATION_MIN, iteration_max: ITERATION_MAX, area_size: AREA_SIZE, target_re: TARGET_RE, target_im: TARGET_IM };
-    let config = FractalConfig { resolution_width: RESOLUTION_WIDTH, resolution_height: RESOLUTION_HEIGHT, resolution_multiplier: RESOLUTION_MULTIPLIER, repeat: REPEAT, save_images: SAVE_IMAGES, palette: PALETTE };
-
+    let definition = FractalDefinition {
+        iteration_min: 42,
+        iteration_max: 22000,
+        area_size: 3.5,
+        target_re: 0.0,
+        target_im: 0.0,
+        resolution_width: 1920,
+        resolution_height: 1080,
+        resolution_multiplier: None,
+        repeat: false,
+        save_images: false,
+        palette: PALETTE_BLACK_TO_WHITE
+    };
+    let area = domain_area::init(AREA_SIZE, TARGET_RE, TARGET_IM);
+    let domain = domain_area::init_domain_elements(area);
+    let engine = fractal_engine::Engine{domain, fat_star};
     println!("Fractal {}", fat_star.name);
 
     let mut m = Mem { re: 0.0, im: 0.0 };
