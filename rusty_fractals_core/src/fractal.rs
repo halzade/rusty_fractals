@@ -36,21 +36,27 @@ pub const INIT_FINEBROT_TARGET_RE: f64 = 0.0;
 // TODO
 pub const INIT_FINEBROT_TARGET_IM: f64 = 0.0; // TODO
 
+pub struct Fractal {
+
+}
+
 pub struct FractalDefinition {
+    // calculation config
     pub iteration_min: u32,
     pub iteration_max: u32,
+
+    // area domain config
     pub area_size: f64,
     pub target_re: f64,
     pub target_im: f64,
-}
-
-pub struct FractalConfig {
     pub resolution_width: u32,
     pub resolution_height: u32,
     pub resolution_multiplier: resolution_multiplier::ResolutionMultiplier,
 
+    // app config
     pub repeat: bool,
     pub save_images: bool,
+    // color conf
     pub palette: color_palette::Palette,
 }
 
@@ -69,6 +75,10 @@ pub trait MathPhoenix {
 
 pub trait MathEuler {
     fn math(&self, me: &mut MemEuler, origin_re: f64, origin_im: f64);
+}
+
+pub trait Calculate {
+    fn calculate(&self);
 }
 
 // pub fn update(mut stats: fractal_stats::Stats) {
