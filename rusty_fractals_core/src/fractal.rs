@@ -15,8 +15,6 @@ pub const ITERATION_MAX: u32 = 6000;
  * 1920 1080 full HD
  * 2560 1440 quad HD
  */
-pub const WIDTH_X: usize = 800;
-pub const HEIGHT_Y: usize = 800;
 
 // Delete shorter paths then this
 pub const TOLERATE_PATH_LENGTH_MIN: i32 = 4;
@@ -25,16 +23,6 @@ pub const TOLERATE_PATH_LENGTH_MIN: i32 = 4;
  * If intermediate calculation result [re,im] spirals beyond this boundary. Calculation stops as divergent.
  */
 pub const CALCULATION_BOUNDARY: i32 = 4;
-
-pub const RESOLUTION_MULTIPLIER: i32 = 0; // TODO
-
-pub const ITERATION_MIN: i32 = 0; // TODO
-
-pub const INIT_FINEBROT_AREA_SIZE: f64 = 0.0;
-// TODO
-pub const INIT_FINEBROT_TARGET_RE: f64 = 0.0;
-// TODO
-pub const INIT_FINEBROT_TARGET_IM: f64 = 0.0; // TODO
 
 pub struct Fractal {
 
@@ -45,10 +33,12 @@ pub struct FractalDefinition {
     pub iteration_min: u32,
     pub iteration_max: u32,
 
-    // area domain config
+    // domain config
     pub area_size: f64,
     pub target_re: f64,
     pub target_im: f64,
+
+    // image config
     pub resolution_width: u32,
     pub resolution_height: u32,
     pub resolution_multiplier: resolution_multiplier::ResolutionMultiplier,
@@ -56,7 +46,8 @@ pub struct FractalDefinition {
     // app config
     pub repeat: bool,
     pub save_images: bool,
-    // color conf
+
+    // image config
     pub palette: color_palette::Palette,
 }
 

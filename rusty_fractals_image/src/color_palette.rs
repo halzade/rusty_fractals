@@ -1,5 +1,20 @@
+use rgb::RGB;
+use color_palettes::Function;
+
 pub struct Palette {
-    pub(crate) spectrum: Vec<i32>,
+    pub spectrum: Vec<RGB<ComponentType>>
 }
 
-impl Palette {}
+pub struct Palette3 {
+    pub spectrum_r: Vec<RGB<ComponentType>>,
+    pub spectrum_g: Vec<RGB<ComponentType>>,
+    pub spectrum_b: Vec<RGB<ComponentType>>
+}
+
+impl Palette {
+
+}
+
+impl Palette3 {
+
+}

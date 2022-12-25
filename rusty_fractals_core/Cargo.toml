@@ -8,6 +8,8 @@ keywords = ["fractal"]
 [dependencies]
 rusty_fractals_domain = { path = "../rusty_fractals_domain" }
 rusty_fractals_image = { path = "../rusty_fractals_image" }
+num_cpus = "0.2"
+colored = "2"
 
 [badges]
 maintenance = { status = "actively-developed" }

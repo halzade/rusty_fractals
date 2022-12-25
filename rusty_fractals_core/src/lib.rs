@@ -7,6 +7,7 @@ pub mod mathematician;
 pub mod mem;
 pub mod mem_collatz;
 pub mod mem_phoenix;
+mod log;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right
