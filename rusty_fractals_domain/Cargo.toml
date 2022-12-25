@@ -6,6 +6,7 @@ authors = ["lukas"]
 keywords = ["fractal"]
 
 [dependencies]
+rgb = "0.8"
 
 [badges]
 maintenance = { status = "actively-developed" }

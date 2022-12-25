@@ -91,6 +91,9 @@ dependencies = [
 [[package]]
 name = "rusty_fractals_domain"
 version = "0.1.0"
+dependencies = [
+ "rgb",
+]
 
 [[package]]
 name = "rusty_fractals_image"
