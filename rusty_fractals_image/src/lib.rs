@@ -1,6 +1,7 @@
 pub mod pixel_states;
-pub mod color_palette;
-pub mod color_palettes;
+pub mod palette;
+pub mod palettes;
+mod palette_utils;
 
 const PATH: &str = "/Fractals/";
 
@@ -31,19 +32,4 @@ fn lib() {
         fractal::INIT_FINEBROT_TARGET_RE,
         fractal::INIT_FINEBROT_TARGET_IM,
     );
-}
-
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
 }

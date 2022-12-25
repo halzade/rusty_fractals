@@ -1,3 +1,5 @@
+use crate::pixel_states::MandelbrotPixelState::{ActiveNew, Finished};
+
 #[derive(PartialOrd, Ord, PartialEq, Eq)]
 pub enum MandelbrotPixelState {
     /**
@@ -10,7 +12,7 @@ pub enum MandelbrotPixelState {
      * 2.
      * Calculation completed
      */
-    Finished,
+    Finished
 }
 
 #[derive(PartialOrd, Ord, PartialEq, Eq)]
@@ -68,5 +70,10 @@ pub enum MaskMandelbrotPixelState {
      * Temporarily state, recalculation of divergent PATH in progress
      * color = {@link MaskMandelbrotMaskColors#GOOD_PATH}
      */
-    GoodPath,
+    GoodPath
+}
+
+#[test]
+fn test_mandelbrot_pixel_state() {
+    assert_eq!(ActiveNew.cmp(&Finished), -1);
 }

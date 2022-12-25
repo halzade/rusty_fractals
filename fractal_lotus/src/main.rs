@@ -8,17 +8,6 @@ use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::None;
 
 const NAME: &str = "Lotus";
-const ITERATION_MAX: u32 = 8000;
-const ITERATION_MIN: u32 = 42;
-const AREA_SIZE: f64 = 9.5;
-const TARGET_RE: f64 = 0.67748277351478;
-const TARGET_IM: f64 = -1.18770078111202;
-const RESOLUTION_WIDTH: u32 = 1920;
-const RESOLUTION_HEIGHT: u32 = 1080;
-const RESOLUTION_MULTIPLIER: ResolutionMultiplier = None;
-const REPEAT: bool = false;
-const SAVE_IMAGES: bool = false;
-const PALETTE: Palette = PALETTE_BLACK_TO_WHITE;
 
 struct Lotus {
     pub name: String,
@@ -36,7 +25,19 @@ fn main() {
     println!("Started");
 
     let lotus = Lotus { name: NAME.to_string() };
-    let definition = FractalDefinition { iteration_min: ITERATION_MIN, iteration_max: ITERATION_MAX, area_size: AREA_SIZE, target_re: TARGET_RE, target_im: TARGET_IM };
+    let definition = FractalDefinition {
+        iteration_min: 42,
+        iteration_max: 8000,
+        area_size: 9.5,
+        target_re: 0.67748277351478,
+        target_im: -1.18770078111202,
+        resolution_width: 1920,
+        resolution_height: 1080,
+        resolution_multiplier: None,
+        repeat: false,
+        save_images: false,
+        palette: PALETTE_BLACK_TO_WHITE,
+    };
     let config = FractalConfig { resolution_width: RESOLUTION_WIDTH, resolution_height: RESOLUTION_HEIGHT, resolution_multiplier: RESOLUTION_MULTIPLIER, repeat: REPEAT, save_images: SAVE_IMAGES, palette: PALETTE };
 
     println!("Fractal {}", lotus.name);

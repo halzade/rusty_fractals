@@ -8,18 +8,6 @@ use rusty_fractals_image::color_palette;
 use rusty_fractals_image::color_palettes::{PALETTE_BLUE_TO_WHITE, PALETTE_GRAY_TO_BLUE};
 
 const NAME: &str = "Collatz Conjecture Mandelbrot";
-const ITERATION_MAX: u32 = 14800;
-const AREA_SIZE: f64 = 3.0;
-const TARGET_RE: f64 = -0.882952991714172300;
-const TARGET_IM: f64 = -0.214699221335319460;
-const RESOLUTION_WIDTH: u32 = 1280;
-const RESOLUTION_HEIGHT: u32 = 720;
-const RESOLUTION_MULTIPLIER: ResolutionMultiplier = None;
-const REPEAT: bool = true;
-const SAVE_IMAGES: bool = false;
-const PALETTE: Palette = PALETTE_BLUE_TO_WHITE;
-// to paint the black insides of the Mandelbrot set
-const PALETTE_ZERO: Palette = PALETTE_GRAY_TO_BLUE;
 
 struct CollatzConjectureMandelbrot {
     pub name: String,
@@ -36,8 +24,19 @@ fn main() {
     println!("Started");
 
     let collatz = CollatzConjectureMandelbrot { name: NAME.to_string() };
-    let definition = FractalDefinition { iteration_min: 0, iteration_max: ITERATION_MAX, area_size: AREA_SIZE, target_re: TARGET_RE, target_im: TARGET_IM };
-    let config = FractalConfig { resolution_width: RESOLUTION_WIDTH, resolution_height: RESOLUTION_HEIGHT, resolution_multiplier: RESOLUTION_MULTIPLIER, repeat: REPEAT, save_images: SAVE_IMAGES, palette: PALETTE };
+    let definition = FractalDefinition {
+        iteration_min: 0,
+        iteration_max: 14800,
+        area_size:  3.0,
+        target_re: -0.882952991714172300,
+        target_im: -0.214699221335319460,
+        resolution_width: 1280,
+        resolution_height: 720,
+        resolution_multiplier: None,
+        repeat: true,
+        save_images: false,
+        palette: PALETTE_GRAY_TO_BLUE
+    };
 
     println!("Fractal {}", collatz.name);
 
