@@ -1,7 +1,7 @@
 use color_palette::Palette;
 use rusty_fractals_domain::resolution_multiplier;
-use rusty_fractals_image::color_palette;
-use rusty_fractals_image::color_palettes::{PALETTE_BLUE_TO_WHITE};
+use rusty_fractals_result::color_palette;
+use rusty_fractals_result::color_palettes::{PALETTE_BLUE_TO_WHITE};
 use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, Math, MathPhoenix};
 use rusty_fractals_core::mem::Mem;
 use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier::Square5;

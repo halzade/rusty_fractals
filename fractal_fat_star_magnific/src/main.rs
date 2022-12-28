@@ -4,8 +4,8 @@ use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, Math};
 use rusty_fractals_domain::resolution_multiplier;
 use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::None;
-use rusty_fractals_image::color_palette;
-use rusty_fractals_image::color_palettes::PALETTE_BLACK_TO_WHITE;
+use rusty_fractals_result::color_palette;
+use rusty_fractals_result::color_palettes::PALETTE_BLACK_TO_WHITE;
 
 const NAME: &str = "Fat Star Magnific";
 const ITERATION_MAX: u32 = 81_000;

@@ -2,8 +2,8 @@ use color_palette::Palette;
 use rusty_fractals_core::mem::Mem;
 use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, Math};
 use rusty_fractals_domain::{domain, domain_area, resolution_multiplier};
-use rusty_fractals_image::color_palette;
-use rusty_fractals_image::color_palettes::PALETTE_BLACK_TO_WHITE;
+use rusty_fractals_result::color_palette;
+use rusty_fractals_result::color_palettes::PALETTE_BLACK_TO_WHITE;
 use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::None;
 

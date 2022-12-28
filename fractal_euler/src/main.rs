@@ -1,3 +1,7 @@
+mod euler;
+mod pixel;
+mod mandelbrot;
+
 use color_palette::Palette;
 use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, MathEuler};
 use rusty_fractals_core::mem::Mem;
@@ -5,8 +9,8 @@ use rusty_fractals_core::mem_euler::{MemEuler, Spectra};
 use rysty_fractals_core::mathematician::Mathematician;
 use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier::None;
 use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier;
-use rusty_fractals_image::color_palette;
-use rusty_fractals_image::color_palettes::{PALETTE_3_RGB};
+use rusty_fractals_result::color_palette;
+use rusty_fractals_result::color_palettes::{PALETTE_3_RGB};
 use rusty_fractals_core::mathematician::Mathematician;
 
 const NAME: &str = "Euler";

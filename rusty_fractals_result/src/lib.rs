@@ -1,7 +1,8 @@
-pub mod pixel_states;
 pub mod palette;
 pub mod palettes;
 mod palette_utils;
+mod result_pixel;
+mod perfect_color_distribution;
 
 const PATH: &str = "/Fractals/";
 

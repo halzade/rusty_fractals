@@ -1,14 +1,15 @@
-
+use rusty_fractals_domain::domain;
+use crate::fractal;
 
 // to calculate zoom, sequence of images
 pub struct Engine {
-    domain : domain::Domain,
-    fractal : fractal::Fractal
+    domain: domain::Domain,
+    fractal: fractal::Fractal,
 }
 
 impl Engine {
     fn run(&self) {
-        let mut first= true;
+        let mut first = true;
         for it in 1.. {
             println!("{}", it);
 
@@ -50,6 +51,32 @@ fn calculate() {
     }
 }
 
+fn run() {
+    for (MaskMandelbrotElement el : maskMandelbrotElementsPart) {
+        /*
+         * Investigate calculation path for each mandelbrot pixel
+         */
+        final ArrayList < double
+        [] > path = finebrotFractal.calculatePath(el);
+        if path != null {
+            /*
+             * Removed lastIteration, lastVisitedRe, lastVisitedIm
+             * There isn't continuation of unfinished iteration from previous calculation (ITERATION_MAX increased)
+             * The element and its path is going to migrate out of screen soon.
+             */
+            PathsFinebrot.addEscapePathLong(path);
+        }
+    }
+    if lastMandelbrotRefresh + 97 < currentTimeMillis() {
+        /*
+         * Handle refresh with calculation progress for all the threads
+         */
+        lastMandelbrotRefresh = currentTimeMillis();
+
+        MaskMandelbrot.maskFullUpdate();
+        Application.repaintMaskMandelbrotWindow();
+    }
+}
 // TODO
 // rusty_fractals_result_lib
 

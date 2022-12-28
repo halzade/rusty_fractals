@@ -1,0 +1,12 @@
+
+
+domain
+
+domain_element - calculation input data
+domain_pixel - image (debug) colors
+
+
+result
+
+result_element - calculation result data
+result_pixel - image result colors

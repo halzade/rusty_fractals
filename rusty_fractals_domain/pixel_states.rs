@@ -1,22 +1,7 @@
 use crate::pixel_states::MandelbrotPixelState::{ActiveNew, Finished};
 
 #[derive(PartialOrd, Ord, PartialEq, Eq)]
-pub enum MandelbrotPixelState {
-    /**
-     * 1.
-     * New element just added to Mandelbrot Pixels
-     */
-    ActiveNew,
-
-    /**
-     * 2.
-     * Calculation completed
-     */
-    Finished
-}
-
-#[derive(PartialOrd, Ord, PartialEq, Eq)]
-pub enum MaskMandelbrotPixelState {
+pub enum DomainElementState {
     /**
      * 1.
      * Calculation PATH Finished with success in previous calculation iteration (zoom).
@@ -36,20 +21,26 @@ pub enum MaskMandelbrotPixelState {
 
     /**
      * 3.
+     * Calculation completed
+     */
+    Finished,
+
+    /**
+     * 4.
      * New element just added to Mandelbrot Pixels
      * color = {@link MaskMandelbrotMaskColors#ACTIVE_NEW}
      */
     ActiveNew,
 
     /**
-     * 4.
+     * 5.
      * Path length was less than ITERATION_MIN.
      * color = {@link MaskMandelbrotMaskColors#FINISHED_TOO_SHORT}
      */
     FinishedTooShort,
 
     /**
-     * 5.
+     * 6.
      * Path length reached ITERATION_MAX.
      * It is considered as inside of Mandelbrot set.
      * color = {@link MaskMandelbrotMaskColors#FINISHED_TOO_LONG}
@@ -57,7 +48,7 @@ pub enum MaskMandelbrotPixelState {
     FinishedTooLong,
 
     /**
-     * 6.
+     * 7.
      * Created as already hibernated, and won't be calculated.
      * It didn't have any good data producing NEIGHBOURS {@link #FinishedSuccess} near enough.
      * It had only {@link #FinishedTooLong} NEIGHBOURS.
@@ -66,7 +57,7 @@ pub enum MaskMandelbrotPixelState {
     HibernatedDeepBlack,
 
     /**
-     * 7.
+     * 8.
      * Temporarily state, recalculation of divergent PATH in progress
      * color = {@link MaskMandelbrotMaskColors#GOOD_PATH}
      */

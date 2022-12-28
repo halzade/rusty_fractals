@@ -1,11 +1,16 @@
+mod paths;
+
 use color_palette::Palette;
 use rusty_fractals_core::mem::Mem;
+use rusty_fractals_core::machine::Machine;
 use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, Math};
-use rusty_fractals_domain::resolution_multiplier;
-use rusty_fractals_image::palette;
-use rusty_fractals_image::palettes::PALETTE_BLUE_TO_WHITE;
+use rusty_fractals_domain::{domain_area, resolution_multiplier};
+use rusty_fractals_result::palette;
+use rusty_fractals_result::palettes::PALETTE_BLUE_TO_WHITE;
 use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::SquareAlter;
+use rusty_fractals_core::machine;
+use rusty_fractals_domain::domain::Domain;
 
 const NAME: &str = "Nebula";
 
@@ -35,10 +40,21 @@ fn main() {
         resolution_multiplier: SquareAlter,
         repeat: false,
         save_images: false,
-        palette: PALETTE_BLUE_TO_WHITE
+        palette: PALETTE_BLUE_TO_WHITE,
     };
 
     println!("Fractal {}", nebula.name);
+
+    let area = domain_area::init(7.0, 0.0, 0.0);
+    let domain = Domain {
+        width: 1280,
+        height: 720,
+        domain_area: area,
+        domain_elements: init_domain_elements(),
+    };
+    let machine = machine::Machine { domain };
+
+    machine.calculate();
 
     let mut m = Mem { re: 0.0, im: 0.0 };
     nebula.math(&mut m, 1.0, 0.1);

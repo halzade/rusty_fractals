@@ -1,5 +1,5 @@
 mod engine;
-mod machine;
+pub mod machine;
 pub mod fractal;
 pub mod fractal_stats;
 mod target;
@@ -8,3 +8,4 @@ pub mod mem;
 pub mod mem_collatz;
 pub mod mem_phoenix;
 mod log;
+mod fractal_path;

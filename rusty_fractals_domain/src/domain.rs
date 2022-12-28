@@ -1,22 +1,23 @@
 use crate::domain_area::DomainArea;
-use crate::{domain_area, domain_element, fractal};
-use domain_element::MandelbrotElement;
-use fractal::{HEIGHT_Y, WIDTH_X};
+use crate::{domain_area, domain_element};
+use domain_element::DomainElement;
 
 pub struct Domain {
-    domain_area: domain_area::DomainArea,
-    domain_elements: Vec<Vec<MandelbrotElement>>,
+    pub width: u32,
+    pub height: u32,
+    pub domain_area: domain_area::DomainArea,
+    pub domain_elements: Vec<Vec<DomainElement>>,
 }
 
 impl Domain {
     /**
      * Makes small square subset of domain elements, will omit those already calculated.
      */
-    fn make_chunk(&self, x_from: usize, x_to: usize, y_from: usize, y_to: usize) -> Vec<&MandelbrotElement> {
-        let mut chunk: Vec<&MandelbrotElement> = Vec::new();
+    fn make_chunk(&self, x_from: usize, x_to: usize, y_from: usize, y_to: usize) -> Vec<&DomainElement> {
+        let mut chunk: Vec<&DomainElement> = Vec::new();
         for x in x_from..x_to {
             for y in y_from..y_to {
-                let core_element: &MandelbrotElement = self.domain_elements[x]
+                let core_element: &DomainElement = self.domain_elements[x]
                     .get(y)
                     .expect("domain_elements problem");
                 if core_element.is_active_new() {
@@ -27,21 +28,21 @@ impl Domain {
         chunk
     }
 
-    fn check_domain(x: u32, y: u32) -> bool {
-        x >= 0 && x < RESOLUTION_WIDTH && y >= 0 && y < RESOLUTION_HEIGHT
+    fn check_domain(&self, x: u32, y: u32) -> bool {
+        x >= 0 && x < self.width && y >= 0 && y < self.height
     }
 
 
-    fn all_chunks() {
+    fn all_chunks(&self) {
         let mut wrapped: u32 = 0;
         let mut not_wrapped: u32 = 0;
 
-        let chunk_size_x = WIDTH_X / 20;
-        let chunk_size_y = HEIGHT_Y / 20;
+        let chunk_size_x = self.width / 20;
+        let chunk_size_y = self.height / 20;
         /* All the pixel (domain) will be split to multiple chunks */
         for x in 0..19 {
             for y in 0..19 {
-                let chunk_of_elements = make_chunk(
+                let chunk_of_elements = self.make_chunk(
                     x * chunk_size_x, (x + 1) * chunk_size_x,
                     y * chunk_size_y, (y + 1) * chunk_size_y,
                 );
@@ -221,11 +222,11 @@ impl Domain {
     fn is_on_mandelbrot_horizon(x: u32, y: u32) -> bool {
         let mut red = false;
         let mut black = false;
-        for a in -neighbours..neighbours {
+        for a in -NEIGHBOURS..neighbours {
             for b in -neighbours..neighbours {
                 let xx = x + a;
                 let yy = y + b;
-                if checkDomain(xx, yy) {
+                if check_domain(xx, yy) {
                     el = elementsStaticMandelbrot[xx][yy];
                     if el.isFinishedSuccessPast() {
                         red = true;
@@ -243,10 +244,10 @@ impl Domain {
     }
 }
 
-fn init_domain_elements(domain_area: DomainArea) -> Vec<Vec<MandelbrotElement>> {
-    let mut vy: Vec<Vec<MandelbrotElement>> = Vec::new();
-    for x in 0..WIDTH_X {
-        let mut vx: Vec<MandelbrotElement> = Vec::new();
+fn init_domain_elements(&self, domain_area: DomainArea) -> Vec<Vec<DomainElement>> {
+    let mut vy: Vec<Vec<DomainElement>> = Vec::new();
+    for x in 0..domain_area.widhtWIDTH_X {
+        let mut vx: Vec<DomainElement> = Vec::new();
         for y in 0..HEIGHT_Y {
             vx.push(domain_element::init(
                 domain_area.screen_to_domain_re(x),
