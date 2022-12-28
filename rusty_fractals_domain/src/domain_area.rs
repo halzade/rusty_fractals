@@ -63,7 +63,13 @@ impl DomainArea {
     }
 }
 
-pub fn init(width_re: f64, center_re: f64, center_im: f64, width_x: u32, height_y: u32) -> DomainArea {
+pub fn init(config : AreaDomainConfig) -> DomainArea {
+    let width_re = config.width_re;
+    let center_re = config.center_re;
+    let center_im = config.center_im;
+    let width_x = config.width_x;
+    let height_y = config.height_y;
+
     let plank = width_re / width_x as f64;
     let height_im = width_re * (width_x as f64 / height_y as f64);
     let border_low_re = center_re - (width_re / 2.0);

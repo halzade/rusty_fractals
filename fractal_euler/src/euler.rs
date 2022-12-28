@@ -1,5 +1,6 @@
 use rusty_fractals_core::fractal::CALCULATION_BOUNDARY;
 use rusty_fractals_core::mathematician::Mathematician;
+use rusty_fractals_domain::domain_element::DomainElement;
 
 /**
  * Fractal Euler type uses three color spectra for better mathematical analysis and better coloring results.
@@ -35,7 +36,7 @@ fn translate_paths_to_pixel_grid() {
     removeElementsOutside();
 }
 
-fn colors_for(m : MemEuler, int elementIndex, int pathLength) {
+fn colors_for(m: MemEuler, int elementIndex, int pathLength) {
     if Mathematician.isPrime(elementIndex) {
         m.spectra = red;
         return;
@@ -47,7 +48,7 @@ fn colors_for(m : MemEuler, int elementIndex, int pathLength) {
     m.spectra = blue;
 }
 
-fn calculate_path(MaskMandelbrotElement el) {
+fn calculate_path(el: &DomainElement) {
     let iterator = 0;
     let length = 0;
     final MemEuler
@@ -60,7 +61,7 @@ fn calculate_path(MaskMandelbrotElement el) {
          * Most long expensive calculations end up inside Mandelbrot set
          */
         math(m, el.originRe, el.originIm);
-        if (AreaFinebrot.contains(m)) {
+        if AreaFinebrot.contains(m) {
             length += 1;
         }
         iterator += 1;
@@ -78,7 +79,7 @@ fn calculate_path(MaskMandelbrotElement el) {
         ArrayList < > (length);
         for i in 0..iterator {
             math(m, el.originRe, el.originIm);
-            if (AreaFinebrot.contains(m)) {
+            if AreaFinebrot.contains(m) {
                 path.add(new double[]{ m.re, m.im });
             }
         }

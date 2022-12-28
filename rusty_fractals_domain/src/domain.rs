@@ -158,9 +158,9 @@ impl Domain {
         for y in 0..RESOLUTION_HEIGHT {
             for x in 0..RESOLUTION_WIDTH {
                 el = domain_elements[x][y];
-                if (el == null) {
+                if el == null {
                     AreaMandelbrot.screenToDomainCarry(m, x, y);
-                    if (allNeighborsFinishedTooLong(x, y)) {
+                    if allNeighborsFinishedTooLong(x, y)) {
                         /* Calculation for some positions should be skipped as they are too far away form any long successful divergent position */
                         domain_elements[x][y] = hibernatedDeepBlack(m.re, m.im);
                     } else {

@@ -1,4 +1,6 @@
-fn calculate_path(MaskMandelbrotElement el) {
+use rusty_fractals_domain::domain_element::DomainElement;
+
+fn calculate_path(el: &DomainElement) {
     let iterator = 0;
     let length = 0;
     final Mem
@@ -12,9 +14,9 @@ fn calculate_path(MaskMandelbrotElement el) {
          */
         math(m, el.originRe, el.originIm);
         if AreaFinebrot.contains(m) {
-            length+= 1;
+            length += 1;
         }
-        iterator+= 1;
+        iterator += 1;
     }
 
     /*
@@ -31,7 +33,7 @@ fn calculate_path(MaskMandelbrotElement el) {
         ArrayList < > (length);
         for i in 0..iterator {
             math(m, el.originRe, el.originIm);
-            if (AreaFinebrot.contains(m)) {
+            if AreaFinebrot.contains(m) {
                 path.add(new double[]{ m.re, m.im });
             }
         }

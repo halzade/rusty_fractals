@@ -1,5 +1,7 @@
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use rusty_fractals_domain::domain;
-use crate::fractal;
+use crate::{fractal, machine};
+use crate::machine::Machine;
 
 // to calculate zoom, sequence of images
 pub struct Engine {
@@ -8,8 +10,9 @@ pub struct Engine {
 }
 
 impl Engine {
-    fn run(&self) {
+    pub fn calculate(&self) {
         let mut first = true;
+
         for it in 1.. {
             println!("{}", it);
 
@@ -20,15 +23,21 @@ impl Engine {
                 self.domain.recalculate_pixels_positions_for_this_zoom();
             }
 
-            fractal.calculate();
+            let coordinates_xy = self.domain.shuffled_calculation_coordinates();
 
-            // PathsFinebrot.translatePathsToPixelGrid();
-            // MaskMandelbrot.maskFullUpdate();
+            // Calculate independently and in parallel each domain chunks
+            coordinates_xy.into_par_iter().for_each(
+                |xy| machine::chunk_calculation(&self.domain, xy)
+            );
+
+
+            PathsFinebrot.translatePathsToPixelGrid();
+            MaskMandelbrot.maskFullUpdate();
 
             fractal.perfectly_color_values();
             Application.repaint_mandelbrot_window();
 
-            if (SAVE_IMAGES) {
+            if SAVE_IMAGES {
                 FractalImages.saveMandelbrotImages();
             }
 
@@ -36,18 +45,6 @@ impl Engine {
             // image_pixels.clear()
             Application.zoomIn();
         }
-    }
-}
-
-fn calculate() {
-    let domain_full_chunked_and_wrapped = full_domain_as_wrapped_parts();
-    Collections.shuffle(domain_full_chunked_and_wrapped);
-
-    for part in domainFullChunkedAndWrapped {
-        /*
-         * Calculate independently each domain chunk
-         */
-        executor.execute(new CalculationPathThread(finebrotFractal, part));
     }
 }
 
@@ -76,11 +73,4 @@ fn run() {
         MaskMandelbrot.maskFullUpdate();
         Application.repaintMaskMandelbrotWindow();
     }
-}
-// TODO
-// rusty_fractals_result_lib
-
-
-fn full_domain_as_wrapped_parts() {
-    todo!()
 }

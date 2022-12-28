@@ -8,43 +8,36 @@ use crate::mem_collatz::MemCollatz;
 use crate::mem_euler::MemEuler;
 use crate::mem_phoenix::MemPhoenix;
 
-pub const ITERATION_MAX: u32 = 6000;
-
-/**
- * Image resolution height & width
- *  800  600
- * 1280  720
- * 1080 1920 full HD high
- * 1920 1080 full HD
- * 2560 1440 quad HD
- */
-
 // Delete shorter paths then this
 pub const TOLERATE_PATH_LENGTH_MIN: i32 = 4;
-/**
- * 4 is quadrance from (0, 0)
- * If intermediate calculation result [re,im] spirals beyond this boundary. Calculation stops as divergent.
- */
+// 4 is quadrance from (0, 0)
+// If intermediate calculation result [re,im] spirals beyond this boundary. Calculation stops as divergent.
 pub const CALCULATION_BOUNDARY: i32 = 4;
 
-pub struct Fractal {
+pub struct Fractal {}
 
-}
-
-pub struct FractalDefinition {
+pub struct CalculationConfig {
     // calculation config
     pub iteration_min: u32,
     pub iteration_max: u32,
+}
 
-    // image config
+pub struct AreaDomainConfig {
+    pub width_re: f64,
+    pub center_re: f64,
+    pub center_im: f64,
+    pub width_x: u32,
+    pub height_y: u32,
     pub resolution_multiplier: resolution_multiplier::ResolutionMultiplier,
+}
 
-    // app config
+pub struct ResultConfig {
+    pub palette: color_palette::Palette,
+}
+
+pub struct AppConfig {
     pub repeat: bool,
     pub save_images: bool,
-
-    // image config
-    pub palette: color_palette::Palette,
 }
 
 

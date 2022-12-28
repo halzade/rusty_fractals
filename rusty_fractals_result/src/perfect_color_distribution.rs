@@ -12,7 +12,7 @@ protected final Comparator<FinebrotPixel> comparator = Comparator.comparingInt(F
 
 protected final Comparator<MandelbrotPixel> comparatorMandelbrot = (a, b) -> {
 int c = compare(a.pixelValue, b.pixelValue);
-if (c == 0) {
+if c == 0 {
 return compare(a.qiad, b.qiad);
 }
 return c;
