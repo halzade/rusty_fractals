@@ -14,8 +14,6 @@ pub const TOLERATE_PATH_LENGTH_MIN: i32 = 4;
 // If intermediate calculation result [re,im] spirals beyond this boundary. Calculation stops as divergent.
 pub const CALCULATION_BOUNDARY: i32 = 4;
 
-pub struct Fractal {}
-
 pub struct CalculationConfig {
     // calculation config
     pub iteration_min: u32,
@@ -40,25 +38,8 @@ pub struct AppConfig {
     pub save_images: bool,
 }
 
-
-pub trait Math {
-    fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64);
-}
-
-pub trait MathCollatz {
-    fn math(&self, mc: &mut MemCollatz, origin_re: f64, origin_im: f64);
-}
-
-pub trait MathPhoenix {
-    fn math(&self, mp: &mut MemPhoenix, origin_re: f64, origin_im: f64);
-}
-
-pub trait MathEuler {
-    fn math(&self, me: &mut MemEuler, origin_re: f64, origin_im: f64);
-}
-
-pub trait Calculate {
-    fn calculate(&self);
+pub trait Math<T> {
+    fn math(&self, m: &mut T, origin_re: f64, origin_im: f64);
 }
 
 pub fn update(mut stats: Stats) {

@@ -10,7 +10,7 @@
  */
 
 pub struct ResultData {
-    mut paths: Vec<Vec<[f64; 1]>>,
+    pub paths: Vec<Vec<[f64; 2]>>,
 }
 
 impl ResultData {
@@ -22,7 +22,7 @@ impl ResultData {
         PATHS.removeIf(path -> path.size() < TOLERATE_PATH_LENGTH_min);
     }
 
-    pub fn add_escape_path_long(&mut self, path: Vec<[f64; 1]>) {
+    pub fn add_escape_path_long(&mut self, path: Vec<[f64; 2]>) {
         Stats.pathsNewPointsAmount += path.size();
         self.paths.push(path);
     }

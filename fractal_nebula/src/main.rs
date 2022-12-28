@@ -1,5 +1,4 @@
-mod paths;
-
+use rusty_fractals_result::fractal_result::ResultData;
 use color_palette::Palette;
 use rusty_fractals_core::mem::Mem;
 use rusty_fractals_core::machine::Machine;
@@ -12,11 +11,9 @@ use resolution_multiplier::ResolutionMultiplier::SquareAlter;
 use rusty_fractals_core::machine;
 use rusty_fractals_domain::domain::Domain;
 
-struct Nebula {
-    pub name: String,
-}
+struct Nebula {}
 
-impl Math for Nebula {
+impl Math<Mem> for Nebula {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         m.square();
         m.plus(origin_re, origin_im);
@@ -48,7 +45,6 @@ fn main() {
 
     println!("Fractal {}", name);
 
-
     let area = domain_area::init(area_domain_config);
     let domain = Domain {
         width: area.width_x,
@@ -56,15 +52,15 @@ fn main() {
         domain_area: area,
         domain_elements: init_domain_elements(),
     };
-    let machine = machine::Machine {
+    let nebula = Nebula {};
+
+    let mut machine = machine::Machine {
         domain,
         calculation_config,
+        result_config,
     };
 
-    machine.calculate();
-
-    let mut m = Mem { re: 0.0, im: 0.0 };
-    nebula.math(&mut m, 1.0, 0.1);
+    machine.calculate(&nebula);
 
     println!("Finished.");
 }
@@ -72,7 +68,7 @@ fn main() {
 
 #[test]
 fn test_math() {
-    let nebula = Nebula { name: NAME.to_string() };
+    let nebula = Nebula {};
     let mut m = Mem { re: 0.0, im: 0.0 };
     nebula.math(&mut m, 1.0, 0.1);
     assert_eq!(m.re, 1.0);
