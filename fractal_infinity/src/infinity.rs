@@ -1,28 +1,26 @@
-fn calculatePath(MaskMandelbrotElement el) {
-    int
-    iterator = 0;
-    int
-    length = 0;
+fn calculate_path(MaskMandelbrotElement el) {
+    let iterator = 0;
+    let length = 0;
     final Mem
     m = new
     Mem(el.originRe, el.originIm);
-    while (m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX) {
+    while m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
         /*
          * Investigate if this is a good calculation path
          * Don't create path data yet. Too many origin's don't produce good data
          * Most long expensive calculations end up inside Mandelbrot set
          */
         math(m, el.originRe, el.originIm);
-        if (AreaFinebrot.contains(m)) {
-            length + +;
+        if AreaFinebrot.contains(m) {
+            length+= 1;
         }
-        iterator + +;
+        iterator+= 1;
     }
 
     /*
      * Verify NON-divergent path length
      */
-    if (length > ITERATION_min && iterator == ITERATION_MAX) {
+    if length > ITERATION_min && iterator == ITERATION_MAX {
         /*
          * This origin produced good data, record calculation path
          */
@@ -31,7 +29,7 @@ fn calculatePath(MaskMandelbrotElement el) {
         final ArrayList < double
         [] > path = new
         ArrayList < > (length);
-        for (int i = 0; i < iterator; i+ +) {
+        for i in 0..iterator {
             math(m, el.originRe, el.originIm);
             if (AreaFinebrot.contains(m)) {
                 path.add(new double[]{ m.re, m.im });

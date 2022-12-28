@@ -1,3 +1,5 @@
+use rusty_fractals_core::mathematician::Mathematician;
+
 /**
  * Fractal Euler type uses three color spectra for better mathematical analysis and better coloring results.
  * Possible use as:
@@ -14,21 +16,20 @@ fn add_escape_path_long(ArrayList<double[]> path) {
 fn translate_paths_to_pixel_grid() {
     log.debug("translate_paths_to_pixel_grid");
 
-    int
-    added = 0;
+    let added = 0;
     final MemEuler
     m = new
     MemEuler();
     double
     []
     tmp;
-    for (ArrayList < double[] > path: paths) {
-        for (int i = 0; i < path.size() -1; i + +) {
+    for path in paths {
+        for i in 0..path.size() -1 {
             tmp = path.get(i);
             /* translate [re,im] to [px,py] */
             AreaFinebrot.pointToPixel(m, tmp[0], tmp[1]);
             if (m.good) {
-                added + +;
+                added+= 1;
                 FractalEuler.colorsFor(m, i, path.size());
                 PixelsEulerFinebrot.add(m.px, m.py, m.spectra);
             }
@@ -40,23 +41,21 @@ fn translate_paths_to_pixel_grid() {
     removeElementsOutside();
 }
 
-fn colorsFor(MemEuler m, int elementIndex, int pathLength) {
-    if (Mathematician.isPrime(elementIndex)) {
+fn colors_for(MemEuler m, int elementIndex, int pathLength) {
+    if Mathematician.isPrime(elementIndex) {
         m.spectra = red;
         return;
     }
-    if (Mathematician.isPrime(pathLength)) {
+    if Mathematician.isPrime(pathLength) {
         m.spectra = green;
         return;
     }
     m.spectra = blue;
 }
 
-fn calculatePath(MaskMandelbrotElement el) {
-    int
-    iterator = 0;
-    int
-    length = 0;
+fn calculate_path(MaskMandelbrotElement el) {
+    let iterator = 0;
+    let length = 0;
     final MemEuler
     m = new
     MemEuler(el.originRe, el.originIm);
@@ -68,9 +67,9 @@ fn calculatePath(MaskMandelbrotElement el) {
          */
         math(m, el.originRe, el.originIm);
         if (AreaFinebrot.contains(m)) {
-            length + +;
+            length+= 1;
         }
-        iterator + +;
+        iterator+= 1;
     }
 
     /* Verify divergent path length */
@@ -83,7 +82,7 @@ fn calculatePath(MaskMandelbrotElement el) {
         final ArrayList < double
         [] > path = new
         ArrayList < > (length);
-        for (int i = 0; i < iterator; i+ +) {
+        for i in 0..iterator {
             math(m, el.originRe, el.originIm);
             if (AreaFinebrot.contains(m)) {
                 path.add(new double[]{ m.re, m.im });

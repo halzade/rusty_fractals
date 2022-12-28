@@ -14,20 +14,20 @@ impl DomainElement {
         self.state == ActiveNew
     }
 
-    public boolean isFinishedTooShort() {
-    return state == FinishedTooShort;
+    fn is_finished_too_short() -> bool {
+        state == FinishedTooShort
     }
 
-    public boolean isHibernated() {
-    return state == FinishedTooShort || state == HibernatedDeepBlack;
+    fn is_hibernated() -> bool {
+        state == FinishedTooShort || state == HibernatedDeepBlack
     }
 
-    public boolean isFinishedSuccessAny() {
-    return state == FinishedSuccessPast || state == FinishedSuccess;
+    fn is_finished_success_any() -> bool {
+        state == FinishedSuccessPast || state == FinishedSuccess
     }
 
-    public boolean isFinishedSuccessPast() {
-    return state == FinishedSuccessPast;
+    fn is_finished_success_past() -> bool {
+        state == FinishedSuccessPast
     }
 
 
@@ -45,19 +45,19 @@ impl DomainElement {
         self.value = iterator;
     }
 
-    public void setFinishedState(int iterator, int pathLength) {
-    if (iterator == ITERATION_MAX) {
-    state = FinishedTooLong;
-    Stats.newElementsTooLong++;
-    return;
-    }
-    if (pathLength < ITERATION_min) {
-    state = FinishedTooShort;
-    Stats.newElementsTooShort++;
-    return;
-    }
-    state = FinishedSuccess;
-    Stats.newElementsLong++;
+    fn set_finished_state(int iterator, int pathLength) {
+        if iterator == ITERATION_MAX {
+            state = FinishedTooLong;
+            Stats.newElementsTooLong+= 1;
+            return;
+        }
+        if pathLength < ITERATION_min {
+            state = FinishedTooShort;
+            Stats.newElementsTooShort+= 1;
+            return;
+        }
+        state = FinishedSuccess;
+        Stats.newElementsLong+= 1;
     }
 
     pub fn set_average_with(&mut self, e: DomainElement) {
@@ -75,37 +75,40 @@ pub fn init(re: f64, im: f64) -> DomainElement {
     }
 }
 
-public static MaskMandelbrotElement activeNew(double re, double im) {
-return new MaskMandelbrotElement(re, im, ActiveNew);
+fn active_new(re: f64, im: f64) {
+    return new;
+    MaskMandelbrotElement(re, im, ActiveNew);
 }
 
-public static MaskMandelbrotElement hibernatedDeepBlack(double re, double im) {
-return new MaskMandelbrotElement(re, im, HibernatedDeepBlack);
+fn hibernated_deep_black(re: f64, im: f64) {
+    return new;
+    MaskMandelbrotElement(re, im, HibernatedDeepBlack);
 }
 
-public MaskMandelbrotPixelState state() {
-return state;
+fn state() {
+    state
 }
 
-public void past() {
-if (state == FinishedSuccess) {
-state = FinishedSuccessPast;
-}
+fn past() {
+    if state == FinishedSuccess {
+        state = FinishedSuccessPast;
+    }
 }
 
 // Returns a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object
-@Override
-public int compareTo(MaskMandelbrotElement e) {
-if (this == e) return 0;
-return this.state.compareTo(e.state);
+fn compare_to(MaskMandelbrotElement e) {
+    if this == e {
+        0
+    }
+    return this.state.compareTo(e.state);
 }
 
-public boolean hasWorseStateThen(MaskMandelbrotElement e) {
-return this.compareTo(e) > 0;
+fn has_worse_state_then(MaskMandelbrotElement e) {
+    return this.compareTo(e) > 0;
 }
 
-public void goodPath() {
-state = GoodPath;
+fn good_path() {
+    state = GoodPath;
 }
 
 

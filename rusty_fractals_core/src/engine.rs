@@ -43,7 +43,7 @@ fn calculate() {
     let domain_full_chunked_and_wrapped = full_domain_as_wrapped_parts();
     Collections.shuffle(domain_full_chunked_and_wrapped);
 
-    for (ArrayList < MaskMandelbrotElement> part : domainFullChunkedAndWrapped) {
+    for part in domainFullChunkedAndWrapped {
         /*
          * Calculate independently each domain chunk
          */
@@ -52,7 +52,7 @@ fn calculate() {
 }
 
 fn run() {
-    for (MaskMandelbrotElement el : maskMandelbrotElementsPart) {
+    for el in maskMandelbrotElementsPart {
         /*
          * Investigate calculation path for each mandelbrot pixel
          */

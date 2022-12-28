@@ -43,8 +43,8 @@ impl Domain {
         for x in 0..19 {
             for y in 0..19 {
                 let chunk_of_elements = self.make_chunk(
-                    x * chunk_size_x, (x + 1) * chunk_size_x,
-                    y * chunk_size_y, (y + 1) * chunk_size_y,
+                    (x * chunk_size_x) as usize, ((x + 1) * chunk_size_x) as usize,
+                    (y * chunk_size_y) as usize, ((y + 1) * chunk_size_y) as usize,
                 );
             }
         }
@@ -69,8 +69,7 @@ impl Domain {
                 domainFull.add(activeNew(elementZero.originRe + d, elementZero.originIm - d));
             }
         } else {
-            final int
-            multiplier;
+            let multiplier;
             switch(RESOLUTION_MULTIPLIER)
             {
                 case
@@ -90,12 +89,11 @@ impl Domain {
 
             final double
             pn = AreaMandelbrot.plank() / multiplier;
-            final int
-            half = (multiplier - 1) / 2;
+            let half = (multiplier - 1) / 2;
             /* This fills the pixel with multiple points */
-            for (int x = - half; x < = half; x + +) {
-                for (int y = - half; y < = half; y + +) {
-                    if (x != 0 | | y != 0) {
+            for x in -half..half {
+                for y in -half..half {
+                    if x != 0 || y != 0 {
                         domainFull.add(activeNew(elementZero.originRe + (x * pn), elementZero.originIm + (y * pn)));
                     }
                     /* else do nothing, there already is element0 for the center of this pixel */
@@ -137,15 +135,15 @@ impl Domain {
          * Don't drop conflicts around, simply calculate new elements in the next calculation iteration.
          */
 
-        for (MaskMandelbrotElement el: elementsToRemember) {
+        for el in elementsToRemember {
             /* translate [px,py] to [re,im] */
             AreaMandelbrot.pointToPixel(m, el.originRe, el.originIm);
 
-            if (m.good) {
+            if m.good {
                 filledAlready = elementsStaticMandelbrot[m.px][m.py];
-                if (filledAlready != null) {
+                if filledAlready != null {
                     /* conflict */
-                    if (filledAlready.hasWorseStateThen(el)) {
+                    if filledAlready.hasWorseStateThen(el) {
                         /*
                          * Replace by element with better state
                          * Better to delete the other one, then to drop it to other empty px.
@@ -171,8 +169,8 @@ impl Domain {
          */
         MaskMandelbrotElement
         el;
-        for (int y = 0; y < RESOLUTION_HEIGHT; y + +) {
-            for (int x = 0; x < RESOLUTION_WIDTH; x + +) {
+        for y in 0..RESOLUTION_HEIGHT {
+            for x in 0..RESOLUTION_WIDTH {
                 el = elementsStaticMandelbrot[x][y];
                 if (el == null) {
                     AreaMandelbrot.screenToDomainCarry(m, x, y);

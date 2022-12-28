@@ -24,8 +24,8 @@ fn add(int x, int y, Spectra spec) {
 
 fn clear() {
     log.debug("clear()");
-    for (int y = 0; y < RESOLUTION_HEIGHT; y+ +) {
-        for (int x = 0; x < RESOLUTION_WIDTH; x+ +) {
+    for  y in 0..RESOLUTION_HEIGHT {
+        for x in 0..RESOLUTION_WIDTH {
             elementsStaticScreenRed[x][y] = 0;
             elementsStaticScreenGreen[x][y] = 0;
             elementsStaticScreenBlue[x][y] = 0;

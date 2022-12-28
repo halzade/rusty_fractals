@@ -4,60 +4,53 @@ pub struct FractalImagePixel {
     py: u32,
 }
 
-fn add(int x, int y) {
+fn add(x: u32, y: u32) {
     elementsStaticFinebrot[x][y] += 1;
 }
 
 fn clear() {
     log.debug("clear");
-    for (int y = 0; y < RESOLUTION_HEIGHT; y+ +) {
-        for (int x = 0; x < RESOLUTION_WIDTH; x+ +) {
+    for y in 0..RESOLUTION_HEIGHT {
+        for x in 0..RESOLUTION_WIDTH {
             elementsStaticFinebrot[x][y] = 0;
         }
     }
 }
 
-fn value_at(int x, int y) {
+fn value_at(x: u32, y: u32) {
     return elementsStaticFinebrot[x][y];
 }
 
-fn best_four_chunks_value() {
+fn best_four_chunks_value() -> u32 {
     log.debug("best_four_chunks_value()");
-    final int
-    chunkSizeX = RESOLUTION_WIDTH / 20;
-    final int
-    chunkSizeY = RESOLUTION_HEIGHT / 20;
-    final ArrayList < Integer > values = new
-    ArrayList < > (20 * 20);
-    for (int x = 0; x < 20; x+ +) {
-        for (int y = 0; y < 20; y+ +) {
-            values.add(chunkValue(
-                x * chunkSizeX, (x + 1) * chunkSizeX,
-                y * chunkSizeY, (y + 1) * chunkSizeY,
-            )
-            );
+    let chunk_size_x = RESOLUTION_WIDTH / 20;
+    let chunk_size_y = RESOLUTION_HEIGHT / 20;
+    let mut values: Vec<u32> = Vec::new();
+    for x in 0..20 {
+        for y in 0..20 {
+            values.push(chunkValue(
+                x * chunk_size_x, (x + 1) * chunk_size_x,
+                y * chunk_size_y, (y + 1) * chunk_size_y,
+            ));
         }
     }
-    values.sort(Collections.reverseOrder());
+    values.sort().reverse();
 
-    int
-    sum = 0;
-    for (int i = 0; i < 4; i+ +) {
-        int
-        v = values.get(i);
+    let mut sum = 0;
+    for i in 0..4 {
+        let v = values.get(i);
         sum += v;
     }
     log.debug("best_four_chunks_value() sum: " + sum);
-    return sum;
+    sum
 }
 
-fn chunk_value(int xFrom, int xTo, int yFrom, int yTo) -> u32 {
-    int
-    sum = 0;
-    for (int x = xFrom; x < xTo; x+ +) {
-        for (int y = yFrom; y < yTo; y+ +) {
+fn chunk_value(x_from: i32, x_to: i32, y_from: i32, y_to: i32) -> u32 {
+    let mut sum = 0;
+    for x in x_from..x_to {
+        for y in y_from..y_to {
             sum += elementsStaticFinebrot[x][y];
         }
     }
-    return sum;
+    sum
 }
