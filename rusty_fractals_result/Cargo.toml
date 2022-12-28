@@ -1,5 +1,5 @@
 [package]
-name = "rusty_fractals_image"
+name = "rusty_fractals_result"
 version = "0.1.0"
 edition = "2021"
 authors = ["lukas"]
