@@ -1,3 +1,4 @@
+use rusty_fractals_core::fractal::CALCULATION_BOUNDARY;
 use rusty_fractals_core::mathematician::Mathematician;
 
 /**
@@ -8,8 +9,7 @@ use rusty_fractals_core::mathematician::Mathematician;
  * - other path lengths     -> Blue spectrum
  */
 
-fn add_escape_path_long(ArrayList<double[]> path) {
-    requireNonNull(path, "Path can't be null;");
+fn add_escape_path_long(path: Vec<[i64; 2]>) {
     paths.add(path);
 }
 
@@ -17,19 +17,13 @@ fn translate_paths_to_pixel_grid() {
     log.debug("translate_paths_to_pixel_grid");
 
     let added = 0;
-    final MemEuler
-    m = new
-    MemEuler();
-    double
-    []
-    tmp;
     for path in paths {
-        for i in 0..path.size() -1 {
-            tmp = path.get(i);
+        for i in 0..path.size() - 1 {
+            let tmp = path.get(i);
             /* translate [re,im] to [px,py] */
             AreaFinebrot.pointToPixel(m, tmp[0], tmp[1]);
-            if (m.good) {
-                added+= 1;
+            if m.good {
+                added += 1;
                 FractalEuler.colorsFor(m, i, path.size());
                 PixelsEulerFinebrot.add(m.px, m.py, m.spectra);
             }
@@ -41,7 +35,7 @@ fn translate_paths_to_pixel_grid() {
     removeElementsOutside();
 }
 
-fn colors_for(MemEuler m, int elementIndex, int pathLength) {
+fn colors_for(m : MemEuler, int elementIndex, int pathLength) {
     if Mathematician.isPrime(elementIndex) {
         m.spectra = red;
         return;
@@ -59,7 +53,7 @@ fn calculate_path(MaskMandelbrotElement el) {
     final MemEuler
     m = new
     MemEuler(el.originRe, el.originIm);
-    while (m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX) {
+    while m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
         /*
          * Investigate if this is a good calculation path
          * Don't create path data yet. Too many origin's don't produce good data
@@ -67,13 +61,13 @@ fn calculate_path(MaskMandelbrotElement el) {
          */
         math(m, el.originRe, el.originIm);
         if (AreaFinebrot.contains(m)) {
-            length+= 1;
+            length += 1;
         }
-        iterator+= 1;
+        iterator += 1;
     }
 
     /* Verify divergent path length */
-    if (length > ITERATION_min && iterator < ITERATION_MAX) {
+    if length > ITERATION_min && iterator < ITERATION_MAX {
         /*
          * This origin produced good data, record calculation path
          */

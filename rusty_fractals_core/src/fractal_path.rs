@@ -1,7 +1,8 @@
+use rusty_fractals_domain::domain_element::DomainElement;
 use crate::fractal::CALCULATION_BOUNDARY;
 use crate::mem::Mem;
 
-fn calculate_path_finite(MaskMandelbrotElement el) {
+fn calculate_path_finite(el: DomainElement) {
     let iterator = 0;
     let length = 0;
     let m = Mem::new(el.originRe, el.originIm);
@@ -13,9 +14,9 @@ fn calculate_path_finite(MaskMandelbrotElement el) {
          */
         math(m, el.originRe, el.originIm);
         if AreaFinebrot.contains(m) {
-            length+= 1;
+            length += 1;
         }
-        iterator+= 1;
+        iterator += 1;
     }
 
     /* Verify divergent path length */
@@ -51,7 +52,7 @@ fn calculate_iterations_mandelbrot(MandelbrotElement el) {
     MemCollatzConjecture(el.originRe, el.originIm);
     while m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
         math(m, el.originRe, el.originIm);
-        iterator+= 1;
+        iterator += 1;
     }
 
     el.setFinishedState(iterator, m.quadrance());
@@ -71,9 +72,9 @@ fn calculate_path_collatz(MaskMandelbrotElement el) {
          */
         math(m, el.originRe, el.originIm);
         if AreaFinebrot.contains(m) {
-            length+= 1;
+            length += 1;
         }
-        iterator+= 1;
+        iterator += 1;
     }
 
     /* Verify divergent path length */
@@ -126,9 +127,9 @@ fn calculate_path_phoenix(MaskMandelbrotElement el) {
          */
         math(m, el.originRe, el.originIm);
         if AreaFinebrot.contains(m) {
-            length+= 1;
+            length += 1;
         }
-        iterator+= 1;
+        iterator += 1;
     }
 
     /* Verify divergent path length */

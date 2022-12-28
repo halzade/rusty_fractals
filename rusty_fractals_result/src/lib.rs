@@ -10,7 +10,6 @@ const PATH: &str = "/Fractals/";
  * How many pixels around specific element will be investigated for optimization.
  * If there is nothing interesting going on around specific pixel, the pixel will be ignored.
  */
-const NEIGHBOURS: i32 = 3;
 const ZOOM: f64 = 0.98;
 const COLORING_THRESHOLD: i32 = 3;
 

@@ -15,7 +15,7 @@ use rusty_fractals_domain::domain::Domain;
 const NAME: &str = "Nebula";
 
 struct Nebula {
-    pub name: String,
+    pub name: String
 }
 
 impl Math for Nebula {
@@ -32,25 +32,21 @@ fn main() {
     let definition = FractalDefinition {
         iteration_min: 42,
         iteration_max: 14800,
-        area_size: 7.0,
-        target_re: 0.0,
-        target_im: 0.0,
-        resolution_width: 1280,
-        resolution_height: 720,
         resolution_multiplier: SquareAlter,
         repeat: false,
         save_images: false,
-        palette: PALETTE_BLUE_TO_WHITE,
+        palette: PALETTE_BLUE_TO_WHITE
     };
 
     println!("Fractal {}", nebula.name);
 
-    let area = domain_area::init(7.0, 0.0, 0.0);
+
+    let area = domain_area::init(7.0, 0.0, 0.0, 1280, 720);
     let domain = Domain {
-        width: 1280,
-        height: 720,
+        width: area.width_x,
+        height: area.height_y,
         domain_area: area,
-        domain_elements: init_domain_elements(),
+        domain_elements: init_domain_elements()
     };
     let machine = machine::Machine { domain };
 

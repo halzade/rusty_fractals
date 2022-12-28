@@ -25,8 +25,8 @@ impl Engine {
             // PathsFinebrot.translatePathsToPixelGrid();
             // MaskMandelbrot.maskFullUpdate();
 
-            fractal.perfectlyColorValues();
-            Application.repaintMandelbrotWindow();
+            fractal.perfectly_color_values();
+            Application.repaint_mandelbrot_window();
 
             if (SAVE_IMAGES) {
                 FractalImages.saveMandelbrotImages();

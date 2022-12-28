@@ -1,5 +1,6 @@
 use palettes::Function;
 use rgb::RGB;
+use pixel_states::DomainElementState;
 use crate::palettes;
 
 /**
@@ -8,13 +9,13 @@ use crate::palettes;
 fn color_for_state(el: DomainElement) {
     match el.state() {
         /* most of the elements are going to be */
-        FinishedSuccessPast => FINISHED_SUCCESS_PAST,
-        HibernatedDeepBlack => HIBERNATED_DEEP_BLACK,
-        GoodPath => GOOD_PATH,
-        ActiveNew => ACTIVE_NEW,
-        FinishedSuccess => FINISHED_SUCCESS,
-        FinishedTooShort => FINISHED_TOO_SHORT,
-        FinishedTooLong => FINISHED_TOO_LONG,
+        DomainElementState::FinishedSuccessPast => FINISHED_SUCCESS_PAST,
+        DomainElementState::HibernatedDeepBlack => HIBERNATED_DEEP_BLACK,
+        DomainElementState::GoodPath => GOOD_PATH,
+        DomainElementState::ActiveNew => ACTIVE_NEW,
+        DomainElementState::FinishedSuccess => FINISHED_SUCCESS,
+        DomainElementState::FinishedTooShort => FINISHED_TOO_SHORT,
+        DomainElementState::FinishedTooLong => FINISHED_TOO_LONG
     }
 
     fn max(r: u8, g: u8, b: u8) -> u8 {

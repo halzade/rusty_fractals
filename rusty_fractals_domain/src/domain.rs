@@ -1,6 +1,11 @@
 use crate::domain_area::DomainArea;
-use crate::{domain_area, domain_element};
+use crate::{domain_area, domain_element, NEIGHBOURS};
 use domain_element::DomainElement;
+use crate::resolution_multiplier::ResolutionMultiplier;
+use crate::resolution_multiplier::ResolutionMultiplier::SquareAlter;
+
+use rand::thread_rng;
+use rand::seq::SliceRandom;
 
 pub struct Domain {
     pub width: u32,
@@ -13,7 +18,7 @@ impl Domain {
     /**
      * Makes small square subset of domain elements, will omit those already calculated.
      */
-    fn make_chunk(&self, x_from: usize, x_to: usize, y_from: usize, y_to: usize) -> Vec<&DomainElement> {
+    pub fn make_chunk(&self, x_from: usize, x_to: usize, y_from: usize, y_to: usize) -> Vec<&DomainElement> {
         let mut chunk: Vec<&DomainElement> = Vec::new();
         for x in x_from..x_to {
             for y in y_from..y_to {
@@ -32,35 +37,21 @@ impl Domain {
         x >= 0 && x < self.width && y >= 0 && y < self.height
     }
 
-
-    fn all_chunks(&self) {
-        let mut wrapped: u32 = 0;
-        let mut not_wrapped: u32 = 0;
-
-        let chunk_size_x = self.width / 20;
-        let chunk_size_y = self.height / 20;
-        /* All the pixel (domain) will be split to multiple chunks */
+    pub fn shuffled_calculation_coordinates(&self) -> Vec<[u32; 2]> {
+        let mut coordinates_xy: Vec<[u32; 2]> = Vec::new();
         for x in 0..19 {
             for y in 0..19 {
-                let chunk_of_elements = self.make_chunk(
-                    (x * chunk_size_x) as usize, ((x + 1) * chunk_size_x) as usize,
-                    (y * chunk_size_y) as usize, ((y + 1) * chunk_size_y) as usize,
-                );
+                coordinates_xy.push([x, y]);
             }
         }
-
-
-        /* Switch wrapping the next time */
-        // TODO not here: firstDomainExecution = false;
-        // TODO not here: odd = !odd;
+        coordinates_xy.shuffle(&mut thread_rng())
     }
 
 
     // Don't do any wrapping the first time because Mandelbrot elements are not optimized.
-    fn wrap() {
-        if (RESOLUTION_MULTIPLIER == square_alter) {
-            final double
-            d = AreaMandelbrot.plank() / 3;
+    fn wrap(&self, rm: ResolutionMultiplierm, odd: bool) {
+        if rm == SquareAlter {
+            let d = self.domain_area.plank() / 3;
             if odd {
                 domainFull.add(activeNew(elementZero.originRe + d, elementZero.originIm + d));
                 domainFull.add(activeNew(elementZero.originRe - d, elementZero.originIm - d));
@@ -69,32 +60,15 @@ impl Domain {
                 domainFull.add(activeNew(elementZero.originRe + d, elementZero.originIm - d));
             }
         } else {
-            let multiplier;
-            switch(RESOLUTION_MULTIPLIER)
-            {
-                case
-                square_3 -> multiplier = 3;
-                case
-                square_5 -> multiplier = 5;
-                case
-                square_11 -> multiplier = 11;
-                case
-                square_51 -> multiplier = 51;
-                case
-                square_101 -> multiplier = 101;
-                default -> throw
-                new
-                RuntimeException("unknown RESOLUTION_MULTIPLIER");
-            }
+            let multiplier = self.resolve_multiplier(rm);
 
-            final double
-            pn = AreaMandelbrot.plank() / multiplier;
+            let d = self.domain_area.plank() / multiplier;
             let half = (multiplier - 1) / 2;
             /* This fills the pixel with multiple points */
             for x in -half..half {
                 for y in -half..half {
                     if x != 0 || y != 0 {
-                        domainFull.add(activeNew(elementZero.originRe + (x * pn), elementZero.originIm + (y * pn)));
+                        domainFull.add(activeNew(elementZero.originRe + (x * d), elementZero.originIm + (y * d)));
                     }
                     /* else do nothing, there already is element0 for the center of this pixel */
                 }
@@ -102,10 +76,22 @@ impl Domain {
         }
     }
 
+    fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
+        match rm {
+            ResolutionMultiplier::None => 1.0,
+            ResolutionMultiplier::Square3 => 3.0,
+            ResolutionMultiplier::Square5 => 5.0,
+            ResolutionMultiplier::Square11 => 11.0,
+            ResolutionMultiplier::Square51 => 51.0,
+            ResolutionMultiplier::Square101 => 101.0,
+            ResolutionMultiplier::SquareAlter => 1.0
+        }
+    }
+
     fn mask_full_update() {
         for y in 0..HEIGHT_Y {
             for x in 0..WIDTH_X {
-                MaskMandelbrotImage.setRGB(x, y, colorForState(elementsStaticMandelbrot[x][y]).getRGB());
+                MaskMandelbrotImage.setRGB(x, y, colorForState(domain_elements[x][y]).getRGB());
             }
         }
     }
@@ -120,7 +106,7 @@ impl Domain {
 
         for y in 0..HEIGHT_Y {
             for x in 0..WIDTH_X {
-                let el = elementsStaticMandelbrot[xx][yy];
+                let el = domain_elements[xx][yy];
                 // There was already zoom in, the new area is smaller
                 if AreaMandelbrot.contains(el.originRe, el.originIm) {
                     // Element did not move out of the zoomed in area
@@ -140,7 +126,7 @@ impl Domain {
             AreaMandelbrot.pointToPixel(m, el.originRe, el.originIm);
 
             if m.good {
-                filledAlready = elementsStaticMandelbrot[m.px][m.py];
+                filledAlready = domain_elements[m.px][m.py];
                 if filledAlready != null {
                     /* conflict */
                     if filledAlready.hasWorseStateThen(el) {
@@ -149,11 +135,11 @@ impl Domain {
                          * Better to delete the other one, then to drop it to other empty px.
                          * That would cause problem with optimization, better calculate new and shiny px.
                          */
-                        elementsStaticMandelbrot[m.px][m.py] = el;
+                        domain_elements[m.px][m.py] = el;
                     }
                 } else {
                     /* Good, there is no conflict */
-                    elementsStaticMandelbrot[m.px][m.py] = el;
+                    domain_elements[m.px][m.py] = el;
                 }
             }
         }
@@ -171,14 +157,14 @@ impl Domain {
         el;
         for y in 0..RESOLUTION_HEIGHT {
             for x in 0..RESOLUTION_WIDTH {
-                el = elementsStaticMandelbrot[x][y];
+                el = domain_elements[x][y];
                 if (el == null) {
                     AreaMandelbrot.screenToDomainCarry(m, x, y);
                     if (allNeighborsFinishedTooLong(x, y)) {
                         /* Calculation for some positions should be skipped as they are too far away form any long successful divergent position */
-                        elementsStaticMandelbrot[x][y] = hibernatedDeepBlack(m.re, m.im);
+                        domain_elements[x][y] = hibernatedDeepBlack(m.re, m.im);
                     } else {
-                        elementsStaticMandelbrot[x][y] = activeNew(m.re, m.im);
+                        domain_elements[x][y] = activeNew(m.re, m.im);
                     }
                 } else {
                     /* If relevant, mark it as element from previous calculation iteration */
@@ -195,15 +181,13 @@ impl Domain {
      * This method identifies deep black convergent elements of Mandelbrot set interior.
      * Don't do any calculation for those.
      */
-    fn all_neighbors_finished_too_long(x: u32, y: u32) -> bool {
-        MaskMandelbrotElement
-        el;
-        for a in -neighbours..neighbours {
-            for b in -neighbours..neighbours {
+    fn all_neighbors_finished_too_long(&self, x: u32, y: u32) -> bool {
+        for a in -NEIGHBOURS..NEIGHBOURS {
+            for b in -NEIGHBOURS..NEIGHBOURS {
                 let xx = x + a;
                 let yy = y + b;
-                if check_domain(xx, yy) {
-                    el = elementsStaticMandelbrot[xx][yy];
+                if self.check_domain(xx, yy) {
+                    let el = self.domain_elements[xx][yy];
                     if el.isFinishedSuccessAny() || el.isFinishedTooShort() {
                         false
                     }
@@ -217,15 +201,15 @@ impl Domain {
      * All new elements are Active New
      * For wrapping, search only elements, which have some past well finished neighbors
      */
-    fn is_on_mandelbrot_horizon(x: u32, y: u32) -> bool {
+    fn is_on_mandelbrot_horizon(&self, x: u32, y: u32) -> bool {
         let mut red = false;
         let mut black = false;
-        for a in -NEIGHBOURS..neighbours {
-            for b in -neighbours..neighbours {
+        for a in -NEIGHBOURS..NEIGHBOURS {
+            for b in -NEIGHBOURS..NEIGHBOURS {
                 let xx = x + a;
                 let yy = y + b;
-                if check_domain(xx, yy) {
-                    el = elementsStaticMandelbrot[xx][yy];
+                if self.check_domain(xx, yy) {
+                    let el = &self.domain_elements[xx][yy];
                     if el.isFinishedSuccessPast() {
                         red = true;
                     }
@@ -242,11 +226,11 @@ impl Domain {
     }
 }
 
-fn init_domain_elements(&self, domain_area: DomainArea) -> Vec<Vec<DomainElement>> {
+fn init_domain_elements(domain_area: DomainArea) -> Vec<Vec<DomainElement>> {
     let mut vy: Vec<Vec<DomainElement>> = Vec::new();
     for x in 0..domain_area.widhtWIDTH_X {
         let mut vx: Vec<DomainElement> = Vec::new();
-        for y in 0..HEIGHT_Y {
+        for y in 0..domain_area.HEIGHT_Y {
             vx.push(domain_element::init(
                 domain_area.screen_to_domain_re(x),
                 domain_area.screen_to_domain_im(y),
