@@ -1,17 +1,22 @@
+use crate::constants::ZOOM;
+
 pub struct AreaConfig {
     pub width_re: f64,
     pub center_re: f64,
     pub center_im: f64,
-    pub width_x: u32,
-    pub height_y: u32,
+    pub width_x: usize,
+    pub height_y: usize,
 }
 
+const VANILLA_AREA_CONFIG: AreaConfig = AreaConfig { width_re: 1.0, center_re: 0.0, center_im: 0.0, width_x: 10, height_y: 10 };
 
 pub struct Area {
     pub width_re: f64,
     pub height_im: f64,
-    pub width_x: u32,
-    pub height_y: u32,
+    pub width_half_re: f64,
+    pub height_half_im: f64,
+    pub width_x: usize,
+    pub height_y: usize,
     pub numbers_re: Vec<f64>,
     pub numbers_im: Vec<f64>,
     pub center_re: f64,
@@ -41,29 +46,29 @@ impl Area {
     }
 
     // check first, if can convert
-    pub fn point_to_pixel(&self, re: f64, im: f64) -> (f64, f64) {
-        let px = ((self.width_x * (re - self.center_re) / self.width_re) + resolutionHalfRe).round();
-        let py = ((self.height_y * (im - self.center_im)) / self.height_im) + resolutionHalfIm).round();
+    pub fn domain_point_to_result_pixel(&self, re: f64, im: f64) -> (f64, f64) {
+        let px = ((self.width_x as f64 * (re - self.center_re) / self.width_re) + self.width_half_re).round();
+        let py = ((self.height_y as f64 * (im - self.center_im) / self.height_im) + self.height_half_im).round();
         (px, py)
     }
 
     fn zoom_in(&mut self) {
         self.width_re = self.width_re * ZOOM;
         self.height_im = self.height_im * ZOOM;
-        self.plank = self.width_re / RESOLUTION_WIDTH;
+        self.plank = self.width_re / self.width_x as f64;
         initiate();
     }
 
-    fn move_to_coordinates(&self) {
+    fn move_to_coordinates(&mut self) {
         self.center_re = screenToDomainCreateRe(Target.getScreenFromCornerX());
         self.center_im = screenToDomainCreateIm(Target.getScreenFromCornerY());
-        log.debug("Move to: " + self.centerRe + "," + self.centerIm);
+        log.debug("Move to: " + self.center_re + "," + self.center_im);
     }
 
     /**
      * move to zoom target
      */
-    fn move_to_initial_coordinates(&self, init_target_re: f64, init_target_im: f64) {
+    fn move_to_initial_coordinates(&mut self, init_target_re: f64, init_target_im: f64) {
         self.center_re = init_target_re;
         self.center_im = init_target_im;
     }
@@ -78,10 +83,12 @@ pub fn init(config: AreaConfig) -> Area {
 
     let plank = width_re / width_x as f64;
     let height_im = width_re * (width_x as f64 / height_y as f64);
-    let border_low_re = center_re - (width_re / 2.0);
-    let border_high_re = center_re + (width_re / 2.0);
-    let border_low_im = center_im - (height_im / 2.0);
-    let border_high_im = center_im + (height_im / 2.0);
+    let width_half_re = width_re / 2.0;
+    let height_half_im = height_im / 2.0;
+    let border_low_re = center_re - (width_half_re);
+    let border_high_re = center_re + (width_half_re);
+    let border_low_im = center_im - (height_half_im);
+    let border_high_im = center_im + (height_half_im);
 
     println!("border_low_re  {}", border_low_re);
     println!("border_high_re {}", border_high_re);
@@ -101,6 +108,8 @@ pub fn init(config: AreaConfig) -> Area {
     Area {
         width_re,
         height_im,
+        width_half_re,
+        height_half_im,
         width_x,
         height_y,
         numbers_re,
@@ -117,7 +126,7 @@ pub fn init(config: AreaConfig) -> Area {
 
 #[test]
 fn test_init() {
-    let area = init(1.0, 0.5, 0.5, 10, 10);
+    let area = init(VANILLA_AREA_CONFIG);
     assert_eq!(area.border_low_re, -0.5);
     assert_eq!(area.border_high_re, 0.5);
     assert_eq!(area.border_low_im, -0.5);
@@ -126,7 +135,7 @@ fn test_init() {
 
 #[test]
 fn test_contains() {
-    let area = init(1.0, 0.5, 0.5, 10, 10);
+    let area = init(VANILLA_AREA_CONFIG);
     let y = area.contains(0.4, 0.4);
     let n = area.contains(0.4, 1.5);
     assert_eq!(y, true);
@@ -135,14 +144,14 @@ fn test_contains() {
 
 #[test]
 fn test_screen_to_domain_re() {
-    let area = init(1.0, 0.5, 0.5, 10, 10);
+    let area = init(VANILLA_AREA_CONFIG);
     let r = area.screen_to_domain_re(500);
     assert_eq!(r, 0.125);
 }
 
 #[test]
 fn test_screen_to_domain_im() {
-    let area = init(1.0, 0.5, 0.5, 10, 10);
+    let area = init(VANILLA_AREA_CONFIG);
     let i = area.screen_to_domain_im(20);
     assert_eq!(i, -0.475);
 }
