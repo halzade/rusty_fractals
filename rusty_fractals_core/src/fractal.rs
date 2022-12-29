@@ -8,12 +8,6 @@ use crate::mem_collatz::MemCollatz;
 use crate::mem_euler::MemEuler;
 use crate::mem_phoenix::MemPhoenix;
 
-// Delete shorter paths then this
-pub const MINIMUM_PATH_LENGTH: i32 = 4;
-// 4 is quadrance from (0, 0)
-// If intermediate calculation result [re,im] spirals beyond this boundary. Calculation stops as divergent.
-pub const CALCULATION_BOUNDARY: i32 = 4;
-
 pub struct CalculationConfig {
     pub iteration_min: u32,
     pub iteration_max: u32,
