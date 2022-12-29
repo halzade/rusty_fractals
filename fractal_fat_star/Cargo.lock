@@ -200,6 +200,7 @@ dependencies = [
  "colored",
  "num_cpus 0.2.13",
  "rayon",
+ "rusty_fractals_common",
  "rusty_fractals_domain",
  "rusty_fractals_result",
 ]
