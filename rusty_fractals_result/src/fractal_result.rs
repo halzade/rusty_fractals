@@ -1,60 +1,50 @@
-/**
-* Calculation PATHS
-* Dynamic data for Finebrot fractal. These double[] data will be projected to in[][] pixels and then colored.
-* As zoom progress, points [re,im] are projected to new pixels [px,py] until they migrate out of the tiny finebrot Area.
-* Elements outside tiny finebrot Area are removed. Very short PATHS are also removed.
-* [re, im] representation as double[2] is better than 2x Double.
-
-* All elements on calculation path are already inside displayed area
-* Because they are filtered like that during calculation
- */
+use rusty_fractals_common::area::Area;
 
 pub struct ResultData {
+    // Dynamic Vec[re,im] calculation result data.
+    // As zoom progress, points [re,im] are projected to new pixels [px,py] until they migrate out of the the tiny result_rea.
+    // Elements outside of tiny result_rea are removed. Very short PATHS are also removed.
+    // All elements on (calculation) path are already inside displayed result_area because they are filtered like that during the calculation.
     pub paths: Vec<Vec<[f64; 2]>>,
+    pub area_result: Area,
 }
 
 impl ResultData {
-    pub fn remove_elements_outside() {
-        log.debug("Remove elements which zoomed out");
-        for path in PATHS {
-            path.removeIf(el -> AreaFinebrot.isOutside(el[0], el[1]));
+    pub fn remove_elements_outside(&mut self) {
+        log.debug("remove_elements_outside");
+        for mut path in self.paths {
+            path.retain(|&el| self.area_result.contains(el.0, el.1));
         }
-        PATHS.removeIf(path -> path.size() < TOLERATE_PATH_LENGTH_min);
+        self.paths.retain(path | path.size() < fractal::MINIMUM_PATH_LENGTH);
     }
 
     pub fn add_escape_path_long(&mut self, path: Vec<[f64; 2]>) {
-        Stats.pathsNewPointsAmount += path.size();
         self.paths.push(path);
     }
 
-    pub fn translate_paths_to_pixel_grid() {
+    pub fn translate_paths_to_pixel_grid(&self) {
         log.debug("translate_paths_to_pixel_grid()");
 
-        let pixels_total = 0;
+        let mut pixels_total = 0;
 
-        final Mem
-        m = new
-        Mem();
-        double
-        []
-        tmp;
-        for path in PATHS {
-            for i in 0..path.size() - 1 {
-                tmp = path.get(i);
-                /* translate [re,im] to [px,py] */
-                AreaFinebrot.pointToPixel(m, tmp[0], tmp[1]);
-                if m.good {
+        for path in self.paths {
+            for re_im in path {
+                // translate [re,im] to [px,py]
+                let re = re_im.0;
+                let im = re_im.1;
+                if self.area_result.contains(re, im) {
+                    (px, py) = self.area_result.point_to_pixel(re, im);
                     pixels_total += 1;
-                    PixelsFinebrot.add(m.px, m.py);
+                    PixelsFinebrot.add(px, py);
                 }
             }
         }
         log.debug("pixels_total:   " + pixels_total);
 
         /* remove elements which moved out of tiny area */
-        removeElementsOutside();
+        remove_elements_outside();
 
-        Stats.pathsTotalAmount = PATHS.size();
-        Stats.pixelsValueTotal = pixels_total;
+        // Stats.pathsTotalAmount = PATHS.size();
+        // Stats.pixelsValueTotal = pixels_total;
     }
 }

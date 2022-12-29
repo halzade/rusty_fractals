@@ -1,7 +1,7 @@
 // Take snapshot of data for comparison at well colored frame.
 const TAKE_MEASURES_AT_FRAME: u32 = 20;
 
-pub struct Stats {
+struct Stats {
     new_elements_too_long: i32,
     new_elements_too_short: i32,
     new_elements_long: i32,

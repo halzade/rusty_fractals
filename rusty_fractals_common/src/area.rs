@@ -1,10 +1,21 @@
-pub struct DomainArea {
+pub struct AreaConfig {
+    pub width_re: f64,
+    pub center_re: f64,
+    pub center_im: f64,
+    pub width_x: u32,
+    pub height_y: u32,
+}
+
+
+pub struct Area {
     pub width_re: f64,
     pub height_im: f64,
     pub width_x: u32,
     pub height_y: u32,
     pub numbers_re: Vec<f64>,
     pub numbers_im: Vec<f64>,
+    pub center_re: f64,
+    pub center_im: f64,
     border_low_re: f64,
     border_low_im: f64,
     border_high_re: f64,
@@ -12,8 +23,9 @@ pub struct DomainArea {
     plank: f64,
 }
 
-impl DomainArea {
-    fn contains(&self, re: f64, im: f64) -> bool {
+
+impl Area {
+    pub fn contains(&self, re: f64, im: f64) -> bool {
         re > self.border_low_re
             && re < self.border_high_re
             && im > self.border_low_im
@@ -28,17 +40,11 @@ impl DomainArea {
         self.numbers_im[y]
     }
 
-    fn point_to_pixel(&self, m: rusty_fractals_core::mem::Mem, re: f64, im: f64) {
-        m.good = true;
-        m.px = Math.round((self.width_x * (re - self.centerRe) / self.width_re) + resolutionHalfRe);
-        if m.px >= self.width_x || m.px < 0 {
-            m.good = false;
-            return;
-        }
-        m.py = Math.round(((RESOLUTION_HEIGHT * (im - this.centerIm)) / this.sizeIm) + resolutionHalfIm);
-        if m.py >= RESOLUTION_HEIGHT || m.py < 0 {
-            m.good = false;
-        }
+    // check first, if can convert
+    pub fn point_to_pixel(&self, re: f64, im: f64) -> (f64, f64) {
+        let px = ((self.width_x * (re - self.center_re) / self.width_re) + resolutionHalfRe).round();
+        let py = ((self.height_y * (im - self.center_im)) / self.height_im) + resolutionHalfIm).round();
+        (px, py)
     }
 
     fn zoom_in(&mut self) {
@@ -49,8 +55,8 @@ impl DomainArea {
     }
 
     fn move_to_coordinates(&self) {
-        self.centerRe = screenToDomainCreateRe(Target.getScreenFromCornerX());
-        self.centerIm = screenToDomainCreateIm(Target.getScreenFromCornerY());
+        self.center_re = screenToDomainCreateRe(Target.getScreenFromCornerX());
+        self.center_im = screenToDomainCreateIm(Target.getScreenFromCornerY());
         log.debug("Move to: " + self.centerRe + "," + self.centerIm);
     }
 
@@ -58,12 +64,12 @@ impl DomainArea {
      * move to zoom target
      */
     fn move_to_initial_coordinates(&self, init_target_re: f64, init_target_im: f64) {
-        self.centerRe = init_target_re;
-        self.centerIm = init_target_im;
+        self.center_re = init_target_re;
+        self.center_im = init_target_im;
     }
 }
 
-pub fn init(config : AreaDomainConfig) -> DomainArea {
+pub fn init(config: AreaConfig) -> Area {
     let width_re = config.width_re;
     let center_re = config.center_re;
     let center_im = config.center_im;
@@ -92,13 +98,15 @@ pub fn init(config : AreaDomainConfig) -> DomainArea {
         numbers_im.push(border_low_im + (plank * y as f64));
     }
 
-    DomainArea {
+    Area {
         width_re,
         height_im,
         width_x,
         height_y,
         numbers_re,
         numbers_im,
+        center_re,
+        center_im,
         border_low_re,
         border_low_im,
         border_high_re,

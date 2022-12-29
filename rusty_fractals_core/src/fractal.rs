@@ -9,24 +9,14 @@ use crate::mem_euler::MemEuler;
 use crate::mem_phoenix::MemPhoenix;
 
 // Delete shorter paths then this
-pub const TOLERATE_PATH_LENGTH_MIN: i32 = 4;
+pub const MINIMUM_PATH_LENGTH: i32 = 4;
 // 4 is quadrance from (0, 0)
 // If intermediate calculation result [re,im] spirals beyond this boundary. Calculation stops as divergent.
 pub const CALCULATION_BOUNDARY: i32 = 4;
 
 pub struct CalculationConfig {
-    // calculation config
     pub iteration_min: u32,
     pub iteration_max: u32,
-}
-
-pub struct AreaDomainConfig {
-    pub width_re: f64,
-    pub center_re: f64,
-    pub center_im: f64,
-    pub width_x: u32,
-    pub height_y: u32,
-    pub resolution_multiplier: resolution_multiplier::ResolutionMultiplier,
 }
 
 pub struct ResultConfig {
