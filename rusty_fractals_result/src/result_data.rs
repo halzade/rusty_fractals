@@ -1,4 +1,5 @@
 use rusty_fractals_common::area::Area;
+use crate::result_pixels::ResultPixels;
 
 pub struct ResultData {
     // Dynamic Vec[re,im] calculation result data.
@@ -22,7 +23,7 @@ impl ResultData {
         self.paths.push(path);
     }
 
-    pub fn translate_paths_to_pixel_grid(&self) {
+    pub fn translate_paths_to_pixel_grid(&mut self, result_pixels : &ResultPixels) {
         log.debug("translate_paths_to_pixel_grid()");
 
         let mut pixels_total = 0;
@@ -33,16 +34,16 @@ impl ResultData {
                 let re = re_im.0;
                 let im = re_im.1;
                 if self.area_result.contains(re, im) {
-                    (px, py) = self.area_result.point_to_pixel(re, im);
+                    (px, py) = self.area_result.domain_point_to_result_pixel(re, im);
+                    result_pixels.add(px, py);
                     pixels_total += 1;
-                    PixelsFinebrot.add(px, py);
                 }
             }
         }
         log.debug("pixels_total:   " + pixels_total);
 
         /* remove elements which moved out of tiny area */
-        remove_elements_outside();
+        self.remove_elements_outside();
 
         // Stats.pathsTotalAmount = PATHS.size();
         // Stats.pixelsValueTotal = pixels_total;

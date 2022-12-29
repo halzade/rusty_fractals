@@ -1,5 +1,5 @@
-use crate::domain_area::DomainArea;
-use crate::{domain_area, domain_element, NEIGHBOURS, resolution_multiplier};
+use crate::area::Area;
+use crate::{domain_element, NEIGHBOURS, resolution_multiplier};
 use domain_element::DomainElement;
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::SquareAlter;
@@ -7,6 +7,7 @@ use crate::resolution_multiplier::ResolutionMultiplier::SquareAlter;
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use rusty_fractals_common::area;
+use rusty_fractals_common::area::Area;
 
 pub struct Domain {
     pub width: u32,
@@ -228,7 +229,7 @@ impl Domain {
     }
 }
 
-fn init_domain_elements(domain_area: DomainArea) -> Vec<Vec<DomainElement>> {
+fn init_domain_elements(area: Area) -> Vec<Vec<DomainElement>> {
     let mut vy: Vec<Vec<DomainElement>> = Vec::new();
     for x in 0..domain_area.widhtWIDTH_X {
         let mut vx: Vec<DomainElement> = Vec::new();

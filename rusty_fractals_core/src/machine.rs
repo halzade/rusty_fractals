@@ -1,8 +1,10 @@
 use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
 use rusty_fractals_result::fractal_result::ResultData;
+use rusty_fractals_result::result_data::ResultData;
+use rusty_fractals_result::result_pixels::ResultPixels;
 use rusty_fractals_domain::domain;
+use rusty_fractals_common::area::Area;
 use rusty_fractals_domain::domain::Domain;
-use rusty_fractals_domain::domain_area::DomainArea;
 use rusty_fractals_domain::domain_element::DomainElement;
 use crate::{fractal, fractal_path};
 use crate::fractal::{CALCULATION_BOUNDARY, CalculationConfig, Fractal, Math, ResultConfig};
@@ -20,17 +22,22 @@ impl Machine {
     pub fn calculate(&mut self, fractal_math: &impl Math<T>) {
         let coordinates_xy = self.domain.shuffled_calculation_coordinates();
 
-        let mut result_data = ResultData {
-            paths: Vec::new(),
-            area_result: area,
-        };
-
         // Calculate independently and in parallel each domain chunks
         coordinates_xy.into_par_iter().for_each(
             |xy| self.chunk_calculation(xy, fractal_math, &mut result)
         );
 
-        result_data.translate_paths_to_pixel_grid();
+        let mut result_data = ResultData {
+            paths: Vec::new(),
+            area_result: area,
+        };
+        let mut result_pixels = ResultPixels {
+            width: self.area.width_x,
+            height: self.area.height_y,
+            pixels: vec![]
+        };
+
+        result_data.translate_paths_to_pixel_grid(&result_pixels);
         MaskMandelbrot.mask_full_update();
 
         fractal.perfectly_color_values();
