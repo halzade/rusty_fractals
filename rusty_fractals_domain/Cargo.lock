@@ -18,8 +18,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "rusty_fractals_common"
+version = "0.1.0"
+
+[[package]]
 name = "rusty_fractals_domain"
 version = "0.1.0"
 dependencies = [
  "rgb",
+ "rusty_fractals_common",
 ]

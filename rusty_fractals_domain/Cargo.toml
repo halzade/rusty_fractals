@@ -6,6 +6,7 @@ authors = ["lukas"]
 keywords = ["fractal"]
 
 [dependencies]
+rusty_fractals_common = { path = "../rusty_fractals_common" }
 rgb = "0.8"
 
 [badges]
