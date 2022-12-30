@@ -4,6 +4,7 @@ use rusty_fractals_result::result_data::ResultData;
 use rusty_fractals_result::result_pixels::ResultPixels;
 use rusty_fractals_domain::domain;
 use rusty_fractals_common::area::Area;
+use rusty_fractals_common::constants::CALCULATION_BOUNDARY;
 use rusty_fractals_domain::domain::Domain;
 use rusty_fractals_domain::domain_element::DomainElement;
 use crate::{fractal, fractal_path};
@@ -22,15 +23,16 @@ impl Machine {
     pub fn calculate(&mut self, fractal_math: &impl Math<T>) {
         let coordinates_xy = self.domain.shuffled_calculation_coordinates();
 
-        // Calculate independently and in parallel each domain chunks
-        coordinates_xy.into_par_iter().for_each(
-            |xy| self.chunk_calculation(xy, fractal_math, &mut result)
-        );
-
         let mut result_data = ResultData {
             paths: Vec::new(),
             area_result: area,
         };
+
+        // Calculate independently and in parallel each domain chunks
+        coordinates_xy.into_par_iter().for_each(
+            |xy| self.chunk_calculation(xy, fractal_math, &mut result_data)
+        );
+
         let mut result_pixels = ResultPixels {
             width: self.area.width_x,
             height: self.area.height_y,
@@ -38,7 +40,8 @@ impl Machine {
         };
 
         result_data.translate_paths_to_pixel_grid(&result_pixels);
-        MaskMandelbrot.mask_full_update();
+
+        self.domain.mask_full_update();
 
         fractal.perfectly_color_values();
         Application.repaint_mandelbrot_window();

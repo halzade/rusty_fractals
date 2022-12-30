@@ -52,7 +52,7 @@ impl Domain {
 
 
     // Don't do any wrapping the first time because Mandelbrot elements are not optimized.
-    fn wrap(&self, rm: ResolutionMultiplierm, odd: bool) {
+    fn wrap(&self, rm: ResolutionMultiplier, odd: bool) {
         if rm == SquareAlter {
             let d = self.domain_area.plank() / 3;
             if odd {
@@ -91,9 +91,9 @@ impl Domain {
         }
     }
 
-    fn mask_full_update() {
-        for y in 0..HEIGHT_Y {
-            for x in 0..WIDTH_X {
+    pub fn mask_full_update(&self) {
+        for y in 0..self.height - 1 {
+            for x in 0..self.width - 1 {
                 MaskMandelbrotImage.setRGB(x, y, colorForState(domain_elements[x][y]).getRGB());
             }
         }

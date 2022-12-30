@@ -12,11 +12,11 @@ pub struct ResultData {
 
 impl ResultData {
     pub fn remove_elements_outside(&mut self) {
-        log.debug("remove_elements_outside");
+        log.debug("remove_elements_outside()");
         for mut path in self.paths {
             path.retain(|&el| self.area_result.contains(el.0, el.1));
         }
-        self.paths.retain(path | path.size() < fractal::MINIMUM_PATH_LENGTH);
+        self.paths.retain(path | path.size() > fractal::MINIMUM_PATH_LENGTH);
     }
 
     pub fn add_escape_path_long(&mut self, path: Vec<[f64; 2]>) {

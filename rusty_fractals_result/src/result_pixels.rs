@@ -5,21 +5,21 @@ pub struct ResultPixels {
 }
 
 impl ResultPixels {
-    pub fn add(x: u32, y: u32) {
-        pixels[x][y] += 1;
+    pub fn add(&mut self, x: u32, y: u32) {
+        self.pixels[x][y] += 1;
     }
 
-    pub fn clear() {
+    pub fn clear(&mut self) {
         log.debug("clear");
         for y in 0..RESOLUTION_HEIGHT {
             for x in 0..RESOLUTION_WIDTH {
-                pixels[x][y] = 0;
+                self.pixels[x][y] = 0;
             }
         }
     }
 
-    pub fn value_at(x: u32, y: u32) {
-        return pixels[x][y];
+    pub fn value_at(&mut self, x: u32, y: u32) {
+        self.pixels[x][y]
     }
 
     pub fn best_four_chunks_value(&self) -> u32 {
