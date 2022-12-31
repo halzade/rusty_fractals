@@ -4,29 +4,35 @@
 // - Zero elements and noise color by the lowest color
 // - Color all significant pixels ordered by value
 
+use std::cmp::Ordering::Equal;
+use rgb::RGB;
 use constants::COLORING_THRESHOLD;
 use rusty_fractals_common::constants;
+use crate::palette::Palette;
 use crate::result_pixels::ResultPixels;
 
-fn comparator_mandelbrot(a, b) {
-    let c = compare(a.pixelValue, b.pixelValue);
-    if c == 0 {
-        compare(a.qiad, b.qiad);
-    }
-    c
+// for Nebula like fractals
+struct Pix {
+    x: usize,
+    y: usize,
+    value: u32,
 }
 
-fn comparator_mandelbrot_zero() {
-    // Comparator.comparingDouble(MandelbrotPixel::quad);
+// for Mandelbrot like fractals
+struct Mix {
+    x: usize,
+    y: usize,
+    value: u32,
+    quad: f64,
+    quid: f64,
 }
 
-fn perfectly_color_values(mut result_pixels: &ResultPixels) {
-
+pub fn perfectly_color_values(mut result_pixels: &ResultPixels, palette: Palette) -> RgbImage<RGB<u8>> {
     let width = result_pixels.width;
     let height = result_pixels.height;
 
     // Result pixels, order by value
-    let mut pixels: Vec<[u32; 3]> = Vec::new();
+    let mut pixels: Vec<Pix> = Vec::new();
 
     let mut zero_value_elements = 0;
 
@@ -37,16 +43,16 @@ fn perfectly_color_values(mut result_pixels: &ResultPixels) {
             if v <= COLORING_THRESHOLD {
                 zero_value_elements += 1;
             }
-            pixels.add([v, x, y]);
+            pixels.push(Pix { x, y, value: v });
         }
     }
 
     //  order pixels from the smallest to the highest value
-    pixels.sort_by(|a, b| a.1.cmp(&b.1));
+    pixels.sort_by(|first, second| first.1.cmp(&second.1));
 
     let all_pixels_total = width * height;
     let all_pixels_non_zero = all_pixels_total - zero_value_elements;
-    let palette_color_count = Palette.colorResolution();
+    let palette_color_count = palette.spectrum.len();
     let single_color_use = all_pixels_non_zero as f64 / palette_color_count as f64;
     let left = all_pixels_non_zero - (palette_color_count * single_color_use);
 
@@ -60,60 +66,61 @@ fn perfectly_color_values(mut result_pixels: &ResultPixels) {
     log.debug("left:                       " + left);
     log.debug("------------------------------------");
 
+    let result_image: RgbImage = RgbImage::new(width, height);
+
     // paint mismatched pixel amount with the least value colour
     for pi in 0..(left + zeroValueElements) {
-        sp = pixels.get(pi);
-        FinebrotImage.setRGB(sp.px(), sp.py(), Palette.getSpectrumValue(0).getRGB());
+        let sp = pixels.get(pi);
+        result_image.put_pixel(sp.x, sp.y, palette.spectrum_value(0));
     }
 
-    /* color all remaining pixels, these are order by value */
-    for paletteColourIndex in 0..paletteColorCount {
-        for ci in 0..singleColorUse {
-            /* color all these pixels with same color */
-            sp = pixels.get(pi + +);
-            if sp.pixelValue() <= coloringThreshold {
-                /* color zero-value elements and low-value-noise with the darkest color */
-                FinebrotImage.setRGB(sp.px(), sp.py(), Palette.getSpectrumValue(0).getRGB());
+    // color all remaining pixels, these are order by value
+    for palette_colour_index in 0..palette_color_count {
+        for _ in 0..single_color_use {
+            // color all these pixels with same color
+            let sp = pixels.get(pi += 1);
+            if sp.value() <= COLORING_THRESHOLD {
+                // color zero-value elements and low-value-noise with the darkest color
+                result_image.put_pixel(sp.x, sp.y, palette.spectrum_value(0));
             } else {
-                /* perfect-color all significant pixels */
-                FinebrotImage.setRGB(sp.px(), sp.py(), Palette.getSpectrumValue(paletteColourIndex).getRGB());
+                // perfect-color all significant pixels
+                result_image.put_pixel(sp.x, sp.y, palette.spectrum_value(palette_colour_index));
             }
         }
     }
     log.debug("painted:                   " + pi);
 
-    /*
-     * Behold, the coloring is perfect
-     */
+    // Behold, the coloring is perfect
 
     log.debug("clear pixels");
     pixels.clear();
+
+    result_image
 }
 
 
+fn perfectly_color_values_euler() -> ImageBuffer<RGB<u8>> {
+    let width = result_pixels.width;
+    let height = result_pixels.height;
 
+    // Result pixels, order by value
+    let mut pixels_red: Vec<Pix> = Vec::new();
+    let mut pixels_green: Vec<Pix> = Vec::new();
+    let mut pixels_blue: Vec<Pix> = Vec::new();
 
-/**
- * Finebrot pixels, order by value
- */
-static final List<FinebrotPixel> pixelsRed = new ArrayList< > ();
-static final List<FinebrotPixel> pixelsGreen = new ArrayList< > ();
-static final List<FinebrotPixel> pixelsBlue = new ArrayList< > ();
+    let mut zero_value_elements_red = 0;
+    let mut zero_value_elements_green = 0;
+    let mut zero_value_elements_blue = 0;
 
-fn perfectly_color_values_euler() {
-    let zero_value_elements_red = 0;
-    let zero_value_elements_green = 0;
-    let zero_value_elements_blue = 0;
-
-    /* identify zero and low-value elements as zero or noise */
+    // identify zero and low-value elements as zero or noise
     let threshold = 1;
 
-    /* read screen values */
-    for y in 0..RESOLUTION_HEIGHT {
-        for x in 0..RESOLUTION_WIDTH {
-            let r = PixelsEulerFinebrot.valueAt(x, y, red);
-            let g = PixelsEulerFinebrot.valueAt(x, y, green);
-            let b = PixelsEulerFinebrot.valueAt(x, y, blue);
+    // read screen values
+    for y in 0..height {
+        for x in 0..width {
+            let r = result_pixels.value_at(x, y, red);
+            let g = result_pixels.value_at(x, y, green);
+            let b = result_pixels.value_at(x, y, blue);
             if r <= threshold {
                 zero_value_elements_red += 1;
             }
@@ -123,27 +130,25 @@ fn perfectly_color_values_euler() {
             if b <= threshold {
                 zero_value_elements_blue += 1;
             }
-            pixelsRed.add(new FinebrotPixel(r, x, y));
-            pixelsGreen.add(new FinebrotPixel(g, x, y));
-            pixelsBlue.add(new FinebrotPixel(b, x, y));
+            pixels_red.push(Pix { x, y, value: r });
+            pixels_green.push(Pix { x, y, value: g });
+            pixels_blue.push(Pix { x, y, value: b });
         }
     }
 
-    /*
-     *  order pixels from the smallest to the highest value
-     */
-    pixelsRed.sort(comparator);
-    pixelsGreen.sort(comparator);
-    pixelsBlue.sort(comparator);
+    // order pixels from the smallest to the highest value
+    pixels_red.sort_by(|first, second| first.1.cmp(&second.1));
+    pixels_green.sort_by(|first, second| first.1.cmp(&second.1));
+    pixels_blue.sort_by(|first, second| first.1.cmp(&second.1));
 
-    let all_pixels_total = RESOLUTION_WIDTH * RESOLUTION_HEIGHT;
+    let all_pixels_total = width * height;
     let all_pixels_non_zero_red = all_pixels_total - zero_value_elements_red;
     let all_pixels_non_zero_green = all_pixels_total - zero_value_elements_green;
     let all_pixels_non_zero_blue = all_pixels_total - zero_value_elements_blue;
-    let palette_color_count = PaletteEuler3.colorResolution(); // same
-    let single_color_use_red = ((int)((double) all_pixels_non_zero_red / (double) palette_color_count));
-    let single_color_use_green = ((int)((double) all_pixels_non_zero_green / (double) palette_color_count));
-    let single_color_use_blue = ((int)((double) all_pixels_non_zero_blue / (double) palette_color_count));
+    let palette_color_count = PaletteEuler3.colorResolution();
+    let single_color_use_red = all_pixels_non_zero_red / palette_color_count;
+    let single_color_use_green = all_pixels_non_zero_green / palette_color_count;
+    let single_color_use_blue = all_pixels_non_zero_blue / palette_color_count;
     let left_red = all_pixels_non_zero_red - (palette_color_count * single_color_use_red);
     let left_green = all_pixels_non_zero_green - (palette_color_count * single_color_use_green);
     let left_blue = all_pixels_non_zero_blue - (palette_color_count * single_color_use_blue);
@@ -168,123 +173,106 @@ fn perfectly_color_values_euler() {
     log.debug("left:                       " + left_blue);
     log.debug("------------------------------------");
 
-    /* pixel index */
-    let pi_red;
-    FinebrotPixel
-    sp;
-    /* paint mismatched pixel amount with the least value colour */
+    // paint mismatched pixel amount with the least value colour
     for pi_red in 0..(leftRed + zeroValueElementsRed) {
-        sp = pixelsRed.get(pi_red);
-        PixelsEulerFinebrot.set(sp.px(), sp.py(), red, 0);
+        let sp = pixelsRed.get(pi_red);
+        PixelsEulerFinebrot.set(sp.x, sp.y, red, 0);
     }
-    /* color all remaining pixels, these are order by value */
-    for paletteColourIndex in 0..paletteColorCount {
-        for ci in 0..singleColorUseRed {
-            /* color all these pixels with same color */
-            sp = pixelsRed.get(pi_red + +);
+    // color all remaining pixels, these are order by value
+    for palette_colour_index in 0..palette_color_count {
+        for _ in 0..single_color_use_red {
+            // color all these pixels with same color
+            let sp = pixels_red.get(pi_red += 1);
             if sp.pixelValue() <= threshold {
-                PixelsEulerFinebrot.set(sp.px(), sp.py(), red, 0);
+                PixelsEulerFinebrot.set(sp.x, sp.y, red, 0);
             } else {
-                /* perfect-color all significant pixels */
-                PixelsEulerFinebrot.set(sp.px(), sp.py(), red, PaletteEuler3.getSpectrumValueRed(paletteColourIndex).getRed());
+                // perfect-color all significant pixels
+                PixelsEulerFinebrot.set(sp.x, sp.y, red, PaletteEuler3.getSpectrumValueRed(palette_colour_index).getRed());
             }
         }
     }
 
-    let pi_green;
     for pi_green in 0..(leftGreen + zeroValueElementsGreen) {
         sp = pixelsGreen.get(pi_green);
-        PixelsEulerFinebrot.set(sp.px(), sp.py(), green, 0);
+        PixelsEulerFinebrot.set(sp.x, sp.y, green, 0);
     }
-    /* color all remaining pixels, these are order by value */
-    for paletteColourIndex in 0..paletteColorCount {
-        for ci in 0..singleColorUseGreen {
-            /* color all these pixels with same color */
-            sp = pixelsGreen.get(pi_green + +);
+    // color all remaining pixels, these are order by value
+    for palette_colour_index in 0..palette_color_count {
+        for _ in 0..single_color_use_green {
+            // color all these pixels with same color
+            sp = pixelsGreen.get(pi_green += 1);
             if sp.pixelValue() <= threshold {
-                /* color zero-value elements and low-value-noise with the darkest color */
-                PixelsEulerFinebrot.set(sp.px(), sp.py(), green, 0);
+                // color zero-value elements and low-value-noise with the darkest color
+                PixelsEulerFinebrot.set(sp.x, sp.y, green, 0);
             } else {
-                /* perfect-color all significant pixels */
-                PixelsEulerFinebrot.set(sp.px(), sp.py(), green, PaletteEuler3.getSpectrumValueGreen(paletteColourIndex).getGreen());
+                // perfect-color all significant pixels
+                PixelsEulerFinebrot.set(sp.x, sp.y, green, PaletteEuler3.getSpectrumValueGreen(palette_colour_index).getGreen());
             }
         }
     }
 
-    let pi_blue;
-    for piBlue in 0..(leftBlue + zeroValueElementsBlue) {
+    for pi_blue in 0..(leftBlue + zeroValueElementsBlue) {
         sp = pixelsBlue.get(pi_blue);
-        PixelsEulerFinebrot.set(sp.px(), sp.py(), blue, 0);
+        PixelsEulerFinebrot.set(sp.x, sp.y, blue, 0);
     }
-    /* color all remaining pixels, these are order by value */
-    for paletteColourIndex in 0..paletteColorCount {
-        for ci in 0..singleColorUseBlue {
-            /* color all these pixels with same color */
-            sp = pixelsBlue.get(pi_blue + +);
+    // color all remaining pixels, these are order by value
+    for palette_colour_index in 0..palette_color_count {
+        for _ in 0..single_color_use_blue {
+            // color all these pixels with same color
+            sp = pixelsBlue.get(pi_blue += 1);
             if sp.pixelValue() <= threshold {
-                /* color zero-value elements and low-value-noise with the darkest color */
-                PixelsEulerFinebrot.set(sp.px(), sp.py(), blue, 0);
+                // color zero-value elements and low-value-noise with the darkest color
+                PixelsEulerFinebrot.set(sp.x, sp.y, blue, 0);
             } else {
-                /* perfect-color all significant pixels */
-                PixelsEulerFinebrot.set(sp.px(), sp.py(), blue, PaletteEuler3.getSpectrumValueBlue(paletteColourIndex).getBlue());
+                // perfect-color all significant pixels
+                PixelsEulerFinebrot.set(sp.x, sp.y, blue, PaletteEuler3.getSpectrumValueBlue(palette_colour_index).getBlue());
             }
         }
     }
 
-    log.debug("painted:                   " + pi_red);
-    log.debug("painted:                   " + pi_green);
-    log.debug("painted:                   " + pi_blue);
-
-    /*
-     * read 3 screen colors
-     * write image colors
-     */
-    for y in 0..RESOLUTION_HEIGHT {
-        for x in 0..RESOLUTION_WIDTH {
-            let r = PixelsEulerFinebrot.valueAt(x, y, red);
-            let g = PixelsEulerFinebrot.valueAt(x, y, green);
-            let b = PixelsEulerFinebrot.valueAt(x, y, blue);
+    // read 3 euler spectra colors and write image colors
+    for y in 0..height {
+        for x in 0..width {
+            let r = result_pixels.value_at(x, y, red);
+            let g = result_pixels.value_at(x, y, green);
+            let b = result_pixels.value_at(x, y, blue);
             FinebrotImage.setRGB(x, y, new Color(r, g, b).getRGB());
         }
     }
 
-    /*
-     * Behold, the coloring is perfect
-     */
+    // Behold, the coloring is perfect
 
     log.debug("clear pixels");
     pixelsRed.clear();
     pixelsGreen.clear();
     pixelsBlue.clear();
     PixelsEulerFinebrot.clear();
+
+    result_image
 }
-
-
-/**
- * Mandelbrot pixels, order by value
- */
-static final List<MandelbrotPixel> pixels = new ArrayList< > ();
-static final List<MandelbrotPixel> pixelsZero = new ArrayList< > ();
 
 const NEIGHBOR_COORDINATES: [[i8; 2]; 8] = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]];
 
-private final MandelbrotPixel[][] field = new MandelbrotPixel[RESOLUTION_WIDTH][RESOLUTION_HEIGHT];
-
-
-fn perfectly_color_values_mandelbrot() {
+fn perfectly_color_values_mandelbrot() -> ImageBuffer<RGB<u8>> {
     log.debug("perfectly_color_values()");
 
-    let zero_value_elements = 0;
+    let width = result_pixels.width;
+    let height = result_pixels.height;
 
-    /* read screen values */
+    // Result pixels, order by value
+    let mut pixels: Vec<Mix> = Vec::new();
+    let mut pixels_zero: Vec<Mix> = Vec::new();
 
-    for y in 0..RESOLUTION_HEIGHT {
-        for x in 0..RESOLUTION_WIDTH {
-            final MandelbrotElement
-            el = PixelsMandelbrot.elAt(x, y);
+    let mut zero_value_elements = 0;
+
+    // read screen values
+
+    for y in 0..height {
+        for x in 0..width {
+            let el = PixelsMandelbrot.elAt(x, y);
             if el.value == 0 {
                 zero_value_elements += 1;
-                pixelsZero.add(MandelbrotPixelFactory.make(el, x, y));
+                pixels_zero.add(MandelbrotPixelFactory.make(el, x, y));
             } else {
                 MandelbrotPixel
                 mp = MandelbrotPixelFactory.make(el, x, y);
@@ -294,16 +282,20 @@ fn perfectly_color_values_mandelbrot() {
         }
     }
 
-    /*
-     *  order pixels from the smallest to the highest value
-     */
-    pixels.sort(comparatorMandelbrot);
-    pixelsZero.sort(comparator_mandelbrot_zero);
-
-    let all_pixels_total = RESOLUTION_WIDTH * RESOLUTION_HEIGHT;
+    //  order pixels from the smallest to the highest value
+    pixels.sort_by(|first, second| {
+        let c = first.value.cmp(&second.value);
+        if c == Equal {
+            first.quid.cmp(&second.quid)
+        }
+        c
+    });
+    pixels_zero.sort_by(|first, second| first.quad.cmp(&second.quad));
+    
+    let all_pixels_total = width * height;
     let all_pixels_non_zero = all_pixels_total - zero_value_elements;
     let palette_color_count = Palette.colorResolution();
-    let single_color_use = ((int)((double) all_pixels_non_zero / (double) palette_color_count));
+    let single_color_use = all_pixels_non_zero / palette_color_count;
 
     let left = all_pixels_non_zero - (palette_color_count * single_color_use);
 
@@ -317,21 +309,16 @@ fn perfectly_color_values_mandelbrot() {
     log.debug("left:                       " + left);
     log.debug("------------------------------------");
 
-
-    MandelbrotPixel
-    mp;
-    let pi = 0;
-
-    /* paint mismatched pixel amount with the least but not the lowest value colour */
+    // paint mismatched pixel amount with the least but not the lowest value colour
     while pi < left {
-        mp = pixels.get(pi + +);
+        let mp = pixels.get(pi + +);
         MandelbrotImage.setRGB(mp.px, mp.py, Palette.getSpectrumValue(0).getRGB());
     }
 
-    let palette_colour_index = 0;
+    let mut palette_colour_index = 0;
     while palette_colour_index < palette_color_count {
-        for ci in 0..singleColorUse {
-            mp = pixels.get(pi + +);
+        for _ in 0..singleColorUse {
+            let mp = pixels.get(pi + +);
             mp.colorValue(palette_colour_index);
             MandelbrotImage.setRGB(mp.px, mp.py, Palette.getSpectrumValue(palette_colour_index).getRGB());
         }
@@ -340,22 +327,18 @@ fn perfectly_color_values_mandelbrot() {
 
     Assert.assertEquals(pixels.size(), pi);
 
-    /*
-     * Fix black dots caused by quad inverse imperfection
-     * Keep incorrect qud results ~
-     */
+    // Fix black dots caused by quad inverse imperfection
+    // Keep incorrect quad results
 
     for mpp in pixels {
         let average_colour_index = ac_if_black_dot(mpp);
         if average_colour_index != -1 {
-            mpp.colorValue(average_colour_index);
-            MandelbrotImage.setRGB(mpp.px, mpp.py, Palette.getSpectrumValue(average_colour_index).getRGB());
+            let mpp.colorValue(average_colour_index);
+            MandelbrotImage.setRGB(mpp.x, mpp.y, Palette.getSpectrumValue(average_colour_index).getRGB());
         }
     }
 
-    /*
-     * PAINT INSIDES OF MANDELBROT SET
-     */
+    // Paint insides of Mandelbrot set
 
     let zero_palette_color_count = PaletteZero.colorResolution();
     let zero_single_color_use = ((int)((double) zero_value_elements / (double) zero_palette_color_count));
@@ -367,31 +350,29 @@ fn perfectly_color_values_mandelbrot() {
 
     let piz;
     for piz in 0..zeroLeft {
-        mp = pixelsZero.get(piz);
+        mp = pixels_zero.get(piz);
         MandelbrotImage.setRGB(mp.px, mp.py, PaletteZero.getSpectrumValue(0).getRGB());
     }
-    for zeroPaletteColourIndex in 0..zeroPaletteColorCount {
-        for ci in 0..zeroSingleColorUse {
-            /* color all these pixels with same color */
-            mp = pixelsZero.get(piz + +);
-            MandelbrotImage.setRGB(mp.px, mp.py, PaletteZero.getSpectrumValue(zeroPaletteColourIndex).getRGB());
+    for zeropalette_colour_index in 0..zeropalette_color_count {
+        for _ in 0..zeroSingleColorUse {
+            // color all these pixels with same color
+            mp = pixels_zero.get(piz + +);
+            MandelbrotImage.setRGB(mp.px, mp.py, PaletteZero.getSpectrumValue(zeropalette_colour_index).getRGB());
         }
     }
 
     log.debug("painted:                   " + pi);
 
-    /*
-     * Behold, the coloring is perfect
-     */
+    // Behold, the coloring is perfect
 
     log.debug("clear pixels");
     pixels.clear();
-    pixelsZero.clear();
+    pixels_zero.clear();
+
+    result_image
 }
 
-/**
- * Return average color of neighbour elements
- */
+// Return average color of neighbour elements
 fn ac_if_black_dot(MandelbrotPixel mp) -> i32 {
     let pv = mp.pixelValue;
     let sum = 0;
@@ -402,13 +383,13 @@ fn ac_if_black_dot(MandelbrotPixel mp) -> i32 {
         let n = check_domain(a, b);
         if n != null {
             if Math.abs(pv - n.pixelValue) > 2 {
-                /* verify only one value difference gradient */
+                // verify only one value difference gradient //
                 return -1;
             }
             sum += n.colorValue;
             neighbours += 1;
         } else {
-            /* don't fix elements of edges */
+            // don't fix elements of edges 
             -1
         }
     }
@@ -417,7 +398,7 @@ fn ac_if_black_dot(MandelbrotPixel mp) -> i32 {
     let average_value = (int)(sum / neighbours);
 
     if cv < average_value - 5 {
-        /* darker */
+        // darker 
         average_value
     }
     -1

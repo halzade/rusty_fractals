@@ -58,6 +58,7 @@ fn main() {
         area,
         domain,
         calculation_config,
+        app_config,
         result_config,
     };
 

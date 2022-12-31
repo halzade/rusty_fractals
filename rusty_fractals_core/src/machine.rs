@@ -10,7 +10,7 @@ use rusty_fractals_common::constants::CALCULATION_BOUNDARY;
 use rusty_fractals_domain::domain::Domain;
 use rusty_fractals_domain::domain_element::DomainElement;
 use crate::{fractal, fractal_path};
-use crate::fractal::{CALCULATION_BOUNDARY, CalculationConfig, Fractal, Math, ResultConfig};
+use crate::fractal::{AppConfig, CALCULATION_BOUNDARY, CalculationConfig, Fractal, Math, ResultConfig};
 use crate::mem::Mem;
 
 // to calculate single image
@@ -18,6 +18,7 @@ pub struct Machine {
     pub area: Area,
     pub domain: Domain,
     pub calculation_config: CalculationConfig,
+    pub app_config : AppConfig,
     pub result_config: ResultConfig,
 }
 
@@ -45,7 +46,7 @@ impl Machine {
 
         self.domain.mask_full_update();
 
-        let result_image = perfectly_color_values(&result_pixels);
+        let result_image = perfectly_color_values(&result_pixels, self.result_config.palette);
         Application.repaint_mandelbrot_window();
     }
 

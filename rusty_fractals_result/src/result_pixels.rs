@@ -1,6 +1,6 @@
 pub struct ResultPixels {
     pub width: usize,
-    pub height: useize,
+    pub height: usize,
     pub pixels: Vec<Vec<u32>>,
 }
 
@@ -18,7 +18,7 @@ impl ResultPixels {
         }
     }
 
-    pub fn value_at(&mut self, x: u32, y: u32) -> u32 {
+    pub fn value_at(&mut self, x: usize, y: usize) -> u32 {
         self.pixels[x][y]
     }
 

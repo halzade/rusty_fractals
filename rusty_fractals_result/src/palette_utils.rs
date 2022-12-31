@@ -1,23 +1,7 @@
 use palettes::Function;
 use rgb::RGB;
-use pixel_states::DomainElementState;
+use domain_element::DomainElement;
 use crate::palettes;
-
-/**
- * Colors for Mandelbrot image based on Mandelbrot element's state
- */
-pub fn color_for_state(el: DomainElement) {
-    match el.state() {
-        /* most of the elements are going to be */
-        DomainElementState::FinishedSuccessPast => FINISHED_SUCCESS_PAST,
-        DomainElementState::HibernatedDeepBlack => HIBERNATED_DEEP_BLACK,
-        DomainElementState::GoodPath => GOOD_PATH,
-        DomainElementState::ActiveNew => ACTIVE_NEW,
-        DomainElementState::FinishedSuccess => FINISHED_SUCCESS,
-        DomainElementState::FinishedTooShort => FINISHED_TOO_SHORT,
-        DomainElementState::FinishedTooLong => FINISHED_TOO_LONG
-    }
-}
 
 fn max(r: u8, g: u8, b: u8) -> u8 {
     if a(r) >= a(g) && a(r) >= a(b) {
@@ -33,13 +17,11 @@ fn a(v: u8) -> u8 {
     v.abs()
 }
 
-/**
- * Fill color spectrum with colors between colors:
- * @param from     color for lower values
- * @param to       color for higher values
- * @param function defines gradient of color change
- */
-fn to_palette(mut spectrum: Vec<RGB<u8>>, function: Function, from: RGB<u8>, to: RGB<u8>) {
+// Fill color spectrum with colors between colors:
+// from     : color for lower values
+// to       : color for higher values
+// function : defines gradient of color change
+pub fn make_spectrum(function: Function, from: RGB<u8>, to: RGB<u8>) -> Vec<RGB<u8>> {
     let r_from = from.r;
     let g_from = from.g;
     let b_from = from.b;
@@ -62,8 +44,11 @@ fn to_palette(mut spectrum: Vec<RGB<u8>>, function: Function, from: RGB<u8>, to:
 
     let rgb255 = 255;
 
+    let mut spectrum: Vec<RGB<u8>> = Vec::new();
+
     for i in 0..a(max_dif) {
         let d: f64 = (i / max_dif) as f64;
+        // optimized dif on interval <0, 1>
         let v: f64 = function_result(d, &function);
         let value = v * max_dif;
 
@@ -127,20 +112,18 @@ fn to_palette(mut spectrum: Vec<RGB<u8>>, function: Function, from: RGB<u8>, to:
         }
 
         // Add colors to Palette
-        spectrum.push(RGB: new(rr, gg, bb));
+        spectrum.push(RGB::new(rr, gg, bb));
 
         if stop {
             break;
         }
     }
+    spectrum
 }
 
-/**
- * Calculates how much should color in smooth color palette change
- *
- * @param d        : 0 <= d <= 1
- * @param function defines gradient of change from color "from" (d=0) to color "to" (d=1)
- */
+// Calculates how much should color in smooth color palette change
+// function : defines gradient of change from color "from" (d=0) to color "to" (d=1)
+// d : 0 <= d <= 1
 fn function_result(d: f64, function: &Function) -> f64 {
     match function {
         Function::linear1 => d,

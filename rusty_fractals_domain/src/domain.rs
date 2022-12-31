@@ -8,6 +8,7 @@ use rand::thread_rng;
 use rand::seq::SliceRandom;
 use rusty_fractals_common::area;
 use rusty_fractals_common::area::Area;
+use crate::pixel_states::DomainElementState;
 
 pub struct Domain {
     pub width: u32,
@@ -91,10 +92,24 @@ impl Domain {
         }
     }
 
+    // Colors for Mandelbrot image based on Mandelbrot element's state
+    pub fn color_for_state(el: DomainElement) {
+        match el.state() {
+            /* most of the elements are going to be */
+            DomainElementState::FinishedSuccessPast => FINISHED_SUCCESS_PAST,
+            DomainElementState::HibernatedDeepBlack => HIBERNATED_DEEP_BLACK,
+            DomainElementState::GoodPath => GOOD_PATH,
+            DomainElementState::ActiveNew => ACTIVE_NEW,
+            DomainElementState::FinishedSuccess => FINISHED_SUCCESS,
+            DomainElementState::FinishedTooShort => FINISHED_TOO_SHORT,
+            DomainElementState::FinishedTooLong => FINISHED_TOO_LONG
+        }
+    }
+
     pub fn mask_full_update(&self) {
         for y in 0..self.height - 1 {
             for x in 0..self.width - 1 {
-                MaskMandelbrotImage.setRGB(x, y, colorForState(domain_elements[x][y]).getRGB());
+                domain_image.put_pixel(x, y, palette_utils::color_for_state(self.domain_elements[x][y]).getRGB());
             }
         }
     }
