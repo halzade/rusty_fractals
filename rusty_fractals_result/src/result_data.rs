@@ -19,11 +19,13 @@ impl ResultData {
         self.paths.retain(path | path.size() > fractal::MINIMUM_PATH_LENGTH);
     }
 
-    pub fn add_escape_path_long(&mut self, path: Vec<[f64; 2]>) {
+    
+    pub fn add_calculation_path(&mut self, path: Vec<[f64; 2]>) {
         self.paths.push(path);
     }
 
-    pub fn translate_paths_to_pixel_grid(&mut self, result_pixels : &ResultPixels) {
+    
+    pub fn translate_paths_to_pixel_grid(&mut self, mut result_pixels: &mut ResultPixels) {
         log.debug("translate_paths_to_pixel_grid()");
 
         let mut pixels_total = 0;

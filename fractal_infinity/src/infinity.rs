@@ -1,7 +1,7 @@
 use rusty_fractals_domain::domain_element::DomainElement;
 
 fn calculate_path(el: &DomainElement) {
-    let iterator = 0;
+    let mut iterator = 0;
     let length = 0;
     final Mem
     m = new
@@ -37,10 +37,10 @@ fn calculate_path(el: &DomainElement) {
                 path.add(new double[]{ m.re, m.im });
             }
         }
-        el.setFinishedState(iterator, length);
+        el.set_finished_state(iterator, length);
         return path;
     } else {
-        el.setFinishedState(iterator, length);
+        el.set_finished_state(iterator, length);
         return null;
     }
 }

@@ -39,9 +39,13 @@ fn main() {
         height_y: 720,
         resolution_multiplier: SquareAlter,
     };
+    let result_config = ResultConfig {
+        palette: PALETTE_BLUE_TO_WHITE
+    };
 
     println!("Fractal {}", name);
 
+    let nebula = Nebula {};
     let area = domain_area::init(area_config);
     let domain = Domain {
         width: area.width_x,
@@ -50,19 +54,12 @@ fn main() {
         domain_elements: init_domain_elements(),
         resolution_multiplier: ResolutionMultiplier::None,
     };
-
-    let result_config = ResultConfig {
-        palette: PALETTE_BLUE_TO_WHITE
-    };
-
     let mut machine = machine::Machine {
         area,
         domain,
         calculation_config,
         result_config,
     };
-
-    let nebula = Nebula {};
 
     machine.calculate(&nebula);
 

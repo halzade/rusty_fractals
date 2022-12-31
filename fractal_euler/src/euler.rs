@@ -49,7 +49,7 @@ fn colors_for(m: MemEuler, int elementIndex, int pathLength) {
 }
 
 fn calculate_path(el: &DomainElement) {
-    let iterator = 0;
+    let mut iterator = 0;
     let length = 0;
     final MemEuler
     m = new
@@ -83,10 +83,10 @@ fn calculate_path(el: &DomainElement) {
                 path.add(new double[]{ m.re, m.im });
             }
         }
-        el.setFinishedState(iterator, length);
+        el.set_finished_state(iterator, length);
         return path;
     } else {
-        el.setFinishedState(iterator, length);
+        el.set_finished_state(iterator, length);
         return null;
     }
 }

@@ -1,26 +1,24 @@
+use rusty_fractals_common::constants::CALCULATION_BOUNDARY;
 use rusty_fractals_domain::domain_element::DomainElement;
-use crate::fractal::CALCULATION_BOUNDARY;
 use crate::mem::Mem;
 
+
 fn calculate_iterations_mandelbrot(el: &DomainElement) {
-    let iterator = 0;
-    final MemCollatzConjecture
-    m = new
-    MemCollatzConjecture(el.originRe, el.originIm);
+    let mut iterator = 0;
+    let m = MemCollatzConjecture(el.originRe, el.originIm);
     while m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
         math(m, el.originRe, el.originIm);
         iterator += 1;
     }
 
-    el.setFinishedState(iterator, m.quadrance());
+    el.set_finished_state(iterator, m.quadrance());
 }
 
+
 fn calculate_path_collatz(el: &DomainElement) {
-    let iterator = 0;
+    let mut iterator = 0;
     let length = 0;
-    final MemCollatzConjecture
-    m = new
-    MemCollatzConjecture(el.originRe, el.originIm);
+    let m = MemCollatzConjecture(el.originRe, el.originIm);
     while m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
         /*
          * Investigate if this is a good calculation path
@@ -51,10 +49,10 @@ fn calculate_path_collatz(el: &DomainElement) {
                 path.add(new double[]{ m.re, m.im });
             }
         }
-        el.setFinishedState(iterator, length);
+        el.set_finished_state(iterator, length);
         return path;
     } else {
-        el.setFinishedState(iterator, length);
+        el.set_finished_state(iterator, length);
         return null;
     }
 }
@@ -66,11 +64,9 @@ protected double c;
 protected double p;
 
 fn calculate_path_phoenix(el: &DomainElement) {
-    let iterator = 0;
+    let mut iterator = 0;
     let length = 0;
-    final MemPhoenix
-    m = new
-    MemPhoenix(el.originRe, el.originIm);
+    let m = new MemPhoenix(el.originRe, el.originIm);
     while m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
         /*
          * Investigate if this is a good calculation path
@@ -100,10 +96,10 @@ fn calculate_path_phoenix(el: &DomainElement) {
                 path.add(new double[]{ m.re, m.im });
             }
         }
-        el.setFinishedState(iterator, length);
+        el.set_finished_state(iterator, length);
         return path;
     } else {
-        el.setFinishedState(iterator, length);
+        el.set_finished_state(iterator, length);
         return null;
     }
 }

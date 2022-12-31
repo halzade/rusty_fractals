@@ -18,7 +18,7 @@ impl ResultPixels {
         }
     }
 
-    pub fn value_at(&mut self, x: u32, y: u32) {
+    pub fn value_at(&mut self, x: u32, y: u32) -> u32 {
         self.pixels[x][y]
     }
 
@@ -46,11 +46,11 @@ impl ResultPixels {
         sum
     }
 
-    fn chunk_value(x_from: i32, x_to: i32, y_from: i32, y_to: i32) -> u32 {
+    fn chunk_value(&self, x_from: i32, x_to: i32, y_from: i32, y_to: i32) -> u32 {
         let mut sum = 0;
         for x in x_from..x_to {
             for y in y_from..y_to {
-                sum += pixels[x][y];
+                sum += self.pixels[x][y];
             }
         }
         sum

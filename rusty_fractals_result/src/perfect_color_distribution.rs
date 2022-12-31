@@ -1,56 +1,53 @@
-/**
- * Method used for perfect coloring is
- * - Gather all screen pixels and order them by value
- * - Count how many pixels should be colored by each color from spectrum
- * - Zero elements and noise color by the lowest color
- * - Color all significant pixels ordered by value
- */
-PerfectColorDistribution
+// The method used for perfect coloring is
+// - Gather all screen pixels and order them by value
+// - Count how many pixels should be colored by each color from spectrum
+// - Zero elements and noise color by the lowest color
+// - Color all significant pixels ordered by value
 
+use constants::COLORING_THRESHOLD;
+use rusty_fractals_common::constants;
+use crate::result_pixels::ResultPixels;
 
-protected final Comparator<FinebrotPixel> comparator = Comparator.comparingInt(FinebrotPixel::pixelValue);
-
-protected final Comparator<MandelbrotPixel> comparatorMandelbrot = (a, b) -> {
-int c = compare(a.pixelValue, b.pixelValue);
-if c == 0 {
-return compare(a.qiad, b.qiad);
+fn comparator_mandelbrot(a, b) {
+    let c = compare(a.pixelValue, b.pixelValue);
+    if c == 0 {
+        compare(a.qiad, b.qiad);
+    }
+    c
 }
-return c;
-};
 
-protected final Comparator<MandelbrotPixel> comparatorMandelbrotZero = Comparator.comparingDouble(MandelbrotPixel::quad);
+fn comparator_mandelbrot_zero() {
+    // Comparator.comparingDouble(MandelbrotPixel::quad);
+}
 
-/**
- * Finebrot pixels, order by value
- */
-static final List<FinebrotPixel> pixels = new ArrayList< > ();
+fn perfectly_color_values(mut result_pixels: &ResultPixels) {
 
+    let width = result_pixels.width;
+    let height = result_pixels.height;
 
-use std::ptr::null;
+    // Result pixels, order by value
+    let mut pixels: Vec<[u32; 3]> = Vec::new();
 
-fn perfectly_color_values() {
     let mut zero_value_elements = 0;
 
-    /* read screen values */
-    for y in 0..RESOLUTION_HEIGHT {
-        for x in 0..RESOLUTION_WIDTH {
-            let v = PixelsFinebrot.valueAt(x, y);
-            if v <= coloringThreshold {
+    // read screen values
+    for y in 0..height {
+        for x in 0..width {
+            let v = result_pixels.value_at(x, y);
+            if v <= COLORING_THRESHOLD {
                 zero_value_elements += 1;
             }
-            pixels.add(new FinebrotPixel(v, x, y));
+            pixels.add([v, x, y]);
         }
     }
 
-    /*
-     *  order pixels from the smallest to the highest value
-     */
-    pixels.sort(comparator);
+    //  order pixels from the smallest to the highest value
+    pixels.sort_by(|a, b| a.1.cmp(&b.1));
 
-    let all_pixels_total = RESOLUTION_WIDTH * RESOLUTION_HEIGHT;
+    let all_pixels_total = width * height;
     let all_pixels_non_zero = all_pixels_total - zero_value_elements;
     let palette_color_count = Palette.colorResolution();
-    let single_color_use = ((int)((double) all_pixels_non_zero / (double) palette_color_count));
+    let single_color_use = all_pixels_non_zero as f64 / palette_color_count as f64;
     let left = all_pixels_non_zero - (palette_color_count * single_color_use);
 
     log.debug("------------------------------------");
@@ -63,12 +60,7 @@ fn perfectly_color_values() {
     log.debug("left:                       " + left);
     log.debug("------------------------------------");
 
-    /* pixel index */
-    let pi;
-    FinebrotPixel
-    sp;
-
-    /* paint mismatched pixel amount with the least value colour */
+    // paint mismatched pixel amount with the least value colour
     for pi in 0..(left + zeroValueElements) {
         sp = pixels.get(pi);
         FinebrotImage.setRGB(sp.px(), sp.py(), Palette.getSpectrumValue(0).getRGB());
@@ -76,7 +68,7 @@ fn perfectly_color_values() {
 
     /* color all remaining pixels, these are order by value */
     for paletteColourIndex in 0..paletteColorCount {
-        for  ci in 0..singleColorUse {
+        for ci in 0..singleColorUse {
             /* color all these pixels with same color */
             sp = pixels.get(pi + +);
             if sp.pixelValue() <= coloringThreshold {
@@ -187,7 +179,7 @@ fn perfectly_color_values_euler() {
     }
     /* color all remaining pixels, these are order by value */
     for paletteColourIndex in 0..paletteColorCount {
-        for  ci in 0..singleColorUseRed {
+        for ci in 0..singleColorUseRed {
             /* color all these pixels with same color */
             sp = pixelsRed.get(pi_red + +);
             if sp.pixelValue() <= threshold {
@@ -206,7 +198,7 @@ fn perfectly_color_values_euler() {
     }
     /* color all remaining pixels, these are order by value */
     for paletteColourIndex in 0..paletteColorCount {
-        for  ci in 0..singleColorUseGreen {
+        for ci in 0..singleColorUseGreen {
             /* color all these pixels with same color */
             sp = pixelsGreen.get(pi_green + +);
             if sp.pixelValue() <= threshold {
@@ -226,7 +218,7 @@ fn perfectly_color_values_euler() {
     }
     /* color all remaining pixels, these are order by value */
     for paletteColourIndex in 0..paletteColorCount {
-        for  ci in 0..singleColorUseBlue {
+        for ci in 0..singleColorUseBlue {
             /* color all these pixels with same color */
             sp = pixelsBlue.get(pi_blue + +);
             if sp.pixelValue() <= threshold {
@@ -306,7 +298,7 @@ fn perfectly_color_values_mandelbrot() {
      *  order pixels from the smallest to the highest value
      */
     pixels.sort(comparatorMandelbrot);
-    pixelsZero.sort(comparatorMandelbrotZero);
+    pixelsZero.sort(comparator_mandelbrot_zero);
 
     let all_pixels_total = RESOLUTION_WIDTH * RESOLUTION_HEIGHT;
     let all_pixels_non_zero = all_pixels_total - zero_value_elements;
@@ -338,7 +330,7 @@ fn perfectly_color_values_mandelbrot() {
 
     let palette_colour_index = 0;
     while palette_colour_index < palette_color_count {
-        for  ci in 0..singleColorUse {
+        for ci in 0..singleColorUse {
             mp = pixels.get(pi + +);
             mp.colorValue(palette_colour_index);
             MandelbrotImage.setRGB(mp.px, mp.py, Palette.getSpectrumValue(palette_colour_index).getRGB());

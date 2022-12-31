@@ -1,5 +1,7 @@
+use perfect_color_distribution::perfectly_color_values;
 use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
 use rusty_fractals_result::fractal_result::ResultData;
+use rusty_fractals_result::perfect_color_distribution;
 use rusty_fractals_result::result_data::ResultData;
 use rusty_fractals_result::result_pixels::ResultPixels;
 use rusty_fractals_domain::domain;
@@ -39,11 +41,11 @@ impl Machine {
             pixels: vec![]
         };
 
-        result_data.translate_paths_to_pixel_grid(&result_pixels);
+        result_data.translate_paths_to_pixel_grid(&mut result_pixels);
 
         self.domain.mask_full_update();
 
-        fractal.perfectly_color_values();
+        let result_image = perfectly_color_values(&result_pixels);
         Application.repaint_mandelbrot_window();
     }
 
@@ -80,7 +82,7 @@ impl Machine {
             }
             iterator += 1;
         }
-        el.setFinishedState(iterator, length);
+        el.set_finished_state(iterator, length);
 
         if length > min && iterator < max {
 
