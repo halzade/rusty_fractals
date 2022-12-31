@@ -18,7 +18,7 @@ pub struct Machine {
     pub area: Area,
     pub domain: Domain,
     pub calculation_config: CalculationConfig,
-    pub app_config : AppConfig,
+    pub app_config: AppConfig,
     pub result_config: ResultConfig,
 }
 
@@ -39,7 +39,7 @@ impl Machine {
         let mut result_pixels = ResultPixels {
             width: self.area.width_x,
             height: self.area.height_y,
-            pixels: vec![]
+            pixels: vec![],
         };
 
         result_data.translate_paths_to_pixel_grid(&mut result_pixels);
@@ -55,16 +55,16 @@ impl Machine {
         let chunk_size_x = self.domain.width / 20;
         let chunk_size_y = self.domain.height / 20;
 
-        let wrapped_chunk = self.domain.make_chunk(
+        let mut wrapped_chunk = self.domain.make_chunk(
             (xy[0] * chunk_size_x) as usize, ((xy[0] + 1) * chunk_size_x) as usize,
             (xy[1] * chunk_size_y) as usize, ((xy[1] + 1) * chunk_size_y) as usize,
         );
-        for el in wrapped_chunk {
-            self.calculate_path_finite(&el, fractal_math, result);
+        for mut el in wrapped_chunk {
+            self.calculate_path_finite(&mut el, fractal_math, result);
         }
     }
 
-    pub fn calculate_path_finite(&mut self, el: &DomainElement, fractal_math: &impl Math<Mem>, result: &mut ResultData) {
+    pub fn calculate_path_finite(&mut self, el: &mut DomainElement, fractal_math: &impl Math<Mem>, result: &mut ResultData) {
         let max = self.calculation_config.iteration_max;
         let min = self.calculation_config.iteration_min;
         let mut iterator = 0;
@@ -77,24 +77,24 @@ impl Machine {
             // Most of the long and expensive calculations end up inside Mandelbrot set, useless
             // It is 1.68x faster to calculate path twice, and recording exclusively the good paths
 
-            fractal_math.math(m, el.originRe, el.originIm);
+            fractal_math.math(m, el.origin_re, el.origin_im);
             if AreaFinebrot.contains(m) {
                 length += 1;
             }
             iterator += 1;
         }
-        el.set_finished_state(iterator, length);
+        el.set_finished_state(iterator);
 
         if length > min && iterator < max {
 
             // This origin produced good data, record calculation path
 
-            m.reset(el.originRe, el.originIm);
+            m.reset(el.origin_re, el.origin_im);
             el.goodPath();
 
             let mut path: Vec<[f64; 2]> = Vec::new();
             for _ in 0..iterator {
-                fractal_math.math(m, el.originRe, el.originIm);
+                fractal_math.math(m, el.origin_re, el.origin_im);
                 if AreaFinebrot.contains(m) {
                     path.push([m.re, m.im]);
                 }

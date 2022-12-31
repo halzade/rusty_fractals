@@ -56,14 +56,14 @@ impl Area {
         self.width_re = self.width_re * ZOOM;
         self.height_im = self.height_im * ZOOM;
         self.plank = self.width_re / self.width_x as f64;
-        initiate();
+        // TODO initiate();
     }
 
-    fn move_to_coordinates(&mut self) {
-        self.center_re = screenToDomainCreateRe(Target.getScreenFromCornerX());
-        self.center_im = screenToDomainCreateIm(Target.getScreenFromCornerY());
-        log.debug("Move to: " + self.center_re + "," + self.center_im);
-    }
+    // fn move_to_coordinates(&mut self) {
+    //     self.center_re = screenToDomainCreateRe(Target.getScreenFromCornerX());
+    //     self.center_im = screenToDomainCreateIm(Target.getScreenFromCornerY());
+    //     log.debug("Move to: " + self.center_re + "," + self.center_im);
+    // }
 
     /**
      * move to zoom target

@@ -1,40 +1,44 @@
-add use crate::fractal::{HEIGHT_Y, WIDTH_X};
-
 // represents mouse position
 // coordinates are calculated from the top left corner
-struct Target {
-    pub scr_re: u32,
-    pub scr_im: u32,
+pub struct Target {
+    pub width: usize,
+    pub height: usize,
+    pub scr_x: usize,
+    pub scr_y: usize,
 }
 
 impl Target {
-    pub fn update(&mut self, mouse_position_x: u32, mouse_position_y: u32) {
+    pub fn update(&mut self, mouse_position_x: usize, mouse_position_y: usize) {
         let scr_corner_re = mouse_position_x;
         let scr_corner_im = mouse_position_y;
-        self.scr_re = scr_corner_re - (WIDTH_X as f64 / 2.0) as u32;
-        self.scr_im = scr_corner_im - (HEIGHT_Y as f64 / 2.0) as u32;
+        self.scr_x = (scr_corner_re - (self.width / 2)) as usize;
+        self.scr_y = (scr_corner_im - (self.height / 2)) as usize;
     }
 
-    pub fn screen_from_center_x(&self) -> u32 {
-        self.scr_re
+    pub fn screen_from_center_x(&self) -> usize {
+        self.scr_x
     }
 
-    pub fn screen_from_center_y(&self) -> u32 {
-        self.scr_im
+    pub fn screen_from_center_y(&self) -> usize {
+        self.scr_y
     }
 
-    pub fn screen_from_corner_x(&self) -> u32 {
-        self.scr_corner_re
+    pub fn screen_from_corner_x(&self) -> usize {
+        // TODO self.scr_corner_re
+        0
     }
 
-    pub fn screen_from_corner_y(&self) -> u32 {
-        self.scr_corner_im
+    pub fn screen_from_corner_y(&self) -> usize {
+        // TODO self.scr_corner_im
+        0
     }
 }
 
-fn init(width_x: u32, height_y: u32) -> Target {
+fn init(width_x: usize, height_y: usize) -> Target {
     Target {
-        scr_re: width_x as f64 / 2.0 as u32,
-        scr_im: height_y as f64 / 2.0 as u32,
+        width: width_x,
+        height: height_y,
+        scr_x: (width_x as f64 / 2.0) as usize,
+        scr_y: (height_y as f64 / 2.0) as usize,
     }
 }

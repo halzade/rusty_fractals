@@ -1,5 +1,4 @@
-use crate::area::Area;
-use crate::{domain_element, NEIGHBOURS, resolution_multiplier};
+use crate::{domain_element, resolution_multiplier};
 use domain_element::DomainElement;
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::SquareAlter;
@@ -8,6 +7,8 @@ use rand::thread_rng;
 use rand::seq::SliceRandom;
 use rusty_fractals_common::area;
 use rusty_fractals_common::area::Area;
+use rusty_fractals_common::constants::NEIGHBOURS;
+use crate::domain_element::{active_new, hibernated_deep_black};
 use crate::pixel_states::DomainElementState;
 
 pub struct Domain {
@@ -37,8 +38,8 @@ impl Domain {
         chunk
     }
 
-    fn check_domain(&self, x: u32, y: u32) -> bool {
-        x >= 0 && x < self.width && y >= 0 && y < self.height
+    fn check_domain(&self, x: i32, y: i32) -> bool {
+        x >= 0 && x < self.width as i32 && y >= 0 && y < self.height as i32
     }
 
     pub fn shuffled_calculation_coordinates(&self) -> Vec<[u32; 2]> {
@@ -48,7 +49,8 @@ impl Domain {
                 coordinates_xy.push([x, y]);
             }
         }
-        coordinates_xy.shuffle(&mut thread_rng())
+        coordinates_xy.shuffle(&mut thread_rng());
+        coordinates_xy
     }
 
 
@@ -115,18 +117,21 @@ impl Domain {
     }
 
     // This is called after calculation finished, zoom was called and new area measures recalculated
-    fn recalculate_pixels_positions_for_this_zoom() {
+    pub fn recalculate_pixels_positions_for_this_zoom(&mut self) {
         // Scan domain elements : old positions from previous calculation
         // Some elements will be moved to new positions
         // For all the moved elements, all the next calculations will be skipped.
 
-        let elements_to_move = Vec::new();
+        let mut elements_to_move = Vec::new();
 
-        for y in 0..HEIGHT_Y {
-            for x in 0..WIDTH_X {
-                let el = domain_elements[xx][yy];
+        let width = self.domain_area.width_x;
+        let height = self.domain_area.height_y;
+
+        for y in 0..height {
+            for x in 0..width {
+                let el = self.domain_elements[xx][yy];
                 // There was already zoom in, the new area is smaller
-                if AreaMandelbrot.contains(el.originRe, el.originIm) {
+                if self.domain_area.contains(el.origin_re, el.origin_im) {
                     // Element did not move out of the zoomed in area
                     elements_to_move.push(el);
                 }
@@ -134,55 +139,43 @@ impl Domain {
         }
 
 
-        /*
-         * If there is a conflict, two or more points moved to same pixel, then use the active one if there is any.
-         * Don't drop conflicts around, simply calculate new elements in the next calculation iteration.
-         */
+        // If there is a conflict, two or more points moved to same pixel, then use the active one if there is any.
+        // Don't drop conflicts around, simply calculate new elements in the next calculation iteration. Because that would create really bad mess.
 
-        for el in elementsToRemember {
-            /* translate [px,py] to [re,im] */
-            AreaMandelbrot.pointToPixel(m, el.originRe, el.originIm);
+        for el in elements_to_move {
+            // translate [px,py] to [re,im]
+            (px, py) = self.domain_area.domain_point_to_result_pixel(el.origin_re, el.origin_im);
 
-            if m.good {
-                filledAlready = domain_elements[m.px][m.py];
-                if filledAlready != null {
-                    /* conflict */
-                    if filledAlready.hasWorseStateThen(el) {
-                        /*
-                         * Replace by element with better state
-                         * Better to delete the other one, then to drop it to other empty px.
-                         * That would cause problem with optimization, better calculate new and shiny px.
-                         */
-                        domain_elements[m.px][m.py] = el;
-                    }
-                } else {
-                    /* Good, there is no conflict */
-                    domain_elements[m.px][m.py] = el;
+            let filled_already = self.domain_elements[px][py];
+            if filled_already != null {
+                /* conflict */
+                if filled_already.has_worse_state_then(el) {
+                    // Replace by element with better state
+                    // Better to delete the other one, then to drop it to other empty pixel.
+                    // That would cause problem with optimization, better calculate new and shiny pixel
+                    self.domain_elements[px][py] = el;
                 }
+            } else {
+                // Good, there is no conflict
+                self.domain_elements[m.px][m.py] = el;
             }
         }
 
-        /*
-         * Repaint with only moved elements
-         */
+        // Repaint with only moved elements
         maskFullUpdate();
         Application.repaintMaskMandelbrotWindow();
 
-        /*
-         * Create new elements on positions where nothing was moved to
-         */
-        MaskMandelbrotElement
-        el;
-        for y in 0..RESOLUTION_HEIGHT {
-            for x in 0..RESOLUTION_WIDTH {
-                el = domain_elements[x][y];
+        // Create new elements on positions where nothing was moved to
+        for y in 0..height {
+            for x in 0..width {
+                let el = self.domain_elements[x][y];
                 if el == null {
-                    AreaMandelbrot.screenToDomainCarry(m, x, y);
-                    if allNeighborsFinishedTooLong(x, y)) {
+                    self.domain_area.screenToDomainCarry(m, x, y);
+                    if allNeighborsFinishedTooLong(x, y) {
                         /* Calculation for some positions should be skipped as they are too far away form any long successful divergent position */
-                        domain_elements[x][y] = hibernatedDeepBlack(m.re, m.im);
+                        self.domain_elements[x][y] = hibernated_deep_black(m.re, m.im);
                     } else {
-                        domain_elements[x][y] = activeNew(m.re, m.im);
+                        self.domain_elements[x][y] = active_new(m.re, m.im);
                     }
                 } else {
                     /* If relevant, mark it as element from previous calculation iteration */
@@ -191,7 +184,7 @@ impl Domain {
             }
         }
 
-        elementsToRemember.clear();
+        elements_to_move.clear();
     }
 
     /**
@@ -199,13 +192,14 @@ impl Domain {
      * This method identifies deep black convergent elements of Mandelbrot set interior.
      * Don't do any calculation for those.
      */
-    fn all_neighbors_finished_too_long(&self, x: u32, y: u32) -> bool {
-        for a in -NEIGHBOURS..NEIGHBOURS {
-            for b in -NEIGHBOURS..NEIGHBOURS {
-                let xx = x + a;
-                let yy = y + b;
+    fn all_neighbors_finished_too_long(&mut self, x: u32, y: u32) -> bool {
+        let neigh = NEIGHBOURS as i32;
+        for a in -neigh..neigh {
+            for b in -neigh..neigh {
+                let xx = x as i32 + a;
+                let yy = y as i32 + b;
                 if self.check_domain(xx, yy) {
-                    let el = self.domain_elements[xx][yy];
+                    let el = self.domain_elements[xx as usize][yy as usize];
                     if el.isFinishedSuccessAny() || el.isFinishedTooShort() {
                         false
                     }
@@ -222,8 +216,9 @@ impl Domain {
     fn is_on_mandelbrot_horizon(&self, x: u32, y: u32) -> bool {
         let mut red = false;
         let mut black = false;
-        for a in -NEIGHBOURS..NEIGHBOURS {
-            for b in -NEIGHBOURS..NEIGHBOURS {
+        let neigh = NEIGHBOURS as i16;
+        for a in -neigh..neigh {
+            for b in -neigh..neigh {
                 let xx = x + a;
                 let yy = y + b;
                 if self.check_domain(xx, yy) {
@@ -234,8 +229,8 @@ impl Domain {
                     if el.isHibernated() {
                         black = true;
                     }
-                    if red & &black {
-                        true
+                    if red && black {
+                        return true;
                     }
                 }
             }
@@ -244,11 +239,11 @@ impl Domain {
     }
 }
 
-fn init_domain_elements(area: Area) -> Vec<Vec<DomainElement>> {
+fn init_domain_elements(domain_area: Area) -> Vec<Vec<DomainElement>> {
     let mut vy: Vec<Vec<DomainElement>> = Vec::new();
-    for x in 0..domain_area.widhtWIDTH_X {
+    for x in 0..domain_area.width_x {
         let mut vx: Vec<DomainElement> = Vec::new();
-        for y in 0..domain_area.HEIGHT_Y {
+        for y in 0..domain_area.height_y {
             vx.push(domain_element::init(
                 domain_area.screen_to_domain_re(x),
                 domain_area.screen_to_domain_im(y),

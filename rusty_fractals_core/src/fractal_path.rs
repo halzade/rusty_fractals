@@ -5,9 +5,9 @@ use crate::mem::Mem;
 
 fn calculate_iterations_mandelbrot(el: &DomainElement) {
     let mut iterator = 0;
-    let m = MemCollatzConjecture(el.originRe, el.originIm);
+    let m = MemCollatzConjecture(el.origin_re, el.origin_im);
     while m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
-        math(m, el.originRe, el.originIm);
+        math(m, el.origin_re, el.origin_im);
         iterator += 1;
     }
 
@@ -18,14 +18,14 @@ fn calculate_iterations_mandelbrot(el: &DomainElement) {
 fn calculate_path_collatz(el: &DomainElement) {
     let mut iterator = 0;
     let length = 0;
-    let m = MemCollatzConjecture(el.originRe, el.originIm);
+    let m = MemCollatzConjecture(el.origin_re, el.origin_im);
     while m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
         /*
          * Investigate if this is a good calculation path
          * Don't create path data yet. Too many origin's don't produce good data
          * Most long expensive calculations end up inside Mandelbrot set
          */
-        math(m, el.originRe, el.originIm);
+        math(m, el.origin_re, el.origin_im);
         if AreaFinebrot.contains(m) {
             length += 1;
         }
@@ -37,14 +37,14 @@ fn calculate_path_collatz(el: &DomainElement) {
         /*
          * This origin produced good data, record calculation path
          */
-        m.reset(el.originRe, el.originIm);
+        m.reset(el.origin_re, el.origin_im);
         el.goodPath();
         final ArrayList < double
         [] > path = new
         ArrayList < > (length);
         for i in 0..iterator {
             /* It is 1.68x faster to calculate path twice, but recording exclusively good paths */
-            math(m, el.originRe, el.originIm);
+            math(m, el.origin_re, el.origin_im);
             if AreaFinebrot.contains(m) {
                 path.add(new double[]{ m.re, m.im });
             }
@@ -66,14 +66,14 @@ protected double p;
 fn calculate_path_phoenix(el: &DomainElement) {
     let mut iterator = 0;
     let length = 0;
-    let m = new MemPhoenix(el.originRe, el.originIm);
+    let m = new MemPhoenix(el.origin_re, el.origin_im);
     while m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
         /*
          * Investigate if this is a good calculation path
          * Don't create path data yet. Too many origin's don't produce good data
          * Most long expensive calculations end up inside Mandelbrot set
          */
-        math(m, el.originRe, el.originIm);
+        math(m, el.origin_re, el.origin_im);
         if AreaFinebrot.contains(m) {
             length += 1;
         }
@@ -85,13 +85,13 @@ fn calculate_path_phoenix(el: &DomainElement) {
         /*
          * This origin produced good data, record calculation path
          */
-        m.reset(el.originRe, el.originIm);
+        m.reset(el.origin_re, el.origin_im);
         el.goodPath();
         final ArrayList < double
         [] > path = new
         ArrayList < > (length);
         for i in 0..iterator {
-            math(m, el.originRe, el.originIm);
+            math(m, el.origin_re, el.origin_im);
             if AreaFinebrot.contains(m) {
                 path.add(new double[]{ m.re, m.im });
             }

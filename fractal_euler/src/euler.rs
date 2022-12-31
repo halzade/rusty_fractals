@@ -53,14 +53,14 @@ fn calculate_path(el: &DomainElement) {
     let length = 0;
     final MemEuler
     m = new
-    MemEuler(el.originRe, el.originIm);
+    MemEuler(el.origin_re, el.origin_im);
     while m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
         /*
          * Investigate if this is a good calculation path
          * Don't create path data yet. Too many origin's don't produce good data
          * Most long expensive calculations end up inside Mandelbrot set
          */
-        math(m, el.originRe, el.originIm);
+        math(m, el.origin_re, el.origin_im);
         if AreaFinebrot.contains(m) {
             length += 1;
         }
@@ -72,13 +72,13 @@ fn calculate_path(el: &DomainElement) {
         /*
          * This origin produced good data, record calculation path
          */
-        m.reset(el.originRe, el.originIm);
+        m.reset(el.origin_re, el.origin_im);
         el.goodPath();
         final ArrayList < double
         [] > path = new
         ArrayList < > (length);
         for i in 0..iterator {
-            math(m, el.originRe, el.originIm);
+            math(m, el.origin_re, el.origin_im);
             if AreaFinebrot.contains(m) {
                 path.add(new double[]{ m.re, m.im });
             }
