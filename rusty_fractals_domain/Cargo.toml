@@ -7,6 +7,7 @@ keywords = ["fractal"]
 
 [dependencies]
 rusty_fractals_common = { path = "../rusty_fractals_common" }
+rand = "0.8.5"
 rgb = "0.8"
 
 [badges]
