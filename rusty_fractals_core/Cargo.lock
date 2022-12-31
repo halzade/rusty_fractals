@@ -518,9 +518,6 @@ dependencies = [
 [[package]]
 name = "rusty_fractals_common"
 version = "0.1.0"
-dependencies = [
- "image",
-]
 
 [[package]]
 name = "rusty_fractals_core"
@@ -547,6 +544,7 @@ dependencies = [
 name = "rusty_fractals_result"
 version = "0.1.0"
 dependencies = [
+ "image",
  "rgb",
  "rusty_fractals_common",
 ]
