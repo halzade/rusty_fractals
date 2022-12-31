@@ -1,6 +1,7 @@
-public void update() {
-log.debug("update()");
+use log::{debug, info};
 
-ITERATION_MAX += 150;
-log.info("ITERATION_MAX = " + ITERATION_MAX);
+pub fn update() {
+    debug!("update()");
+    ITERATION_MAX += 150;
+    info!("ITERATION_MAX = " + ITERATION_MAX);
 }

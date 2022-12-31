@@ -2,6 +2,7 @@ use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use rusty_fractals_domain::domain;
 use crate::{fractal, machine};
 use crate::machine::Machine;
+use log::{info};
 
 // to calculate zoom, sequence of images
 pub struct Engine {
@@ -14,7 +15,7 @@ impl Engine {
         let mut first = true;
 
         for it in 1.. {
-            println!("{}", it);
+            info!("{}", it);
 
             if first {
                 first = false;

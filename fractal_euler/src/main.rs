@@ -45,13 +45,13 @@ impl MathEuler for Euler {
 }
 
 fn main() {
-    println!("Started");
+    info!("Started");
 
     let euler = Euler { name: NAME.to_string() };
     let definition = FractalDefinition { iteration_min: ITERATION_MIN, iteration_max: ITERATION_MAX, area_size: AREA_SIZE, target_re: TARGET_RE, target_im: TARGET_IM };
     let config = FractalConfig { resolution_width: RESOLUTION_WIDTH, resolution_height: RESOLUTION_HEIGHT, resolution_multiplier: RESOLUTION_MULTIPLIER, repeat: REPEAT, save_images: SAVE_IMAGES, palette: PALETTE };
 
-    println!("Fractal {}", euler.name);
+    info!("Fractal {}", euler.name);
 
     let m = Mem { re: 0.0, im: 0.0 };
     let math = Mathematician {
@@ -64,7 +64,7 @@ fn main() {
 
     euler.math(&mut me, 1.0, 0.1);
 
-    println!("Finished.");
+    info!("Finished.");
 }
 
 #[test]

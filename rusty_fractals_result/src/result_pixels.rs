@@ -1,3 +1,5 @@
+use log::{debug};
+
 pub struct ResultPixels {
     pub width: u32,
     pub height: u32,
@@ -10,7 +12,7 @@ impl ResultPixels {
     }
 
     pub fn clear(&mut self) {
-        log.debug("clear");
+        debug!("clear");
         for y in 0..height {
             for x in 0..width {
                 self.pixels[x][y] = 0;
@@ -23,7 +25,7 @@ impl ResultPixels {
     }
 
     pub fn best_four_chunks_value(&self) -> u32 {
-        log.debug("best_four_chunks_value()");
+        debug!("best_four_chunks_value()");
         let chunk_size_x = width / 20;
         let chunk_size_y = height / 20;
         let mut values: Vec<u32> = Vec::new();
@@ -42,7 +44,7 @@ impl ResultPixels {
             let v = values.get(i);
             sum += v;
         }
-        log.debug("best_four_chunks_value() sum: " + sum);
+        debug!("best_four_chunks_value() sum: " + sum);
         sum
     }
 

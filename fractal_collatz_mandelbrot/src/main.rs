@@ -6,6 +6,7 @@ use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier;
 use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier::None;
 use rusty_fractals_result::color_palette;
 use rusty_fractals_result::color_palettes::{PALETTE_BLUE_TO_WHITE, PALETTE_GRAY_TO_BLUE};
+use log::{info};
 
 const NAME: &str = "Collatz Conjecture Mandelbrot";
 
@@ -21,7 +22,7 @@ impl MathCollatz for CollatzConjectureMandelbrot {
 }
 
 fn main() {
-    println!("Started");
+    info!("Started");
 
     let collatz = CollatzConjectureMandelbrot { name: NAME.to_string() };
     let definition = FractalDefinition {
@@ -38,13 +39,13 @@ fn main() {
         palette: PALETTE_GRAY_TO_BLUE
     };
 
-    println!("Fractal {}", collatz.name);
+    info!("Fractal {}", collatz.name);
 
     let m = Mem { re: 0.0, im: 0.0 };
     let mut mc = MemCollatz { m, it: 0 };
     collatz.math(&mut mc, 1.0, 0.1);
 
-    println!("Finished.");
+    info!("Finished.");
 }
 
 

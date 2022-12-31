@@ -6,6 +6,7 @@ use rusty_fractals_result::color_palette;
 use rusty_fractals_result::color_palettes::PALETTE_BLACK_TO_WHITE;
 use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::None;
+use log::{info};
 
 const NAME: &str = "Lotus";
 
@@ -22,7 +23,7 @@ impl Math for Lotus {
 }
 
 fn main() {
-    println!("Started");
+    info!("Started");
 
     let lotus = Lotus { name: NAME.to_string() };
     let definition = FractalDefinition {
@@ -40,10 +41,10 @@ fn main() {
     };
     let config = FractalConfig { resolution_width: RESOLUTION_WIDTH, resolution_height: RESOLUTION_HEIGHT, resolution_multiplier: RESOLUTION_MULTIPLIER, repeat: REPEAT, save_images: SAVE_IMAGES, palette: PALETTE };
 
-    println!("Fractal {}", lotus.name);
+    info!("Fractal {}", lotus.name);
 
     let mut m = Mem { re: 0.0, im: 0.0 };
     lotus.math(&mut m, 1.0, 0.1);
 
-    println!("Finished.");
+    info!("Finished.");
 }

@@ -11,6 +11,7 @@ use rusty_fractals_result::palettes::PALETTE_BLUE_TO_WHITE;
 use rusty_fractals_common::area;
 use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::SquareAlter;
+use log::{info};
 
 struct Nebula {}
 
@@ -44,7 +45,7 @@ fn main() {
         palette: PALETTE_BLUE_TO_WHITE
     };
 
-    println!("Fractal {}", name);
+    info!("Fractal {}", name);
 
     let nebula = Nebula {};
     let area = domain_area::init(area_cfg);
@@ -65,7 +66,7 @@ fn main() {
 
     machine.calculate(&nebula);
 
-    println!("Finished.");
+    info!("Finished.");
 }
 
 

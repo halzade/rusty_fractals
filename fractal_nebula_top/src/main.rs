@@ -6,6 +6,7 @@ use rusty_fractals_result::color_palette;
 use rusty_fractals_result::color_palettes::PALETTE_PURPLE_TO_WHITE;
 use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::SquareAlter;
+use log::{info};
 
 const NAME: &str = "Nebula top";
 const ITERATION_MAX: u32 = 14800;
@@ -32,18 +33,18 @@ impl Math for NebulaTop {
 }
 
 fn main() {
-    println!("Started");
+    info!("Started");
 
     let nebula = NebulaTop { name: NAME.to_string() };
     let definition = FractalDefinition { iteration_min: ITERATION_MIN, iteration_max: ITERATION_MAX, area_size: AREA_SIZE, target_re: TARGET_RE, target_im: TARGET_IM };
     let config = FractalConfig { resolution_width: RESOLUTION_WIDTH, resolution_height: RESOLUTION_HEIGHT, resolution_multiplier: RESOLUTION_MULTIPLIER, repeat: REPEAT, save_images: SAVE_IMAGES, palette: PALETTE };
 
-    println!("Fractal {}", nebula.name);
+    info!("Fractal {}", nebula.name);
 
     let mut m = Mem { re: 0.0, im: 0.0 };
     nebula.math(&mut m, 1.0, 0.1);
 
-    println!("Finished.");
+    info!("Finished.");
 }
 
 

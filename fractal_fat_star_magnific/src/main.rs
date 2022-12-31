@@ -6,6 +6,7 @@ use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::None;
 use rusty_fractals_result::color_palette;
 use rusty_fractals_result::color_palettes::PALETTE_BLACK_TO_WHITE;
+use log::{info};
 
 const NAME: &str = "Fat Star Magnific";
 const ITERATION_MAX: u32 = 81_000;
@@ -38,18 +39,18 @@ impl Math for FatStarMagnific {
 }
 
 fn main() {
-    println!("Started");
+    info!("Started");
 
     let fat_star_magnific = FatStarMagnific { name: NAME.to_string() };
     let definition = FractalDefinition { iteration_min: ITERATION_MIN, iteration_max: ITERATION_MAX, area_size: AREA_SIZE, target_re: TARGET_RE, target_im: TARGET_IM };
     let config = FractalConfig { resolution_width: RESOLUTION_WIDTH, resolution_height: RESOLUTION_HEIGHT, resolution_multiplier: RESOLUTION_MULTIPLIER, repeat: REPEAT, save_images: SAVE_IMAGES, palette: PALETTE };
 
-    println!("Fractal {}", fat_star_magnific.name);
+    info!("Fractal {}", fat_star_magnific.name);
 
     let mut m = Mem { re: 0.0, im: 0.0 };
     fat_star_magnific.math(&mut m, 1.0, 0.1);
 
-    println!("Finished.");
+    info!("Finished.");
 }
 
 

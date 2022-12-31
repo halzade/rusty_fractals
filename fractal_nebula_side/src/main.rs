@@ -6,6 +6,7 @@ use rusty_fractals_result::color_palette;
 use rusty_fractals_result::color_palettes::PALETTE_BLUE_TO_WHITE;
 use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::SquareAlter;
+use log::{info};
 
 const NAME: &str = "Nebula side";
 const ITERATION_MAX: u32 = 14800;
@@ -32,7 +33,7 @@ impl Math for NebulaSide {
 }
 
 fn main() {
-    println!("Started");
+    info!("Started");
 
     let nebula = NebulaSide { name: NAME.to_string() };
     let definition = FractalDefinition {
@@ -49,12 +50,12 @@ fn main() {
         palette: PALETTE
     };
 
-    println!("Fractal {}", nebula.name);
+    info!("Fractal {}", nebula.name);
 
     let mut m = Mem { re: 0.0, im: 0.0 };
     nebula.math(&mut m, 1.0, 0.1);
 
-    println!("Finished.");
+    info!("Finished.");
 }
 
 

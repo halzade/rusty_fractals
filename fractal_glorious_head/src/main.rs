@@ -7,6 +7,7 @@ use rusty_fractals_core::mem::Mem;
 use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier::Square5;
 use resolution_multiplier::ResolutionMultiplier;
 use rusty_fractals_core::mem_phoenix::MemPhoenix;
+use log::{info};
 
 const NAME: &str = "Glorious Head";
 const PHOENIX_INIT_C: f64 = 0.35;
@@ -48,21 +49,21 @@ impl MathPhoenix for GloriousHead {
 }
 
 fn main() {
-    println!("Started");
+    info!("Started");
 
 
     let glorious_head = GloriousHead { name: NAME.to_string() };
     let definition = FractalDefinition { iteration_min: ITERATION_MIN, iteration_max: ITERATION_MAX, area_size: AREA_SIZE, target_re: TARGET_RE, target_im: TARGET_IM };
     let config = FractalConfig { resolution_width: RESOLUTION_WIDTH, resolution_height: RESOLUTION_HEIGHT, resolution_multiplier: RESOLUTION_MULTIPLIER, repeat: REPEAT, save_images: SAVE_IMAGES, palette: PALETTE };
 
-    println!("Fractal {}", glorious_head.name);
+    info!("Fractal {}", glorious_head.name);
 
     let m = Mem { re: 0.0, im: 0.0 };
     let mut mp = MemPhoenix { m, c: PHOENIX_INIT_C, p: PHOENIX_INIT_P, prev_prev_re: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_prev_im: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_re: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_im: PHOENIX_INIT_PHOENIX_INITIALIZER };
 
     glorious_head.math(&mut mp, 1.0, 0.1);
 
-    println!("Finished.");
+    info!("Finished.");
 }
 
 #[test]

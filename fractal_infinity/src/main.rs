@@ -8,6 +8,7 @@ use rusty_fractals_result::color_palette;
 use rusty_fractals_result::color_palettes::PALETTE_BLACK_TO_WHITE;
 use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::None;
+use log::{info};
 
 const NAME: &str = "Infinity";
 const ITERATION_MAX: u32 = 180_000;
@@ -34,18 +35,18 @@ impl Math for Infinity {
 }
 
 fn main() {
-    println!("Started");
+    info!("Started");
 
     let infinity = Infinity { name: NAME.to_string() };
     let definition = FractalDefinition { iteration_min: ITERATION_MIN, iteration_max: ITERATION_MAX, area_size: AREA_SIZE, target_re: TARGET_RE, target_im: TARGET_IM };
     let config = FractalConfig { resolution_width: RESOLUTION_WIDTH, resolution_height: RESOLUTION_HEIGHT, resolution_multiplier: RESOLUTION_MULTIPLIER, repeat: REPEAT, save_images: SAVE_IMAGES, palette: PALETTE };
 
-    println!("Fractal {}", infinity.name);
+    info!("Fractal {}", infinity.name);
 
     let mut m = Mem { re: 0.0, im: 0.0 };
     infinity.math(&mut m, 1.0, 0.1);
 
-    println!("Finished.");
+    info!("Finished.");
 }
 
 

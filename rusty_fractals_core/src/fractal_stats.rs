@@ -1,5 +1,6 @@
 // Take snapshot of data for comparison at well colored frame.
 const TAKE_MEASURES_AT_FRAME: u32 = 20;
+use log::{info};
 
 pub(crate) struct Stats {
     new_elements_too_long: i32,
@@ -35,9 +36,9 @@ pub(crate) struct Stats {
 
 impl Stats {
     fn remember_this(&mut self) {
-        println!("new_elements_long  {}", self.new_elements_long);
-        println!("pixels_value_total {}", self.pixels_value_total);
-        println!("paths_total_amount {}", self.paths_total_amount);
+        info!("new_elements_long  {}", self.new_elements_long);
+        info!("pixels_value_total {}", self.pixels_value_total);
+        info!("paths_total_amount {}", self.paths_total_amount);
 
         self.new_elements_long_measure = self.new_elements_long;
         self.pixels_value_total_measure = self.pixels_value_total;
@@ -51,11 +52,11 @@ impl Stats {
         self.paths_total_amount_tolerance = (self.paths_total_amount_measure as f64 * 0.5) as i32;
         self.pixels_value_best_tolerance = (self.pixels_value_best_measure as f64 * 0.5) as i32;
 
-        println!("elementsLong_measure        {} ", self.new_elements_long_measure);
-        println!("pixels_value_total_measure  {} ", self.pixels_value_total_measure);
-        println!("pixels_value_best_measure   {} ", self.pixels_value_best_measure);
-        println!("paths_total_amount_measure  {} ", self.paths_total_amount_measure);
-        println!("average_path_length_measure {} ", self.average_path_length_measure);
+        info!("elementsLong_measure        {} ", self.new_elements_long_measure);
+        info!("pixels_value_total_measure  {} ", self.pixels_value_total_measure);
+        info!("pixels_value_best_measure   {} ", self.pixels_value_best_measure);
+        info!("paths_total_amount_measure  {} ", self.paths_total_amount_measure);
+        info!("average_path_length_measure {} ", self.average_path_length_measure);
     }
 
     pub(crate) fn update(&mut self, it: u32) {
@@ -97,19 +98,19 @@ impl Stats {
                 self.not_enough_long_elements = self.new_elements_long_measure - self.new_elements_long > self.new_elements_long_tolerance;
             }
 
-            println!("not_enough_pixels_total_value {}", self.not_enough_pixels_total_value);
-            println!("less_pixels_total_value       {}", self.less_pixels_total_value);
-            println!("less_pixels_best_value        {} ({} < {})", self.less_pixels_best_value, self.pixels_value_best, self.pixels_value_best_measure);
-            println!("too_many_pixels_total_value   {}", self.too_many_pixels_total_value);
-            println!("too_many_paths_total          {}", self.too_many_paths_total);
-            println!("not_enough_long_elements      {}", self.not_enough_long_elements);
+            info!("not_enough_pixels_total_value {}", self.not_enough_pixels_total_value);
+            info!("less_pixels_total_value       {}", self.less_pixels_total_value);
+            info!("less_pixels_best_value        {} ({} < {})", self.less_pixels_best_value, self.pixels_value_best, self.pixels_value_best_measure);
+            info!("too_many_pixels_total_value   {}", self.too_many_pixels_total_value);
+            info!("too_many_paths_total          {}", self.too_many_paths_total);
+            info!("not_enough_long_elements      {}", self.not_enough_long_elements);
 
             let average_path_length = self.pixels_value_total as f64 / self.paths_total_amount as f64;
             let new_elements_all = self.new_elements_long + self.new_elements_too_short + self.new_elements_too_long;
             let domain_elements_to_new_calculation_path_points = self.paths_new_points_amount as f64 / new_elements_all as f64;
 
-            println!("average_path_length                             {} ({})", average_path_length, self.average_path_length_measure);
-            println!("domain_elements_to_new_calculation_path_points: {}", domain_elements_to_new_calculation_path_points);
+            info!("average_path_length                             {} ({})", average_path_length, self.average_path_length_measure);
+            info!("domain_elements_to_new_calculation_path_points: {}", domain_elements_to_new_calculation_path_points);
         }
     }
 
@@ -124,12 +125,12 @@ impl Stats {
     }
 
     pub fn print(&self) {
-        println!("new_elements_too_long   {}", self.new_elements_too_long);
-        println!("new_elements_too_short  {}", self.new_elements_too_short);
-        println!("new_elements_long       {}", self.new_elements_long);
-        println!("paths_total_amount      {}", self.paths_total_amount);
-        println!("pixels_value_total      {}", self.pixels_value_total);
-        println!("pixels_value_best       {}", self.pixels_value_best);
-        println!("paths_new_points_amount {}", self.paths_new_points_amount);
+        info!("new_elements_too_long   {}", self.new_elements_too_long);
+        info!("new_elements_too_short  {}", self.new_elements_too_short);
+        info!("new_elements_long       {}", self.new_elements_long);
+        info!("paths_total_amount      {}", self.paths_total_amount);
+        info!("pixels_value_total      {}", self.pixels_value_total);
+        info!("pixels_value_best       {}", self.pixels_value_best);
+        info!("paths_new_points_amount {}", self.paths_new_points_amount);
     }
 }

@@ -6,6 +6,7 @@ use rusty_fractals_result::color_palette;
 use rusty_fractals_result::color_palettes::PALETTE_BLACK_TO_WHITE;
 use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::None;
+use log::{info};
 
 const NAME: &str = "Fat Star";
 
@@ -23,7 +24,7 @@ impl Math for FatStar {
 }
 
 fn main() {
-    println!("Started");
+    info!("Started");
 
     let fat_star = FatStar { name: NAME.to_string() };
     let definition = FractalDefinition {
@@ -42,12 +43,12 @@ fn main() {
     let area = domain_area::init(AREA_SIZE, TARGET_RE, TARGET_IM);
     let domain = domain_area::init_domain_elements(area);
     let engine = fractal_engine::Engine{domain, fat_star};
-    println!("Fractal {}", fat_star.name);
+    info!("Fractal {}", fat_star.name);
 
     let mut m = Mem { re: 0.0, im: 0.0 };
     fat_star.math(&mut m, 1.0, 0.1);
 
-    println!("Finished.");
+    info!("Finished.");
 }
 
 

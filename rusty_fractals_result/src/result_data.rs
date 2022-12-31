@@ -1,5 +1,6 @@
 use rusty_fractals_common::area::Area;
 use crate::result_pixels::ResultPixels;
+use log::{debug};
 
 pub struct ResultData {
     // Dynamic Vec[re,im] calculation result data.
@@ -12,7 +13,7 @@ pub struct ResultData {
 
 impl ResultData {
     pub fn remove_elements_outside(&mut self) {
-        log.debug("remove_elements_outside()");
+        debug!("remove_elements_outside()");
         for mut path in self.paths {
             path.retain(|&el| self.area_result.contains(el.0, el.1));
         }
@@ -26,7 +27,7 @@ impl ResultData {
 
     
     pub fn translate_paths_to_pixel_grid(&mut self, mut result_pixels: &mut ResultPixels) {
-        log.debug("translate_paths_to_pixel_grid()");
+        debug!("translate_paths_to_pixel_grid()");
 
         let mut pixels_total = 0;
 
@@ -42,7 +43,7 @@ impl ResultData {
                 }
             }
         }
-        log.debug("pixels_total:   " + pixels_total);
+        debug!("pixels_total:   " + pixels_total);
 
         /* remove elements which moved out of tiny area */
         self.remove_elements_outside();

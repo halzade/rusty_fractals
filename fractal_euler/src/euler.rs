@@ -1,6 +1,7 @@
 use rusty_fractals_core::fractal::CALCULATION_BOUNDARY;
 use rusty_fractals_core::mathematician::Mathematician;
 use rusty_fractals_domain::domain_element::DomainElement;
+use log::{debug};
 
 /**
  * Fractal Euler type uses three color spectra for better mathematical analysis and better coloring results.
@@ -15,7 +16,7 @@ fn add_escape_path_long(path: Vec<[i64; 2]>) {
 }
 
 fn translate_paths_to_pixel_grid() {
-    log.debug("translate_paths_to_pixel_grid");
+    debug!("translate_paths_to_pixel_grid");
 
     let added = 0;
     for path in paths {
@@ -30,7 +31,7 @@ fn translate_paths_to_pixel_grid() {
             }
         }
     }
-    log.debug("* Added:   " + added);
+    debug!("* Added:   " + added);
 
     /* remove elements which moved ouf of tiny area */
     removeElementsOutside();
