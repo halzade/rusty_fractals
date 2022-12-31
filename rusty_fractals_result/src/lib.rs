@@ -9,5 +9,5 @@ pub mod result_data_static;
 
 
 fn lib() {
-    let cores: usize = num_cpus::get();
+
 }

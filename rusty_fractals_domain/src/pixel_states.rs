@@ -1,12 +1,12 @@
-use rgb::RGB;
+use image::Rgb;
 
-const ACTIVE_NEW: RGB<u8> = RGB::new(40, 180, 150);
-const FINISHED_TOO_LONG: RGB<u8> = RGB::new(0, 0, 0);
-const HIBERNATED_DEEP_BLACK: RGB<u8> = RGB::new(90, 90, 90);
-const FINISHED_TOO_SHORT: RGB<u8> = RGB::new(220, 220, 240);
-const FINISHED_SUCCESS: RGB<u8> = RGB::new(255, 0, 0);
-const FINISHED_SUCCESS_PAST: RGB<u8> = RGB::new(130, 100, 130);
-const GOOD_PATH: RGB<u8> = RGB::new(200, 108, 10);
+const ACTIVE_NEW: Rgb<u8> = Rgb([40, 180, 150]);
+const FINISHED_TOO_LONG: Rgb<u8> = Rgb([0, 0, 0]);
+const HIBERNATED_DEEP_BLACK: Rgb<u8> = Rgb([90, 90, 90]);
+const FINISHED_TOO_SHORT: Rgb<u8> = Rgb([220, 220, 240]);
+const FINISHED_SUCCESS: Rgb<u8> = Rgb([255, 0, 0]);
+const FINISHED_SUCCESS_PAST: Rgb<u8> = Rgb([130, 100, 130]);
+const GOOD_PATH: Rgb<u8> = Rgb([200, 108, 10]);
 
 
 #[derive(PartialOrd, Ord, PartialEq, Eq)]

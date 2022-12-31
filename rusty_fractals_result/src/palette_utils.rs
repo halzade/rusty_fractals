@@ -1,6 +1,7 @@
+use image::Rgb;
 use palettes::Function;
-use rgb::RGB;
-use domain_element::DomainElement;
+use rgb::Rgb;
+
 use crate::palettes;
 
 fn max(r: u8, g: u8, b: u8) -> u8 {
@@ -21,7 +22,7 @@ fn a(v: u8) -> u8 {
 // from     : color for lower values
 // to       : color for higher values
 // function : defines gradient of color change
-pub fn make_spectrum(function: Function, from: RGB<u8>, to: RGB<u8>) -> Vec<RGB<u8>> {
+pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<u8>> {
     let r_from = from.r;
     let g_from = from.g;
     let b_from = from.b;
@@ -44,7 +45,7 @@ pub fn make_spectrum(function: Function, from: RGB<u8>, to: RGB<u8>) -> Vec<RGB<
 
     let rgb255 = 255;
 
-    let mut spectrum: Vec<RGB<u8>> = Vec::new();
+    let mut spectrum: Vec<Rgb<u8>> = Vec::new();
 
     for i in 0..a(max_dif) {
         let d: f64 = (i / max_dif) as f64;
@@ -112,7 +113,7 @@ pub fn make_spectrum(function: Function, from: RGB<u8>, to: RGB<u8>) -> Vec<RGB<
         }
 
         // Add colors to Palette
-        spectrum.push(RGB::new(rr, gg, bb));
+        spectrum.push(Rgb([rr, gg, bb]));
 
         if stop {
             break;

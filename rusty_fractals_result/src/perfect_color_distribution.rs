@@ -5,7 +5,8 @@
 // - Color all significant pixels ordered by value
 
 use std::cmp::Ordering::Equal;
-use rgb::RGB;
+use image::{Rgb, RgbImage};
+use rgb::Rgb;
 use constants::COLORING_THRESHOLD;
 use rusty_fractals_common::constants;
 use crate::palette::Palette;
@@ -13,21 +14,21 @@ use crate::result_pixels::ResultPixels;
 
 // for Nebula like fractals
 struct Pix {
-    x: usize,
-    y: usize,
+    x: u32,
+    y: u32,
     value: u32,
 }
 
 // for Mandelbrot like fractals
 struct Mix {
-    x: usize,
-    y: usize,
+    x: u32,
+    y: u32,
     value: u32,
     quad: f64,
     quid: f64,
 }
 
-pub fn perfectly_color_values(mut result_pixels: &ResultPixels, palette: Palette) -> RgbImage<RGB<u8>> {
+pub fn perfectly_color_values(mut result_pixels: &ResultPixels, palette: Palette) -> RgbImage {
     let width = result_pixels.width;
     let height = result_pixels.height;
 
@@ -66,7 +67,7 @@ pub fn perfectly_color_values(mut result_pixels: &ResultPixels, palette: Palette
     log.debug("left:                       " + left);
     log.debug("------------------------------------");
 
-    let result_image: RgbImage = RgbImage::new(width, height);
+    let mut result_image = image::RgbImage::new(width, height);
 
     // paint mismatched pixel amount with the least value colour
     for pi in 0..(left + zeroValueElements) {
@@ -99,7 +100,7 @@ pub fn perfectly_color_values(mut result_pixels: &ResultPixels, palette: Palette
 }
 
 
-fn perfectly_color_values_euler() -> ImageBuffer<RGB<u8>> {
+fn perfectly_color_values_euler() -> RgbImage {
     let width = result_pixels.width;
     let height = result_pixels.height;
 
@@ -236,16 +237,16 @@ fn perfectly_color_values_euler() -> ImageBuffer<RGB<u8>> {
             let r = result_pixels.value_at(x, y, red);
             let g = result_pixels.value_at(x, y, green);
             let b = result_pixels.value_at(x, y, blue);
-            FinebrotImage.setRGB(x, y, new Color(r, g, b).getRGB());
+            result_image.setRGB(x, y, Rgb([r, g, b]));
         }
     }
 
     // Behold, the coloring is perfect
 
     log.debug("clear pixels");
-    pixelsRed.clear();
-    pixelsGreen.clear();
-    pixelsBlue.clear();
+    pixels_red.clear();
+    pixels_green.clear();
+    pixels_blue.clear();
     PixelsEulerFinebrot.clear();
 
     result_image
@@ -253,7 +254,7 @@ fn perfectly_color_values_euler() -> ImageBuffer<RGB<u8>> {
 
 const NEIGHBOR_COORDINATES: [[i8; 2]; 8] = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]];
 
-fn perfectly_color_values_mandelbrot() -> ImageBuffer<RGB<u8>> {
+fn perfectly_color_values_mandelbrot() -> RgbImage {
     log.debug("perfectly_color_values()");
 
     let width = result_pixels.width;

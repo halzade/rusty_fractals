@@ -1,71 +1,46 @@
-private final int[][] elementsStaticScreenRed;
-private final int[][] elementsStaticScreenGreen;
-private final int[][] elementsStaticScreenBlue;
-
-public PixelsEulerFinebrotImpl() {
-log.debug("constructor");
-log.debug("[" + RESOLUTION_WIDTH + "][" + RESOLUTION_HEIGHT + "]");
-this.elementsStaticScreenRed = new int[RESOLUTION_WIDTH][RESOLUTION_HEIGHT];
-this.elementsStaticScreenGreen = new int[RESOLUTION_WIDTH][RESOLUTION_HEIGHT];
-this.elementsStaticScreenBlue = new int[RESOLUTION_WIDTH][RESOLUTION_HEIGHT];
-}
-
-fn add(int x, int y, Spectra spec) {
-    switch(spec)
-    {
-        case
-        red -> elementsStaticScreenRed[x][y] += 1;
-        case
-        green -> elementsStaticScreenGreen[x][y] += 1;
-        case
-        blue -> elementsStaticScreenBlue[x][y] += 1;
-    }
-}
-
-fn clear() {
-    log.debug("clear()");
-    for  y in 0..RESOLUTION_HEIGHT {
-        for x in 0..RESOLUTION_WIDTH {
-            elementsStaticScreenRed[x][y] = 0;
-            elementsStaticScreenGreen[x][y] = 0;
-            elementsStaticScreenBlue[x][y] = 0;
-        }
-    }
-}
-
-fn value_at(int x, int y, Spectra spec) {
-    switch(spec)
-    {
-        case
-        red -> {
-        return elementsStaticScreenRed[x][y];
-    }
-        case
-        green -> {
-        return elementsStaticScreenGreen[x][y];
-    }
-        case
-        blue -> {
-        return elementsStaticScreenBlue[x][y];
-    }
-        default -> throw
-        new
-        RuntimeException("unknown spectra");
-    }
-}
-
-fn set(int x, int y, Spectra spec, int colorValue) {
-    switch(spec)
-    {
-        case
-        red -> elementsStaticScreenRed[x][y] = colorValue;
-        case
-        green -> elementsStaticScreenGreen[x][y] = colorValue;
-        case
-        blue -> elementsStaticScreenBlue[x][y] = colorValue;
-    }
-}
-
 /* For simplicity Euler Fractal uses only three explicitly defined spectra */
 pub enum Spectra { Red, Green, Blue }
+
+struct PixelsEuler {
+    width: u32,
+    height: u32,
+    elements_red: Vec<Vec<u32>>,
+    elements_green: Vec<Vec<u32>>,
+    elements_blue: Vec<Vec<u32>>,
+}
+
+impl PixelsEuler {
+    pub fn add(&mut self, x: u32, y: u32, spec: Spectra) {
+        match spec {
+            Spectra::Red => self.elements_red[x][y] += 1,
+            Spectra::Green => self.elements_green[x][y] += 1,
+            Spectra::Blue => self.elements_blue[x][y] += 1,
+        }
+    }
+
+    pub fn clear(&mut self) {
+        for y in 0..width {
+            for x in 0..height {
+                self.elements_red[x][y] = 0;
+                self.elements_green[x][y] = 0;
+                self.elements_blue[x][y] = 0;
+            }
+        }
+    }
+
+    pub fn value_at(&mut self, x: u32, y: u32, spec: Spectra) -> u32 {
+        match spec {
+            Spectra::Red => self.elements_red[x][y],
+            Spectra::Green => self.elements_green[x][y],
+            Spectra::Blue => self.elements_blue[x][y],
+        }
+    }
+
+    fn set(&mut self, x: u32, y: u32, spec: Spectra, color_value: u32) {
+        match spec {
+            Spectra::Red => self.elements_red[x][y] = color_value,
+            Spectra::Green => self.elements_green[x][y] = color_value,
+            Spectra::Blue => self.elements_blue[x][y] = color_value,
+        }
+    }
 }

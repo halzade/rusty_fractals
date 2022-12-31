@@ -8,3 +8,7 @@ pub mod mem_collatz;
 pub mod mem_phoenix;
 pub mod log;
 pub mod fractal_path;
+
+fn lib() {
+    let cores: usize = num_cpus::get();
+}

@@ -1,6 +1,6 @@
 pub struct ResultPixels {
-    pub width: usize,
-    pub height: usize,
+    pub width: u32,
+    pub height: u32,
     pub pixels: Vec<Vec<u32>>,
 }
 
@@ -11,14 +11,14 @@ impl ResultPixels {
 
     pub fn clear(&mut self) {
         log.debug("clear");
-        for y in 0..RESOLUTION_HEIGHT {
-            for x in 0..RESOLUTION_WIDTH {
+        for y in 0..height {
+            for x in 0..width {
                 self.pixels[x][y] = 0;
             }
         }
     }
 
-    pub fn value_at(&mut self, x: usize, y: usize) -> u32 {
+    pub fn value_at(&mut self, x: u32, y: u32) -> u32 {
         self.pixels[x][y]
     }
 
@@ -57,7 +57,7 @@ impl ResultPixels {
     }
 }
 
-pub fn init(width: usize, height: usize) -> ResultPixels {
+pub fn init(width: u32, height: u32) -> ResultPixels {
     let mut vx = Vec::new();
     for _ in 0..width - 1 {
         let mut vy = Vec::new();

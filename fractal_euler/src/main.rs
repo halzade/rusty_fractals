@@ -11,7 +11,10 @@ use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier::None;
 use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier;
 use rusty_fractals_result::color_palette;
 use rusty_fractals_result::color_palettes::{PALETTE_3_RGB};
+use rusty_fractals_result::palette::Palette;
+use rusty_fractals_result::palettes::PALETTE_3_RGB;
 use rusty_fractals_core::mathematician::Mathematician;
+use crate::pixel::Spectra;
 
 const NAME: &str = "Euler";
 
