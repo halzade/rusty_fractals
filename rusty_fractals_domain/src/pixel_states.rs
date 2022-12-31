@@ -1,4 +1,6 @@
+use std::cmp::Ordering::Less;
 use image::Rgb;
+use crate::pixel_states::DomainElementState::{ActiveNew, Finished};
 
 const ACTIVE_NEW: Rgb<u8> = Rgb([40, 180, 150]);
 const FINISHED_TOO_LONG: Rgb<u8> = Rgb([0, 0, 0]);
@@ -70,10 +72,10 @@ pub enum DomainElementState {
      * Temporarily state, recalculation of divergent PATH in progress
      * color = {@link MaskMandelbrotMaskColors#GOOD_PATH}
      */
-    GoodPath
+    GoodPath,
 }
 
 #[test]
-fn test_mandelbrot_pixel_state() {
-    assert_eq!(ActiveNew.cmp(&Finished), -1);
+fn test_pixel_state() {
+    assert_eq!(ActiveNew.cmp(&Finished), Less);
 }

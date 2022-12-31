@@ -5,7 +5,7 @@ pub struct ResultElementStatic {
     color_value: u32,
 }
 
-impl FractalDomainPixel {
+impl ResultElementStatic {
     pub fn set_finished_state(&mut self, iterator: u32, q: f64) {
         self.quad = q;
         if iterator < 1 {
