@@ -64,7 +64,7 @@ impl Area {
     // fn move_to_coordinates(&mut self) {
     //     self.center_re = screenToDomainCreateRe(Target.getScreenFromCornerX());
     //     self.center_im = screenToDomainCreateIm(Target.getScreenFromCornerY());
-    //     debug!("Move to: " + self.center_re + "," + self.center_im);
+    //     debug!("Move to: {}, {}", self.center_re, self.center_im);
     // }
 
     /**

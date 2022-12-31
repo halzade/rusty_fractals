@@ -6,7 +6,6 @@
 
 use std::cmp::Ordering::Equal;
 use image::{Rgb, RgbImage};
-use rgb::Rgb;
 use constants::COLORING_THRESHOLD;
 use rusty_fractals_common::constants;
 use crate::palette::Palette;
@@ -59,13 +58,13 @@ pub fn perfectly_color_values(mut result_pixels: &ResultPixels, palette: Palette
     let left = all_pixels_non_zero - (palette_color_count * single_color_use);
 
     debug!("------------------------------------");
-    debug!("All pixels to paint:        " + all_pixels_total);
-    debug!("--------------------------->" + (zero_value_elements + left + (single_color_use * palette_color_count)));
-    debug!("Zero value pixels to paint: " + zero_value_elements);
-    debug!("Non zero pixels to paint:   " + all_pixels_non_zero);
-    debug!("Spectrum, available colors: " + palette_color_count);
-    debug!("Pixels per each color:      " + single_color_use);
-    debug!("left:                       " + left);
+    debug!("All pixels to paint:         {}", all_pixels_total);
+    debug!("---------------------------> {}", (zero_value_elements + left + (single_color_use * palette_color_count)));
+    debug!("Zero value pixels to paint:  {}", zero_value_elements);
+    debug!("Non zero pixels to paint:    {}", all_pixels_non_zero);
+    debug!("Spectrum, available colors:  {}", palette_color_count);
+    debug!("Pixels per each color:       {}", single_color_use);
+    debug!("left:                        {}", left);
     debug!("------------------------------------");
 
     let mut result_image = image::RgbImage::new(width, height);
@@ -90,7 +89,7 @@ pub fn perfectly_color_values(mut result_pixels: &ResultPixels, palette: Palette
             }
         }
     }
-    debug!("painted:                   " + pi);
+    debug!("painted:                   {}", pi);
 
     // Behold, the coloring is perfect
 
@@ -156,27 +155,27 @@ fn perfectly_color_values_euler() -> RgbImage {
     let left_blue = all_pixels_non_zero_blue - (palette_color_count * single_color_use_blue);
 
     debug!("------------------------------------");
-    debug!("All pixels to paint:        " + all_pixels_total);
-    debug!("--------------------------->" + (zero_value_elements_red + left_red + (single_color_use_red * palette_color_count)));
-    debug!("--------------------------->" + (zero_value_elements_green + left_green + (single_color_use_green * palette_color_count)));
-    debug!("--------------------------->" + (zero_value_elements_blue + left_blue + (single_color_use_blue * palette_color_count)));
-    debug!("Zero value pixels to paint: " + zero_value_elements_red);
-    debug!("Zero value pixels to paint: " + zero_value_elements_green);
-    debug!("Zero value pixels to paint: " + zero_value_elements_blue);
-    debug!("Non zero pixels to paint:   " + all_pixels_non_zero_red);
-    debug!("Non zero pixels to paint:   " + all_pixels_non_zero_green);
-    debug!("Non zero pixels to paint:   " + all_pixels_non_zero_blue);
-    debug!("Spectrum, available colors: " + palette_color_count);
-    debug!("Pixels per each color:      " + single_color_use_red);
-    debug!("Pixels per each color:      " + single_color_use_green);
-    debug!("Pixels per each color:      " + single_color_use_blue);
-    debug!("left:                       " + left_red);
-    debug!("left:                       " + left_green);
-    debug!("left:                       " + left_blue);
+    debug!("All pixels to paint:         {}", all_pixels_total);
+    debug!("---------------------------> {}", (zero_value_elements_red + left_red + (single_color_use_red * palette_color_count)));
+    debug!("---------------------------> {}", (zero_value_elements_green + left_green + (single_color_use_green * palette_color_count)));
+    debug!("---------------------------> {}", (zero_value_elements_blue + left_blue + (single_color_use_blue * palette_color_count)));
+    debug!("Zero value pixels to paint:  {}", zero_value_elements_red);
+    debug!("Zero value pixels to paint:  {}", zero_value_elements_green);
+    debug!("Zero value pixels to paint:  {}", zero_value_elements_blue);
+    debug!("Non zero pixels to paint:    {}", all_pixels_non_zero_red);
+    debug!("Non zero pixels to paint:    {}", all_pixels_non_zero_green);
+    debug!("Non zero pixels to paint:    {}", all_pixels_non_zero_blue);
+    debug!("Spectrum, available colors:  {}", palette_color_count);
+    debug!("Pixels per each color:       {}", single_color_use_red);
+    debug!("Pixels per each color:       {}", single_color_use_green);
+    debug!("Pixels per each color:       {}", single_color_use_blue);
+    debug!("left:                        {}", left_red);
+    debug!("left:                        {}", left_green);
+    debug!("left:                        {}", left_blue);
     debug!("------------------------------------");
 
     // paint mismatched pixel amount with the least value colour
-    for pi_red in 0..(leftRed + zeroValueElementsRed) {
+    for pi_red in 0..(left_red + zero_value_elements_red) {
         let sp = pixelsRed.get(pi_red);
         PixelsEulerFinebrot.set(sp.x, sp.y, red, 0);
     }
@@ -255,6 +254,7 @@ fn perfectly_color_values_euler() -> RgbImage {
 
 const NEIGHBOR_COORDINATES: [[i8; 2]; 8] = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]];
 
+/*
 fn perfectly_color_values_mandelbrot() -> RgbImage {
     debug!("perfectly_color_values()");
 
@@ -302,13 +302,13 @@ fn perfectly_color_values_mandelbrot() -> RgbImage {
     let left = all_pixels_non_zero - (palette_color_count * single_color_use);
 
     debug!("------------------------------------");
-    debug!("All pixels to paint:        " + all_pixels_total);
-    debug!("--------------------------->" + (zero_value_elements + left + (single_color_use * palette_color_count)));
-    debug!("Zero value pixels to paint: " + zero_value_elements);
-    debug!("Non zero pixels to paint:   " + all_pixels_non_zero);
-    debug!("Spectrum, available colors:>" + palette_color_count);
-    debug!("Pixels per each color:      " + single_color_use);
-    debug!("left:                       " + left);
+    debug!("All pixels to paint:         {}", all_pixels_total);
+    debug!("---------------------------> {}", (zero_value_elements + left + (single_color_use * palette_color_count)));
+    debug!("Zero value pixels to paint:  {}", zero_value_elements);
+    debug!("Non zero pixels to paint:    {}", all_pixels_non_zero);
+    debug!("Spectrum, available colors:> {}", palette_color_count);
+    debug!("Pixels per each color:       {}", single_color_use);
+    debug!("left:                        {}", left);
     debug!("------------------------------------");
 
     // paint mismatched pixel amount with the least but not the lowest value colour
@@ -346,9 +346,9 @@ fn perfectly_color_values_mandelbrot() -> RgbImage {
     let zero_single_color_use = ((int)((double) zero_value_elements / (double) zero_palette_color_count));
     let zero_left = zero_value_elements - (zero_palette_color_count * zero_single_color_use);
 
-    info!("zero_palette_color_count:    > " + zero_palette_color_count);
-    info!("zero_single_color_use:       > " + zero_single_color_use);
-    info!("zero_left:                 > " + zero_left);
+    info!("zero_palette_color_count:    > {}", zero_palette_color_count);
+    info!("zero_single_color_use:       > {}", zero_single_color_use);
+    info!("zero_left:                   > {}", zero_left);
 
     let piz;
     for piz in 0..zeroLeft {
@@ -363,7 +363,7 @@ fn perfectly_color_values_mandelbrot() -> RgbImage {
         }
     }
 
-    debug!("painted:                   " + pi);
+    debug!("painted:                   {}", pi);
 
     // Behold, the coloring is perfect
 
@@ -405,3 +405,4 @@ fn ac_if_black_dot(MandelbrotPixel mp) -> i32 {
     }
     -1
 }
+*/

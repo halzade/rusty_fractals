@@ -13,8 +13,8 @@ impl ResultPixels {
 
     pub fn clear(&mut self) {
         debug!("clear");
-        for y in 0..height {
-            for x in 0..width {
+        for y in 0..self.height {
+            for x in 0..self.width {
                 self.pixels[x][y] = 0;
             }
         }
@@ -26,13 +26,13 @@ impl ResultPixels {
 
     pub fn best_four_chunks_value(&self) -> u32 {
         debug!("best_four_chunks_value()");
-        let chunk_size_x = width / 20;
-        let chunk_size_y = height / 20;
+        let chunk_size_x = self.width / 20;
+        let chunk_size_y = self.height / 20;
         let mut values: Vec<u32> = Vec::new();
         for x in 0..19 {
             for y in 0..19 {
                 values.push(self.chunk_value(
-                    x * chunk_size_x, (x + 1) * chunk_size_x,
+                    x * chunk_size_x as u32, (x + 1) * chunk_size_x,
                     y * chunk_size_y, (y + 1) * chunk_size_y,
                 ));
             }
@@ -44,11 +44,11 @@ impl ResultPixels {
             let v = values.get(i);
             sum += v;
         }
-        debug!("best_four_chunks_value() sum: " + sum);
+        debug!("best_four_chunks_value() sum: {}", sum);
         sum
     }
 
-    fn chunk_value(&self, x_from: i32, x_to: i32, y_from: i32, y_to: i32) -> u32 {
+    fn chunk_value(&self, x_from: u32, x_to: u32, y_from: u32, y_to: u32) -> u32 {
         let mut sum = 0;
         for x in x_from..x_to {
             for y in y_from..y_to {

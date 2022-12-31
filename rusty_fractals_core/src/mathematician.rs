@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use crate::fractal::ITERATION_MAX;
 use crate::mem::Mem;
 
 pub struct Mathematician {

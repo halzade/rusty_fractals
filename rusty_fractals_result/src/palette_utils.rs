@@ -1,6 +1,5 @@
 use image::Rgb;
 use palettes::Function;
-use rgb::Rgb;
 
 use crate::palettes;
 

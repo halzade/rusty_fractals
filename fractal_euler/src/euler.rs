@@ -31,7 +31,7 @@ fn translate_paths_to_pixel_grid() {
             }
         }
     }
-    debug!("* Added:   " + added);
+    debug!("* Added:   {}", added);
 
     /* remove elements which moved ouf of tiny area */
     removeElementsOutside();

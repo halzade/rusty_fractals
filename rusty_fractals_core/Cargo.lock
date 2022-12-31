@@ -816,6 +816,8 @@ name = "rusty_fractals_result"
 version = "0.1.0"
 dependencies = [
  "image",
+ "log",
+ "log4rs",
  "rgb",
  "rusty_fractals_common",
 ]

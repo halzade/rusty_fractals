@@ -1,13 +1,13 @@
 use crate::palette::Palette;
 use crate::palette::Palette3;
 use crate::palette_utils::make_spectrum;
-use rgb::Rgb;
+use image::Rgb;
 
-const white: Rgb = Rgb { r: 255, g: 255, b: 255 };
-const blakc: Rgb = Rgb { r: 0, g: 0, b: 0 };
-const red: Rgb = Rgb { r: 255, g: 0, b: 0 };
-const green: Rgb = Rgb { r: 0, g: 255, b: 0 };
-const blue: Rgb = Rgb { r: 0, g: 0, b: 255 };
+const white: Rgb = Rgb([255, 255, 255]);
+const blakc: Rgb = Rgb([0, 0, 0]);
+const red: Rgb = Rgb([255, 0, 0]);
+const green: Rgb = Rgb([0, 255, 0]);
+const blue: Rgb = Rgb([0, 0, 255]);
 
 pub enum Function { linear1, linear3, linear7, quadratic, q3, q4, q5, exp, exp2, circleDown, circleUp }
 
