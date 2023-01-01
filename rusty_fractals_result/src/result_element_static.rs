@@ -1,3 +1,4 @@
+
 pub struct ResultElementStatic {
     value: u32,
     quad: f64,
@@ -7,6 +8,7 @@ pub struct ResultElementStatic {
 
 impl ResultElementStatic {
     pub fn set_finished_state(&mut self, iterator: u32, q: f64) {
+        /*
         self.quad = q;
         if iterator < 1 {
             self.value = 1;
@@ -15,6 +17,7 @@ impl ResultElementStatic {
         } else {
             self.value = iterator;
         }
+        */
     }
 
     fn color_value(&self) -> u32 {
@@ -25,7 +28,7 @@ impl ResultElementStatic {
         self.color_value = palette_colour_index;
     }
 
-    pub fn set_average_with(&mut self, e: DomainElement) {
+    pub fn set_average_with(&mut self, e: ResultElementStatic) {
         self.value = (((self.value + e.value) as f64) / 2.0) as u32;
     }
 }
@@ -33,19 +36,17 @@ impl ResultElementStatic {
 
 #[test]
 fn test_set_average_with() {
-    let mut me = DomainElement {
-        origin_re: 0.0,
-        origin_im: 0.0,
+    let mut me = ResultElementStatic {
         value: 10,
         quad: 0.0,
-        state: ActiveNew,
+        qiad: 0.0,
+        color_value: 0
     };
-    let other = DomainElement {
-        origin_re: 0.0,
-        origin_im: 0.0,
+    let other = ResultElementStatic {
         value: 3,
         quad: 0.0,
-        state: ActiveNew,
+        qiad: 0.0,
+        color_value: 0
     };
 
     me.set_average_with(other);

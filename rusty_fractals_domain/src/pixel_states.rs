@@ -2,13 +2,14 @@ use std::cmp::Ordering::Less;
 use image::Rgb;
 use crate::pixel_states::DomainElementState::{ActiveNew, Finished};
 
-const ACTIVE_NEW: Rgb<u8> = Rgb([40, 180, 150]);
-const FINISHED_TOO_LONG: Rgb<u8> = Rgb([0, 0, 0]);
-const HIBERNATED_DEEP_BLACK: Rgb<u8> = Rgb([90, 90, 90]);
-const FINISHED_TOO_SHORT: Rgb<u8> = Rgb([220, 220, 240]);
-const FINISHED_SUCCESS: Rgb<u8> = Rgb([255, 0, 0]);
-const FINISHED_SUCCESS_PAST: Rgb<u8> = Rgb([130, 100, 130]);
-const GOOD_PATH: Rgb<u8> = Rgb([200, 108, 10]);
+pub const ACTIVE_NEW: Rgb<u8> = Rgb([40, 180, 150]);
+pub const FINISHED_TOO_LONG: Rgb<u8> = Rgb([0, 0, 0]);
+pub const HIBERNATED_DEEP_BLACK: Rgb<u8> = Rgb([90, 90, 90]);
+pub const FINISHED_TOO_SHORT: Rgb<u8> = Rgb([220, 220, 240]);
+pub const FINISHED_SUCCESS: Rgb<u8> = Rgb([255, 0, 0]);
+pub const FINISHED_SUCCESS_PAST: Rgb<u8> = Rgb([130, 100, 130]);
+pub const FINISHED: Rgb<u8> = Rgb([130, 100, 130]); // TODO different color
+pub const GOOD_PATH: Rgb<u8> = Rgb([200, 108, 10]);
 
 
 #[derive(PartialOrd, Ord, PartialEq, Eq)]

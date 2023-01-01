@@ -49,13 +49,13 @@ pub fn perfectly_color_values(mut result_pixels: &ResultPixels, palette: Palette
     }
 
     //  order pixels from the smallest to the highest value
-    pixels.sort_by(|first, second| first.1.cmp(&second.1));
+    pixels.sort_by(|first, second| first.value.cmp(&second.value));
 
     let all_pixels_total = width * height;
     let all_pixels_non_zero = all_pixels_total - zero_value_elements;
     let palette_color_count = palette.spectrum.len();
     let single_color_use = all_pixels_non_zero as f64 / palette_color_count as f64;
-    let left = all_pixels_non_zero - (palette_color_count * single_color_use);
+    let left = all_pixels_non_zero - (palette_color_count as f64 * single_color_use);
 
     debug!("------------------------------------");
     debug!("All pixels to paint:         {}", all_pixels_total);
@@ -70,8 +70,9 @@ pub fn perfectly_color_values(mut result_pixels: &ResultPixels, palette: Palette
     let mut result_image = image::RgbImage::new(width, height);
 
     // paint mismatched pixel amount with the least value colour
-    for pi in 0..(left + zeroValueElements) {
-        let sp = pixels.get(pi);
+    let mut pi = 0;
+    for _ in 0..(left + zero_value_elements) {
+        let sp = pixels.get(pi += 1);
         result_image.put_pixel(sp.x, sp.y, palette.spectrum_value(0));
     }
 
@@ -80,7 +81,7 @@ pub fn perfectly_color_values(mut result_pixels: &ResultPixels, palette: Palette
         for _ in 0..single_color_use {
             // color all these pixels with same color
             let sp = pixels.get(pi += 1);
-            if sp.value() <= COLORING_THRESHOLD {
+            if sp.value <= COLORING_THRESHOLD {
                 // color zero-value elements and low-value-noise with the darkest color
                 result_image.put_pixel(sp.x, sp.y, palette.spectrum_value(0));
             } else {
@@ -99,7 +100,7 @@ pub fn perfectly_color_values(mut result_pixels: &ResultPixels, palette: Palette
     result_image
 }
 
-
+/*
 fn perfectly_color_values_euler() -> RgbImage {
     let width = result_pixels.width;
     let height = result_pixels.height;
@@ -251,6 +252,7 @@ fn perfectly_color_values_euler() -> RgbImage {
 
     result_image
 }
+*/
 
 const NEIGHBOR_COORDINATES: [[i8; 2]; 8] = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]];
 

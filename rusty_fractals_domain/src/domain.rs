@@ -1,3 +1,4 @@
+use image::Rgb;
 use crate::{domain_element, resolution_multiplier};
 use domain_element::DomainElement;
 use crate::resolution_multiplier::ResolutionMultiplier;
@@ -9,7 +10,7 @@ use rusty_fractals_common::area;
 use rusty_fractals_common::area::Area;
 use rusty_fractals_common::constants::NEIGHBOURS;
 use crate::domain_element::{active_new, hibernated_deep_black};
-use crate::pixel_states::DomainElementState;
+use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, GOOD_PATH, HIBERNATED_DEEP_BLACK};
 
 pub struct Domain {
     pub width: u32,
@@ -53,8 +54,18 @@ impl Domain {
         coordinates_xy
     }
 
+    pub fn state_from_path_length(iterator : u32, max : u32, min : u32) -> DomainElementState {
+        if iterator == max {
+            return DomainElementState::FinishedTooLong;
+        }
+        if iterator < min {
+            return DomainElementState::FinishedTooShort;
+        }
+        DomainElementState::FinishedSuccess
+    }
 
     // Don't do any wrapping the first time because Mandelbrot elements are not optimized.
+    /*
     fn wrap(&self, rm: ResolutionMultiplier, odd: bool) {
         if rm == SquareAlter {
             let d = self.domain_area.plank() / 3;
@@ -70,17 +81,18 @@ impl Domain {
 
             let d = self.domain_area.plank() / multiplier;
             let half = (multiplier - 1) / 2;
-            /* This fills the pixel with multiple points */
+            // This fills the pixel with multiple points
             for x in -half..half {
                 for y in -half..half {
                     if x != 0 || y != 0 {
                         domainFull.add(activeNew(elementZero.originRe + (x * d), elementZero.originIm + (y * d)));
                     }
-                    /* else do nothing, there already is element0 for the center of this pixel */
+                    // else do nothing, there already is element0 for the center of this pixel
                 }
             }
         }
     }
+    */
 
     fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
         match rm {
@@ -95,19 +107,21 @@ impl Domain {
     }
 
     // Colors for Mandelbrot image based on Mandelbrot element's state
-    pub fn color_for_state(el: DomainElement) {
-        match el.state() {
-            /* most of the elements are going to be */
+    pub fn color_for_state(el: DomainElement) -> Rgb<u8> {
+        match el.state {
+            // most of the elements are going to be FinishedSuccessPast
             DomainElementState::FinishedSuccessPast => FINISHED_SUCCESS_PAST,
             DomainElementState::HibernatedDeepBlack => HIBERNATED_DEEP_BLACK,
             DomainElementState::GoodPath => GOOD_PATH,
             DomainElementState::ActiveNew => ACTIVE_NEW,
             DomainElementState::FinishedSuccess => FINISHED_SUCCESS,
             DomainElementState::FinishedTooShort => FINISHED_TOO_SHORT,
-            DomainElementState::FinishedTooLong => FINISHED_TOO_LONG
+            DomainElementState::FinishedTooLong => FINISHED_TOO_LONG,
+            DomainElementState::Finished => FINISHED
         }
     }
 
+    /*
     pub fn mask_full_update(&self) {
         for y in 0..self.height - 1 {
             for x in 0..self.width - 1 {
@@ -115,8 +129,10 @@ impl Domain {
             }
         }
     }
+    */
 
     // This is called after calculation finished, zoom was called and new area measures recalculated
+    /*
     pub fn recalculate_pixels_positions_for_this_zoom(&mut self) {
         // Scan domain elements : old positions from previous calculation
         // Some elements will be moved to new positions
@@ -148,7 +164,7 @@ impl Domain {
 
             let filled_already = self.domain_elements[px][py];
             if filled_already != null {
-                /* conflict */
+                // conflict
                 if filled_already.has_worse_state_then(el) {
                     // Replace by element with better state
                     // Better to delete the other one, then to drop it to other empty pixel.
@@ -172,13 +188,13 @@ impl Domain {
                 if el == null {
                     self.domain_area.screenToDomainCarry(m, x, y);
                     if allNeighborsFinishedTooLong(x, y) {
-                        /* Calculation for some positions should be skipped as they are too far away form any long successful divergent position */
+                        // Calculation for some positions should be skipped as they are too far away form any long successful divergent position
                         self.domain_elements[x][y] = hibernated_deep_black(m.re, m.im);
                     } else {
                         self.domain_elements[x][y] = active_new(m.re, m.im);
                     }
                 } else {
-                    /* If relevant, mark it as element from previous calculation iteration */
+                    // If relevant, mark it as element from previous calculation iteration
                     el.past();
                 }
             }
@@ -186,12 +202,12 @@ impl Domain {
 
         elements_to_move.clear();
     }
+    */
 
-    /**
-     * Verify if any neighbor px,py finished well, long or at least too short.
-     * This method identifies deep black convergent elements of Mandelbrot set interior.
-     * Don't do any calculation for those.
-     */
+    // Verify if any neighbor px,py finished well, long or at least too short.
+    // This method identifies deep black convergent elements of Mandelbrot set interior.
+    // Don't do any calculation for those.
+    /*
     fn all_neighbors_finished_too_long(&mut self, x: u32, y: u32) -> bool {
         let neigh = NEIGHBOURS as i32;
         for a in -neigh..neigh {
@@ -200,33 +216,32 @@ impl Domain {
                 let yy = y as i32 + b;
                 if self.check_domain(xx, yy) {
                     let el = self.domain_elements[xx as usize][yy as usize];
-                    if el.isFinishedSuccessAny() || el.isFinishedTooShort() {
-                        false
+                    if el.is_finished_success_any() || el.is_finished_too_short() {
+                        return false;
                     }
                 }
             }
         }
         true
     }
+    */
 
-    /**
-     * All new elements are Active New
-     * For wrapping, search only elements, which have some past well finished neighbors
-     */
+    // All new elements are Active New
+    // For wrapping, search only elements, which have some past well finished neighbors
     fn is_on_mandelbrot_horizon(&self, x: u32, y: u32) -> bool {
         let mut red = false;
         let mut black = false;
-        let neigh = NEIGHBOURS as i16;
+        let neigh = NEIGHBOURS as i32;
         for a in -neigh..neigh {
             for b in -neigh..neigh {
-                let xx = x + a;
-                let yy = y + b;
+                let xx = x as i32 + a;
+                let yy = y as i32 + b;
                 if self.check_domain(xx, yy) {
-                    let el = &self.domain_elements[xx][yy];
-                    if el.isFinishedSuccessPast() {
+                    let el = &self.domain_elements[xx as usize][yy as usize];
+                    if el.is_finished_success_past() {
                         red = true;
                     }
-                    if el.isHibernated() {
+                    if el.is_hibernated() {
                         black = true;
                     }
                     if red && black {

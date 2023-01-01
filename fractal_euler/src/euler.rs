@@ -18,11 +18,11 @@ fn add_escape_path_long(path: Vec<[i64; 2]>) {
 fn translate_paths_to_pixel_grid() {
     debug!("translate_paths_to_pixel_grid");
 
-    let added = 0;
+    let mut added = 0;
     for path in paths {
         for i in 0..path.size() - 1 {
             let tmp = path.get(i);
-            /* translate [re,im] to [px,py] */
+            // translate [re,im] to [px,py]
             AreaFinebrot.pointToPixel(m, tmp[0], tmp[1]);
             if m.good {
                 added += 1;
@@ -37,12 +37,12 @@ fn translate_paths_to_pixel_grid() {
     removeElementsOutside();
 }
 
-fn colors_for(m: MemEuler, int elementIndex, int pathLength) {
-    if Mathematician.isPrime(elementIndex) {
+fn colors_for(m: MemEuler, element_index: u32, path_length: u32) {
+    if Mathematician.isPrime(element_index) {
         m.spectra = red;
         return;
     }
-    if Mathematician.isPrime(pathLength) {
+    if Mathematician.isPrime(path_length) {
         m.spectra = green;
         return;
     }
@@ -50,6 +50,7 @@ fn colors_for(m: MemEuler, int elementIndex, int pathLength) {
 }
 
 fn calculate_path(el: &DomainElement) {
+    /*
     let mut iterator = 0;
     let length = 0;
     final MemEuler
@@ -90,4 +91,5 @@ fn calculate_path(el: &DomainElement) {
         el.set_finished_state(iterator, length);
         return null;
     }
+    */
 }

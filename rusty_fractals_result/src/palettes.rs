@@ -2,12 +2,13 @@ use crate::palette::Palette;
 use crate::palette::Palette3;
 use crate::palette_utils::make_spectrum;
 use image::Rgb;
+use crate::palettes::Function::{circleDown, circleUp};
 
-const white: Rgb = Rgb([255, 255, 255]);
-const blakc: Rgb = Rgb([0, 0, 0]);
-const red: Rgb = Rgb([255, 0, 0]);
-const green: Rgb = Rgb([0, 255, 0]);
-const blue: Rgb = Rgb([0, 0, 255]);
+const white: Rgb<u8> = Rgb([255, 255, 255]);
+const black: Rgb<u8> = Rgb([0, 0, 0]);
+const red: Rgb<u8> = Rgb([255, 0, 0]);
+const green: Rgb<u8> = Rgb([0, 255, 0]);
+const blue: Rgb<u8> = Rgb([0, 0, 255]);
 
 pub enum Function { linear1, linear3, linear7, quadratic, q3, q4, q5, exp, exp2, circleDown, circleUp }
 
@@ -19,21 +20,21 @@ pub const PALETTE_BLACK_TO_WHITE: Palette = Palette {
 pub const PALETTE_BLUE_TO_WHITE: Palette = Palette {
     spectrum: make_spectrum(
         circleUp,
-        Rgb::new(4, 13, 33),
-        Rgb::new(255, 255, 255),
+        Rgb([4, 13, 33]),
+        Rgb([255, 255, 255]),
     )
 };
 pub const PALETTE_GRAY_TO_BLUE: Palette = Palette {
     spectrum: make_spectrum(
         circleDown,
-        Rgb::new(104, 113, 133),
-        Rgb::new(4, 13, 33),
+        Rgb([104, 113, 133]),
+        Rgb([4, 13, 33]),
     )
 };
 pub const PALETTE_PURPLE_TO_WHITE: Palette = Palette {
     spectrum: make_spectrum(
         circleUp,
-        Rgb::new(20, 3, 30),
+        Rgb([20, 3, 30]),
         white,
     )
 };

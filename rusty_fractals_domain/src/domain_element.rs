@@ -30,19 +30,8 @@ impl DomainElement {
     }
 
 
-    pub fn set_finished_state(&mut self, iterator: u32) {
-        if iterator == ITERATION_MAX {
-            self.state = FinishedTooLong;
-            Stats.newElementsTooLong += 1;
-            return;
-        }
-        if pathLength < ITERATION_min {
-            self.state = FinishedTooShort;
-            Stats.newElementsTooShort += 1;
-            return;
-        }
-        self.state = FinishedSuccess;
-        Stats.newElementsLong += 1;
+    pub fn set_finished_state(&mut self, state: DomainElementState) {
+        self.state = state;
     }
 
     pub fn past(&mut self) {
@@ -51,16 +40,8 @@ impl DomainElement {
         }
     }
 
-    // Returns a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object
-    pub fn compare_to(&self, e: DomainElement) {
-        if self == e {
-            0
-        }
-        self.state.compareTo(e.state);
-    }
-
-    pub fn has_worse_state_then(&self, e: DomainElement) {
-        self.compareTo(e) > 0;
+    pub fn has_worse_state_then(&self, e: DomainElement) -> bool {
+        self.state.cmp(&e.state).is_gt()
     }
 
     pub fn good_path(&mut self) {

@@ -3,7 +3,7 @@ use crate::result_element_static::ResultElementStatic;
 use crate::result_pixels::ResultPixels;
 
 pub struct ResultData {
-    pub pixels: Vec<Vec<[ResultElementStatic]>>,
+    pub pixels: Vec<Vec<ResultElementStatic>>,
     pub area_result: Area,
 }
 

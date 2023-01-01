@@ -1,6 +1,7 @@
 use rusty_fractals_domain::domain_element::DomainElement;
 
 fn calculate_path(el: &DomainElement) {
+    /*
     let mut iterator = 0;
     let length = 0;
     final Mem
@@ -43,4 +44,5 @@ fn calculate_path(el: &DomainElement) {
         el.set_finished_state(iterator, length);
         return null;
     }
+    */
 }

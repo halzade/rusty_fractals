@@ -1,60 +1,61 @@
-use image::Rgb;
+use image::{Pixel, Rgb};
 use palettes::Function;
 
 use crate::palettes;
 
-fn max(r: u8, g: u8, b: u8) -> u8 {
+fn max(r: i8, g: i8, b: i8) -> i8 {
     if a(r) >= a(g) && a(r) >= a(b) {
-        r
+        return r;
     } else if a(g) >= a(r) && a(g) >= a(b) {
-        g
+        return g;
     } else if a(b) >= a(r) && a(b) >= a(g) {
-        b
+        return b;
     }
+    panic!()
 }
 
-fn a(v: u8) -> u8 {
-    v.abs()
+fn a(v: i8) -> u8 {
+    v.abs() as u8
 }
 
 // Fill color spectrum with colors between colors:
 // from     : color for lower values
 // to       : color for higher values
 // function : defines gradient of color change
-pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<u8>> {
-    let r_from = from.r;
-    let g_from = from.g;
-    let b_from = from.b;
+pub fn make_spectrum(function: Function, mut from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<u8>> {
+    let r_from = from.channels()[0];
+    let g_from = from.channels()[1];
+    let b_from = from.channels()[2];
 
-    let r_dif = to.r - r_from;
-    let g_dif = to.g - g_from;
-    let b_dif = to.b - b_from;
+    let tr = to.channels()[0];
+    let tg = to.channels()[1];
+    let tb = to.channels()[2];
 
-    let max_dif = a(max(r_dif, g_dif, b_dif));
+    let r_dif = tr as i8 - r_from as i8;
+    let g_dif = tg as i8 - g_from as i8;
+    let b_dif = tb as i8 - b_from as i8;
 
-    let r_step: f64 = (r_dif / max_dif) as f64;
-    let g_step: f64 = (g_dif / max_dif) as f64;
-    let b_step: f64 = (b_dif / max_dif) as f64;
+    let max_dif = a(max(r_dif, g_dif, b_dif)) as f64;
+
+    let r_step: f64 = (r_dif as f64 / max_dif) as f64;
+    let g_step: f64 = (g_dif as f64 / max_dif) as f64;
+    let b_step: f64 = (b_dif as f64 / max_dif) as f64;
 
     let mut stop = false;
-
-    let tr = to.r;
-    let tg = to.g;
-    let tb = to.b;
 
     let rgb255 = 255;
 
     let mut spectrum: Vec<Rgb<u8>> = Vec::new();
 
-    for i in 0..a(max_dif) {
-        let d: f64 = (i / max_dif) as f64;
+    for i in 0..a(max_dif as i8) {
+        let d: f64 = (i as f64 / max_dif) as f64;
         // optimized dif on interval <0, 1>
         let v: f64 = function_result(d, &function);
         let value = v * max_dif;
 
-        let rr = r_from + (value * r_step);
-        let gg = g_from + (value * g_step);
-        let bb = b_from + (value * b_step);
+        let mut rr = r_from + (value * r_step) as u8;
+        let mut gg = g_from + (value * g_step) as u8;
+        let mut bb = b_from + (value * b_step) as u8;
 
         if rr > rgb255 {
             rr = rgb255;
@@ -127,15 +128,15 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
 fn function_result(d: f64, function: &Function) -> f64 {
     match function {
         Function::linear1 => d,
-        Function::linear3 => d * 3,
-        Function::linear7 => d * 7,
+        Function::linear3 => d * 3.0,
+        Function::linear7 => d * 7.0,
         Function::quadratic => d * d,
         Function::q3 => d * d * d,
         Function::q4 => d * d * d * d,
         Function::q5 => d * d * d * d * d,
-        Function::exp => d.exp() - 1,
-        Function::exp2 => (d * d).exp() - 1,
-        Function::circleDown => (1 - (d * d)).sqrt(),
-        Function::circleUp => 1 - (1 - (d * d)).sqrt(),
+        Function::exp => d.exp() - 1.0,
+        Function::exp2 => (d * d).exp() - 1.0,
+        Function::circleDown => (1.0 - (d * d)).sqrt(),
+        Function::circleUp => 1.0 - (1.0 - (d * d)).sqrt(),
     }
 }

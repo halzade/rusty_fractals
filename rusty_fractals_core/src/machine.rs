@@ -44,7 +44,7 @@ impl Machine {
 
         result_data.translate_paths_to_pixel_grid(&mut result_pixels);
 
-        self.domain.mask_full_update();
+        // self.domain.mask_full_update(); TODO
 
         let result_image = perfectly_color_values(&result_pixels, self.result_config.palette);
         Application.repaint_mandelbrot_window();
@@ -83,7 +83,7 @@ impl Machine {
             }
             iterator += 1;
         }
-        el.set_finished_state(iterator);
+        el.set_finished_state(self.domain.state_from_path_length(iterator));
 
         if length > min && iterator < max {
 
