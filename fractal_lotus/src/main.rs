@@ -1,9 +1,7 @@
-use color_palette::Palette;
+use rusty_fractals_result::palettes::palette_black_to_white;
 use rusty_fractals_core::mem::Mem;
 use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, Math};
 use rusty_fractals_domain::resolution_multiplier;
-use rusty_fractals_result::color_palette;
-use rusty_fractals_result::color_palettes::PALETTE_BLACK_TO_WHITE;
 use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::None;
 use log::{info};
@@ -37,7 +35,7 @@ fn main() {
         resolution_multiplier: None,
         repeat: false,
         save_images: false,
-        palette: PALETTE_BLACK_TO_WHITE,
+        palette: palette_black_to_white(),
     };
     let config = FractalConfig { resolution_width: RESOLUTION_WIDTH, resolution_height: RESOLUTION_HEIGHT, resolution_multiplier: RESOLUTION_MULTIPLIER, repeat: REPEAT, save_images: SAVE_IMAGES, palette: PALETTE };
 

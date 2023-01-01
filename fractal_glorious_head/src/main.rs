@@ -1,19 +1,16 @@
-use color_palette::Palette;
-use rusty_fractals_domain::resolution_multiplier;
-use rusty_fractals_result::color_palette;
-use rusty_fractals_result::color_palettes::{PALETTE_BLUE_TO_WHITE};
 use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, Math, MathPhoenix};
 use rusty_fractals_core::mem::Mem;
+use rusty_fractals_core::mem_phoenix::MemPhoenix;
+use rusty_fractals_domain::resolution_multiplier;
 use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier::Square5;
 use resolution_multiplier::ResolutionMultiplier;
-use rusty_fractals_core::mem_phoenix::MemPhoenix;
-use log::{info};
+use rusty_fractals_result::palettes::palette_blue_to_white;
 
+use log::{info};
 const NAME: &str = "Glorious Head";
 const PHOENIX_INIT_C: f64 = 0.35;
 const PHOENIX_INIT_P: f64 = -0.25;
 const PHOENIX_INIT_PHOENIX_INITIALIZER: f64 = 1.0;
-
 const ITERATION_MAX: u32 = 2500;
 const ITERATION_MIN: u32 = 8;
 const AREA_SIZE: f64 = 4.5;
@@ -24,7 +21,6 @@ const RESOLUTION_HEIGHT: u32 = 720;
 const RESOLUTION_MULTIPLIER: ResolutionMultiplier = Square5;
 const REPEAT: bool = true;
 const SAVE_IMAGES: bool = false;
-const PALETTE: Palette = PALETTE_BLUE_TO_WHITE;
 
 struct GloriousHead {
     pub name: String,
@@ -38,7 +34,7 @@ impl MathPhoenix for GloriousHead {
         mp.m.re += mp.p * mp.prev_prev_re;
         mp.m.im += mp.p * mp.prev_prev_im;
 
-        /* previous iteration */
+        // previous iteration
         mp.prev_prev_re = mp.prev_re;
         mp.prev_prev_im = mp.prev_im;
         mp.prev_re = mp.m.re;

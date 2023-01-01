@@ -1,8 +1,8 @@
+use rusty_fractals_result::palette::Palette;
 use fractal_stats::Stats;
 use resolution_multiplier::ResolutionMultiplier;
 use rusty_fractals_domain::resolution_multiplier;
 use crate::{fractal_stats, resolution_multiplier};
-use crate::color_palette;
 use crate::mem::Mem;
 use crate::mem_collatz::MemCollatz;
 use crate::mem_euler::MemEuler;
@@ -14,7 +14,7 @@ pub struct CalculationConfig {
 }
 
 pub struct ResultConfig {
-    pub palette: color_palette::Palette,
+    pub palette: Palette,
 }
 
 pub struct AppConfig {

@@ -1,11 +1,9 @@
-use color_palette::Palette;
 use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, MathCollatz};
 use rusty_fractals_core::mem::Mem;
 use rusty_fractals_core::mem_collatz::MemCollatz;
 use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier;
 use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier::None;
-use rusty_fractals_result::color_palette;
-use rusty_fractals_result::color_palettes::{PALETTE_BLUE_TO_WHITE, PALETTE_GRAY_TO_BLUE};
+use rusty_fractals_result::palettes::palette_gray_to_blue;
 use log::{info};
 
 const NAME: &str = "Collatz Conjecture Mandelbrot";
@@ -36,7 +34,7 @@ fn main() {
         resolution_multiplier: None,
         repeat: true,
         save_images: false,
-        palette: PALETTE_GRAY_TO_BLUE
+        palette: palette_gray_to_blue()
     };
 
     info!("Fractal {}", collatz.name);

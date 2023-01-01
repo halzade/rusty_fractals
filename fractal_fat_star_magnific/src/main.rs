@@ -1,11 +1,10 @@
-use color_palette::Palette;
+use rusty_fractals_result::palette::Palette;
 use rusty_fractals_core::mem::Mem;
 use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, Math};
 use rusty_fractals_domain::resolution_multiplier;
 use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::None;
-use rusty_fractals_result::color_palette;
-use rusty_fractals_result::color_palettes::PALETTE_BLACK_TO_WHITE;
+use rusty_fractals_result::palettes::palette_black_to_white;
 use log::{info};
 
 const NAME: &str = "Fat Star Magnific";
@@ -23,7 +22,7 @@ const RESOLUTION_HEIGHT: u32 = 1080;
 const RESOLUTION_MULTIPLIER: ResolutionMultiplier = None;
 const REPEAT: bool = false;
 const SAVE_IMAGES: bool = false;
-const PALETTE: Palette = PALETTE_BLACK_TO_WHITE;
+const PALETTE: Palette = palette_black_to_white();
 
 struct FatStarMagnific {
     pub name: String,

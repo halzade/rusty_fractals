@@ -1,9 +1,8 @@
-use color_palette::Palette;
+use rusty_fractals_result::palette::Palette;
+use rusty_fractals_result::palettes::palette_purple_to_white;
 use rusty_fractals_core::mem::Mem;
 use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, Math};
 use rusty_fractals_domain::resolution_multiplier;
-use rusty_fractals_result::color_palette;
-use rusty_fractals_result::color_palettes::PALETTE_PURPLE_TO_WHITE;
 use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::SquareAlter;
 use log::{info};
@@ -19,7 +18,7 @@ const RESOLUTION_HEIGHT: u32 = 1080;
 const RESOLUTION_MULTIPLIER: ResolutionMultiplier = SquareAlter;
 const REPEAT: bool = true;
 const SAVE_IMAGES: bool = false;
-const PALETTE: Palette = PALETTE_PURPLE_TO_WHITE;
+const PALETTE: Palette = palette_purple_to_white();
 
 struct NebulaTop {
     pub name: String,

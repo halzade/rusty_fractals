@@ -1,4 +1,3 @@
-use color_palette::Palette;
 use rusty_fractals_core::mem::Mem;
 use rusty_fractals_core::machine;
 use rusty_fractals_core::machine::Machine;
@@ -7,7 +6,7 @@ use rusty_fractals_domain::{resolution_multiplier};
 use rusty_fractals_domain::domain::Domain;
 use rusty_fractals_result::palette;
 use rusty_fractals_result::fractal_result::ResultData;
-use rusty_fractals_result::palettes::PALETTE_BLUE_TO_WHITE;
+use rusty_fractals_result::palettes::palette_blue_to_white;
 use rusty_fractals_common::area;
 use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::SquareAlter;
@@ -42,7 +41,7 @@ fn main() {
         resolution_multiplier: SquareAlter,
     };
     let result_config = ResultConfig {
-        palette: PALETTE_BLUE_TO_WHITE
+        palette: palette_blue_to_white()
     };
 
     info!("Fractal {}", name);

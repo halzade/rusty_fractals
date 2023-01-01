@@ -1,12 +1,11 @@
-use color_palette::Palette;
+use rusty_fractals_result::palette::Palette;
 use rusty_fractals_core::mem::Mem;
 use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, Math, MathCollatz};
 use rusty_fractals_core::mem_collatz::MemCollatz;
 use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier;
 use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier::None;
 use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier::Square3;
-use rusty_fractals_result::color_palettes::{PALETTE_BLACK_TO_WHITE, PALETTE_BLUE_TO_WHITE};
-use rusty_fractals_result::color_palette;
+use rusty_fractals_result::palettes::palette_blue_to_white;
 use log::{info};
 
 const NAME: &str = "Collatz Conjecture";
@@ -20,7 +19,7 @@ const RESOLUTION_HEIGHT: u32 = 720;
 const RESOLUTION_MULTIPLIER: ResolutionMultiplier = Square3;
 const REPEAT: bool = true;
 const SAVE_IMAGES: bool = false;
-const PALETTE: Palette = PALETTE_BLUE_TO_WHITE;
+const PALETTE: Palette = palette_blue_to_white();
 
 struct CollatzConjecture {
     pub name: String,
