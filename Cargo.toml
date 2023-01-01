@@ -6,6 +6,8 @@ authors = ["lukas"]
 keywords = ["fractal"]
 
 [dependencies]
+log4rs = "1.2.0"
+log = "0.4.17"
 
 [badges]
 maintenance = { status = "actively-developed" }

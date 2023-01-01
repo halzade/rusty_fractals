@@ -12,6 +12,8 @@ rusty_fractals_common = { path = "../rusty_fractals_common" }
 num_cpus = "0.2"
 colored = "2"
 rayon = "1.5"
+log4rs = "1.2.0"
+log = "0.4.17"
 
 [badges]
 maintenance = { status = "actively-developed" }

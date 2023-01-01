@@ -309,6 +309,8 @@ checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 name = "fractal_infinity_top"
 version = "0.1.0"
 dependencies = [
+ "log",
+ "log4rs",
  "rusty_fractals_core",
  "rusty_fractals_domain",
  "rusty_fractals_result",
@@ -804,6 +806,8 @@ name = "rusty_fractals_core"
 version = "0.1.0"
 dependencies = [
  "colored",
+ "log",
+ "log4rs",
  "num_cpus 0.2.13",
  "rayon",
  "rusty_fractals_common",
@@ -816,6 +820,8 @@ name = "rusty_fractals_domain"
 version = "0.1.0"
 dependencies = [
  "image",
+ "log",
+ "log4rs",
  "rand",
  "rusty_fractals_common",
 ]
