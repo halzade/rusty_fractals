@@ -5,8 +5,8 @@ pub struct AreaConfig {
     pub width_re: f64,
     pub center_re: f64,
     pub center_im: f64,
-    pub width_x: u32,
-    pub height_y: u32,
+    pub width_x: usize,
+    pub height_y: usize,
 }
 
 const VANILLA_AREA_CONFIG: AreaConfig = AreaConfig { width_re: 1.0, center_re: 0.0, center_im: 0.0, width_x: 10, height_y: 10 };
@@ -16,8 +16,8 @@ pub struct Area {
     pub height_im: f64,
     pub width_half_re: f64,
     pub height_half_im: f64,
-    pub width_x: u32,
-    pub height_y: u32,
+    pub width_x: usize,
+    pub height_y: usize,
     pub numbers_re: Vec<f64>,
     pub numbers_im: Vec<f64>,
     pub center_re: f64,
@@ -47,9 +47,9 @@ impl Area {
     }
 
     // check first, if can convert
-    pub fn domain_point_to_result_pixel(&self, re: f64, im: f64) -> (u32, u32) {
-        let px = ((self.width_x as f64 * (re - self.center_re) / self.width_re) + self.width_half_re).round() as u32;
-        let py = ((self.height_y as f64 * (im - self.center_im) / self.height_im) + self.height_half_im).round() as u32;
+    pub fn domain_point_to_result_pixel(&self, re: f64, im: f64) -> (usize, usize) {
+        let px = ((self.width_x as f64 * (re - self.center_re) / self.width_re) + self.width_half_re).round() as usize;
+        let py = ((self.height_y as f64 * (im - self.center_im) / self.height_im) + self.height_half_im).round() as usize;
         (px, py)
     }
 

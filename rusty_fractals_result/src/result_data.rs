@@ -13,30 +13,31 @@ pub struct ResultData {
 }
 
 impl ResultData {
+    /*
     pub fn remove_elements_outside(&mut self) {
         debug!("remove_elements_outside()");
         for mut path in self.paths {
             path.retain(|&el| self.area_result.contains(el[0], el[1]));
         }
-        self.paths.retain(|&path| path.size() > constants::MINIMUM_PATH_LENGTH);
+        self.paths.retain(|path| path.len() as u32 > constants::MINIMUM_PATH_LENGTH);
     }
-
+    */
 
     pub fn add_calculation_path(&mut self, path: Vec<[f64; 2]>) {
         self.paths.push(path);
     }
 
 
-    pub fn translate_paths_to_pixel_grid(&mut self, mut result_pixels: &mut ResultPixels) {
+    pub fn translate_paths_to_pixel_grid(mut self, mut result_pixels: &mut ResultPixels) {
         debug!("translate_paths_to_pixel_grid()");
 
         let mut pixels_total = 0;
 
         for path in self.paths {
-            for re_im in path {
+            for re_im in &path {
                 // translate [re,im] to [px,py]
-                let re = re_im.0;
-                let im = re_im.1;
+                let re = re_im[0];
+                let im = re_im[1];
                 if self.area_result.contains(re, im) {
                     let (px, py) = self.area_result.domain_point_to_result_pixel(re, im);
                     result_pixels.add(px, py);
@@ -47,7 +48,7 @@ impl ResultData {
         debug!("pixels_total:   {}", pixels_total);
 
         /* remove elements which moved out of tiny area */
-        self.remove_elements_outside();
+        // TODO self.remove_elements_outside();
 
         // Stats.pathsTotalAmount = PATHS.size();
         // Stats.pixelsValueTotal = pixels_total;

@@ -127,16 +127,13 @@ pub fn make_spectrum(function: Function, mut from: Rgb<u8>, to: Rgb<u8>) -> Vec<
 // d : 0 <= d <= 1
 fn function_result(d: f64, function: &Function) -> f64 {
     match function {
-        Function::linear1 => d,
-        Function::linear3 => d * 3.0,
-        Function::linear7 => d * 7.0,
-        Function::quadratic => d * d,
-        Function::q3 => d * d * d,
-        Function::q4 => d * d * d * d,
-        Function::q5 => d * d * d * d * d,
-        Function::exp => d.exp() - 1.0,
-        Function::exp2 => (d * d).exp() - 1.0,
-        Function::circleDown => (1.0 - (d * d)).sqrt(),
-        Function::circleUp => 1.0 - (1.0 - (d * d)).sqrt(),
+        Function::Linear1 => d,
+        Function::Linear3 => d * 3.0,
+        Function::Linear7 => d * 7.0,
+        Function::Quadratic => d * d,
+        Function::Exp => d.exp() - 1.0,
+        Function::Exp2 => (d * d).exp() - 1.0,
+        Function::CircleDown => (1.0 - (d * d)).sqrt(),
+        Function::CircleUp => 1.0 - (1.0 - (d * d)).sqrt(),
     }
 }

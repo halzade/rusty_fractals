@@ -14,21 +14,21 @@ use log::{debug, info};
 
 // for Nebula like fractals
 struct Pix {
-    x: u32,
-    y: u32,
+    x: usize,
+    y: usize,
     value: u32,
 }
 
 // for Mandelbrot like fractals
 struct Mix {
-    x: u32,
-    y: u32,
+    x: usize,
+    y: usize,
     value: u32,
     quad: f64,
     quid: f64,
 }
 
-pub fn perfectly_color_values(mut result_pixels: &ResultPixels, palette: Palette) -> RgbImage {
+pub fn perfectly_color_values(result_pixels: &mut ResultPixels, palette: Palette) -> RgbImage {
     let width = result_pixels.width;
     let height = result_pixels.height;
 
@@ -51,11 +51,11 @@ pub fn perfectly_color_values(mut result_pixels: &ResultPixels, palette: Palette
     //  order pixels from the smallest to the highest value
     pixels.sort_by(|first, second| first.value.cmp(&second.value));
 
-    let all_pixels_total = width * height;
-    let all_pixels_non_zero = all_pixels_total - zero_value_elements;
-    let palette_color_count = palette.spectrum.len();
-    let single_color_use = all_pixels_non_zero as f64 / palette_color_count as f64;
-    let left = all_pixels_non_zero - (palette_color_count as f64 * single_color_use);
+    let all_pixels_total: u32 = (width * height) as u32;
+    let all_pixels_non_zero: u32 = (all_pixels_total - zero_value_elements) as u32;
+    let palette_color_count: u32 = palette.spectrum.len() as u32;
+    let single_color_use: u32 = (all_pixels_non_zero as f64 / palette_color_count as f64) as u32;
+    let left: u32 = all_pixels_non_zero - (palette_color_count * single_color_use);
 
     debug!("------------------------------------");
     debug!("All pixels to paint:         {}", all_pixels_total);
@@ -67,26 +67,28 @@ pub fn perfectly_color_values(mut result_pixels: &ResultPixels, palette: Palette
     debug!("left:                        {}", left);
     debug!("------------------------------------");
 
-    let mut result_image = image::RgbImage::new(width, height);
+    let mut result_image = image::RgbImage::new(width as u32, height as u32);
 
     // paint mismatched pixel amount with the least value colour
     let mut pi = 0;
     for _ in 0..(left + zero_value_elements) {
-        let sp = pixels.get(pi += 1);
-        result_image.put_pixel(sp.x, sp.y, palette.spectrum_value(0));
+        let sp = pixels.get(pi).expect("pixels error");
+        pi += 1;
+        result_image.put_pixel(sp.x as u32, sp.y as u32, palette.spectrum_value(0));
     }
 
     // color all remaining pixels, these are order by value
     for palette_colour_index in 0..palette_color_count {
         for _ in 0..single_color_use {
             // color all these pixels with same color
-            let sp = pixels.get(pi += 1);
+            let sp = pixels.get(pi).expect("pixels error");
+            pi += 1;
             if sp.value <= COLORING_THRESHOLD {
                 // color zero-value elements and low-value-noise with the darkest color
-                result_image.put_pixel(sp.x, sp.y, palette.spectrum_value(0));
+                result_image.put_pixel(sp.x as u32, sp.y as u32, palette.spectrum_value(0));
             } else {
                 // perfect-color all significant pixels
-                result_image.put_pixel(sp.x, sp.y, palette.spectrum_value(palette_colour_index));
+                result_image.put_pixel(sp.x as u32, sp.y as u32, palette.spectrum_value(palette_colour_index as usize));
             }
         }
     }
@@ -143,17 +145,17 @@ fn perfectly_color_values_euler() -> RgbImage {
     pixels_green.sort_by(|first, second| first.1.cmp(&second.1));
     pixels_blue.sort_by(|first, second| first.1.cmp(&second.1));
 
-    let all_pixels_total = width * height;
-    let all_pixels_non_zero_red = all_pixels_total - zero_value_elements_red;
-    let all_pixels_non_zero_green = all_pixels_total - zero_value_elements_green;
-    let all_pixels_non_zero_blue = all_pixels_total - zero_value_elements_blue;
-    let palette_color_count = PaletteEuler3.colorResolution();
-    let single_color_use_red = all_pixels_non_zero_red / palette_color_count;
-    let single_color_use_green = all_pixels_non_zero_green / palette_color_count;
-    let single_color_use_blue = all_pixels_non_zero_blue / palette_color_count;
-    let left_red = all_pixels_non_zero_red - (palette_color_count * single_color_use_red);
-    let left_green = all_pixels_non_zero_green - (palette_color_count * single_color_use_green);
-    let left_blue = all_pixels_non_zero_blue - (palette_color_count * single_color_use_blue);
+    let all_pixels_total : u32 = width * height;
+    let all_pixels_non_zero_red : u32 = all_pixels_total - zero_value_elements_red;
+    let all_pixels_non_zero_green : u32 = all_pixels_total - zero_value_elements_green;
+    let all_pixels_non_zero_blue : u32 = all_pixels_total - zero_value_elements_blue;
+    let palette_color_count : u32 = PaletteEuler3.colorResolution();
+    let single_color_use_red : u32 = all_pixels_non_zero_red / palette_color_count;
+    let single_color_use_green : u32 = all_pixels_non_zero_green / palette_color_count;
+    let single_color_use_blue : u32 = all_pixels_non_zero_blue / palette_color_count;
+    let left_red : u32 = all_pixels_non_zero_red - (palette_color_count * single_color_use_red);
+    let left_green : u32 = all_pixels_non_zero_green - (palette_color_count * single_color_use_green);
+    let left_blue : u32 = all_pixels_non_zero_blue - (palette_color_count * single_color_use_blue);
 
     debug!("------------------------------------");
     debug!("All pixels to paint:         {}", all_pixels_total);
@@ -296,10 +298,10 @@ fn perfectly_color_values_mandelbrot() -> RgbImage {
     });
     pixels_zero.sort_by(|first, second| first.quad.cmp(&second.quad));
     
-    let all_pixels_total = width * height;
-    let all_pixels_non_zero = all_pixels_total - zero_value_elements;
-    let palette_color_count = Palette.colorResolution();
-    let single_color_use = all_pixels_non_zero / palette_color_count;
+    let all_pixels_total : u32 = width * height;
+    let all_pixels_non_zero : u32 = all_pixels_total - zero_value_elements;
+    let palette_color_count : u32 = Palette.colorResolution();
+    let single_color_use : u32 = all_pixels_non_zero / palette_color_count;
 
     let left = all_pixels_non_zero - (palette_color_count * single_color_use);
 
