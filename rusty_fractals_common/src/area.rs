@@ -38,12 +38,12 @@ impl Area {
             && im < self.border_high_im
     }
 
-    pub fn screen_to_domain_re(&self, x: u32) -> f64 {
-        self.numbers_re[x as usize]
+    pub fn screen_to_domain_re(&self, x: usize) -> f64 {
+        self.numbers_re[x]
     }
 
-    pub fn screen_to_domain_im(&self, y: u32) -> f64 {
-        self.numbers_im[y as usize]
+    pub fn screen_to_domain_im(&self, y: usize) -> f64 {
+        self.numbers_im[y]
     }
 
     // check first, if can convert

@@ -129,13 +129,13 @@ impl Mathematician {
  * Fibonacci
  */
 
-fn init_fibonacci() {
+fn init_fibonacci(max: u32) {
     print!("init_fibonacci()");
     let mut fibonacci: HashSet<u32> = HashSet::new();
     let mut a = 0;
     let mut b = 1;
     let mut sum;
-    while b <= ITERATION_MAX {
+    while b <= max {
         sum = a + b;
         fibonacci.insert(sum);
         a = b;
@@ -147,10 +147,10 @@ fn init_fibonacci() {
  * Perfect
  */
 
-pub fn init_perfect_numbers() {
+pub fn init_perfect_numbers(max: u32) {
     print!("init_perfect_numbers()");
     let mut perfect: HashSet<u32> = HashSet::new();
-    for i in 0..ITERATION_MAX {
+    for i in 0..max {
         if is_perfect_init(i) {
             perfect.insert(i);
         }
@@ -172,10 +172,10 @@ fn is_perfect_init(num: u32) -> bool {
  * Primes
  */
 
-pub fn init_primes() -> HashSet<u32> {
+pub fn init_primes(max: u32) -> HashSet<u32> {
     print!("init_primes()");
     let mut primes: HashSet<u32> = HashSet::new();
-    for i in 0..ITERATION_MAX {
+    for i in 0..max {
         if is_prime_init(i) {
             primes.insert(i);
         }
@@ -200,11 +200,11 @@ fn is_prime_init(n: u32) -> bool {
  * Squares
  */
 
-pub fn init_squares() {
+pub fn init_squares(max: u32) {
     print!("init_squares()");
     let mut square: HashSet<u32> = HashSet::new();
     let mut sq;
-    let investigate_to = f64::sqrt(ITERATION_MAX as f64) as u32 + 1;
+    let investigate_to = f64::sqrt(max as f64) as u32 + 1;
     for i in 0..investigate_to {
         sq = i * i;
         square.insert(sq);

@@ -12,32 +12,15 @@ use rusty_fractals_common::constants::NEIGHBOURS;
 use crate::domain_element::{active_new, hibernated_deep_black};
 use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, GOOD_PATH, HIBERNATED_DEEP_BLACK};
 
-pub struct Domain {
-    pub width: u32,
-    pub height: u32,
-    pub domain_area: area::Area,
+pub struct Domain<'lif> {
+    pub width: usize,
+    pub height: usize,
+    pub domain_area: &'lif Area,
     pub domain_elements: Vec<Vec<DomainElement>>,
     pub resolution_multiplier: resolution_multiplier::ResolutionMultiplier,
 }
 
-impl Domain {
-    /**
-     * Makes small square subset of domain elements, will omit those already calculated.
-     */
-    pub fn make_chunk(&self, x_from: usize, x_to: usize, y_from: usize, y_to: usize) -> Vec<&DomainElement> {
-        let mut chunk: Vec<&DomainElement> = Vec::new();
-        for x in x_from..x_to {
-            for y in y_from..y_to {
-                let core_element: &DomainElement = self.domain_elements[x]
-                    .get(y)
-                    .expect("domain_elements problem");
-                if core_element.is_active_new() {
-                    chunk.push(core_element);
-                }
-            }
-        }
-        chunk
-    }
+impl Domain<'_> {
 
     fn check_domain(&self, x: i32, y: i32) -> bool {
         x >= 0 && x < self.width as i32 && y >= 0 && y < self.height as i32
@@ -52,16 +35,6 @@ impl Domain {
         }
         coordinates_xy.shuffle(&mut thread_rng());
         coordinates_xy
-    }
-
-    pub fn state_from_path_length(iterator : u32, max : u32, min : u32) -> DomainElementState {
-        if iterator == max {
-            return DomainElementState::FinishedTooLong;
-        }
-        if iterator < min {
-            return DomainElementState::FinishedTooShort;
-        }
-        DomainElementState::FinishedSuccess
     }
 
     // Don't do any wrapping the first time because Mandelbrot elements are not optimized.
@@ -252,9 +225,19 @@ impl Domain {
         }
         false
     }
+
+    pub fn state_from_path_length(iterator: u32, max: u32, min: u32) -> DomainElementState {
+        if iterator == max {
+            return DomainElementState::FinishedTooLong;
+        }
+        if iterator < min {
+            return DomainElementState::FinishedTooShort;
+        }
+        DomainElementState::FinishedSuccess
+    }
 }
 
-fn init_domain_elements(domain_area: Area) -> Vec<Vec<DomainElement>> {
+pub fn init_domain_elements(domain_area: &Area) -> Vec<Vec<DomainElement>> {
     let mut vy: Vec<Vec<DomainElement>> = Vec::new();
     for x in 0..domain_area.width_x {
         let mut vx: Vec<DomainElement> = Vec::new();

@@ -1,12 +1,7 @@
 use rusty_fractals_result::palette::Palette;
 use fractal_stats::Stats;
-use resolution_multiplier::ResolutionMultiplier;
 use rusty_fractals_domain::resolution_multiplier;
-use crate::{fractal_stats, resolution_multiplier};
-use crate::mem::Mem;
-use crate::mem_collatz::MemCollatz;
-use crate::mem_euler::MemEuler;
-use crate::mem_phoenix::MemPhoenix;
+use crate::{fractal_stats};
 
 pub struct CalculationConfig {
     pub iteration_min: u32,
@@ -26,6 +21,7 @@ pub trait Math<T> {
     fn math(&self, m: &mut T, origin_re: f64, origin_im: f64);
 }
 
+/*
 pub fn update(mut stats: Stats) {
     // TODO ITERATION_MAX += 150;
 
@@ -47,3 +43,4 @@ pub fn update(mut stats: Stats) {
     stats.print();
     stats.clean();
 }
+*/

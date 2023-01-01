@@ -7,7 +7,7 @@ fn calculate_path(el: &DomainElement) {
     final Mem
     m = new
     Mem(el.origin_re, el.origin_im);
-    while m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
+    while m.quad() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
         /*
          * Investigate if this is a good calculation path
          * Don't create path data yet. Too many origin's don't produce good data

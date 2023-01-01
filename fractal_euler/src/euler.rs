@@ -3,15 +3,13 @@ use rusty_fractals_core::mathematician::Mathematician;
 use rusty_fractals_domain::domain_element::DomainElement;
 use log::{debug};
 
-/**
- * Fractal Euler type uses three color spectra for better mathematical analysis and better coloring results.
- * Possible use as:
- * - prime path lengths     -> Red spectrum
- * - Fibonacci path lengths -> Green spectrum
- * - other path lengths     -> Blue spectrum
- */
+// Fractal Euler type uses three color spectra for better mathematical analysis and better coloring results.
+// Possible use as:
+// - prime path length / el.order      -> Red spectrum
+// - Fibonacci path lengths / el.order -> Green spectrum
+// - other path lengths / el.order     -> Blue spectrum
 
-fn add_escape_path_long(path: Vec<[i64; 2]>) {
+fn add_calculation_path(path: Vec<[i64; 2]>) {
     paths.add(path);
 }
 
@@ -56,7 +54,7 @@ fn calculate_path(el: &DomainElement) {
     final MemEuler
     m = new
     MemEuler(el.origin_re, el.origin_im);
-    while m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
+    while m.quad() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
         /*
          * Investigate if this is a good calculation path
          * Don't create path data yet. Too many origin's don't produce good data

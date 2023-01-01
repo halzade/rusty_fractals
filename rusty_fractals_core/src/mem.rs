@@ -1,9 +1,13 @@
-/**
- * Memory object to carry calculation results.
- */
+// Memory object to carry calculation results
 pub struct Mem {
     pub re: f64,
     pub im: f64,
+}
+
+impl Mem {
+    pub(crate) fn new(re: f64, im: f64) -> Mem {
+        Mem { re, im }
+    }
 }
 
 impl Mem {

@@ -6,7 +6,6 @@ pub mod mathematician;
 pub mod mem;
 pub mod mem_collatz;
 pub mod mem_phoenix;
-pub mod log;
 pub mod fractal_path;
 
 fn lib() {

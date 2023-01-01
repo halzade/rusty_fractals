@@ -28,7 +28,7 @@ struct Mix {
     quid: f64,
 }
 
-pub fn perfectly_color_values(result_pixels: &mut ResultPixels, palette: Palette) -> RgbImage {
+pub fn perfectly_color_values(result_pixels: &mut ResultPixels, palette: &Palette) -> RgbImage {
     let width = result_pixels.width;
     let height = result_pixels.height;
 

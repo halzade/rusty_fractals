@@ -7,12 +7,12 @@ fn calculate_iterations_mandelbrot(el: &DomainElement) {
     /*
     let mut iterator = 0;
     let m = MemCollatzConjecture(el.origin_re, el.origin_im);
-    while m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
+    while m.quad() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
         math(m, el.origin_re, el.origin_im);
         iterator += 1;
     }
 
-    el.set_finished_state(iterator, m.quadrance());
+    el.set_finished_state(iterator, m.quad());
     */
 }
 
@@ -22,7 +22,7 @@ fn calculate_path_collatz(el: &DomainElement) {
     let mut iterator = 0;
     let length = 0;
     let m = MemCollatzConjecture(el.origin_re, el.origin_im);
-    while m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
+    while m.quad() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
 
         math(m, el.origin_re, el.origin_im);
         if AreaFinebrot.contains(m) {
@@ -64,7 +64,7 @@ fn calculate_path_phoenix(el: &DomainElement) {
     let mut iterator = 0;
     let length = 0;
     let m = new MemPhoenix(el.origin_re, el.origin_im);
-    while m.quadrance() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
+    while m.quad() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
         math(m, el.origin_re, el.origin_im);
         if AreaFinebrot.contains(m) {
             length += 1;

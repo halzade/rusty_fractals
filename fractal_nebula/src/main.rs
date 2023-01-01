@@ -1,11 +1,8 @@
 use rusty_fractals_core::mem::Mem;
-use rusty_fractals_core::machine;
 use rusty_fractals_core::machine::Machine;
 use rusty_fractals_core::fractal::{AppConfig, CalculationConfig, Math, ResultConfig};
 use rusty_fractals_domain::{resolution_multiplier};
-use rusty_fractals_domain::domain::Domain;
-use rusty_fractals_result::palette;
-use rusty_fractals_result::fractal_result::ResultData;
+use rusty_fractals_domain::domain::{Domain, init_domain_elements};
 use rusty_fractals_result::palettes::palette_blue_to_white;
 use rusty_fractals_common::area;
 use resolution_multiplier::ResolutionMultiplier;
@@ -37,8 +34,7 @@ fn main() {
         center_re: 0.0,
         center_im: 0.0,
         width_x: 1280,
-        height_y: 720,
-        resolution_multiplier: SquareAlter,
+        height_y: 720
     };
     let result_config = ResultConfig {
         palette: palette_blue_to_white()
@@ -47,17 +43,17 @@ fn main() {
     info!("Fractal {}", name);
 
     let nebula = Nebula {};
-    let area = domain_area::init(area_cfg);
+    let domain_area = area::init(area_cfg);
     let domain = Domain {
-        width: area.width_x,
-        height: area.height_y,
-        domain_area: area,
-        domain_elements: init_domain_elements(),
+        width: domain_area.width_x,
+        height: domain_area.height_y,
+        domain_area: &domain_area,
+        domain_elements: init_domain_elements(&domain_area),
         resolution_multiplier: ResolutionMultiplier::None,
     };
     let mut machine = Machine {
-        area,
-        domain,
+        area: &domain_area,
+        domain: &domain,
         calculation_config,
         app_config,
         result_config,
