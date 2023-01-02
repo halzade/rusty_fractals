@@ -34,6 +34,7 @@ impl Target {
     }
 }
 
+/*
 fn init(width_x: usize, height_y: usize) -> Target {
     Target {
         width: width_x,
@@ -42,3 +43,4 @@ fn init(width_x: usize, height_y: usize) -> Target {
         scr_y: (height_y as f64 / 2.0) as usize,
     }
 }
+*/

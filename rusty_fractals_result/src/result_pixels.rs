@@ -1,4 +1,6 @@
 use log::{debug};
+use rusty_fractals_common::area::Area;
+use crate::result_data::ResultData;
 
 pub struct ResultPixels {
     pub width: usize,
@@ -7,6 +9,33 @@ pub struct ResultPixels {
 }
 
 impl ResultPixels {
+
+    pub fn translate_paths_to_pixel_grid(&mut self, paths: Vec<Vec<[f64; 2]>>, area : &Area) {
+        debug!("translate_paths_to_pixel_grid()");
+
+        let mut pixels_total = 0;
+
+        for path in paths {
+            for re_im in path {
+                // translate [re,im] to [px,py]
+                let re = re_im[0];
+                let im = re_im[1];
+                if area.contains(re, im) {
+                    let (px, py) = area.domain_point_to_result_pixel(re, im);
+                    self.add(px, py);
+                    pixels_total += 1;
+                }
+            }
+        }
+        debug!("pixels_total:   {}", pixels_total);
+
+        // remove elements which moved out of tiny area
+        // TODO self.remove_elements_outside();
+
+        // Stats.pathsTotalAmount = PATHS.size();
+        // Stats.pixelsValueTotal = pixels_total;
+    }
+
     pub fn add(&mut self, x: usize, y: usize) {
         self.pixels[x][y] += 1;
     }

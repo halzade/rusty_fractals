@@ -5,7 +5,6 @@ use rusty_fractals_domain::{resolution_multiplier};
 use rusty_fractals_domain::domain::{Domain, init_domain_elements};
 use rusty_fractals_result::palettes::palette_blue_to_white;
 use rusty_fractals_common::area;
-use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::SquareAlter;
 use log::{info};
 
@@ -49,7 +48,7 @@ fn main() {
         height: domain_area.height_y,
         domain_area: &domain_area,
         domain_elements: init_domain_elements(&domain_area),
-        resolution_multiplier: ResolutionMultiplier::None,
+        resolution_multiplier: SquareAlter,
     };
     let mut machine = Machine {
         area: &domain_area,

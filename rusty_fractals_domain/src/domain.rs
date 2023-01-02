@@ -2,11 +2,9 @@ use image::Rgb;
 use crate::{domain_element, resolution_multiplier};
 use domain_element::DomainElement;
 use crate::resolution_multiplier::ResolutionMultiplier;
-use crate::resolution_multiplier::ResolutionMultiplier::SquareAlter;
 
 use rand::thread_rng;
 use rand::seq::SliceRandom;
-use rusty_fractals_common::area;
 use rusty_fractals_common::area::Area;
 use rusty_fractals_common::constants::NEIGHBOURS;
 use crate::domain_element::{active_new, hibernated_deep_black};

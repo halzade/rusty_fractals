@@ -7,7 +7,7 @@ use rusty_fractals_common::area::Area;
 use rusty_fractals_common::constants::CALCULATION_BOUNDARY;
 use rusty_fractals_domain::domain::Domain;
 use rusty_fractals_domain::domain_element::DomainElement;
-use log::{debug};
+use log::{info};
 use rusty_fractals_domain::pixel_states::DomainElementState;
 use crate::fractal::{AppConfig, CalculationConfig, Math, ResultConfig};
 use crate::mem::Mem;
@@ -23,6 +23,7 @@ pub struct Machine<'lif> {
 
 impl Machine<'_> {
     pub fn calculate(&mut self, fractal_math: &impl Math<Mem>) {
+        info!("calculate()");
         let coordinates_xy = self.domain.shuffled_calculation_coordinates();
 
         let mut result_data = ResultData {
@@ -41,7 +42,7 @@ impl Machine<'_> {
             pixels: vec![],
         };
 
-        // TODO self.translate_paths_to_pixel_grid(&result_data, &mut result_pixels);
+        result_pixels.translate_paths_to_pixel_grid(result_data.paths, &self.area);
 
         // self.domain.mask_full_update(); TODO
 
@@ -111,33 +112,5 @@ impl Machine<'_> {
         }
 
         el_state
-    }
-
-    pub fn translate_paths_to_pixel_grid(&self, result_data: &ResultData, result_pixels: &mut ResultPixels) {
-        /*
-        debug!("translate_paths_to_pixel_grid()");
-
-        let mut pixels_total = 0;
-
-        for path in result_data.paths {
-            for re_im in &path {
-                // translate [re,im] to [px,py]
-                let re = re_im[0];
-                let im = re_im[1];
-                if self.area.contains(re, im) {
-                    let (px, py) = self.area.domain_point_to_result_pixel(re, im);
-                    result_pixels.add(px, py);
-                    pixels_total += 1;
-                }
-            }
-        }
-        debug!("pixels_total:   {}", pixels_total);
-
-        // remove elements which moved out of tiny area
-        // TODO self.remove_elements_outside();
-
-        // Stats.pathsTotalAmount = PATHS.size();
-        // Stats.pixelsValueTotal = pixels_total;
-        */
     }
 }
