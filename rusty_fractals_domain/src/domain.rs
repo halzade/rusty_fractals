@@ -1,4 +1,5 @@
-use image::Rgb;
+use std::borrow::BorrowMut;
+use image::{Rgb, RgbImage};
 use crate::{domain_element, resolution_multiplier};
 use domain_element::DomainElement;
 use crate::resolution_multiplier::ResolutionMultiplier;
@@ -19,7 +20,6 @@ pub struct Domain<'lif> {
 }
 
 impl Domain<'_> {
-
     fn check_domain(&self, x: i32, y: i32) -> bool {
         x >= 0 && x < self.width as i32 && y >= 0 && y < self.height as i32
     }
@@ -78,7 +78,7 @@ impl Domain<'_> {
     }
 
     // Colors for Mandelbrot image based on Mandelbrot element's state
-    pub fn color_for_state(el: DomainElement) -> Rgb<u8> {
+    pub fn color_for_state(el: &DomainElement) -> Rgb<u8> {
         match el.state {
             // most of the elements are going to be FinishedSuccessPast
             DomainElementState::FinishedSuccessPast => FINISHED_SUCCESS_PAST,
@@ -92,15 +92,15 @@ impl Domain<'_> {
         }
     }
 
-    /*
-    pub fn mask_full_update(&self) {
+    pub fn domain_element_states_to_image(&self) -> RgbImage {
+        let mut domain_image = RgbImage::new(self.width as u32, self.height as u32);
         for y in 0..self.height - 1 {
             for x in 0..self.width - 1 {
-                domain_image.put_pixel(x, y, palette_utils::color_for_state(self.domain_elements[x][y]).getRGB());
+                domain_image.put_pixel(x as u32, y as u32, Domain::color_for_state(&self.domain_elements[x][y]));
             }
         }
+        domain_image
     }
-    */
 
     // This is called after calculation finished, zoom was called and new area measures recalculated
     /*

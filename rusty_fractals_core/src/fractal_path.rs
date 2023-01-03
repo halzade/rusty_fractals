@@ -1,8 +1,6 @@
-use rusty_fractals_common::constants::CALCULATION_BOUNDARY;
 use rusty_fractals_domain::domain_element::DomainElement;
-use crate::mem::Mem;
 
-
+#[allow(dead_code)]
 fn calculate_iterations_mandelbrot(el: &DomainElement) {
     /*
     let mut iterator = 0;
@@ -16,7 +14,7 @@ fn calculate_iterations_mandelbrot(el: &DomainElement) {
     */
 }
 
-
+#[allow(dead_code)]
 fn calculate_path_collatz(el: &DomainElement) {
     /*
     let mut iterator = 0;
@@ -59,6 +57,7 @@ fn calculate_path_collatz(el: &DomainElement) {
 // protected double c;
 // protected double p;
 
+#[allow(dead_code)]
 fn calculate_path_phoenix(el: &DomainElement) {
     /*
     let mut iterator = 0;

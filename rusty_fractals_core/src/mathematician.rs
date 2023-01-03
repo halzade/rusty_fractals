@@ -8,6 +8,7 @@ pub struct Mathematician {
     pub square: HashSet<u32>,
 }
 
+#[allow(dead_code)]
 impl Mathematician {
     /**
      * (t^2 + x^2 - 2at)^2 = 4a^2 (t^2 + x^2)
@@ -129,6 +130,7 @@ impl Mathematician {
  * Fibonacci
  */
 
+#[allow(dead_code)]
 fn init_fibonacci(max: u32) {
     print!("init_fibonacci()");
     let mut fibonacci: HashSet<u32> = HashSet::new();

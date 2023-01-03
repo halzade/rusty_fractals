@@ -44,7 +44,7 @@ impl Machine<'_> {
 
         result_pixels.translate_paths_to_pixel_grid(result_data.paths, &self.area);
 
-        // self.domain.mask_full_update(); TODO
+        let domain_image = self.domain.domain_element_states_to_image();
 
         // TODO let result_image = perfectly_color_values(&mut result_pixels, &self.result_config.palette);
         // TOOD Application.repaint_mandelbrot_window();
