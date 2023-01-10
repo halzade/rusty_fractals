@@ -1,6 +1,5 @@
-use perfect_color_distribution::perfectly_color_values;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
-use rusty_fractals_result::perfect_color_distribution;
+use rusty_fractals_result::{perfect_color_distribution, result_pixels};
 use rusty_fractals_result::result_data::ResultData;
 use rusty_fractals_result::result_pixels::ResultPixels;
 use rusty_fractals_common::area::Area;
@@ -36,18 +35,15 @@ impl Machine<'_> {
             |xy| self.chunk_calculation(&xy, fractal_math, &mut result_data)
         );
 
-        let mut result_pixels = ResultPixels {
-            width: self.area.width_x,
-            height: self.area.height_y,
-            pixels: vec![],
-        };
+        let mut result_pixels = result_pixels::init(self.area.width_x, self.area.height_y);
 
         result_pixels.translate_paths_to_pixel_grid(result_data.paths, &self.area);
 
         let domain_image = self.domain.domain_element_states_to_image();
 
-        // TODO let result_image = perfectly_color_values(&mut result_pixels, &self.result_config.palette);
-        // TOOD Application.repaint_mandelbrot_window();
+        let result_image = perfect_color_distribution::perfectly_color_result_values(&result_pixels, &self.result_config.palette);
+
+        // TODO Application.repaint_mandelbrot_window();
     }
 
     // in sequence (cpu_num) executes as 20x20 parallel for each domain chunk

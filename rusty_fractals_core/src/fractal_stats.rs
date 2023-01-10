@@ -1,6 +1,5 @@
-// Take snapshot of data for comparison at well colored frame.
-const TAKE_MEASURES_AT_FRAME: u32 = 20;
 use log::{info};
+use rusty_fractals_common::constants::TAKE_MEASURES_AT_FRAME;
 
 pub(crate) struct Stats {
     new_elements_too_long: i32,

@@ -28,7 +28,7 @@ struct Mix {
     quid: f64,
 }
 
-pub fn perfectly_color_values(result_pixels: &mut ResultPixels, palette: &Palette) -> RgbImage {
+pub fn perfectly_color_result_values(result_pixels: &ResultPixels, palette: &Palette) -> RgbImage {
     let width = result_pixels.width;
     let height = result_pixels.height;
 
@@ -38,8 +38,8 @@ pub fn perfectly_color_values(result_pixels: &mut ResultPixels, palette: &Palett
     let mut zero_value_elements = 0;
 
     // read screen values
-    for y in 0..height {
-        for x in 0..width {
+    for y in 0..height - 1 {
+        for x in 0..width - 1 {
             let v = result_pixels.value_at(x, y);
             if v <= COLORING_THRESHOLD {
                 zero_value_elements += 1;
@@ -78,8 +78,8 @@ pub fn perfectly_color_values(result_pixels: &mut ResultPixels, palette: &Palett
     }
 
     // color all remaining pixels, these are order by value
-    for palette_colour_index in 0..palette_color_count {
-        for _ in 0..single_color_use {
+    for palette_colour_index in 0..palette_color_count - 1 {
+        for _ in 0..single_color_use - 1 {
             // color all these pixels with same color
             let sp = pixels.get(pi).expect("pixels error");
             pi += 1;

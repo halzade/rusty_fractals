@@ -1,6 +1,5 @@
 use log::{debug};
 use rusty_fractals_common::area::Area;
-use crate::result_data::ResultData;
 
 pub struct ResultPixels {
     pub width: usize,
@@ -49,7 +48,7 @@ impl ResultPixels {
         }
     }
 
-    pub fn value_at(&mut self, x: usize, y: usize) -> u32 {
+    pub fn value_at(&self, x: usize, y: usize) -> u32 {
         self.pixels[x][y]
     }
 

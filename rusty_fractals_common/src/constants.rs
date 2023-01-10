@@ -18,3 +18,6 @@ pub const CALCULATION_BOUNDARY: u32 = 4;
 
 // 0.98 is a good choice for 25fps and moderate speed
 pub const ZOOM: f64 = 0.98;
+
+// take result data snapshot for comparison at well colored frame
+pub const TAKE_MEASURES_AT_FRAME: u32 = 20;
