@@ -1,6 +1,5 @@
 use rusty_fractals_common::area::Area;
 use crate::result_pixels::ResultPixels;
-use log::{debug};
 use rusty_fractals_common::constants;
 
 pub struct ResultData {
@@ -14,7 +13,7 @@ pub struct ResultData {
 impl ResultData {
     /*
     pub fn remove_elements_outside(&mut self) {
-        debug!("remove_elements_outside()");
+        println!("remove_elements_outside()");
         for mut path in self.paths {
             path.retain(|&el| self.area_result.contains(el[0], el[1]));
         }

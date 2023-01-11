@@ -1,4 +1,3 @@
-use log::{debug};
 use rusty_fractals_common::area::Area;
 
 pub struct ResultPixels {
@@ -10,7 +9,7 @@ pub struct ResultPixels {
 impl ResultPixels {
 
     pub fn translate_paths_to_pixel_grid(&mut self, paths: Vec<Vec<[f64; 2]>>, area : &Area) {
-        debug!("translate_paths_to_pixel_grid()");
+        println!("translate_paths_to_pixel_grid()");
 
         let mut pixels_total = 0;
 
@@ -26,7 +25,7 @@ impl ResultPixels {
                 }
             }
         }
-        debug!("pixels_total:   {}", pixels_total);
+        println!("pixels_total:   {}", pixels_total);
 
         // remove elements which moved out of tiny area
         // TODO self.remove_elements_outside();
@@ -40,7 +39,7 @@ impl ResultPixels {
     }
 
     pub fn clear(&mut self) {
-        debug!("clear");
+        println!("clear");
         for y in 0..self.height {
             for x in 0..self.width {
                 self.pixels[x][y] = 0;
@@ -53,7 +52,7 @@ impl ResultPixels {
     }
 
     pub fn best_four_chunks_value(&self) -> u32 {
-        debug!("best_four_chunks_value()");
+        println!("best_four_chunks_value()");
         let chunk_size_x = self.width / 20;
         let chunk_size_y = self.height / 20;
         let mut values: Vec<u32> = Vec::new();
@@ -75,7 +74,7 @@ impl ResultPixels {
                 None => panic!(),
             }
         }
-        debug!("best_four_chunks_value() sum: {}", sum);
+        println!("best_four_chunks_value() sum: {}", sum);
         sum
     }
 

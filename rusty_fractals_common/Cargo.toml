@@ -7,8 +7,6 @@ keywords = ["fractal"]
 
 [dependencies]
 rgb = "0.8"
-log4rs = "1.2.0"
-log = "0.4.17"
 
 [badges]
 maintenance = { status = "actively-developed" }

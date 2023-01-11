@@ -1,5 +1,4 @@
 use crate::constants::ZOOM;
-use log::{debug, info};
 
 pub struct AreaConfig {
     pub width_re: f64,
@@ -54,7 +53,7 @@ impl Area {
     }
 
     pub fn zoom_in(&mut self) {
-        debug!("zoom_in()");
+        println!("zoom_in()");
         self.width_re = self.width_re * ZOOM;
         self.height_im = self.height_im * ZOOM;
         self.plank = self.width_re / self.width_x as f64;
@@ -64,21 +63,21 @@ impl Area {
     // fn move_to_coordinates(&mut self) {
     //     self.center_re = screenToDomainCreateRe(Target.getScreenFromCornerX());
     //     self.center_im = screenToDomainCreateIm(Target.getScreenFromCornerY());
-    //     debug!("Move to: {}, {}", self.center_re, self.center_im);
+    //     println!("Move to: {}, {}", self.center_re, self.center_im);
     // }
 
     /**
      * move to zoom target
      */
     pub fn move_to_initial_coordinates(&mut self, init_target_re: f64, init_target_im: f64) {
-        debug!("move_to_initial_coordinates()");
+        println!("move_to_initial_coordinates()");
         self.center_re = init_target_re;
         self.center_im = init_target_im;
     }
 }
 
 pub fn init(config: AreaConfig) -> Area {
-    debug!("init()");
+    println!("init()");
     let width_re = config.width_re;
     let center_re = config.center_re;
     let center_im = config.center_im;
@@ -94,10 +93,10 @@ pub fn init(config: AreaConfig) -> Area {
     let border_low_im = center_im - (height_half_im);
     let border_high_im = center_im + (height_half_im);
 
-    info!("border_low_re  {}", border_low_re);
-    info!("border_high_re {}", border_high_re);
-    info!("border_low_im  {}", border_low_im);
-    info!("border_high_im {}", border_high_im);
+    println!("border_low_re  {}", border_low_re);
+    println!("border_high_re {}", border_high_re);
+    println!("border_low_im  {}", border_low_im);
+    println!("border_high_im {}", border_high_im);
 
     /* Generate domain elements */
     let mut numbers_re: Vec<f64> = Vec::new();

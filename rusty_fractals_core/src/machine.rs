@@ -6,7 +6,6 @@ use rusty_fractals_common::area::Area;
 use rusty_fractals_common::constants::CALCULATION_BOUNDARY;
 use rusty_fractals_domain::domain::Domain;
 use rusty_fractals_domain::domain_element::DomainElement;
-use log::{info};
 use rusty_fractals_domain::pixel_states::DomainElementState;
 use crate::fractal::{AppConfig, CalculationConfig, Math, ResultConfig};
 use crate::mem::Mem;
@@ -22,7 +21,7 @@ pub struct Machine<'lif> {
 
 impl Machine<'_> {
     pub fn calculate(&mut self, fractal_math: &impl Math<Mem>) {
-        info!("calculate()");
+        println!("calculate()");
         let coordinates_xy = self.domain.shuffled_calculation_coordinates();
 
         let mut result_data = ResultData {

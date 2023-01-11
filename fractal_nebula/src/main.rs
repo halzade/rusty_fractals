@@ -1,12 +1,11 @@
-use rusty_fractals_core::mem::Mem;
-use rusty_fractals_core::machine::Machine;
-use rusty_fractals_core::fractal::{AppConfig, CalculationConfig, Math, ResultConfig};
-use rusty_fractals_domain::{resolution_multiplier};
-use rusty_fractals_domain::domain::{Domain, init_domain_elements};
-use rusty_fractals_result::palettes::palette_blue_to_white;
-use rusty_fractals_common::area;
 use resolution_multiplier::ResolutionMultiplier::SquareAlter;
-use log::{info};
+use rusty_fractals_common::area;
+use rusty_fractals_core::fractal::{AppConfig, CalculationConfig, Math, ResultConfig};
+use rusty_fractals_core::machine::Machine;
+use rusty_fractals_core::mem::Mem;
+use rusty_fractals_domain::domain::{init_domain_elements, Domain};
+use rusty_fractals_domain::resolution_multiplier;
+use rusty_fractals_result::palettes::palette_blue_to_white;
 
 struct Nebula {}
 
@@ -33,13 +32,13 @@ fn main() {
         center_re: 0.0,
         center_im: 0.0,
         width_x: 1280,
-        height_y: 720
+        height_y: 720,
     };
     let result_config = ResultConfig {
-        palette: palette_blue_to_white()
+        palette: palette_blue_to_white(),
     };
 
-    info!("Fractal {}", name);
+    println!("Fractal {}", name);
 
     let nebula = Nebula {};
     let domain_area = area::init(area_cfg);
@@ -60,9 +59,8 @@ fn main() {
 
     machine.calculate(&nebula);
 
-    info!("Finished.");
+    println!("Finished.");
 }
-
 
 #[test]
 fn test_math() {

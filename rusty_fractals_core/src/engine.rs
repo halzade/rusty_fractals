@@ -19,7 +19,7 @@ impl Engine<'_>  {
         let mut first = true;
 
         for it in 1.. {
-            info!("{}", it);
+            println!("{}", it);
 
             if first {
                 first = false;

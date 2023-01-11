@@ -9,9 +9,6 @@ keywords = ["fractal"]
 rusty_fractals_common = { path = "../rusty_fractals_common" }
 rand = "0.8.5"
 image = "0.24.5"
-log4rs = "1.2.0"
-log = "0.4.17"
-
 
 [badges]
 maintenance = { status = "actively-developed" }

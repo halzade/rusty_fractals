@@ -1,3 +1,3 @@
 fn main() {
-    info!("hello, rusty fractals!");
+    println!("hello, rusty fractals!");
 }

@@ -5,7 +5,6 @@ use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, Math};
 use rusty_fractals_domain::resolution_multiplier;
 use resolution_multiplier::ResolutionMultiplier;
 use resolution_multiplier::ResolutionMultiplier::SquareAlter;
-use log::{info};
 
 const NAME: &str = "Nebula top";
 const ITERATION_MAX: u32 = 14800;
@@ -32,18 +31,18 @@ impl Math for NebulaTop {
 }
 
 fn main() {
-    info!("Started");
+    println!("Started");
 
     let nebula = NebulaTop { name: NAME.to_string() };
     let definition = FractalDefinition { iteration_min: ITERATION_MIN, iteration_max: ITERATION_MAX, area_size: AREA_SIZE, target_re: TARGET_RE, target_im: TARGET_IM };
     let config = FractalConfig { resolution_width: RESOLUTION_WIDTH, resolution_height: RESOLUTION_HEIGHT, resolution_multiplier: RESOLUTION_MULTIPLIER, repeat: REPEAT, save_images: SAVE_IMAGES, palette: PALETTE };
 
-    info!("Fractal {}", nebula.name);
+    println!("Fractal {}", nebula.name);
 
     let mut m = Mem { re: 0.0, im: 0.0 };
     nebula.math(&mut m, 1.0, 0.1);
 
-    info!("Finished.");
+    println!("Finished.");
 }
 
 
