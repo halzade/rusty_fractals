@@ -796,8 +796,6 @@ dependencies = [
 name = "rusty_fractals_common"
 version = "0.1.0"
 dependencies = [
- "log",
- "log4rs",
  "rgb",
 ]
 
@@ -806,8 +804,6 @@ name = "rusty_fractals_core"
 version = "0.1.0"
 dependencies = [
  "colored",
- "log",
- "log4rs",
  "num_cpus 0.2.13",
  "rayon",
  "rusty_fractals_common",
@@ -820,8 +816,6 @@ name = "rusty_fractals_domain"
 version = "0.1.0"
 dependencies = [
  "image",
- "log",
- "log4rs",
  "rand",
  "rusty_fractals_common",
 ]
@@ -831,8 +825,6 @@ name = "rusty_fractals_result"
 version = "0.1.0"
 dependencies = [
  "image",
- "log",
- "log4rs",
  "rgb",
  "rusty_fractals_common",
 ]
