@@ -23,7 +23,7 @@ struct NebulaTop {
     pub name: String,
 }
 
-impl Math for NebulaTop {
+impl Math<Mem> for NebulaTop {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         m.square();
         m.plus(origin_re, origin_im);
