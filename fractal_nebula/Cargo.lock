@@ -56,10 +56,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "14c189c53d098945499cdfa7ecc63567cf3886b3332b312a5b4585d8d3a6a610"
 
 [[package]]
+name = "cc"
+version = "1.0.78"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a20104e2335ce8a659d6dd92a51a767a0c062599c73b343fd152cb401e828c3d"
+
+[[package]]
 name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
+
+[[package]]
+name = "cmake"
+version = "0.1.49"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db34956e100b30725f2eb215f90d4871051239535632f84fea3bc92722c66b7c"
+dependencies = [
+ "cc",
+]
 
 [[package]]
 name = "color_quant"
@@ -168,6 +183,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "fltk"
+version = "1.3.27"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff21e9605f9dceb6b3670d9e2fc37aae325f8540d0024c1d0e6cc24ca3124cac"
+dependencies = [
+ "bitflags",
+ "crossbeam-channel",
+ "fltk-sys",
+ "paste",
+ "ttf-parser",
+]
+
+[[package]]
+name = "fltk-sys"
+version = "1.3.27"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e16701f41181024343409bd4768ef7053a29b3ee423cd660b371cecb89bd837b"
+dependencies = [
+ "cmake",
+]
+
+[[package]]
 name = "flume"
 version = "0.10.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -184,6 +221,9 @@ dependencies = [
 name = "fractal_nebula"
 version = "0.1.0"
 dependencies = [
+ "fltk",
+ "image",
+ "rgb",
  "rusty_fractals_common",
  "rusty_fractals_core",
  "rusty_fractals_domain",
@@ -385,15 +425,6 @@ dependencies = [
 
 [[package]]
 name = "num_cpus"
-version = "0.2.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cee7e88156f3f9e19bdd598f8d6c9db7bf4078f99f8381f43a55b09648d1a6e3"
-dependencies = [
- "libc",
-]
-
-[[package]]
-name = "num_cpus"
 version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fac9e2da13b5eb447a6ce3d392f23a29d8694bff781bf03a16cd9ac8697593b"
@@ -407,6 +438,12 @@ name = "once_cell"
 version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6f61fba1741ea2b3d6a1e3178721804bb716a68a6aeba1149b5d52e3d464ea66"
+
+[[package]]
+name = "paste"
+version = "1.0.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d01a5bd0424d00070b0098dd17ebca6f961a959dead1dbcbbbc1d1cd8d3deeba"
 
 [[package]]
 name = "pin-project"
@@ -513,7 +550,7 @@ dependencies = [
  "crossbeam-channel",
  "crossbeam-deque",
  "crossbeam-utils",
- "num_cpus 1.15.0",
+ "num_cpus",
 ]
 
 [[package]]
@@ -537,7 +574,8 @@ name = "rusty_fractals_core"
 version = "0.1.0"
 dependencies = [
  "colored",
- "num_cpus 0.2.13",
+ "image",
+ "num_cpus",
  "rayon",
  "rusty_fractals_common",
  "rusty_fractals_domain",
@@ -606,7 +644,7 @@ version = "1.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d050e60b33d41c19108b32cea32164033a9013fe3b46cbd4457559bfbf77afaa"
 dependencies = [
- "num_cpus 1.15.0",
+ "num_cpus",
 ]
 
 [[package]]
@@ -619,6 +657,12 @@ dependencies = [
  "jpeg-decoder",
  "weezl",
 ]
+
+[[package]]
+name = "ttf-parser"
+version = "0.18.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0609f771ad9c6155384897e1df4d948e692667cc0588548b68eb44d052b27633"
 
 [[package]]
 name = "unicode-ident"
