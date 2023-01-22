@@ -16,7 +16,7 @@ pub struct Domain<'lif> {
     pub height: usize,
     pub domain_area: &'lif Area,
     pub domain_elements: Vec<Vec<DomainElement>>,
-    pub resolution_multiplier: resolution_multiplier::ResolutionMultiplier,
+    pub resolution_multiplier: ResolutionMultiplier,
 }
 
 impl Domain<'_> {

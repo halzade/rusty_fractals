@@ -1,14 +1,14 @@
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use rusty_fractals_result::{perfect_color_distribution, result_pixels};
 use rusty_fractals_result::result_data::ResultData;
-use rusty_fractals_result::result_pixels::ResultPixels;
 use rusty_fractals_common::area::Area;
 use rusty_fractals_common::constants::CALCULATION_BOUNDARY;
 use rusty_fractals_domain::domain::Domain;
 use rusty_fractals_domain::domain_element::DomainElement;
 use rusty_fractals_domain::pixel_states::DomainElementState;
-use crate::fractal::{AppConfig, CalculationConfig, Math, ResultConfig};
+use image::{Rgb, RgbImage};
 use crate::mem::Mem;
+use crate::fractal::{AppConfig, CalculationConfig, Math, ResultConfig};
 
 // to calculate single image
 pub struct Machine<'lif> {
@@ -20,7 +20,7 @@ pub struct Machine<'lif> {
 }
 
 impl Machine<'_> {
-    pub fn calculate(&mut self, fractal_math: &impl Math<Mem>) {
+    pub fn calculate(&mut self, fractal_math: &impl Math<Mem>) -> (RgbImage, RgbImage) {
         println!("calculate()");
         let coordinates_xy = self.domain.shuffled_calculation_coordinates();
 
@@ -42,7 +42,7 @@ impl Machine<'_> {
 
         let result_image = perfect_color_distribution::perfectly_color_result_values(&result_pixels, &self.result_config.palette);
 
-        // TODO Application.repaint_mandelbrot_window();
+        (domain_image, result_image)
     }
 
     // in sequence (cpu_num) executes as 20x20 parallel for each domain chunk
