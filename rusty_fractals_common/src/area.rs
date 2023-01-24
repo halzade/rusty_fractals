@@ -148,13 +148,13 @@ fn test_contains() {
 #[test]
 fn test_screen_to_domain_re() {
     let area = init(VANILLA_AREA_CONFIG);
-    let r = area.screen_to_domain_re(500);
-    assert_eq!(r, 0.125);
+    let r = area.screen_to_domain_re(5);
+    assert_eq!(r, 0.0);
 }
 
 #[test]
 fn test_screen_to_domain_im() {
     let area = init(VANILLA_AREA_CONFIG);
-    let i = area.screen_to_domain_im(20);
-    assert_eq!(i, -0.475);
+    let i = area.screen_to_domain_im(2);
+    assert_eq!(i, -0.3);
 }

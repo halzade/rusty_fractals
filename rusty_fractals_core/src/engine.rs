@@ -1,8 +1,8 @@
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
-use crate::{fractal, machine};
+use rayon::iter::{ParallelIterator};
 use rusty_fractals_common::area::Area;
+use rusty_fractals_common::fractal::{AppConfig, CalculationConfig};
 use rusty_fractals_domain::domain::Domain;
-use crate::fractal::{AppConfig, CalculationConfig, ResultConfig};
+use rusty_fractals_result::result::ResultConfig;
 
 // to calculate zoom, sequence of images
 pub struct Engine<'lif> {

@@ -1,13 +1,15 @@
-use std::borrow::BorrowMut;
 use image::{Rgb, RgbImage};
 use crate::{domain_element, resolution_multiplier};
 use domain_element::DomainElement;
 use crate::resolution_multiplier::ResolutionMultiplier;
-
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use rusty_fractals_common::area::Area;
-use rusty_fractals_common::constants::NEIGHBOURS;
+use rusty_fractals_common::constants::{CALCULATION_BOUNDARY, NEIGHBOURS};
+use rusty_fractals_common::fractal::{CalculationConfig, Math};
+use rusty_fractals_common::mem;
+use rusty_fractals_common::mem::Mem;
+use rusty_fractals_common::result_data::ResultData;
 use crate::domain_element::{active_new, hibernated_deep_black};
 use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, GOOD_PATH, HIBERNATED_DEEP_BLACK};
 
@@ -15,11 +17,60 @@ pub struct Domain<'lif> {
     pub width: usize,
     pub height: usize,
     pub domain_area: &'lif Area,
-    pub domain_elements: Vec<Vec<DomainElement>>,
-    pub resolution_multiplier: ResolutionMultiplier,
+    domain_elements: Vec<Vec<DomainElement>>,
+    resolution_multiplier: ResolutionMultiplier,
 }
 
 impl Domain<'_> {
+
+    pub fn calculate_path_finite(&mut self, x : usize, y : usize, fractal_math: &impl Math<Mem>, result: &mut ResultData, calculation_config: &CalculationConfig) {
+        let el: &mut DomainElement = self.domain_elements[x].get_mut(y).expect("domain_elements problem");
+        if el.is_active_new() {
+
+            let max = calculation_config.iteration_max;
+            let min = calculation_config.iteration_min;
+            let cb = CALCULATION_BOUNDARY as f64;
+            let mut iterator = 0;
+            let mut length = 0;
+            let mut m = mem::new(el.origin_re, el.origin_im);
+            while m.quad() < cb && iterator < max {
+
+                // Investigate if this is a good calculation path
+                // Don't create path data yet. Too many origins don't produce good data
+                // Most of the long and expensive calculations end up inside Mandelbrot set, useless
+                // It is 1.68x faster to calculate path twice, and to record exclusively the good paths
+
+                fractal_math.math(&mut m, el.origin_re, el.origin_im);
+                if self.domain_area.contains(m.re, m.im) {
+                    length += 1;
+                }
+                iterator += 1;
+            }
+            let el_state = Domain::state_from_path_length(iterator, max, min);
+
+            if length > min && iterator < max {
+
+                // This origin produced good data
+                // Record the calculation path
+
+                let mut m = mem::new(el.origin_re, el.origin_im);
+                // TODO el.good_path();
+
+                let mut path: Vec<[f64; 2]> = Vec::new();
+                for _ in 0..iterator {
+                    fractal_math.math(&mut m, el.origin_re, el.origin_im);
+                    if self.domain_area.contains(m.re, m.im) {
+                        path.push([m.re, m.im]);
+                    }
+                }
+                result.add_calculation_path(path);
+                // stats.paths_new_points_amount += path.size();
+            }
+
+            el.set_finished_state(el_state);
+        }
+    }
+
     fn check_domain(&self, x: i32, y: i32) -> bool {
         x >= 0 && x < self.width as i32 && y >= 0 && y < self.height as i32
     }
@@ -248,4 +299,14 @@ pub fn init_domain_elements(domain_area: &Area) -> Vec<Vec<DomainElement>> {
         vy.push(vx);
     }
     vy
+}
+
+pub fn init(domain_area: &Area, resolution_multiplier : ResolutionMultiplier) -> Domain {
+    Domain {
+        width: domain_area.width_x,
+        height: domain_area.height_y,
+        domain_area: &domain_area,
+        domain_elements: init_domain_elements(&domain_area),
+        resolution_multiplier
+    }
 }

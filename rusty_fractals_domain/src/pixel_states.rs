@@ -8,7 +8,7 @@ pub const HIBERNATED_DEEP_BLACK: Rgb<u8> = Rgb([90, 90, 90]);
 pub const FINISHED_TOO_SHORT: Rgb<u8> = Rgb([220, 220, 240]);
 pub const FINISHED_SUCCESS: Rgb<u8> = Rgb([255, 0, 0]);
 pub const FINISHED_SUCCESS_PAST: Rgb<u8> = Rgb([130, 100, 130]);
-pub const FINISHED: Rgb<u8> = Rgb([130, 100, 130]); // TODO different color
+pub const FINISHED: Rgb<u8> = Rgb([130, 130, 100]);
 pub const GOOD_PATH: Rgb<u8> = Rgb([200, 108, 10]);
 
 

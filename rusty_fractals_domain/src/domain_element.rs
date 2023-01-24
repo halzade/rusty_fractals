@@ -72,11 +72,3 @@ pub fn hibernated_deep_black(re: f64, im: f64) -> DomainElement {
         state: HibernatedDeepBlack,
     }
 }
-
-
-#[test]
-pub fn is_active_new() {}
-
-#[test]
-pub fn set_finished_state() {}
-

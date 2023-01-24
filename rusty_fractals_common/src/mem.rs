@@ -5,12 +5,6 @@ pub struct Mem {
 }
 
 impl Mem {
-    pub(crate) fn new(re: f64, im: f64) -> Mem {
-        Mem { re, im }
-    }
-}
-
-impl Mem {
     pub fn plus(&mut self, r: f64, i: f64) {
         self.re += r;
         self.im += i;
@@ -30,6 +24,11 @@ impl Mem {
         self.im = -1.0 * self.im;
     }
 }
+
+pub fn new(re: f64, im: f64) -> Mem {
+    Mem { re, im }
+}
+
 
 #[test]
 fn test_plus() {

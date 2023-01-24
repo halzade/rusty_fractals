@@ -1,5 +1,5 @@
 use std::collections::HashSet;
-use crate::mem::Mem;
+use rusty_fractals_common::mem::Mem;
 
 pub struct Mathematician {
     pub primes: HashSet<u32>,

@@ -1,16 +1,16 @@
+use ColorDepth::Rgb8;
 use resolution_multiplier::ResolutionMultiplier::SquareAlter;
 use rusty_fractals_common::area;
-use rusty_fractals_core::fractal::{AppConfig, CalculationConfig, Math, ResultConfig};
 use rusty_fractals_core::machine::Machine;
-use rusty_fractals_core::mem::Mem;
-use rusty_fractals_domain::domain::{init_domain_elements, Domain};
-use rusty_fractals_domain::resolution_multiplier;
+use rusty_fractals_domain::{domain, resolution_multiplier};
 use rusty_fractals_result::palettes::palette_blue_to_white;
-use image::{DynamicImage, ImageBuffer, ImageResult, Rgb};
-use fltk::{app, button::Button, frame::Frame, prelude::*, window::Window};
+use fltk::{frame::Frame, prelude::*, window::Window};
 use fltk::app::App;
 use fltk::enums::ColorDepth;
 use fltk::image::RgbImage;
+use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Math};
+use rusty_fractals_common::mem::Mem;
+use rusty_fractals_result::result::ResultConfig;
 
 struct Nebula {}
 
@@ -24,8 +24,8 @@ impl Math<Mem> for Nebula {
 fn main() {
     let name = "Nebula";
 
-    const WIDTH: usize = 400;
-    const HEIGHT: usize = 400;
+    const WIDTH: usize = 800;
+    const HEIGHT: usize = 800;
 
     let calculation_config = CalculationConfig {
         iteration_min: 42,
@@ -50,16 +50,10 @@ fn main() {
 
     let nebula = Nebula {};
     let domain_area = area::init(area_cfg);
-    let domain = Domain {
-        width: domain_area.width_x,
-        height: domain_area.height_y,
-        domain_area: &domain_area,
-        domain_elements: init_domain_elements(&domain_area),
-        resolution_multiplier: SquareAlter,
-    };
+    let mut domain = domain::init(&domain_area, SquareAlter);
     let mut machine = Machine {
         area: &domain_area,
-        domain: &domain,
+        domain: &mut domain,
         calculation_config,
         app_config,
         result_config,
@@ -67,15 +61,15 @@ fn main() {
 
     let (domain_image, result_image) = machine.calculate(&nebula);
 
-    let w = domain_image.width() as i32;
-    let h = domain_image.height() as i32;
-    let domain_image_rgb = RgbImage::new(&domain_image.into_raw(), w, h, ColorDepth::Rgb8).unwrap();
-    let result_image_rgb = RgbImage::new(&result_image.into_raw(), w, h, ColorDepth::Rgb8).unwrap();
+    let width = domain_image.width() as i32;
+    let height = domain_image.height() as i32;
+    let domain_image_rgb = RgbImage::new(&domain_image.into_raw(), width, height, Rgb8).unwrap();
+    let result_image_rgb = RgbImage::new(&result_image.into_raw(), width, height, Rgb8).unwrap();
 
     let app = App::default();
-    let mut wind = Window::new(100, 100, 800, 400, name);
-    let mut domain_frame = Frame::new(0, 0, 400, 400, "");
-    let mut result_frame = Frame::new(400, 0, 400, 400, "");
+    let mut wind = Window::new(100, 100, width * 2, height, name);
+    let mut domain_frame = Frame::new(0, 0, width, height, "");
+    let mut result_frame = Frame::new(width, 0, width, height, "");
     domain_frame.set_image(Some(domain_image_rgb));
     result_frame.set_image(Some(result_image_rgb));
     wind.add(&domain_frame);

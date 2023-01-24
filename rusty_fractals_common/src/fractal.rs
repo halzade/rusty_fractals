@@ -1,15 +1,6 @@
-use rusty_fractals_result::palette::Palette;
-use fractal_stats::Stats;
-use rusty_fractals_domain::resolution_multiplier;
-use crate::{fractal_stats};
-
 pub struct CalculationConfig {
     pub iteration_min: u32,
     pub iteration_max: u32,
-}
-
-pub struct ResultConfig {
-    pub palette: Palette,
 }
 
 pub struct AppConfig {

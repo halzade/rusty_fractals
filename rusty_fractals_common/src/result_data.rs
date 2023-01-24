@@ -1,7 +1,3 @@
-use rusty_fractals_common::area::Area;
-use crate::result_pixels::ResultPixels;
-use rusty_fractals_common::constants;
-
 pub struct ResultData {
     // Dynamic Vec[re,im] calculation result data.
     // As zoom progress, points [re,im] are projected to new pixels [px,py] until they migrate out of the the tiny result_rea.

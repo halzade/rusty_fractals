@@ -1,4 +1,4 @@
-use crate::mem::Mem;
+use rusty_fractals_common::mem::Mem;
 
 pub struct MemCollatz {
     pub m: Mem,
