@@ -3,7 +3,7 @@ use palettes::Function;
 
 use crate::palettes;
 
-fn max(r: i8, g: i8, b: i8) -> i8 {
+fn max(r: i16, g: i16, b: i16) -> i16 {
     if a(r) >= a(g) && a(r) >= a(b) {
         return r;
     } else if a(g) >= a(r) && a(g) >= a(b) {
@@ -14,26 +14,30 @@ fn max(r: i8, g: i8, b: i8) -> i8 {
     panic!()
 }
 
-fn a(v: i8) -> u8 {
-    v.abs() as u8
+fn a(v: i16) -> i16 {
+    v.abs()
 }
 
 // Fill color spectrum with colors between colors:
 // from     : color for lower values
 // to       : color for higher values
 // function : defines gradient of color change
-pub fn make_spectrum(function: Function, mut from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<u8>> {
-    let r_from = from.channels()[0];
-    let g_from = from.channels()[1];
-    let b_from = from.channels()[2];
+pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<u8>> {
+    let r_from = from.channels()[0] as i16;
+    let g_from = from.channels()[1] as i16;
+    let b_from = from.channels()[2] as i16;
 
-    let tr = to.channels()[0];
-    let tg = to.channels()[1];
-    let tb = to.channels()[2];
+    let r_to = to.channels()[0] as i16;
+    let g_to = to.channels()[1] as i16;
+    let b_to = to.channels()[2] as i16;
 
-    let r_dif = tr as i8 - r_from as i8;
-    let g_dif = tg as i8 - g_from as i8;
-    let b_dif = tb as i8 - b_from as i8;
+    let r_dif = r_to - r_from;
+    let g_dif = g_to - g_from;
+    let b_dif = b_to - b_from;
+
+    println!("rgb from {} {} {} ", r_from, g_from, b_from);
+    println!("rgb to   {} {} {} ", r_to, g_to, b_to);
+    println!("rgb dif  {} {} {} ", r_dif, g_dif, b_dif);
 
     let max_dif = a(max(r_dif, g_dif, b_dif)) as f64;
 
@@ -43,77 +47,65 @@ pub fn make_spectrum(function: Function, mut from: Rgb<u8>, to: Rgb<u8>) -> Vec<
 
     let mut stop = false;
 
-    let rgb255 = 255;
+    let rgb255 = 255.0;
 
     let mut spectrum: Vec<Rgb<u8>> = Vec::new();
 
-    for i in 0..a(max_dif as i8) {
+    for i in 0..a(max_dif as i16) {
         let d: f64 = (i as f64 / max_dif) as f64;
         // optimized dif on interval <0, 1>
         let v: f64 = function_result(d, &function);
         let value = v * max_dif;
 
-        let mut rr = r_from + (value * r_step) as u8;
-        let mut gg = g_from + (value * g_step) as u8;
-        let mut bb = b_from + (value * b_step) as u8;
+        let mut r_new = r_from as f64 + (value * r_step);
+        let mut g_new = g_from as f64 + (value * g_step);
+        let mut b_new = b_from as f64 + (value * b_step);
 
-        if rr > rgb255 {
-            rr = rgb255;
+        if r_new > rgb255 {
+            r_new = rgb255;
             stop = true;
         }
-        if gg > rgb255 {
-            gg = rgb255;
+        if g_new > rgb255 {
+            g_new = rgb255;
             stop = true;
         }
-        if bb > rgb255 {
-            bb = rgb255;
-            stop = true;
-        }
-
-        if rr < 0 {
-            rr = 0;
-            stop = true;
-        }
-        if gg < 0 {
-            gg = 0;
-            stop = true;
-        }
-        if bb < 0 {
-            bb = 0;
+        if b_new > rgb255 {
+            b_new = rgb255;
             stop = true;
         }
 
-        let r_stop = if r_dif > 0 {
-            tr < rr
-        } else {
-            tr > rr
-        };
-        let g_stop = if g_dif > 0 {
-            tg < gg
-        } else {
-            tg > gg
-        };
-        let b_stop = if b_dif > 0 {
-            tb < bb
-        } else {
-            tb > bb
-        };
+        if r_new < 0.0 {
+            r_new = 0.0;
+            stop = true;
+        }
+        if g_new < 0.0 {
+            g_new = 0.0;
+            stop = true;
+        }
+        if b_new < 0.0 {
+            b_new = 0.0;
+            stop = true;
+        }
+
+        let r_stop = if r_dif > 0 { (r_to as f64) < r_new } else { (r_to as f64) > r_new };
+        let g_stop = if g_dif > 0 { (g_to as f64) < g_new } else { (g_to as f64) > g_new };
+        let b_stop = if b_dif > 0 { (b_to as f64) < b_new } else { (b_to as f64) > b_new };
 
         if r_stop {
-            rr = tr;
+            r_new = r_to as f64;
             stop = true;
         }
         if g_stop {
-            gg = tg;
+            g_new = g_to as f64;
             stop = true;
         }
         if b_stop {
-            bb = tb;
+            b_new = b_to as f64;
             stop = true;
         }
 
         // Add colors to Palette
-        spectrum.push(Rgb([rr, gg, bb]));
+        spectrum.push(Rgb([r_new as u8, g_new as u8, b_new as u8]));
 
         if stop {
             break;

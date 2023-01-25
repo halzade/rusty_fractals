@@ -56,8 +56,8 @@ impl ResultPixels {
         let chunk_size_x = self.width / 20;
         let chunk_size_y = self.height / 20;
         let mut values: Vec<u32> = Vec::new();
-        for x in 0..19 {
-            for y in 0..19 {
+        for x in 0..20 {
+            for y in 0..20 {
                 values.push(self.chunk_value(
                     x * chunk_size_x, (x + 1) * chunk_size_x,
                     y * chunk_size_y, (y + 1) * chunk_size_y,
@@ -91,9 +91,9 @@ impl ResultPixels {
 
 pub fn init(width: usize, height: usize) -> ResultPixels {
     let mut vx = Vec::new();
-    for _ in 0..width - 1 {
+    for _ in 0..width {
         let mut vy = Vec::new();
-        for _ in 0..height - 1 {
+        for _ in 0..height {
             vy.push(0);
         }
         vx.push(vy);

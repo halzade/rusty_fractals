@@ -3,7 +3,7 @@ use resolution_multiplier::ResolutionMultiplier::SquareAlter;
 use rusty_fractals_common::area;
 use rusty_fractals_core::machine::Machine;
 use rusty_fractals_domain::{domain, resolution_multiplier};
-use rusty_fractals_result::palettes::palette_blue_to_white;
+use rusty_fractals_result::palettes::{palette_black_to_white, palette_blue_to_white};
 use fltk::{frame::Frame, prelude::*, window::Window};
 use fltk::app::App;
 use fltk::enums::ColorDepth;

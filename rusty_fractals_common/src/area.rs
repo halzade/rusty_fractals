@@ -84,14 +84,14 @@ pub fn init(config: AreaConfig) -> Area {
     let width_x = config.width_x;
     let height_y = config.height_y;
 
-    let plank = width_re / width_x as f64;
-    let height_im = width_re * (width_x as f64 / height_y as f64);
+    let plank = width_re / (width_x as f64);
+    let height_im = width_re * (width_x as f64) / (height_y as f64);
     let width_half_re = width_re / 2.0;
     let height_half_im = height_im / 2.0;
-    let border_low_re = center_re - (width_half_re);
-    let border_high_re = center_re + (width_half_re);
-    let border_low_im = center_im - (height_half_im);
-    let border_high_im = center_im + (height_half_im);
+    let border_low_re = center_re - width_half_re;
+    let border_high_re = center_re + width_half_re;
+    let border_low_im = center_im - height_half_im;
+    let border_high_im = center_im + height_half_im;
 
     println!("border_low_re  {}", border_low_re);
     println!("border_high_re {}", border_high_re);

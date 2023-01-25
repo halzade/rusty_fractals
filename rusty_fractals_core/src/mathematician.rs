@@ -132,7 +132,7 @@ impl Mathematician {
 
 #[allow(dead_code)]
 fn init_fibonacci(max: u32) {
-    print!("init_fibonacci()");
+    println!("init_fibonacci()");
     let mut fibonacci: HashSet<u32> = HashSet::new();
     let mut a = 0;
     let mut b = 1;
@@ -150,7 +150,7 @@ fn init_fibonacci(max: u32) {
  */
 
 pub fn init_perfect_numbers(max: u32) {
-    print!("init_perfect_numbers()");
+    println!("init_perfect_numbers()");
     let mut perfect: HashSet<u32> = HashSet::new();
     for i in 0..max {
         if is_perfect_init(i) {
@@ -175,7 +175,7 @@ fn is_perfect_init(num: u32) -> bool {
  */
 
 pub fn init_primes(max: u32) -> HashSet<u32> {
-    print!("init_primes()");
+    println!("init_primes()");
     let mut primes: HashSet<u32> = HashSet::new();
     for i in 0..max {
         if is_prime_init(i) {
@@ -203,7 +203,7 @@ fn is_prime_init(n: u32) -> bool {
  */
 
 pub fn init_squares(max: u32) {
-    print!("init_squares()");
+    println!("init_squares()");
     let mut square: HashSet<u32> = HashSet::new();
     let mut sq;
     let investigate_to = f64::sqrt(max as f64) as u32 + 1;

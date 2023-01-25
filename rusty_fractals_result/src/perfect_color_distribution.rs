@@ -37,8 +37,8 @@ pub fn perfectly_color_result_values(result_pixels: &ResultPixels, palette: &Pal
     let mut zero_value_elements = 0;
 
     // read screen values
-    for y in 0..height - 1 {
-        for x in 0..width - 1 {
+    for y in 0..height {
+        for x in 0..width {
             let v = result_pixels.value_at(x, y);
             if v <= COLORING_THRESHOLD {
                 zero_value_elements += 1;
@@ -77,8 +77,8 @@ pub fn perfectly_color_result_values(result_pixels: &ResultPixels, palette: &Pal
     }
 
     // color all remaining pixels, these are order by value
-    for palette_colour_index in 0..palette_color_count - 1 {
-        for _ in 0..single_color_use - 1 {
+    for palette_colour_index in 0..palette_color_count {
+        for _ in 0..single_color_use {
             // color all these pixels with same color
             let sp = pixels.get(pi).expect("pixels error");
             pi += 1;

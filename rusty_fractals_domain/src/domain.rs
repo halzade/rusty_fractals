@@ -77,8 +77,8 @@ impl Domain<'_> {
 
     pub fn shuffled_calculation_coordinates(&self) -> Vec<[u32; 2]> {
         let mut coordinates_xy: Vec<[u32; 2]> = Vec::new();
-        for x in 0..19 {
-            for y in 0..19 {
+        for x in 0..20 {
+            for y in 0..20 {
                 coordinates_xy.push([x, y]);
             }
         }
