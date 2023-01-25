@@ -10,7 +10,7 @@ use rusty_fractals_common::fractal::{CalculationConfig, Math};
 use rusty_fractals_common::mem;
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::result_data::ResultData;
-use crate::domain_element::{active_new, hibernated_deep_black};
+use crate::domain_element::{hibernated_deep_black};
 use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, GOOD_PATH, HIBERNATED_DEEP_BLACK};
 
 pub struct Domain<'lif> {
@@ -22,11 +22,16 @@ pub struct Domain<'lif> {
 }
 
 impl Domain<'_> {
-
-    pub fn calculate_path_finite(&mut self, x : usize, y : usize, fractal_math: &impl Math<Mem>, result: &mut ResultData, calculation_config: &CalculationConfig) {
+    pub fn calculate_path_finite(
+        &mut self,
+        x: usize,
+        y: usize,
+        fractal_math: &impl Math<Mem>,
+        result: &mut ResultData,
+        calculation_config: &CalculationConfig
+    ) {
         let el: &mut DomainElement = self.domain_elements[x].get_mut(y).expect("domain_elements problem");
         if el.is_active_new() {
-
             let max = calculation_config.iteration_max;
             let min = calculation_config.iteration_min;
             let cb = CALCULATION_BOUNDARY as f64;
@@ -301,12 +306,12 @@ pub fn init_domain_elements(domain_area: &Area) -> Vec<Vec<DomainElement>> {
     vy
 }
 
-pub fn init(domain_area: &Area, resolution_multiplier : ResolutionMultiplier) -> Domain {
+pub fn init(domain_area: &Area, resolution_multiplier: ResolutionMultiplier) -> Domain {
     Domain {
         width: domain_area.width_x,
         height: domain_area.height_y,
         domain_area: &domain_area,
         domain_elements: init_domain_elements(&domain_area),
-        resolution_multiplier
+        resolution_multiplier,
     }
 }

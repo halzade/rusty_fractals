@@ -13,8 +13,8 @@ const VANILLA_AREA_CONFIG: AreaConfig = AreaConfig { width_re: 1.0, center_re: 0
 pub struct Area {
     pub width_re: f64,
     pub height_im: f64,
-    pub width_half_re: f64,
-    pub height_half_im: f64,
+    pub width_half_x: usize,
+    pub height_half_y: usize,
     pub width_x: usize,
     pub height_y: usize,
     pub numbers_re: Vec<f64>,
@@ -47,9 +47,9 @@ impl Area {
 
     // check first, if can convert
     pub fn domain_point_to_result_pixel(&self, re: f64, im: f64) -> (usize, usize) {
-        let px = ((self.width_x as f64 * (re - self.center_re) / self.width_re) + self.width_half_re).round() as usize;
-        let py = ((self.height_y as f64 * (im - self.center_im) / self.height_im) + self.height_half_im).round() as usize;
-        (px, py)
+        let px = (self.width_x as f64 * (re - self.center_re) / self.width_re) as f64 + self.width_half_x as f64;
+        let py = (self.height_y as f64 * (im - self.center_im) / self.height_im) as f64 + self.height_half_y as f64;
+        (px as usize, py as usize)
     }
 
     pub fn zoom_in(&mut self) {
@@ -86,12 +86,12 @@ pub fn init(config: AreaConfig) -> Area {
 
     let plank = width_re / (width_x as f64);
     let height_im = width_re * (width_x as f64) / (height_y as f64);
-    let width_half_re = width_re / 2.0;
-    let height_half_im = height_im / 2.0;
-    let border_low_re = center_re - width_half_re;
-    let border_high_re = center_re + width_half_re;
-    let border_low_im = center_im - height_half_im;
-    let border_high_im = center_im + height_half_im;
+    let width_half_x = width_x / 2;
+    let height_half_y = height_y / 2;
+    let border_low_re = center_re - width_re / 2.0;
+    let border_high_re = center_re + width_re / 2.0;
+    let border_low_im = center_im - height_im / 2.0;
+    let border_high_im = center_im + height_im / 2.0;
 
     println!("border_low_re  {}", border_low_re);
     println!("border_high_re {}", border_high_re);
@@ -111,8 +111,8 @@ pub fn init(config: AreaConfig) -> Area {
     Area {
         width_re,
         height_im,
-        width_half_re,
-        height_half_im,
+        width_half_x,
+        height_half_y,
         width_x,
         height_y,
         numbers_re,
@@ -139,22 +139,36 @@ fn test_init() {
 #[test]
 fn test_contains() {
     let area = init(VANILLA_AREA_CONFIG);
-    let y = area.contains(0.4, 0.4);
-    let n = area.contains(0.4, 1.5);
-    assert_eq!(y, true);
-    assert_eq!(n, false);
+    assert_eq!(area.contains(0.4, 0.4), true);
+    assert_eq!(area.contains(0.4, 0.6), false);
+    assert_eq!(area.contains(0.6, 0.4), false);
+
+    assert_eq!(area.contains(-0.4, -0.4), true);
+    assert_eq!(area.contains(-0.4, -0.6), false);
+    assert_eq!(area.contains(-0.6, -0.4), false);
+
+    assert_eq!(area.contains(-0.4, 0.4), true);
+    assert_eq!(area.contains(-0.4, 0.6), false);
+    assert_eq!(area.contains(-0.6, 0.4), false);
+
+    assert_eq!(area.contains(0.4, -0.4), true);
+    assert_eq!(area.contains(0.4, -0.6), false);
+    assert_eq!(area.contains(0.6, -0.4), false);
 }
 
 #[test]
 fn test_screen_to_domain_re() {
     let area = init(VANILLA_AREA_CONFIG);
-    let r = area.screen_to_domain_re(5);
-    assert_eq!(r, 0.0);
+    assert_eq!(area.screen_to_domain_re(5), 0.0);
+    assert_eq!(area.screen_to_domain_re(0), -0.5);
+    assert_eq!(area.screen_to_domain_re(9), 0.4);
 }
 
 #[test]
 fn test_screen_to_domain_im() {
     let area = init(VANILLA_AREA_CONFIG);
-    let i = area.screen_to_domain_im(2);
-    assert_eq!(i, -0.3);
+    assert_eq!(area.screen_to_domain_im(2), -0.3);
+    assert_eq!(area.screen_to_domain_im(5), 0.0);
+    assert_eq!(area.screen_to_domain_im(0), -0.5);
+    assert_eq!(area.screen_to_domain_im(9), 0.4);
 }
