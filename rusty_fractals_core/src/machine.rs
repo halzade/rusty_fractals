@@ -5,11 +5,11 @@ use image::{RgbImage};
 use perfect_color_distribution::perfectly_color_result_values;
 use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Math};
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::result_data::ResultData;
 use rusty_fractals_result::result::ResultConfig;
 use rayon::prelude::*;
 use rusty_fractals_common::constants::CALCULATION_BOUNDARY;
-use rusty_fractals_common::{mem, result_data};
+use rusty_fractals_common::{mem, result_data_static};
+use rusty_fractals_common::result_data_static::ResultDataStatic;
 use rusty_fractals_domain::pixel_states;
 use rusty_fractals_domain::pixel_states::DomainElementState::GoodPath;
 
@@ -25,11 +25,11 @@ impl Machine {
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = domain.shuffled_calculation_coordinates();
 
-        let result_data = result_data::init();
+        let result_static = result_data_static::init(area);
         coordinates_xy
             .par_iter()
             .for_each(|xy| {
-                self.chunk_calculation(&xy, fractal_math, domain, area, &result_data);
+                self.chunk_calculation(&xy, fractal_math, domain, area, &result_static);
             });
 
         domain.recalculate_pixels_states(area);
@@ -39,11 +39,11 @@ impl Machine {
         coordinates_xy
             .par_iter()
             .for_each(|xy| {
-                self.chunk_calculation_with_wrap(&xy, fractal_math, domain, area, &result_data);
+                self.chunk_calculation_with_wrap(&xy, fractal_math, domain, area, &result_static);
             });
 
-        let mut result_pixels = result_pixels::init(area.width_x, area.height_y);
-        result_pixels.translate_paths_to_pixel_grid(result_data.all_paths(), area);
+        let mut result_pixels = result_pixels::init(area);
+        result_pixels.translate_all_points_to_pixel_grid(result_static.all_points(), area);
 
         let domain_image = domain.domain_element_states_to_image();
         let result_image = perfectly_color_result_values(&result_pixels, &self.result_config.palette);
@@ -67,12 +67,12 @@ impl Machine {
         fractal_math: &impl Math<Mem>,
         domain: &Domain,
         area: &Area,
-        result: &ResultData,
+        result_static: &ResultDataStatic,
     ) {
         let (x_from, x_to, y_from, y_to) = Machine::chunk_boundaries(xy, domain);
         for x in x_from..x_to {
             for y in y_from..y_to {
-                self.calculate_path_finite(x, y, fractal_math, &self.calculation_config, domain, area, result);
+                self.calculate_path_finite(x, y, fractal_math, &self.calculation_config, domain, area, result_static);
             }
         }
     }
@@ -83,7 +83,7 @@ impl Machine {
         fractal_math: &impl Math<Mem>,
         domain: &Domain,
         area: &Area,
-        result: &ResultData,
+        result_static: &ResultDataStatic,
     ) {
         let (x_from, x_to, y_from, y_to) = Machine::chunk_boundaries(xy, domain);
         for x in x_from..x_to {
@@ -92,7 +92,7 @@ impl Machine {
                     let (_, origin_re, origin_im) = domain.get_el_triplet(x, y);
                     let wrap = domain.wrap(origin_re, origin_im, self.calculation_config.resolution_multiplier, area);
                     for [re, im] in wrap {
-                        self.calculate_path_finite_f64(re, im, fractal_math, &self.calculation_config, area, result);
+                        self.calculate_path_finite_f64(re, im, fractal_math, &self.calculation_config, area, result_static);
                     }
                 }
             }
@@ -106,7 +106,7 @@ impl Machine {
         fractal_math: &impl Math<Mem>,
         calculation_config: &CalculationConfig,
         area: &Area,
-        result: &ResultData,
+        result_static: &ResultDataStatic,
     ) {
         let max = calculation_config.iteration_max;
         let min = calculation_config.iteration_min;
@@ -131,7 +131,7 @@ impl Machine {
                     path.push([m.re, m.im]);
                 }
             }
-            result.add_calculation_path(path);
+            result_static.translate_path_to_point_grid(path, area);
             // stats.paths_new_points_amount += path.size(); ?
         }
     }
@@ -144,7 +144,7 @@ impl Machine {
         calculation_config: &CalculationConfig,
         domain: &Domain,
         area: &Area,
-        result: &ResultData,
+        result_static: &ResultDataStatic,
     ) {
         let (state, origin_re, origin_im) = domain.get_el_triplet(x, y);
         if pixel_states::is_active_new(state) {
@@ -184,7 +184,7 @@ impl Machine {
                         path.push([m.re, m.im]);
                     }
                 }
-                result.add_calculation_path(path);
+                result_static.translate_path_to_point_grid(path, area);
                 // stats.paths_new_points_amount += path.size();
             }
 

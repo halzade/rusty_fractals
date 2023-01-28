@@ -1,3 +1,5 @@
+use std::ops::Deref;
+use std::sync::{Arc, Mutex};
 use rusty_fractals_common::area::Area;
 
 pub struct ResultPixels {
@@ -8,21 +10,41 @@ pub struct ResultPixels {
 
 impl ResultPixels {
 
-    pub fn translate_paths_to_pixel_grid(&mut self, paths: Vec<Vec<[f64; 2]>>, area : &Area) {
-        println!("translate_paths_to_pixel_grid()");
+    pub fn translate_all_paths_to_pixel_grid(&mut self, paths: Vec<Vec<[f64; 2]>>, area: &Area) {
+        println!("translate_all_paths_to_pixel_grid()");
 
         let mut pixels_total = 0;
 
         for path in paths {
-            for re_im in path {
+            for [re, im] in path {
                 // translate [re,im] to [px,py]
-                let re = re_im[0];
-                let im = re_im[1];
-                if area.contains(re, im) {
-                    let (px, py) = area.domain_point_to_result_pixel(re, im);
-                    self.add(px, py);
-                    pixels_total += 1;
-                }
+                // if area.contains(re, im) {
+                let (px, py) = area.domain_point_to_result_pixel(re, im);
+                self.add(px, py);
+                pixels_total += 1;
+            }
+        }
+        println!("pixels_total:   {}", pixels_total);
+
+        // remove elements which moved out of tiny area
+        // TODO self.remove_elements_outside();
+
+        // Stats.pathsTotalAmount = PATHS.size();
+        // Stats.pixelsValueTotal = pixels_total;
+    }
+
+    pub fn translate_all_points_to_pixel_grid(&mut self, points: &Vec<Vec<Arc<Mutex<u32>>>>, area: &Area) {
+        println!("translate_all_points_to_pixel_grid()");
+
+        let mut pixels_total = 0;
+
+        for x in 0..area.width_x {
+            for y in 0..area.height_y {
+                let arc = points.get(x).unwrap().get(y).unwrap();
+                let mutex_guard = arc.lock().unwrap();
+                let value = mutex_guard.deref();
+                self.set(x, y, value);
+                pixels_total += 1;
             }
         }
         println!("pixels_total:   {}", pixels_total);
@@ -36,6 +58,10 @@ impl ResultPixels {
 
     pub fn add(&mut self, x: usize, y: usize) {
         self.pixels[x][y] += 1;
+    }
+
+    pub fn set(&mut self, x: usize, y: usize, value: &u32) {
+        self.pixels[x][y] = *value;
     }
 
     pub fn clear(&mut self) {
@@ -89,18 +115,18 @@ impl ResultPixels {
     }
 }
 
-pub fn init(width: usize, height: usize) -> ResultPixels {
+pub fn init(area: &Area) -> ResultPixels {
     let mut vx = Vec::new();
-    for _ in 0..width {
+    for _ in 0..area.width_x {
         let mut vy = Vec::new();
-        for _ in 0..height {
+        for _ in 0..area.height_y {
             vy.push(0);
         }
         vx.push(vy);
     }
     ResultPixels {
-        width,
-        height,
+        width: area.width_x,
+        height: area.height_y,
         pixels: vx,
     }
 }

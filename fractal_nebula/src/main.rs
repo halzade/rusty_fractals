@@ -9,7 +9,7 @@ use fltk::enums::ColorDepth;
 use fltk::image::RgbImage;
 use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Math};
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square3;
+use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::{Square5};
 use rusty_fractals_result::result::ResultConfig;
 
 struct Nebula {}
@@ -30,7 +30,7 @@ fn main() {
     let calculation_config = CalculationConfig {
         iteration_min: 42,
         iteration_max: 14800,
-        resolution_multiplier: Square3,
+        resolution_multiplier: Square5,
     };
     let app_config = AppConfig {
         repeat: false,
