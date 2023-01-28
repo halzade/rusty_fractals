@@ -50,6 +50,16 @@ impl Machine {
         (domain_image, result_image)
     }
 
+    fn chunk_boundaries(xy: &[u32; 2], domain: &Domain) -> (usize, usize, usize, usize) {
+        let chunk_size_x = (domain.width / 20) as u32;
+        let chunk_size_y = (domain.height / 20) as u32;
+
+        ((xy[0] * chunk_size_x) as usize,
+         ((xy[0] + 1) * chunk_size_x) as usize,
+         (xy[1] * chunk_size_y) as usize,
+         ((xy[1] + 1) * chunk_size_y) as usize)
+    }
+
     // in sequence (cpu_num) executes as 20x20 parallel for each domain chunk
     pub fn chunk_calculation(
         &self,
@@ -59,13 +69,7 @@ impl Machine {
         area: &Area,
         result: &ResultData,
     ) {
-        let chunk_size_x = (domain.width / 20) as u32;
-        let chunk_size_y = (domain.height / 20) as u32;
-
-        let x_from = (xy[0] * chunk_size_x) as usize;
-        let x_to = ((xy[0] + 1) * chunk_size_x) as usize;
-        let y_from = (xy[1] * chunk_size_y) as usize;
-        let y_to = ((xy[1] + 1) * chunk_size_y) as usize;
+        let (x_from, x_to, y_from, y_to) = Machine::chunk_boundaries(xy, domain);
         for x in x_from..x_to {
             for y in y_from..y_to {
                 self.calculate_path_finite(x, y, fractal_math, &self.calculation_config, domain, area, result);
@@ -81,19 +85,10 @@ impl Machine {
         area: &Area,
         result: &ResultData,
     ) {
-        let chunk_size_x = (domain.width / 20) as u32;
-        let chunk_size_y = (domain.height / 20) as u32;
-
-        let x_from = (xy[0] * chunk_size_x) as usize;
-        let x_to = ((xy[0] + 1) * chunk_size_x) as usize;
-        let y_from = (xy[1] * chunk_size_y) as usize;
-        let y_to = ((xy[1] + 1) * chunk_size_y) as usize;
-
-        let mut c = 0;
+        let (x_from, x_to, y_from, y_to) = Machine::chunk_boundaries(xy, domain);
         for x in x_from..x_to {
             for y in y_from..y_to {
                 if domain.is_on_mandelbrot_horizon(x, y) {
-                    c += 1;
                     let (_, origin_re, origin_im) = domain.get_el_triplet(x, y);
                     let wrap = domain.wrap(origin_re, origin_im, self.calculation_config.resolution_multiplier, area);
                     for [re, im] in wrap {
@@ -101,9 +96,6 @@ impl Machine {
                     }
                 }
             }
-        }
-        if c >= 1 {
-            println!("calculated {}", c);
         }
     }
 
