@@ -1,6 +1,9 @@
+use crate::resolution_multiplier::ResolutionMultiplier;
+
 pub struct CalculationConfig {
     pub iteration_min: u32,
     pub iteration_max: u32,
+    pub resolution_multiplier: ResolutionMultiplier,
 }
 
 pub struct AppConfig {
@@ -8,7 +11,7 @@ pub struct AppConfig {
     pub save_images: bool,
 }
 
-pub trait Math<T> : Sync  {
+pub trait Math<T>: Sync {
     fn math(&self, m: &mut T, origin_re: f64, origin_im: f64);
 }
 

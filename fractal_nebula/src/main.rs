@@ -1,8 +1,7 @@
 use ColorDepth::Rgb8;
-use resolution_multiplier::ResolutionMultiplier::SquareAlter;
 use rusty_fractals_common::area;
 use rusty_fractals_core::machine::Machine;
-use rusty_fractals_domain::{domain, resolution_multiplier};
+use rusty_fractals_domain::{domain};
 use rusty_fractals_result::palettes::{palette_blue_to_white};
 use fltk::{frame::Frame, prelude::*, window::Window};
 use fltk::app::App;
@@ -10,6 +9,7 @@ use fltk::enums::ColorDepth;
 use fltk::image::RgbImage;
 use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Math};
 use rusty_fractals_common::mem::Mem;
+use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square3;
 use rusty_fractals_result::result::ResultConfig;
 
 struct Nebula {}
@@ -30,6 +30,7 @@ fn main() {
     let calculation_config = CalculationConfig {
         iteration_min: 42,
         iteration_max: 14800,
+        resolution_multiplier: Square3,
     };
     let app_config = AppConfig {
         repeat: false,
@@ -50,7 +51,7 @@ fn main() {
 
     let nebula = Nebula {};
     let area = area::init(area_cfg);
-    let domain = domain::init(&area, SquareAlter);
+    let domain = domain::init(&area);
     let machine = Machine {
         calculation_config,
         app_config,

@@ -3,19 +3,19 @@ use std::sync::{Arc, Mutex};
 use image::{Rgb, RgbImage};
 use crate::{domain_element, pixel_states};
 use domain_element::DomainElement;
-use crate::resolution_multiplier::ResolutionMultiplier;
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use rusty_fractals_common::area::Area;
 use rusty_fractals_common::constants::{NEIGHBOURS};
 use rusty_fractals_common::fractal::{Math};
+use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
+use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square2;
 use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, GOOD_PATH, HIBERNATED_DEEP_BLACK};
 
 pub struct Domain {
     pub width: usize,
     pub height: usize,
     domain_elements: Vec<Vec<Arc<Mutex<DomainElement>>>>,
-    resolution_multiplier: ResolutionMultiplier,
 }
 
 impl Domain {
@@ -31,6 +31,10 @@ impl Domain {
 
     pub fn set_finished_state(&self, x: usize, y: usize, state: DomainElementState) {
         self.domain_elements[x].get(y).expect("domain_elements problem").lock().unwrap().deref_mut().set_finished_state(state);
+    }
+
+    fn past(&self, x: usize, y: usize) {
+        self.domain_elements[x].get(y).expect("domain_elements problem").lock().unwrap().deref_mut().past();
     }
 
     fn check_domain(&self, x: i32, y: i32) -> bool {
@@ -49,36 +53,32 @@ impl Domain {
     }
 
     // Don't do any wrapping the first time because Mandelbrot elements are not optimized.
-    /*
-    fn wrap(&self, rm: ResolutionMultiplier, odd: bool) {
-        if rm == SquareAlter {
-            let d = self.domain_area.plank() / 3;
-            if odd {
-                domainFull.add(activeNew(elementZero.originRe + d, elementZero.originIm + d));
-                domainFull.add(activeNew(elementZero.originRe - d, elementZero.originIm - d));
-            } else {
-                domainFull.add(activeNew(elementZero.originRe - d, elementZero.originIm + d));
-                domainFull.add(activeNew(elementZero.originRe + d, elementZero.originIm - d));
-            }
+    pub fn wrap(&self, origin_re: f64, origin_im: f64, rm: ResolutionMultiplier, area: &Area) -> Vec<[f64; 2]> {
+        let mut ret = Vec::new();
+        if rm == Square2 {
+            let d = area.plank() / 3.0;
+            ret.push([origin_re + d, origin_im + d]);
+            ret.push([origin_re - d, origin_im - d]);
+            ret.push([origin_re - d, origin_im + d]);
+            ret.push([origin_re + d, origin_im - d]);
         } else {
-            let multiplier = self.resolve_multiplier(rm);
-
-            let d = self.domain_area.plank() / multiplier;
-            let half = (multiplier - 1) / 2;
+            let multiplier: f64 = Domain::resolve_multiplier(rm);
+            let d: f64 = area.plank() / multiplier;
+            // multiplier was odd
+            let half = ((multiplier - 1.0) / 2.0) as i32;
             // This fills the pixel with multiple points
             for x in -half..half {
                 for y in -half..half {
                     if x != 0 || y != 0 {
-                        domainFull.add(activeNew(elementZero.originRe + (x * d), elementZero.originIm + (y * d)));
+                        ret.push([origin_re + (x as f64 * d), origin_im + (y as f64 * d)]);
                     }
-                    // else do nothing, there already is element0 for the center of this pixel
                 }
             }
         }
+        ret
     }
-    */
 
-    fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
+    pub fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
         match rm {
             ResolutionMultiplier::None => 1.0,
             ResolutionMultiplier::Square3 => 3.0,
@@ -86,7 +86,7 @@ impl Domain {
             ResolutionMultiplier::Square11 => 11.0,
             ResolutionMultiplier::Square51 => 51.0,
             ResolutionMultiplier::Square101 => 101.0,
-            ResolutionMultiplier::SquareAlter => 1.0
+            ResolutionMultiplier::Square2 => 1.0
         }
     }
 
@@ -115,6 +115,17 @@ impl Domain {
         domain_image
     }
 
+    pub fn recalculate_pixels_states(&self, area: &Area) {
+        let width = area.width_x;
+        let height = area.height_y;
+        for y in 0..height {
+            for x in 0..width {
+                self.past(x, y);
+            }
+        }
+    }
+
+
     // This is called after calculation finished, zoom was called and new area measures recalculated
     /*
     pub fn recalculate_pixels_positions_for_this_zoom(&mut self) {
@@ -139,8 +150,8 @@ impl Domain {
         }
 
 
-        // If there is a conflict, two or more points moved to same pixel, then use the active one if there is any.
-        // Don't drop conflicts around, simply calculate new elements in the next calculation iteration. Because that would create really bad mess.
+        // If there is a conflict, two or more points moved to same pixel,don't drop conflicts around
+        // Simply calculate new elements in the next calculation iteration. Because that would create really bad mess.
 
         for el in elements_to_move {
             // translate [px,py] to [re,im]
@@ -210,9 +221,10 @@ impl Domain {
     }
     */
 
-    // All new elements are Active New
-    // For wrapping, search only elements, which have some past well finished neighbors
-    fn is_on_mandelbrot_horizon(&self, x: u32, y: u32) -> bool {
+    // all new elements are Active New
+    // for wrapping, search only elements, which have some past well finished neighbors
+    // previous caluclation must be completed
+    pub fn is_on_mandelbrot_horizon(&self, x: usize, y: usize) -> bool {
         let mut red = false;
         let mut black = false;
         let neigh = NEIGHBOURS as i32;
@@ -228,6 +240,7 @@ impl Domain {
                     if pixel_states::is_hibernated(state) {
                         black = true;
                     }
+                    // some of the neighbors were;
                     if red && black {
                         return true;
                     }
@@ -263,11 +276,10 @@ pub fn init_domain_elements(domain_area: &Area) -> Vec<Vec<Arc<Mutex<DomainEleme
     vy
 }
 
-pub fn init(domain_area: &Area, resolution_multiplier: ResolutionMultiplier) -> Domain {
+pub fn init(domain_area: &Area) -> Domain {
     Domain {
         width: domain_area.width_x,
         height: domain_area.height_y,
         domain_elements: init_domain_elements(&domain_area),
-        resolution_multiplier,
     }
 }

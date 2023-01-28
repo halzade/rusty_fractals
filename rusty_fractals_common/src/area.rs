@@ -74,6 +74,10 @@ impl Area {
         self.center_re = init_target_re;
         self.center_im = init_target_im;
     }
+    
+    pub fn plank(&self) -> f64 {
+        self.plank
+    }
 }
 
 pub fn init(config: AreaConfig) -> Area {

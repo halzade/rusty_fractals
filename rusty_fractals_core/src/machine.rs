@@ -32,6 +32,16 @@ impl Machine {
                 self.chunk_calculation(&xy, fractal_math, domain, area, &result_data);
             });
 
+        domain.recalculate_pixels_states(area);
+
+        println!("calculate() with wrap");
+        // previous calculation completed, calculate wrapping
+        coordinates_xy
+            .par_iter()
+            .for_each(|xy| {
+                self.chunk_calculation_with_wrap(&xy, fractal_math, domain, area, &result_data);
+            });
+
         let mut result_pixels = result_pixels::init(area.width_x, area.height_y);
         result_pixels.translate_paths_to_pixel_grid(result_data.all_paths(), area);
 
@@ -60,6 +70,77 @@ impl Machine {
             for y in y_from..y_to {
                 self.calculate_path_finite(x, y, fractal_math, &self.calculation_config, domain, area, result);
             }
+        }
+    }
+
+    pub fn chunk_calculation_with_wrap(
+        &self,
+        xy: &[u32; 2],
+        fractal_math: &impl Math<Mem>,
+        domain: &Domain,
+        area: &Area,
+        result: &ResultData,
+    ) {
+        let chunk_size_x = (domain.width / 20) as u32;
+        let chunk_size_y = (domain.height / 20) as u32;
+
+        let x_from = (xy[0] * chunk_size_x) as usize;
+        let x_to = ((xy[0] + 1) * chunk_size_x) as usize;
+        let y_from = (xy[1] * chunk_size_y) as usize;
+        let y_to = ((xy[1] + 1) * chunk_size_y) as usize;
+
+        let mut c = 0;
+        for x in x_from..x_to {
+            for y in y_from..y_to {
+                if domain.is_on_mandelbrot_horizon(x, y) {
+                    c += 1;
+                    let (_, origin_re, origin_im) = domain.get_el_triplet(x, y);
+                    let wrap = domain.wrap(origin_re, origin_im, self.calculation_config.resolution_multiplier, area);
+                    for [re, im] in wrap {
+                        self.calculate_path_finite_f64(re, im, fractal_math, &self.calculation_config, area, result);
+                    }
+                }
+            }
+        }
+        if c >= 1 {
+            println!("calculated {}", c);
+        }
+    }
+
+    fn calculate_path_finite_f64(
+        &self,
+        re: f64,
+        im: f64,
+        fractal_math: &impl Math<Mem>,
+        calculation_config: &CalculationConfig,
+        area: &Area,
+        result: &ResultData,
+    ) {
+        let max = calculation_config.iteration_max;
+        let min = calculation_config.iteration_min;
+        let cb = CALCULATION_BOUNDARY as f64;
+        let mut iterator = 0;
+        let mut length = 0;
+        let mut m = mem::new(re, im);
+        while m.quad() < cb && iterator < max {
+            fractal_math.math(&mut m, re, im);
+            if area.contains(m.re, m.im) {
+                length += 1;
+            }
+            iterator += 1;
+        }
+
+        if length > min && iterator < max {
+            let mut m = mem::new(re, im);
+            let mut path: Vec<[f64; 2]> = Vec::new();
+            for _ in 0..iterator {
+                fractal_math.math(&mut m, re, im);
+                if area.contains(m.re, m.im) {
+                    path.push([m.re, m.im]);
+                }
+            }
+            result.add_calculation_path(path);
+            // stats.paths_new_points_amount += path.size(); ?
         }
     }
 
