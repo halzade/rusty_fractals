@@ -1,5 +1,6 @@
+use std::sync::{Arc, Mutex};
 use image::{Rgb, RgbImage};
-use crate::{domain_element, resolution_multiplier};
+use crate::{domain_element};
 use domain_element::DomainElement;
 use crate::resolution_multiplier::ResolutionMultiplier;
 use rand::thread_rng;
@@ -7,30 +8,29 @@ use rand::seq::SliceRandom;
 use rusty_fractals_common::area::Area;
 use rusty_fractals_common::constants::{CALCULATION_BOUNDARY, NEIGHBOURS};
 use rusty_fractals_common::fractal::{CalculationConfig, Math};
-use rusty_fractals_common::mem;
+use rusty_fractals_common::{mem};
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::result_data::ResultData;
-use crate::domain_element::{hibernated_deep_black};
 use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, GOOD_PATH, HIBERNATED_DEEP_BLACK};
 
-pub struct Domain<'lif> {
+pub struct Domain {
     pub width: usize,
     pub height: usize,
-    pub domain_area: &'lif Area,
     domain_elements: Vec<Vec<DomainElement>>,
     resolution_multiplier: ResolutionMultiplier,
 }
 
-impl Domain<'_> {
+impl Domain {
     pub fn calculate_path_finite(
-        &mut self,
+        &self,
         x: usize,
         y: usize,
         fractal_math: &impl Math<Mem>,
-        result: &mut ResultData,
-        calculation_config: &CalculationConfig
+        calculation_config: &CalculationConfig,
+        area: &Area,
+        result: &ResultData
     ) {
-        let el: &mut DomainElement = self.domain_elements[x].get_mut(y).expect("domain_elements problem");
+        let el: &DomainElement = self.domain_elements[x].get(y).expect("domain_elements problem");
         if el.is_active_new() {
             let max = calculation_config.iteration_max;
             let min = calculation_config.iteration_min;
@@ -46,7 +46,7 @@ impl Domain<'_> {
                 // It is 1.68x faster to calculate path twice, and to record exclusively the good paths
 
                 fractal_math.math(&mut m, el.origin_re, el.origin_im);
-                if self.domain_area.contains(m.re, m.im) {
+                if area.contains(m.re, m.im) {
                     length += 1;
                 }
                 iterator += 1;
@@ -64,7 +64,7 @@ impl Domain<'_> {
                 let mut path: Vec<[f64; 2]> = Vec::new();
                 for _ in 0..iterator {
                     fractal_math.math(&mut m, el.origin_re, el.origin_im);
-                    if self.domain_area.contains(m.re, m.im) {
+                    if area.contains(m.re, m.im) {
                         path.push([m.re, m.im]);
                     }
                 }
@@ -72,7 +72,7 @@ impl Domain<'_> {
                 // stats.paths_new_points_amount += path.size();
             }
 
-            el.set_finished_state(el_state);
+            // TODO el.set_finished_state(el_state);
         }
     }
 
@@ -310,7 +310,6 @@ pub fn init(domain_area: &Area, resolution_multiplier: ResolutionMultiplier) -> 
     Domain {
         width: domain_area.width_x,
         height: domain_area.height_y,
-        domain_area: &domain_area,
         domain_elements: init_domain_elements(&domain_area),
         resolution_multiplier,
     }

@@ -5,15 +5,13 @@ use rusty_fractals_domain::domain::Domain;
 use rusty_fractals_result::result::ResultConfig;
 
 // to calculate zoom, sequence of images
-pub struct Engine<'lif> {
-    pub area: &'lif Area,
-    pub domain: &'lif Domain<'lif>,
+pub struct Engine {
     pub calculation_config: CalculationConfig,
     pub app_config: AppConfig,
     pub result_config: ResultConfig,
 }
 
-impl Engine<'_>  {
+impl Engine  {
     pub fn calculate(&self) {
         /*
         let mut first = true;

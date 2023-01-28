@@ -8,7 +8,7 @@ pub struct AppConfig {
     pub save_images: bool,
 }
 
-pub trait Math<T> {
+pub trait Math<T> : Sync  {
     fn math(&self, m: &mut T, origin_re: f64, origin_im: f64);
 }
 

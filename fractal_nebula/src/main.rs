@@ -3,7 +3,7 @@ use resolution_multiplier::ResolutionMultiplier::SquareAlter;
 use rusty_fractals_common::area;
 use rusty_fractals_core::machine::Machine;
 use rusty_fractals_domain::{domain, resolution_multiplier};
-use rusty_fractals_result::palettes::{palette_black_to_white, palette_blue_to_white};
+use rusty_fractals_result::palettes::{palette_blue_to_white};
 use fltk::{frame::Frame, prelude::*, window::Window};
 use fltk::app::App;
 use fltk::enums::ColorDepth;
@@ -36,8 +36,8 @@ fn main() {
         save_images: false,
     };
     let area_cfg = area::AreaConfig {
-        width_re: 7.0,
-        center_re: 0.0,
+        width_re: 3.5,
+        center_re: -0.5,
         center_im: 0.0,
         width_x: WIDTH,
         height_y: HEIGHT,
@@ -49,17 +49,15 @@ fn main() {
     println!("Fractal {}", name);
 
     let nebula = Nebula {};
-    let domain_area = area::init(area_cfg);
-    let mut domain = domain::init(&domain_area, SquareAlter);
-    let mut machine = Machine {
-        area: &domain_area,
-        domain: &mut domain,
+    let area = area::init(area_cfg);
+    let domain = domain::init(&area, SquareAlter);
+    let machine = Machine {
         calculation_config,
         app_config,
         result_config,
     };
 
-    let (domain_image, result_image) = machine.calculate(&nebula);
+    let (domain_image, result_image) = machine.calculate(&nebula, &domain, &area);
 
     let width = domain_image.width() as i32;
     let height = domain_image.height() as i32;
