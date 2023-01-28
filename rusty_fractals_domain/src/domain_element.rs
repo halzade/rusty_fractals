@@ -1,5 +1,6 @@
 use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{ActiveNew, Finished, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort, GoodPath, HibernatedDeepBlack};
+use std::sync::{Arc, Mutex};
 
 pub struct DomainElement {
     pub origin_re: f64,
@@ -49,12 +50,12 @@ impl DomainElement {
     }
 }
 
-pub fn init(re: f64, im: f64) -> DomainElement {
-    DomainElement {
+pub fn init(re: f64, im: f64) -> Arc<Mutex<DomainElement>> {
+    Arc::new(Mutex::new(DomainElement {
         origin_re: re,
         origin_im: im,
         state: ActiveNew,
-    }
+    }))
 }
 
 pub fn active_new(re: f64, im: f64) -> DomainElement {

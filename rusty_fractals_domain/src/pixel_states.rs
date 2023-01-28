@@ -1,6 +1,6 @@
 use std::cmp::Ordering::Less;
 use image::Rgb;
-use crate::pixel_states::DomainElementState::{ActiveNew, Finished};
+use crate::pixel_states::DomainElementState::{ActiveNew, Finished, FinishedSuccessPast, FinishedTooShort, HibernatedDeepBlack};
 
 pub const ACTIVE_NEW: Rgb<u8> = Rgb([40, 180, 150]);
 pub const FINISHED_TOO_LONG: Rgb<u8> = Rgb([0, 0, 0]);
@@ -12,7 +12,7 @@ pub const FINISHED: Rgb<u8> = Rgb([130, 130, 100]);
 pub const GOOD_PATH: Rgb<u8> = Rgb([200, 108, 10]);
 
 
-#[derive(PartialOrd, Ord, PartialEq, Eq)]
+#[derive(PartialOrd, Ord, PartialEq, Eq, Clone, Copy)]
 pub enum DomainElementState {
     /**
      * 1.
@@ -74,6 +74,18 @@ pub enum DomainElementState {
      * color = {@link MaskMandelbrotMaskColors#GOOD_PATH}
      */
     GoodPath,
+}
+
+pub fn is_active_new(state: DomainElementState) -> bool {
+    state == ActiveNew
+}
+
+pub fn is_finished_success_past(state: DomainElementState) -> bool {
+    state == FinishedSuccessPast
+}
+
+pub fn is_hibernated(state: DomainElementState) -> bool {
+    state == FinishedTooShort || state == HibernatedDeepBlack
 }
 
 #[test]

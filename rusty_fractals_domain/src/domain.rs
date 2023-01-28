@@ -1,6 +1,7 @@
+use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, Mutex};
 use image::{Rgb, RgbImage};
-use crate::{domain_element};
+use crate::{domain_element, pixel_states};
 use domain_element::DomainElement;
 use crate::resolution_multiplier::ResolutionMultiplier;
 use rand::thread_rng;
@@ -16,7 +17,7 @@ use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUC
 pub struct Domain {
     pub width: usize,
     pub height: usize,
-    domain_elements: Vec<Vec<DomainElement>>,
+    domain_elements: Vec<Vec<Arc<Mutex<DomainElement>>>>,
     resolution_multiplier: ResolutionMultiplier,
 }
 
@@ -28,16 +29,16 @@ impl Domain {
         fractal_math: &impl Math<Mem>,
         calculation_config: &CalculationConfig,
         area: &Area,
-        result: &ResultData
+        result: &ResultData,
     ) {
-        let el: &DomainElement = self.domain_elements[x].get(y).expect("domain_elements problem");
-        if el.is_active_new() {
+        let (state, origin_re, origin_im) = self.get_el_triplet(x, y);
+        if pixel_states::is_active_new(state) {
             let max = calculation_config.iteration_max;
             let min = calculation_config.iteration_min;
             let cb = CALCULATION_BOUNDARY as f64;
             let mut iterator = 0;
             let mut length = 0;
-            let mut m = mem::new(el.origin_re, el.origin_im);
+            let mut m = mem::new(origin_re, origin_im);
             while m.quad() < cb && iterator < max {
 
                 // Investigate if this is a good calculation path
@@ -45,7 +46,7 @@ impl Domain {
                 // Most of the long and expensive calculations end up inside Mandelbrot set, useless
                 // It is 1.68x faster to calculate path twice, and to record exclusively the good paths
 
-                fractal_math.math(&mut m, el.origin_re, el.origin_im);
+                fractal_math.math(&mut m, origin_re, origin_im);
                 if area.contains(m.re, m.im) {
                     length += 1;
                 }
@@ -58,12 +59,12 @@ impl Domain {
                 // This origin produced good data
                 // Record the calculation path
 
-                let mut m = mem::new(el.origin_re, el.origin_im);
+                let mut m = mem::new(origin_re, origin_im);
                 // TODO el.good_path();
 
                 let mut path: Vec<[f64; 2]> = Vec::new();
                 for _ in 0..iterator {
-                    fractal_math.math(&mut m, el.origin_re, el.origin_im);
+                    fractal_math.math(&mut m, origin_re, origin_im);
                     if area.contains(m.re, m.im) {
                         path.push([m.re, m.im]);
                     }
@@ -72,8 +73,22 @@ impl Domain {
                 // stats.paths_new_points_amount += path.size();
             }
 
-            // TODO el.set_finished_state(el_state);
+            self.set_finished_state(x, y, el_state);
         }
+    }
+
+    fn get_el_triplet(&self, x: usize, y: usize) -> (DomainElementState, f64, f64) {
+        let mutex_guard = self.domain_elements[x].get(y).expect("domain_elements problem").lock().unwrap();
+        let el = mutex_guard.deref();
+        (el.state, el.origin_re, el.origin_im)
+    }
+
+    fn get_el_state(&self, x: usize, y: usize) -> DomainElementState {
+        self.get_el_triplet(x, y).0
+    }
+
+    fn set_finished_state(&self, x: usize, y: usize, state: DomainElementState) {
+        self.domain_elements[x].get(y).expect("domain_elements problem").lock().unwrap().deref_mut().set_finished_state(state);
     }
 
     fn check_domain(&self, x: i32, y: i32) -> bool {
@@ -134,8 +149,8 @@ impl Domain {
     }
 
     // Colors for Mandelbrot image based on Mandelbrot element's state
-    pub fn color_for_state(el: &DomainElement) -> Rgb<u8> {
-        match el.state {
+    pub fn color_for_state(state: DomainElementState) -> Rgb<u8> {
+        match state {
             // most of the elements are going to be FinishedSuccessPast
             DomainElementState::FinishedSuccessPast => FINISHED_SUCCESS_PAST,
             DomainElementState::HibernatedDeepBlack => HIBERNATED_DEEP_BLACK,
@@ -152,7 +167,7 @@ impl Domain {
         let mut domain_image = RgbImage::new(self.width as u32, self.height as u32);
         for y in 0..self.height - 1 {
             for x in 0..self.width - 1 {
-                domain_image.put_pixel(x as u32, y as u32, Domain::color_for_state(&self.domain_elements[x][y]));
+                domain_image.put_pixel(x as u32, y as u32, Domain::color_for_state(self.get_el_state(x, y)));
             }
         }
         domain_image
@@ -264,11 +279,11 @@ impl Domain {
                 let xx = x as i32 + a;
                 let yy = y as i32 + b;
                 if self.check_domain(xx, yy) {
-                    let el = &self.domain_elements[xx as usize][yy as usize];
-                    if el.is_finished_success_past() {
+                    let state = self.get_el_state(xx as usize, yy as usize);
+                    if pixel_states::is_finished_success_past(state) {
                         red = true;
                     }
-                    if el.is_hibernated() {
+                    if pixel_states::is_hibernated(state) {
                         black = true;
                     }
                     if red && black {
@@ -291,10 +306,10 @@ impl Domain {
     }
 }
 
-pub fn init_domain_elements(domain_area: &Area) -> Vec<Vec<DomainElement>> {
-    let mut vy: Vec<Vec<DomainElement>> = Vec::new();
+pub fn init_domain_elements(domain_area: &Area) -> Vec<Vec<Arc<Mutex<DomainElement>>>> {
+    let mut vy: Vec<Vec<Arc<Mutex<DomainElement>>>> = Vec::new();
     for x in 0..domain_area.width_x {
-        let mut vx: Vec<DomainElement> = Vec::new();
+        let mut vx: Vec<Arc<Mutex<DomainElement>>> = Vec::new();
         for y in 0..domain_area.height_y {
             vx.push(domain_element::init(
                 domain_area.screen_to_domain_re(x),
