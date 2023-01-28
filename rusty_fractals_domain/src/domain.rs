@@ -7,13 +7,9 @@ use crate::resolution_multiplier::ResolutionMultiplier;
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use rusty_fractals_common::area::Area;
-use rusty_fractals_common::constants::{CALCULATION_BOUNDARY, NEIGHBOURS};
-use rusty_fractals_common::fractal::{CalculationConfig, Math};
-use rusty_fractals_common::{mem};
-use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::result_data::ResultData;
+use rusty_fractals_common::constants::{NEIGHBOURS};
+use rusty_fractals_common::fractal::{Math};
 use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, GOOD_PATH, HIBERNATED_DEEP_BLACK};
-use crate::pixel_states::DomainElementState::GoodPath;
 
 pub struct Domain {
     pub width: usize,
@@ -23,72 +19,17 @@ pub struct Domain {
 }
 
 impl Domain {
-    pub fn calculate_path_finite(
-        &self,
-        x: usize,
-        y: usize,
-        fractal_math: &impl Math<Mem>,
-        calculation_config: &CalculationConfig,
-        area: &Area,
-        result: &ResultData,
-    ) {
-        let (state, origin_re, origin_im) = self.get_el_triplet(x, y);
-        if pixel_states::is_active_new(state) {
-            let max = calculation_config.iteration_max;
-            let min = calculation_config.iteration_min;
-            let cb = CALCULATION_BOUNDARY as f64;
-            let mut iterator = 0;
-            let mut length = 0;
-            let mut m = mem::new(origin_re, origin_im);
-            while m.quad() < cb && iterator < max {
-
-                // Investigate if this is a good calculation path
-                // Don't create path data yet. Too many origins don't produce good data
-                // Most of the long and expensive calculations end up inside Mandelbrot set, useless
-                // It is 1.68x faster to calculate path twice, and to record exclusively the good paths
-
-                fractal_math.math(&mut m, origin_re, origin_im);
-                if area.contains(m.re, m.im) {
-                    length += 1;
-                }
-                iterator += 1;
-            }
-            let el_state = Domain::state_from_path_length(iterator, max, min);
-
-            if length > min && iterator < max {
-
-                // This origin produced good data
-                // Record the calculation path
-                self.set_finished_state(x, y, GoodPath);
-
-                let mut m = mem::new(origin_re, origin_im);
-
-                let mut path: Vec<[f64; 2]> = Vec::new();
-                for _ in 0..iterator {
-                    fractal_math.math(&mut m, origin_re, origin_im);
-                    if area.contains(m.re, m.im) {
-                        path.push([m.re, m.im]);
-                    }
-                }
-                result.add_calculation_path(path);
-                // stats.paths_new_points_amount += path.size();
-            }
-
-            self.set_finished_state(x, y, el_state);
-        }
-    }
-
-    fn get_el_triplet(&self, x: usize, y: usize) -> (DomainElementState, f64, f64) {
+    pub fn get_el_triplet(&self, x: usize, y: usize) -> (DomainElementState, f64, f64) {
         let mutex_guard = self.domain_elements[x].get(y).expect("domain_elements problem").lock().unwrap();
         let el = mutex_guard.deref();
         (el.state, el.origin_re, el.origin_im)
     }
 
-    fn get_el_state(&self, x: usize, y: usize) -> DomainElementState {
+    pub fn get_el_state(&self, x: usize, y: usize) -> DomainElementState {
         self.get_el_triplet(x, y).0
     }
 
-    fn set_finished_state(&self, x: usize, y: usize, state: DomainElementState) {
+    pub fn set_finished_state(&self, x: usize, y: usize, state: DomainElementState) {
         self.domain_elements[x].get(y).expect("domain_elements problem").lock().unwrap().deref_mut().set_finished_state(state);
     }
 
