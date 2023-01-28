@@ -13,6 +13,7 @@ use rusty_fractals_common::{mem};
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::result_data::ResultData;
 use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, GOOD_PATH, HIBERNATED_DEEP_BLACK};
+use crate::pixel_states::DomainElementState::GoodPath;
 
 pub struct Domain {
     pub width: usize,
@@ -58,9 +59,9 @@ impl Domain {
 
                 // This origin produced good data
                 // Record the calculation path
+                self.set_finished_state(x, y, GoodPath);
 
                 let mut m = mem::new(origin_re, origin_im);
-                // TODO el.good_path();
 
                 let mut path: Vec<[f64; 2]> = Vec::new();
                 for _ in 0..iterator {
