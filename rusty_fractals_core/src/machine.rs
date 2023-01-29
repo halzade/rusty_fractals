@@ -10,19 +10,30 @@ use rusty_fractals_common::result_data_static::ResultDataStatic;
 use rusty_fractals_domain::pixel_states;
 use rusty_fractals_domain::domain::Domain;
 use rusty_fractals_domain::pixel_states::DomainElementState::GoodPath;
+use rusty_fractals_result::palette::Palette;
 use rusty_fractals_result::result_pixels;
 use rusty_fractals_result::perfect_color_distribution::perfectly_color_result_values;
 use rusty_fractals_result::result::ResultConfig;
 
 // to calculate single image
 pub struct Machine<'lt> {
-    pub calculation_config: &'lt CalculationConfig,
-    pub app_config: &'lt AppConfig,
-    pub result_config: &'lt ResultConfig,
+    pub iteration_min: u32,
+    pub iteration_max: u32,
+    pub resolution_multiplier: ResolutionMultiplier,
+    pub repeat: bool,
+    pub save_images: bool,
+    pub palette: &'lt Palette,
 }
 
-pub fn init<'lt>(calculation_config: &'lt CalculationConfig, app_config: &'lt AppConfig, result_config: &'lt ResultConfig) -> Machine<'lt> {
-    Machine { calculation_config, app_config, result_config }
+pub fn init<'lt>(calculation_config: &CalculationConfig, app_config: &AppConfig, result_config: &'lt ResultConfig) -> Machine<'lt> {
+    Machine {
+        iteration_min: calculation_config.iteration_min,
+        iteration_max: calculation_config.iteration_max,
+        resolution_multiplier: calculation_config.resolution_multiplier,
+        repeat: app_config.repeat,
+        save_images: app_config.save_images,
+        palette: &result_config.palette,
+    }
 }
 
 impl Machine<'_> {
@@ -39,7 +50,7 @@ impl Machine<'_> {
 
         domain.recalculate_pixels_states(area);
 
-        if self.calculation_config.resolution_multiplier != ResolutionMultiplier::None {
+        if self.resolution_multiplier != ResolutionMultiplier::None {
             println!("calculate() with wrap");
             // previous calculation completed, calculate more elements
             coordinates_xy
@@ -52,7 +63,7 @@ impl Machine<'_> {
         result_pixels.translate_all_points_to_pixel_grid(result_static.all_points(), area);
 
         let domain_image = domain.domain_element_states_to_image();
-        let result_image = perfectly_color_result_values(&result_pixels, &self.result_config.palette);
+        let result_image = perfectly_color_result_values(&result_pixels, &self.palette);
         (domain_image, result_image)
     }
 
@@ -78,7 +89,7 @@ impl Machine<'_> {
         let (x_from, x_to, y_from, y_to) = Machine::chunk_boundaries(xy, domain);
         for x in x_from..x_to {
             for y in y_from..y_to {
-                self.calculate_path_finite(x, y, fractal, &self.calculation_config, domain, area, result_static);
+                self.calculate_path_finite(x, y, fractal, domain, area, result_static);
             }
         }
     }
@@ -91,7 +102,7 @@ impl Machine<'_> {
         area: &Area,
         result_static: &ResultDataStatic,
     ) {
-        if self.calculation_config.resolution_multiplier == ResolutionMultiplier::None {
+        if self.resolution_multiplier == ResolutionMultiplier::None {
             panic!()
         }
         let (x_from, x_to, y_from, y_to) = Machine::chunk_boundaries(xy, domain);
@@ -99,9 +110,9 @@ impl Machine<'_> {
             for y in y_from..y_to {
                 if domain.is_on_mandelbrot_horizon(x, y) {
                     let (_, origin_re, origin_im) = domain.get_el_triplet(x, y);
-                    let wrap = domain.wrap(origin_re, origin_im, self.calculation_config.resolution_multiplier, area);
+                    let wrap = domain.wrap(origin_re, origin_im, self.resolution_multiplier, area);
                     for [re, im] in wrap {
-                        self.calculate_path_finite_f64(re, im, fractal, &self.calculation_config, area, result_static);
+                        self.calculate_path_finite_f64(re, im, fractal, area, result_static);
                     }
                 }
             }
@@ -113,16 +124,16 @@ impl Machine<'_> {
         re: f64,
         im: f64,
         fractal: &impl Fractal<Mem>,
-        calculation_config: &CalculationConfig,
         area: &Area,
         result_static: &ResultDataStatic,
     ) {
-        let max = calculation_config.iteration_max;
-        let min = calculation_config.iteration_min;
+        let mut m = mem::new(re, im);
+
+        let max = self.iteration_max;
+        let min = self.iteration_min;
         let cb = CALCULATION_BOUNDARY as f64;
         let mut iterator = 0;
         let mut length = 0;
-        let mut m = mem::new(re, im);
         while m.quad() < cb && iterator < max {
             fractal.math(&mut m, re, im);
             if area.contains(m.re, m.im) {
@@ -150,19 +161,19 @@ impl Machine<'_> {
         x: usize,
         y: usize,
         fractal: &impl Fractal<Mem>,
-        calculation_config: &CalculationConfig,
         domain: &Domain,
         area: &Area,
         result_static: &ResultDataStatic,
     ) {
         let (state, origin_re, origin_im) = domain.get_el_triplet(x, y);
         if pixel_states::is_active_new(state) {
-            let max = calculation_config.iteration_max;
-            let min = calculation_config.iteration_min;
+            let mut m = mem::new(origin_re, origin_im);
+
+            let max = self.iteration_max;
+            let min = self.iteration_min;
             let cb = CALCULATION_BOUNDARY as f64;
             let mut iterator = 0;
             let mut length = 0;
-            let mut m = mem::new(origin_re, origin_im);
             while m.quad() < cb && iterator < max {
 
                 // Investigate if this is a good calculation path
