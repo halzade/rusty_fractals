@@ -1,6 +1,5 @@
-use std::cmp::Ordering::Less;
 use image::Rgb;
-use crate::pixel_states::DomainElementState::{ActiveNew, Finished, FinishedSuccessPast, FinishedTooShort, HibernatedDeepBlack};
+use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccessPast, FinishedTooShort, HibernatedDeepBlack};
 
 pub const ACTIVE_NEW: Rgb<u8> = Rgb([40, 180, 150]);
 pub const FINISHED_TOO_LONG: Rgb<u8> = Rgb([0, 0, 0]);
@@ -16,10 +15,10 @@ pub const GOOD_PATH: Rgb<u8> = Rgb([200, 108, 10]);
 pub enum DomainElementState {
     /**
      * 1.
-     * Calculation PATH Finished with success in previous calculation iteration (zoom).
+     * Calculation path Finished with success in previous calculation iteration (zoom).
      * This is updated state from previous state {@link #FinishedSuccess}.
      * If there was a conflict when moving pixels to new location after zoomIn(), use this state.
-     * There won't be any difference in Finebrot data, only in mandelbrot pixel state and color.
+     * There won't be any difference in result data, only in mandelbrot pixel state and color.
      * color = {@link MaskMandelbrotMaskColors#FINISHED_SUCCESS_PAST}
      */
     FinishedSuccessPast,
@@ -88,7 +87,13 @@ pub fn is_hibernated(state: DomainElementState) -> bool {
     state == FinishedTooShort || state == HibernatedDeepBlack
 }
 
-#[test]
-fn test_pixel_state() {
-    assert_eq!(ActiveNew.cmp(&Finished), Less);
+#[cfg(test)]
+mod tests {
+    use std::cmp::Ordering::Less;
+    use crate::pixel_states::DomainElementState::{Finished, FinishedSuccessPast};
+
+    #[test]
+    fn test_pixel_state() {
+        assert_eq!(FinishedSuccessPast.cmp(&Finished), Less);
+    }
 }

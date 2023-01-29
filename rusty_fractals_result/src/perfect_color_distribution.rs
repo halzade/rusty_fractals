@@ -4,8 +4,7 @@
 // - Zero elements and noise color by the lowest color
 // - Color all significant pixels ordered by value
 
-use std::cmp::Ordering::Equal;
-use image::{Rgb, RgbImage};
+use image::RgbImage;
 use constants::COLORING_THRESHOLD;
 use rusty_fractals_common::constants;
 use crate::palette::Palette;
@@ -66,7 +65,7 @@ pub fn perfectly_color_result_values(result_pixels: &ResultPixels, palette: &Pal
     println!("left:                        {}", left);
     println!("------------------------------------");
 
-    let mut result_image = image::RgbImage::new(width as u32, height as u32);
+    let mut result_image = RgbImage::new(width as u32, height as u32);
 
     // paint mismatched pixel amount with the least value colour
     let mut pi = 0;

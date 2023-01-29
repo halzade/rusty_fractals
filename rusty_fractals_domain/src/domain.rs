@@ -5,9 +5,9 @@ use crate::{domain_element, pixel_states};
 use domain_element::DomainElement;
 use rand::thread_rng;
 use rand::seq::SliceRandom;
+use ResolutionMultiplier::{Square101, Square11, Square3, Square5, Square51};
 use rusty_fractals_common::area::Area;
 use rusty_fractals_common::constants::{NEIGHBOURS};
-use rusty_fractals_common::fractal::{Math};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square2;
 use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, GOOD_PATH, HIBERNATED_DEEP_BLACK};
@@ -81,12 +81,12 @@ impl Domain {
     pub fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
         match rm {
             ResolutionMultiplier::None => 1.0,
-            ResolutionMultiplier::Square3 => 3.0,
-            ResolutionMultiplier::Square5 => 5.0,
-            ResolutionMultiplier::Square11 => 11.0,
-            ResolutionMultiplier::Square51 => 51.0,
-            ResolutionMultiplier::Square101 => 101.0,
-            ResolutionMultiplier::Square2 => 1.0
+            Square3 => 3.0,
+            Square5 => 5.0,
+            Square11 => 11.0,
+            Square51 => 51.0,
+            Square101 => 101.0,
+            Square2 => 1.0
         }
     }
 
@@ -223,7 +223,7 @@ impl Domain {
 
     // all new elements are Active New
     // for wrapping, search only elements, which have some past well finished neighbors
-    // previous caluclation must be completed
+    // previous calculation must be completed
     pub fn is_on_mandelbrot_horizon(&self, x: usize, y: usize) -> bool {
         let mut red = false;
         let mut black = false;

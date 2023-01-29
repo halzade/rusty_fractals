@@ -1,5 +1,5 @@
 use crate::pixel_states::DomainElementState;
-use crate::pixel_states::DomainElementState::{ActiveNew, Finished, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort, GoodPath, HibernatedDeepBlack};
+use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooShort, GoodPath, HibernatedDeepBlack};
 use std::sync::{Arc, Mutex};
 
 pub struct DomainElement {

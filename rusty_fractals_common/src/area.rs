@@ -8,8 +8,6 @@ pub struct AreaConfig {
     pub height_y: usize,
 }
 
-const VANILLA_AREA_CONFIG: &AreaConfig = &AreaConfig { width_re: 1.0, center_re: 0.0, center_im: 0.0, width_x: 10, height_y: 10 };
-
 pub struct Area {
     pub width_re: f64,
     pub height_im: f64,
@@ -74,7 +72,7 @@ impl Area {
         self.center_re = init_target_re;
         self.center_im = init_target_im;
     }
-    
+
     pub fn plank(&self) -> f64 {
         self.plank
     }
@@ -131,48 +129,55 @@ pub fn init(config: &AreaConfig) -> Area {
     }
 }
 
-#[test]
-fn test_init() {
-    let area = init(VANILLA_AREA_CONFIG);
-    assert_eq!(area.border_low_re, -0.5);
-    assert_eq!(area.border_high_re, 0.5);
-    assert_eq!(area.border_low_im, -0.5);
-    assert_eq!(area.border_high_im, 0.5);
-}
+#[cfg(test)]
+mod tests {
+    use crate::area::{AreaConfig, init};
 
-#[test]
-fn test_contains() {
-    let area = init(VANILLA_AREA_CONFIG);
-    assert_eq!(area.contains(0.4, 0.4), true);
-    assert_eq!(area.contains(0.4, 0.6), false);
-    assert_eq!(area.contains(0.6, 0.4), false);
+    const VANILLA_AREA_CONFIG: &AreaConfig = &AreaConfig { width_re: 1.0, center_re: 0.0, center_im: 0.0, width_x: 10, height_y: 10 };
 
-    assert_eq!(area.contains(-0.4, -0.4), true);
-    assert_eq!(area.contains(-0.4, -0.6), false);
-    assert_eq!(area.contains(-0.6, -0.4), false);
+    #[test]
+    fn test_init() {
+        let area = init(VANILLA_AREA_CONFIG);
+        assert_eq!(area.border_low_re, -0.5);
+        assert_eq!(area.border_high_re, 0.5);
+        assert_eq!(area.border_low_im, -0.5);
+        assert_eq!(area.border_high_im, 0.5);
+    }
 
-    assert_eq!(area.contains(-0.4, 0.4), true);
-    assert_eq!(area.contains(-0.4, 0.6), false);
-    assert_eq!(area.contains(-0.6, 0.4), false);
+    #[test]
+    fn test_contains() {
+        let area = init(VANILLA_AREA_CONFIG);
+        assert_eq!(area.contains(0.4, 0.4), true);
+        assert_eq!(area.contains(0.4, 0.6), false);
+        assert_eq!(area.contains(0.6, 0.4), false);
 
-    assert_eq!(area.contains(0.4, -0.4), true);
-    assert_eq!(area.contains(0.4, -0.6), false);
-    assert_eq!(area.contains(0.6, -0.4), false);
-}
+        assert_eq!(area.contains(-0.4, -0.4), true);
+        assert_eq!(area.contains(-0.4, -0.6), false);
+        assert_eq!(area.contains(-0.6, -0.4), false);
 
-#[test]
-fn test_screen_to_domain_re() {
-    let area = init(VANILLA_AREA_CONFIG);
-    assert_eq!(area.screen_to_domain_re(5), 0.0);
-    assert_eq!(area.screen_to_domain_re(0), -0.5);
-    assert_eq!(area.screen_to_domain_re(9), 0.4);
-}
+        assert_eq!(area.contains(-0.4, 0.4), true);
+        assert_eq!(area.contains(-0.4, 0.6), false);
+        assert_eq!(area.contains(-0.6, 0.4), false);
 
-#[test]
-fn test_screen_to_domain_im() {
-    let area = init(VANILLA_AREA_CONFIG);
-    assert_eq!(area.screen_to_domain_im(2), -0.3);
-    assert_eq!(area.screen_to_domain_im(5), 0.0);
-    assert_eq!(area.screen_to_domain_im(0), -0.5);
-    assert_eq!(area.screen_to_domain_im(9), 0.4);
+        assert_eq!(area.contains(0.4, -0.4), true);
+        assert_eq!(area.contains(0.4, -0.6), false);
+        assert_eq!(area.contains(0.6, -0.4), false);
+    }
+
+    #[test]
+    fn test_screen_to_domain_re() {
+        let area = init(VANILLA_AREA_CONFIG);
+        assert_eq!(area.screen_to_domain_re(5), 0.0);
+        assert_eq!(area.screen_to_domain_re(0), -0.5);
+        assert_eq!(area.screen_to_domain_re(9), 0.4);
+    }
+
+    #[test]
+    fn test_screen_to_domain_im() {
+        let area = init(VANILLA_AREA_CONFIG);
+        assert_eq!(area.screen_to_domain_im(2), -0.3);
+        assert_eq!(area.screen_to_domain_im(5), 0.0);
+        assert_eq!(area.screen_to_domain_im(0), -0.5);
+        assert_eq!(area.screen_to_domain_im(9), 0.4);
+    }
 }
