@@ -16,6 +16,7 @@ impl Fractal<Mem> for Infinity {
         m.plus(origin_re, origin_im);
     }
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
+        // infinite orbits
         length > min && iterator == max
     }
 }

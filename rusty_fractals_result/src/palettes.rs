@@ -2,7 +2,7 @@ use crate::palette::Palette;
 use crate::palette::Palette3;
 use crate::palette_utils::make_spectrum;
 use image::Rgb;
-use crate::palettes::Function::{CircleDown, CircleUp, Exp, Exp2, Linear1, Quadratic};
+use crate::palettes::Function::{CircleDown, CircleUp, Exp2};
 
 const WHITE: Rgb<u8> = Rgb([255, 255, 255]);
 const BLACK: Rgb<u8> = Rgb([0, 0, 0]);

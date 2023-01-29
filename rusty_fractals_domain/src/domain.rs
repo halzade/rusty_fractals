@@ -9,7 +9,7 @@ use rusty_fractals_common::area::Area;
 use rusty_fractals_common::constants::{NEIGHBOURS};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
 use ResolutionMultiplier::{Square2, Square101, Square11, Square3, Square5, Square9, Square51};
-use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, GOOD_PATH, HIBERNATED_DEEP_BLACK};
+use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK};
 
 pub struct Domain {
     pub width: usize,

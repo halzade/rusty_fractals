@@ -95,12 +95,12 @@ pub fn init(config: &AreaConfig) -> Area {
     let border_low_im = center_im - height_im / 2.0;
     let border_high_im = center_im + height_im / 2.0;
 
-    println!("width_re  {}", width_re);
-    println!("height_im  {}", height_im);
-    println!("border_low_re  {}", border_low_re);
-    println!("border_high_re {}", border_high_re);
-    println!("border_low_im  {}", border_low_im);
-    println!("border_high_im {}", border_high_im);
+    println!("width_re:       {}", width_re);
+    println!("height_im:      {}", height_im);
+    println!("border_low_re:  {}", border_low_re);
+    println!("border_high_re: {}", border_high_re);
+    println!("border_low_im:  {}", border_low_im);
+    println!("border_high_im: {}", border_high_im);
 
     /* Generate domain elements */
     let mut numbers_re: Vec<f64> = Vec::new();
