@@ -39,7 +39,7 @@ impl Machine<'_> {
         domain.recalculate_pixels_states(area);
 
         println!("calculate() with wrap");
-        // previous calculation completed, calculate wrapping
+        // previous calculation completed, calculate more elements
         coordinates_xy
             .par_iter()
             .for_each(|xy| {
@@ -64,8 +64,8 @@ impl Machine<'_> {
          ((xy[1] + 1) * chunk_size_y) as usize)
     }
 
-    // in sequence (cpu_num) executes as 20x20 parallel for each domain chunk
-    pub fn chunk_calculation(
+    // in sequence executes as 20x20 parallel for each domain chunk
+    fn chunk_calculation(
         &self,
         xy: &[u32; 2],
         fractal_math: &impl Math<Mem>,
@@ -81,7 +81,7 @@ impl Machine<'_> {
         }
     }
 
-    pub fn chunk_calculation_with_wrap(
+    fn chunk_calculation_with_wrap(
         &self,
         xy: &[u32; 2],
         fractal_math: &impl Math<Mem>,

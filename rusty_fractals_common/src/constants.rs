@@ -6,7 +6,7 @@ pub const NEIGHBOURS: u8 = 3;
 // save generated images here
 pub const PATH: &str = "/Fractals/";
 
-// to remove noise, tread pixels with this value or less as 0
+// to remove noise, ignore pixels with this value or less as 0
 pub const COLORING_THRESHOLD: u32 = 3;
 
 // Delete shorter paths then this

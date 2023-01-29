@@ -2,9 +2,9 @@ use rusty_fractals_core::{machine, window};
 use rusty_fractals_common::area;
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Math};
-use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::{Square5};
-use rusty_fractals_domain::{domain};
-use rusty_fractals_result::palettes::{palette_blue_to_white};
+use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square9;
+use rusty_fractals_domain::domain;
+use rusty_fractals_result::palettes::palette_blue_to_white;
 use rusty_fractals_result::result::ResultConfig;
 
 struct Nebula {}
@@ -19,13 +19,13 @@ impl Math<Mem> for Nebula {
 fn main() {
     let name = "Nebula";
 
-    const WIDTH: usize = 800;
-    const HEIGHT: usize = 800;
+    const WIDTH: usize = 1200;
+    const HEIGHT: usize = 1200;
 
     let calculation_config = CalculationConfig {
         iteration_min: 42,
         iteration_max: 14800,
-        resolution_multiplier: Square5,
+        resolution_multiplier: Square9,
     };
     let app_config = AppConfig {
         repeat: false,

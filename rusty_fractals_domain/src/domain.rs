@@ -5,11 +5,10 @@ use crate::{domain_element, pixel_states};
 use domain_element::DomainElement;
 use rand::thread_rng;
 use rand::seq::SliceRandom;
-use ResolutionMultiplier::{Square101, Square11, Square3, Square5, Square51};
 use rusty_fractals_common::area::Area;
 use rusty_fractals_common::constants::{NEIGHBOURS};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
-use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square2;
+use ResolutionMultiplier::{Square2, Square101, Square11, Square3, Square5, Square9, Square51};
 use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, GOOD_PATH, HIBERNATED_DEEP_BLACK};
 
 pub struct Domain {
@@ -83,6 +82,7 @@ impl Domain {
             ResolutionMultiplier::None => 1.0,
             Square3 => 3.0,
             Square5 => 5.0,
+            Square9 => 9.0,
             Square11 => 11.0,
             Square51 => 51.0,
             Square101 => 101.0,
