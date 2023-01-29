@@ -9,6 +9,7 @@ use rusty_fractals_result::result::ResultConfig;
 use rayon::prelude::*;
 use rusty_fractals_common::constants::CALCULATION_BOUNDARY;
 use rusty_fractals_common::{mem, result_data_static};
+use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
 use rusty_fractals_common::result_data_static::ResultDataStatic;
 use rusty_fractals_domain::pixel_states;
 use rusty_fractals_domain::pixel_states::DomainElementState::GoodPath;
@@ -38,14 +39,15 @@ impl Machine<'_> {
 
         domain.recalculate_pixels_states(area);
 
-        println!("calculate() with wrap");
-        // previous calculation completed, calculate more elements
-        coordinates_xy
-            .par_iter()
-            .for_each(|xy| {
-                self.chunk_calculation_with_wrap(&xy, fractal_math, domain, area, &result_static);
-            });
-
+        if self.calculation_config.resolution_multiplier != ResolutionMultiplier::None {
+            println!("calculate() with wrap");
+            // previous calculation completed, calculate more elements
+            coordinates_xy
+                .par_iter()
+                .for_each(|xy| {
+                    self.chunk_calculation_with_wrap(&xy, fractal_math, domain, area, &result_static);
+                });
+        }
         let mut result_pixels = result_pixels::init(area);
         result_pixels.translate_all_points_to_pixel_grid(result_static.all_points(), area);
 
@@ -89,6 +91,9 @@ impl Machine<'_> {
         area: &Area,
         result_static: &ResultDataStatic,
     ) {
+        if self.calculation_config.resolution_multiplier == ResolutionMultiplier::None {
+            panic!()
+        }
         let (x_from, x_to, y_from, y_to) = Machine::chunk_boundaries(xy, domain);
         for x in x_from..x_to {
             for y in y_from..y_to {

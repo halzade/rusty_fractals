@@ -1,18 +1,16 @@
-use rusty_fractals_result::palettes::palette_black_to_white;
-use rusty_fractals_core::mem::Mem;
-use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, Math};
-use rusty_fractals_domain::resolution_multiplier;
-use resolution_multiplier::ResolutionMultiplier;
-use resolution_multiplier::ResolutionMultiplier::None;
-use log::{info};
+use area::AreaConfig;
+use rusty_fractals_core::{machine, window};
+use rusty_fractals_common::area;
+use rusty_fractals_common::mem::Mem;
+use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Math};
+use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square11;
+use rusty_fractals_domain::domain;
+use rusty_fractals_result::palettes::{palette_black_to_white_exp2, palette_blue_to_white_circle_up};
+use rusty_fractals_result::result::ResultConfig;
 
-const NAME: &str = "Lotus";
+struct Lotus {}
 
-struct Lotus {
-    pub name: String,
-}
-
-impl Math for Lotus {
+impl Math<Mem> for Lotus {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         m.conjugation();
         m.square();
@@ -21,28 +19,37 @@ impl Math for Lotus {
 }
 
 fn main() {
-    info!("Started");
+    let name = "Lotus";
 
-    let lotus = Lotus { name: NAME.to_string() };
-    let definition = FractalDefinition {
+    const WIDTH: usize = 1280;
+    const HEIGHT: usize = 1000;
+
+    let calculation_config = CalculationConfig {
         iteration_min: 42,
         iteration_max: 8000,
-        area_size: 9.5,
-        target_re: 0.67748277351478,
-        target_im: -1.18770078111202,
-        resolution_width: 1920,
-        resolution_height: 1080,
-        resolution_multiplier: None,
+        resolution_multiplier: Square11,
+    };
+    let app_config = AppConfig {
         repeat: false,
         save_images: false,
-        palette: palette_black_to_white(),
     };
-    let config = FractalConfig { resolution_width: RESOLUTION_WIDTH, resolution_height: RESOLUTION_HEIGHT, resolution_multiplier: RESOLUTION_MULTIPLIER, repeat: REPEAT, save_images: SAVE_IMAGES, palette: PALETTE };
+    let area_cfg = AreaConfig {
+        width_re: 3.5,
+        center_re: 0.0, //  0.67748277351478,
+        center_im: 0.0, // -1.18770078111202,
+        width_x: WIDTH,
+        height_y: HEIGHT,
+    };
+    let result_config = ResultConfig {
+        palette: palette_blue_to_white_circle_up(),
+    };
 
-    info!("Fractal {}", lotus.name);
+    let lotus = Lotus {};
+    let area = area::init(&area_cfg);
+    let domain = domain::init(&area);
+    let machine = machine::init(&calculation_config, &app_config, &result_config);
 
-    let mut m = Mem { re: 0.0, im: 0.0 };
-    lotus.math(&mut m, 1.0, 0.1);
+    let (domain_image, result_image) = machine.calculate(&lotus, &domain, &area);
 
-    info!("Finished.");
+    window::show(name, domain_image, result_image);
 }
