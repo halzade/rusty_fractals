@@ -1,5 +1,5 @@
 use crate::pixel_states::DomainElementState;
-use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooShort, GoodPath, HibernatedDeepBlack};
+use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooShort, HibernatedDeepBlack};
 use std::sync::{Arc, Mutex};
 
 pub struct DomainElement {
@@ -43,10 +43,6 @@ impl DomainElement {
 
     pub fn has_worse_state_then(&self, e: DomainElement) -> bool {
         self.state.cmp(&e.state).is_gt()
-    }
-
-    pub fn good_path(&mut self) {
-        self.state = GoodPath;
     }
 }
 

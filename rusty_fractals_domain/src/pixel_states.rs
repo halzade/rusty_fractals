@@ -66,13 +66,6 @@ pub enum DomainElementState {
      * color = {@link MaskMandelbrotMaskColors#HIBERNATED_DEEP_BLACK}
      */
     HibernatedDeepBlack,
-
-    /**
-     * 8.
-     * Temporarily state, recalculation of divergent PATH in progress
-     * color = {@link MaskMandelbrotMaskColors#GOOD_PATH}
-     */
-    GoodPath,
 }
 
 pub fn is_active_new(state: DomainElementState) -> bool {

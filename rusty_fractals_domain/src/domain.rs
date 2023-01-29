@@ -96,7 +96,6 @@ impl Domain {
             // most of the elements are going to be FinishedSuccessPast
             DomainElementState::FinishedSuccessPast => FINISHED_SUCCESS_PAST,
             DomainElementState::HibernatedDeepBlack => HIBERNATED_DEEP_BLACK,
-            DomainElementState::GoodPath => GOOD_PATH,
             DomainElementState::ActiveNew => ACTIVE_NEW,
             DomainElementState::FinishedSuccess => FINISHED_SUCCESS,
             DomainElementState::FinishedTooShort => FINISHED_TOO_SHORT,
@@ -250,12 +249,12 @@ impl Domain {
         false
     }
 
-    pub fn state_from_path_length(iterator: u32, max: u32, min: u32) -> DomainElementState {
-        if iterator == max {
-            return DomainElementState::FinishedTooLong;
-        }
+    pub fn state_from_path_length(iterator: u32, min: u32, max: u32) -> DomainElementState {
         if iterator < min {
             return DomainElementState::FinishedTooShort;
+        }
+        if iterator == max {
+            return DomainElementState::FinishedTooLong;
         }
         DomainElementState::FinishedSuccess
     }
