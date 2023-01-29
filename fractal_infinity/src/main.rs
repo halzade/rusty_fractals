@@ -1,57 +1,67 @@
-mod infinity;
+use rusty_fractals_core::{machine, window};
+use rusty_fractals_common::area;
+use rusty_fractals_common::area::AreaConfig;
+use rusty_fractals_common::mem::Mem;
+use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Fractal};
+use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::None;
+use rusty_fractals_domain::domain;
+use rusty_fractals_result::palettes::palette_blue_to_white_circle_up;
+use rusty_fractals_result::result::ResultConfig;
 
-use rusty_fractals_result::palette::Palette;
-use rusty_fractals_core::mem::Mem;
-use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, Math};
-use rusty_fractals_domain::resolution_multiplier;
-use rusty_fractals_result::palettes::palette_black_to_white;
-use resolution_multiplier::ResolutionMultiplier;
-use resolution_multiplier::ResolutionMultiplier::None;
-use log::{info};
+struct Infinity {}
 
-const NAME: &str = "Infinity";
-const ITERATION_MAX: u32 = 180_000;
-const ITERATION_MIN: u32 = 3000;
-const AREA_SIZE: f64 = 2.6;
-const TARGET_RE: f64 = -0.5;
-const TARGET_IM: f64 = 0.0;
-const RESOLUTION_WIDTH: u32 = 1920;
-const RESOLUTION_HEIGHT: u32 = 1080;
-const RESOLUTION_MULTIPLIER: ResolutionMultiplier = None;
-const REPEAT: bool = false;
-const SAVE_IMAGES: bool = false;
-const PALETTE: Palette = palette_black_to_white();
-
-struct Infinity {
-    pub name: String,
-}
-
-impl Math for Infinity {
+impl Fractal<Mem> for Infinity {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         m.square();
         m.plus(origin_re, origin_im);
     }
+    fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
+        length > min && iterator == max
+    }
 }
+
 
 fn main() {
-    info!("Started");
+    let name = "Infinity";
 
-    let infinity = Infinity { name: NAME.to_string() };
-    let definition = FractalDefinition { iteration_min: ITERATION_MIN, iteration_max: ITERATION_MAX, area_size: AREA_SIZE, target_re: TARGET_RE, target_im: TARGET_IM };
-    let config = FractalConfig { resolution_width: RESOLUTION_WIDTH, resolution_height: RESOLUTION_HEIGHT, resolution_multiplier: RESOLUTION_MULTIPLIER, repeat: REPEAT, save_images: SAVE_IMAGES, palette: PALETTE };
+    const WIDTH: usize = 1000; // 1920
+    const HEIGHT: usize = 1000; // 1080
 
-    info!("Fractal {}", infinity.name);
+    let calculation_config = CalculationConfig {
+        iteration_min: 3000,
+        iteration_max: 30_000, // 180_000
+        resolution_multiplier: None, //Square9,
+    };
+    let app_config = AppConfig {
+        repeat: false,
+        save_images: false,
+    };
+    let area_cfg = AreaConfig {
+        width_re: 2.6,
+        center_re: -0.5,
+        center_im: 0.0,
+        width_x: WIDTH,
+        height_y: HEIGHT,
+    };
+    let result_config = ResultConfig {
+        palette: palette_blue_to_white_circle_up(),
+    };
 
-    let mut m = Mem { re: 0.0, im: 0.0 };
-    infinity.math(&mut m, 1.0, 0.1);
+    println!("Fractal {}", name);
 
-    info!("Finished.");
+    let infinity = Infinity {};
+    let area = area::init(&area_cfg);
+    let domain = domain::init(&area);
+    let machine = machine::init(&calculation_config, &app_config, &result_config);
+
+    let (domain_image, result_image) = machine.calculate(&infinity, &domain, &area);
+
+    window::show(name, domain_image, result_image);
 }
-
 
 #[test]
 fn test_math() {
-    let infinity = Infinity { name: NAME.to_string() };
+    let infinity = Infinity {};
     let mut m = Mem { re: 0.0, im: 0.0 };
     infinity.math(&mut m, 1.0, 0.1);
     assert_eq!(m.re, 1.0);

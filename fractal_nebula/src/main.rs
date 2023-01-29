@@ -2,7 +2,7 @@ use area::AreaConfig;
 use rusty_fractals_core::{machine, window};
 use rusty_fractals_common::area;
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Math};
+use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Fractal};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square9;
 use rusty_fractals_domain::domain;
 use rusty_fractals_result::palettes::palette_blue_to_white_circle_up;
@@ -10,10 +10,13 @@ use rusty_fractals_result::result::ResultConfig;
 
 struct Nebula {}
 
-impl Math<Mem> for Nebula {
+impl Fractal<Mem> for Nebula {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         m.square();
         m.plus(origin_re, origin_im);
+    }
+    fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
+        length > min && iterator < max
     }
 }
 

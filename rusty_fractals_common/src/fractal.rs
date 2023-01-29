@@ -11,8 +11,9 @@ pub struct AppConfig {
     pub save_images: bool,
 }
 
-pub trait Math<T>: Sync {
+pub trait Fractal<T>: Sync {
     fn math(&self, m: &mut T, origin_re: f64, origin_im: f64);
+    fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool;
 }
 
 /*
