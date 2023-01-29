@@ -8,7 +8,7 @@ pub struct AreaConfig {
     pub height_y: usize,
 }
 
-const VANILLA_AREA_CONFIG: AreaConfig = AreaConfig { width_re: 1.0, center_re: 0.0, center_im: 0.0, width_x: 10, height_y: 10 };
+const VANILLA_AREA_CONFIG: &AreaConfig = &AreaConfig { width_re: 1.0, center_re: 0.0, center_im: 0.0, width_x: 10, height_y: 10 };
 
 pub struct Area {
     pub width_re: f64,
@@ -80,7 +80,7 @@ impl Area {
     }
 }
 
-pub fn init(config: AreaConfig) -> Area {
+pub fn init(config: &AreaConfig) -> Area {
     println!("init()");
     let width_re = config.width_re;
     let center_re = config.center_re;
