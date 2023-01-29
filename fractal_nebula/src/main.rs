@@ -1,5 +1,4 @@
-use rusty_fractals_core::machine::Machine;
-use rusty_fractals_core::window;
+use rusty_fractals_core::{machine, window};
 use rusty_fractals_common::area;
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Math};
@@ -48,11 +47,7 @@ fn main() {
     let nebula = Nebula {};
     let area = area::init(&area_cfg);
     let domain = domain::init(&area);
-    let machine = Machine {
-        calculation_config,
-        app_config,
-        result_config,
-    };
+    let machine = machine::init(&calculation_config, &app_config, &result_config);
 
     let (domain_image, result_image) = machine.calculate(&nebula, &domain, &area);
 

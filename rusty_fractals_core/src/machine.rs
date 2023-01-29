@@ -14,13 +14,17 @@ use rusty_fractals_domain::pixel_states;
 use rusty_fractals_domain::pixel_states::DomainElementState::GoodPath;
 
 // to calculate single image
-pub struct Machine {
-    pub calculation_config: CalculationConfig,
-    pub app_config: AppConfig,
-    pub result_config: ResultConfig,
+pub struct Machine<'lt> {
+    pub calculation_config: &'lt CalculationConfig,
+    pub app_config: &'lt AppConfig,
+    pub result_config: &'lt ResultConfig,
 }
 
-impl Machine {
+pub fn init<'lt>(calculation_config: &'lt CalculationConfig, app_config: &'lt AppConfig, result_config: &'lt ResultConfig) -> Machine<'lt> {
+    Machine { calculation_config, app_config, result_config }
+}
+
+impl Machine<'_> {
     pub fn calculate(&self, fractal_math: &impl Math<Mem>, domain: &Domain, area: &Area) -> (RgbImage, RgbImage) {
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = domain.shuffled_calculation_coordinates();
