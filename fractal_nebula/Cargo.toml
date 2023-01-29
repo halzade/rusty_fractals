@@ -9,8 +9,4 @@ keywords = ["fractal"]
 rusty_fractals_core = { path = "../rusty_fractals_core" }
 rusty_fractals_domain = { path = "../rusty_fractals_domain" }
 rusty_fractals_result = { path = "../rusty_fractals_result" }
-rusty_fractals_common = { path = "../rusty_fractals_common" } # TODO remove?
-fltk = "1.3.27"
-image = "0.24.5"
-rgb = "0.8"
-
+rusty_fractals_common = { path = "../rusty_fractals_common" }

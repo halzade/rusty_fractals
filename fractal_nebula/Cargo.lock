@@ -221,9 +221,6 @@ dependencies = [
 name = "fractal_nebula"
 version = "0.1.0"
 dependencies = [
- "fltk",
- "image",
- "rgb",
  "rusty_fractals_common",
  "rusty_fractals_core",
  "rusty_fractals_domain",
