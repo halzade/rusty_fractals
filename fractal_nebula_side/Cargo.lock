@@ -104,6 +104,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "cmake"
+version = "0.1.49"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db34956e100b30725f2eb215f90d4871051239535632f84fea3bc92722c66b7c"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "codespan-reporting"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -284,6 +293,28 @@ checksum = "a8a2db397cb1c8772f31494cb8917e48cd1e64f0fa7efac59fbd741a0a8ce841"
 dependencies = [
  "crc32fast",
  "miniz_oxide",
+]
+
+[[package]]
+name = "fltk"
+version = "1.3.28"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6eb47520d49c5b2fd4ebde6db3833508d143f44897e28e94e64d0e0315532261"
+dependencies = [
+ "bitflags",
+ "crossbeam-channel",
+ "fltk-sys",
+ "paste",
+ "ttf-parser",
+]
+
+[[package]]
+name = "fltk-sys"
+version = "1.3.28"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c7d90196c53412537123d7911c3a8458e09f9e1fe73e0e97802929ecf2d330fa"
+dependencies = [
+ "cmake",
 ]
 
 [[package]]
@@ -658,6 +689,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "paste"
+version = "1.0.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d01a5bd0424d00070b0098dd17ebca6f961a959dead1dbcbbbc1d1cd8d3deeba"
+
+[[package]]
 name = "pin-project"
 version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -786,18 +823,17 @@ dependencies = [
 [[package]]
 name = "rusty_fractals_common"
 version = "0.1.0"
-dependencies = [
- "rgb",
-]
 
 [[package]]
 name = "rusty_fractals_core"
 version = "0.1.0"
 dependencies = [
  "colored",
+ "fltk",
  "image",
  "num_cpus",
  "rayon",
+ "rgb",
  "rusty_fractals_common",
  "rusty_fractals_domain",
  "rusty_fractals_result",
@@ -994,6 +1030,12 @@ dependencies = [
  "wasi 0.10.0+wasi-snapshot-preview1",
  "winapi",
 ]
+
+[[package]]
+name = "ttf-parser"
+version = "0.18.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0609f771ad9c6155384897e1df4d948e692667cc0588548b68eb44d052b27633"
 
 [[package]]
 name = "typemap-ors"
