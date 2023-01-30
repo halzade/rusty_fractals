@@ -1,10 +1,8 @@
-use area::AreaConfig;
 use rusty_fractals_core::{machine, window};
-use rusty_fractals_common::area;
 use rusty_fractals_common::mem::Mem;
+use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Fractal};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square11;
-use rusty_fractals_domain::domain;
 use rusty_fractals_result::palettes::{palette_blue_to_white_circle_up};
 use rusty_fractals_result::result::ResultConfig;
 
@@ -37,7 +35,7 @@ fn main() {
         repeat: false,
         save_images: false,
     };
-    let area_cfg = AreaConfig {
+    let area_config = AreaConfig {
         width_re: 3.5,
         center_re: 0.0, //  0.67748277351478,
         center_im: 0.0, // -1.18770078111202,
@@ -49,11 +47,8 @@ fn main() {
     };
 
     let lotus = Lotus {};
-    let area = area::init(&area_cfg);
-    let domain = domain::init(&area);
-    let machine = machine::init(&calculation_config, &app_config, &result_config);
-
-    let (domain_image, result_image) = machine.calculate(&lotus, &domain, &area);
+    let machine = machine::init(&calculation_config, &app_config, &result_config, &area_config);
+    let (domain_image, result_image) = machine.calculate(&lotus);
 
     window::show(name, domain_image, result_image);
 }

@@ -1,19 +1,20 @@
 use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, Mutex};
-use image::{Rgb, RgbImage};
-use crate::{domain_element, pixel_states};
-use domain_element::DomainElement;
 use rand::thread_rng;
 use rand::seq::SliceRandom;
+use image::{Rgb, RgbImage};
 use rusty_fractals_common::area::Area;
 use rusty_fractals_common::constants::{NEIGHBOURS};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
+use crate::domain_element::DomainElement;
+use crate::{domain_element, pixel_states};
+use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK, is_hibernated};
 use ResolutionMultiplier::{Square2, Square101, Square11, Square3, Square5, Square9, Square51};
-use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK};
+use pixel_states::is_finished_success_past;
 
 pub struct Domain {
-    pub width: usize,
-    pub height: usize,
+    width: usize,
+    height: usize,
     domain_elements: Vec<Vec<Arc<Mutex<DomainElement>>>>,
 }
 
@@ -225,7 +226,7 @@ impl Domain {
     // previous calculation must be completed
     pub fn is_on_mandelbrot_horizon(&self, x: usize, y: usize) -> bool {
         let mut red = false;
-        let mut black = false;
+        let mut black = false; // TODO: remove black?
         let neigh = NEIGHBOURS as i32;
         for a in -neigh..neigh {
             for b in -neigh..neigh {
@@ -233,10 +234,10 @@ impl Domain {
                 let yy = y as i32 + b;
                 if self.check_domain(xx, yy) {
                     let state = self.get_el_state(xx as usize, yy as usize);
-                    if pixel_states::is_finished_success_past(state) {
+                    if is_finished_success_past(state) {
                         red = true;
                     }
-                    if pixel_states::is_hibernated(state) {
+                    if is_hibernated(state) {
                         black = true;
                     }
                     // some of the neighbors were;

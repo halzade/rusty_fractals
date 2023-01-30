@@ -1,9 +1,8 @@
 use rusty_fractals_core::{machine, window};
 use rusty_fractals_common::area;
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Math};
+use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Fractal};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square2;
-use rusty_fractals_domain::{domain};
 use rusty_fractals_result::palettes::palette_purple_to_white;
 use rusty_fractals_result::result::ResultConfig;
 
@@ -12,15 +11,19 @@ const TARGET_IM: f64 = -0.00000000709356;
 
 struct NebulaTop {}
 
-impl Math<Mem> for NebulaTop {
+impl Fractal<Mem> for NebulaTop {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         m.square();
         m.plus(origin_re, origin_im);
     }
+    fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
+        // finite orbits
+        length > min && iterator < max
+    }
 }
 
 fn main() {
-    let name = "Nebula Top";
+    let name = "Nebula top";
 
     const WIDTH: usize = 800; // 1920
     const HEIGHT: usize = 800; // 1080
@@ -34,7 +37,7 @@ fn main() {
         repeat: true,
         save_images: false,
     };
-    let area_cfg = area::AreaConfig {
+    let area_config = area::AreaConfig {
         width_re: 6.0,
         center_re: TARGET_RE,
         center_im: TARGET_IM,
@@ -45,14 +48,9 @@ fn main() {
         palette: palette_purple_to_white(),
     };
 
-    println!("Fractal {}", name);
-
     let nebula_top = NebulaTop {};
-    let area = area::init(&area_cfg);
-    let domain = domain::init(&area);
-    let machine = machine::init(&calculation_config, &app_config, &result_config);
-
-    let (domain_image, result_image) = machine.calculate(&nebula_top, &domain, &area);
+    let machine = machine::init(&calculation_config, &app_config, &result_config, &area_config);
+    let (domain_image, result_image) = machine.calculate(&nebula_top);
 
     window::show(name, domain_image, result_image);
 }

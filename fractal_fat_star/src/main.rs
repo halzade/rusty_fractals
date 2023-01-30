@@ -1,21 +1,23 @@
-use area::AreaConfig;
 use rusty_fractals_core::{machine, window};
-use rusty_fractals_common::area;
+use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Math};
+use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Fractal};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square3;
-use rusty_fractals_domain::domain;
 use rusty_fractals_result::palettes::palette_black_to_white_exp2;
 use rusty_fractals_result::result::ResultConfig;
 
 struct FatStar {}
 
-impl Math<Mem> for FatStar {
+impl Fractal<Mem> for FatStar {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         m.square();
         m.conjugation();
         m.square();
         m.plus(origin_re, origin_im);
+    }
+    fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
+        // infinite orbits
+        length > min && iterator == max
     }
 }
 
@@ -34,7 +36,7 @@ fn main() {
         repeat: false,
         save_images: false,
     };
-    let area_cfg = AreaConfig {
+    let area_config = AreaConfig {
         width_re: 3.5,
         center_re: 0.0,
         center_im: 0.0,
@@ -46,12 +48,8 @@ fn main() {
     };
 
     let fat_star = FatStar {};
-    let area = area::init(&area_cfg);
-    let domain = domain::init(&area);
-    let machine = machine::init(&calculation_config, &app_config, &result_config);
-
-    // TODO Fat Star is infinite
-    let (domain_image, result_image) = machine.calculate(&fat_star, &domain, &area);
+    let machine = machine::init(&calculation_config, &app_config, &result_config, &area_config);
+    let (domain_image, result_image) = machine.calculate(&fat_star);
 
     window::show(name, domain_image, result_image);
 }
