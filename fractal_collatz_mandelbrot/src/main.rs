@@ -1,10 +1,7 @@
-use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, MathCollatz};
-use rusty_fractals_core::mem::Mem;
+use rusty_fractals_common::fractal::Fractal;
+use rusty_fractals_common::mem::Mem;
 use rusty_fractals_core::mem_collatz::MemCollatz;
-use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier;
-use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier::None;
 use rusty_fractals_result::palettes::palette_gray_to_blue;
-use log::{info};
 
 const NAME: &str = "Collatz Conjecture Mandelbrot";
 
@@ -12,18 +9,19 @@ struct CollatzConjectureMandelbrot {
     pub name: String,
 }
 
-impl MathCollatz for CollatzConjectureMandelbrot {
+impl Fractal<MemCollatz> for CollatzConjectureMandelbrot {
     fn math(&self, mc: &mut MemCollatz, origin_re: f64, origin_im: f64) {
         mc.m.square();
         mc.plus_collatz(origin_re, origin_im);
     }
+
+    fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
+        todo!()
+    }
 }
 
 fn main() {
-    info!("Started");
-
-    let collatz = CollatzConjectureMandelbrot { name: NAME.to_string() };
-    let definition = FractalDefinition {
+    /*
         iteration_min: 0,
         iteration_max: 14800,
         area_size:  3.0,
@@ -35,15 +33,8 @@ fn main() {
         repeat: true,
         save_images: false,
         palette: palette_gray_to_blue()
-    };
+    */
 
-    info!("Fractal {}", collatz.name);
-
-    let m = Mem { re: 0.0, im: 0.0 };
-    let mut mc = MemCollatz { m, it: 0 };
-    collatz.math(&mut mc, 1.0, 0.1);
-
-    info!("Finished.");
 }
 
 

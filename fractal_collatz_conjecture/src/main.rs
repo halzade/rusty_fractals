@@ -1,12 +1,11 @@
+use rusty_fractals_common::fractal::Fractal;
+use rusty_fractals_common::mem::Mem;
 use rusty_fractals_result::palette::Palette;
-use rusty_fractals_core::mem::Mem;
-use rusty_fractals_core::fractal::{FractalConfig, FractalDefinition, Math, MathCollatz};
 use rusty_fractals_core::mem_collatz::MemCollatz;
-use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier;
-use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier::None;
-use rusty_fractals_domain::resolution_multiplier::ResolutionMultiplier::Square3;
-use rusty_fractals_result::palettes::palette_blue_to_white;
-use log::{info};
+
+use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
+use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square3;
+use rusty_fractals_result::palettes::palette_blue_to_white_circle_up;
 
 const NAME: &str = "Collatz Conjecture";
 const ITERATION_MAX: u32 = 14800;
@@ -19,34 +18,25 @@ const RESOLUTION_HEIGHT: u32 = 720;
 const RESOLUTION_MULTIPLIER: ResolutionMultiplier = Square3;
 const REPEAT: bool = true;
 const SAVE_IMAGES: bool = false;
-const PALETTE: Palette = palette_blue_to_white();
+// const PALETTE: Palette = palette_blue_to_white_circle_up();
 
 struct CollatzConjecture {
     pub name: String,
 }
 
-impl MathCollatz for CollatzConjecture {
+impl Fractal<MemCollatz> for CollatzConjecture {
     fn math(&self, m: &mut MemCollatz, origin_re: f64, origin_im: f64) {
         m.square();
         m.collatz_conjecture();
         m.plus(origin_re, origin_im);
     }
+    fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
+        todo!()
+    }
 }
 
 fn main() {
-    info!("Started");
-
-    let collatz = CollatzConjecture { name: NAME.to_string() };
-    let definition = FractalDefinition { iteration_min: ITERATION_MIN, iteration_max: ITERATION_MAX, area_size: AREA_SIZE, target_re: TARGET_RE, target_im: TARGET_IM };
-    let config = FractalConfig { resolution_width: RESOLUTION_WIDTH, resolution_height: RESOLUTION_HEIGHT, resolution_multiplier: RESOLUTION_MULTIPLIER, repeat: REPEAT, save_images: SAVE_IMAGES, palette: PALETTE };
-
-    info!("Fractal {}", collatz.name);
-
-    let m = Mem { re: 0.0, im: 0.0 };
-    let mut mc = MemCollatz { m, it: 1 };
-    collatz.math(&mut mc, 1.0, 0.1);
-
-    info!("Finished.");
+    // TODO
 }
 
 #[test]

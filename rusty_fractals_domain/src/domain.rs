@@ -80,7 +80,7 @@ impl Domain {
 
     pub fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
         match rm {
-            ResolutionMultiplier::None => 1.0,
+            ResolutionMultiplier::Single => 1.0,
             Square3 => 3.0,
             Square5 => 5.0,
             Square9 => 9.0,

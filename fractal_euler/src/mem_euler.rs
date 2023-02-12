@@ -1,5 +1,5 @@
-use crate::mem::Mem;
-use crate::mathematician::Mathematician;
+use rusty_fractals_common::mem::Mem;
+use rusty_fractals_core::mathematician::Mathematician;
 
 /**
  * Memory object for Euler fractal
@@ -7,8 +7,9 @@ use crate::mathematician::Mathematician;
 pub struct MemEuler {
     pub m: Mem,
     pub it: u32,
-    pub math: Mathematician, // TODO separete primes, fibo, etc
-    pub spectra: Spectra
+    // TODO separete primes, fibo, etc
+    pub math: Mathematician,
+    pub spectra: Spectra,
 }
 
 impl MemEuler {

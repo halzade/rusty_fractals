@@ -2,8 +2,8 @@ use rusty_fractals_core::{machine, window};
 use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Fractal};
-use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square3;
-use rusty_fractals_result::palettes::palette_black_to_white_exp2;
+use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Single;
+use rusty_fractals_result::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals_result::result::ResultConfig;
 
 struct FatStar {}
@@ -24,13 +24,13 @@ impl Fractal<Mem> for FatStar {
 fn main() {
     let name = "Fat Star";
 
-    const WIDTH: usize = 1280;
+    const WIDTH: usize = 1000;
     const HEIGHT: usize = 1000;
 
     let calculation_config = CalculationConfig {
         iteration_min: 42,
         iteration_max: 22000,
-        resolution_multiplier: Square3,
+        resolution_multiplier: Single,
     };
     let app_config = AppConfig {
         repeat: false,
@@ -44,14 +44,14 @@ fn main() {
         height_y: HEIGHT,
     };
     let result_config = ResultConfig {
-        palette: palette_black_to_white_exp2(),
+        palette: palette_blue_to_white_circle_up(),
     };
 
     let fat_star = FatStar {};
     let machine = machine::init(&calculation_config, &app_config, &result_config, &area_config);
     let (domain_image, result_image) = machine.calculate(&fat_star);
 
-    window::show(name, domain_image, result_image);
+    window::show(name, domain_image, &result_image);
 }
 
 

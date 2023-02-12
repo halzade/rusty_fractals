@@ -10,7 +10,7 @@ struct PixelsEuler {
 }
 
 impl PixelsEuler {
-    pub fn add(&mut self, x: u32, y: u32, spec: Spectra) {
+    pub fn add(&mut self, x: usize, y: usize, spec: Spectra) {
         match spec {
             Spectra::Red => self.elements_red[x][y] += 1,
             Spectra::Green => self.elements_green[x][y] += 1,
@@ -19,6 +19,8 @@ impl PixelsEuler {
     }
 
     pub fn clear(&mut self) {
+        let width = self.width as usize;
+        let height = self.height as usize;
         for y in 0..width {
             for x in 0..height {
                 self.elements_red[x][y] = 0;
@@ -28,7 +30,7 @@ impl PixelsEuler {
         }
     }
 
-    pub fn value_at(&mut self, x: u32, y: u32, spec: Spectra) -> u32 {
+    pub fn value_at(&mut self, x: usize, y: usize, spec: Spectra) -> u32 {
         match spec {
             Spectra::Red => self.elements_red[x][y],
             Spectra::Green => self.elements_green[x][y],
@@ -36,7 +38,7 @@ impl PixelsEuler {
         }
     }
 
-    fn set(&mut self, x: u32, y: u32, spec: Spectra, color_value: u32) {
+    fn set(&mut self, x: usize, y: usize, spec: Spectra, color_value: u32) {
         match spec {
             Spectra::Red => self.elements_red[x][y] = color_value,
             Spectra::Green => self.elements_green[x][y] = color_value,

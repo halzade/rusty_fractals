@@ -1,4 +1,4 @@
-use rusty_fractals_core::{machine, window};
+use rusty_fractals_core::{files, machine, window};
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Fractal};
@@ -50,5 +50,7 @@ fn main() {
     let machine = machine::init(&calculation_config, &app_config, &result_config, &area_config);
     let (domain_image, result_image) = machine.calculate(&lotus);
 
-    window::show(name, domain_image, result_image);
+    window::show(name, domain_image, &result_image);
+
+    // files::same_image(result_image);
 }

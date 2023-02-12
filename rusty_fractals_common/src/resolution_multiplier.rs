@@ -1,7 +1,7 @@
 #[derive(PartialOrd, Ord, PartialEq, Eq, Clone, Copy)]
 pub enum ResolutionMultiplier {
     // Single point at the center of Mandelbrot pixel
-    None,
+    Single,
 
     // One point at the center of the pixel and four square corners
     Square2,

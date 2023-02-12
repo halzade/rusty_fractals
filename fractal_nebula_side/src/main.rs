@@ -50,9 +50,10 @@ fn main() {
 
     let nebula_side = NebulaSide {};
     let machine = machine::init(&calculation_config, &app_config, &result_config, &area_config);
+    // todo zoom video
     let (domain_image, result_image) = machine.calculate(&nebula_side);
 
-    window::show(name, domain_image, result_image);
+    window::show(name, domain_image, &result_image);
 }
 
 #[test]

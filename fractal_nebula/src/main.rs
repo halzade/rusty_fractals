@@ -2,7 +2,7 @@ use rusty_fractals_core::{machine, window};
 use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Fractal};
-use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square9;
+use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Single;
 use rusty_fractals_result::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals_result::result::ResultConfig;
 
@@ -25,6 +25,7 @@ fn main() {
     const WIDTH: usize = 1280;
     const HEIGHT: usize = 1000;
 
+    // TODO increase all these values 1000x
     let calculation_config = CalculationConfig {
         iteration_min: 42,
         iteration_max: 14800,
@@ -49,7 +50,7 @@ fn main() {
     let machine = machine::init(&calculation_config, &app_config, &result_config, &area_config);
     let (domain_image, result_image) = machine.calculate(&nebula);
 
-    window::show(name, domain_image, result_image);
+    window::show(name, domain_image, &result_image);
 }
 
 #[test]

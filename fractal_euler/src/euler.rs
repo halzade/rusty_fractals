@@ -1,7 +1,6 @@
-use rusty_fractals_core::fractal::CALCULATION_BOUNDARY;
 use rusty_fractals_core::mathematician::Mathematician;
 use rusty_fractals_domain::domain_element::DomainElement;
-use log::{debug};
+use crate::mem_euler::MemEuler;
 
 // Fractal Euler type uses three color spectra for better mathematical analysis and better coloring results.
 // Possible use as:
@@ -10,10 +9,11 @@ use log::{debug};
 // - other path lengths / el.order     -> Blue spectrum
 
 fn add_calculation_path(path: Vec<[i64; 2]>) {
-    paths.add(path);
+    // paths.add(path);
 }
 
 fn translate_paths_to_pixel_grid() {
+    /*
     debug!("translate_paths_to_pixel_grid");
 
     let mut added = 0;
@@ -33,9 +33,11 @@ fn translate_paths_to_pixel_grid() {
 
     /* remove elements which moved ouf of tiny area */
     removeElementsOutside();
+    */
 }
 
 fn colors_for(m: MemEuler, element_index: u32, path_length: u32) {
+    /*
     if Mathematician.isPrime(element_index) {
         m.spectra = red;
         return;
@@ -45,6 +47,7 @@ fn colors_for(m: MemEuler, element_index: u32, path_length: u32) {
         return;
     }
     m.spectra = blue;
+    */
 }
 
 fn calculate_path(el: &DomainElement) {

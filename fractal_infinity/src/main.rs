@@ -2,7 +2,7 @@ use rusty_fractals_core::{machine, window};
 use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Fractal};
-use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::None;
+use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Single;
 use rusty_fractals_result::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals_result::result::ResultConfig;
 
@@ -29,7 +29,7 @@ fn main() {
     let calculation_config = CalculationConfig {
         iteration_min: 3000,
         iteration_max: 30_000, // 180_000
-        resolution_multiplier: None, //Square9,
+        resolution_multiplier: Single, //Square9,
     };
     let app_config = AppConfig {
         repeat: false,
@@ -50,7 +50,7 @@ fn main() {
     let machine = machine::init(&calculation_config, &app_config, &result_config, &area_config);
     let (domain_image, result_image) = machine.calculate(&infinity);
 
-    window::show(name, domain_image, result_image);
+    window::show(name, domain_image, &result_image);
 }
 
 #[test]

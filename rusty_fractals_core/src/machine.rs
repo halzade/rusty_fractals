@@ -55,7 +55,7 @@ impl Machine<'_> {
 
         self.domain.recalculate_pixels_states(&self.area);
 
-        if self.resolution_multiplier != ResolutionMultiplier::None {
+        if self.resolution_multiplier != ResolutionMultiplier::Single {
             println!("calculate() with wrap");
             // previous calculation completed, calculate more elements
             coordinates_xy
@@ -73,8 +73,8 @@ impl Machine<'_> {
     }
 
     fn chunk_boundaries(&self, xy: &[u32; 2]) -> (usize, usize, usize, usize) {
-        let chunk_size_x = (self.domain.width / 20) as u32;
-        let chunk_size_y = (self.domain.height / 20) as u32;
+        let chunk_size_x = (self.area.width_x / 20) as u32;
+        let chunk_size_y = (self.area.height_y / 20) as u32;
 
         ((xy[0] * chunk_size_x) as usize,
          ((xy[0] + 1) * chunk_size_x) as usize,
@@ -101,7 +101,7 @@ impl Machine<'_> {
         fractal: &impl Fractal<Mem>,
         result_static: &ResultDataStatic,
     ) {
-        if self.resolution_multiplier == ResolutionMultiplier::None {
+        if self.resolution_multiplier == ResolutionMultiplier::Single {
             panic!()
         }
         let (x_from, x_to, y_from, y_to) = self.chunk_boundaries(xy);
@@ -143,6 +143,7 @@ impl Machine<'_> {
         let mut m = mem::new(origin_re, origin_im);
         let mut iterator = 0;
         let mut length = 0;
+
         while m.quad() < cb && iterator < self.iteration_max {
 
             // Investigate if this is a good calculation path
@@ -152,6 +153,7 @@ impl Machine<'_> {
 
             fractal.math(&mut m, origin_re, origin_im);
             if self.area.contains(m.re, m.im) {
+                // TODO comment why I shouldn't remove this
                 length += 1;
             }
             iterator += 1;

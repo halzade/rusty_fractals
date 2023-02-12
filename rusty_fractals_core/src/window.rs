@@ -5,13 +5,13 @@ use fltk::enums::{ColorDepth, Event, Key};
 use fltk::image::RgbImage;
 use fltk::window::DoubleWindow;
 
-pub fn show(fractal_name: &'static str, domain_image: image::RgbImage, result_image: image::RgbImage) {
+pub fn show(fractal_name: &'static str, domain_image: image::RgbImage, result_image: &image::RgbImage) {
     let width = domain_image.width() as i32;
     let height = domain_image.height() as i32;
 
     let app = App::default();
     let mut window_domain = make_window(fractal_name, app, width, height, domain_image);
-    let mut window_result = make_window(fractal_name, app, width, height, result_image);
+    let mut window_result = make_window(fractal_name, app, width, height, result_image.clone());
 
     window_domain.show();
     window_result.show();
