@@ -51,7 +51,7 @@ calculation iterations, those color with various **bright colors**.
 
 ## Image of Nebula, or any Fine Fractal
 
-![Infinite Finebrot](images/nebula.jpg)
+![infinity](images/infinity.jpg)
 
 Calculation is the same, but we are interested in each point of the **calculation path**.
 
@@ -93,7 +93,7 @@ fractal_collatz_mandelbrot
 
 fractal_euler   
 
-fractal_fat_star - **broken infinite paths** 
+fractal_fat_star - **broken infinite orbits** 
 
 fractal_fat_star_magnific   
 
@@ -101,14 +101,14 @@ fractal_fat_star_tentacle
 
 fractal_head - **static image**     
 
-fractal_infinity   
+fractal_infinity - **broken infinite orbits**
 
 fractal_infinity_top   
 
 fractal_lotus - **static image**   
 
-fractal_nebula - **complete**  
+fractal_nebula - **COMPLETE**  
 
-fractal_nebula_side   
+fractal_nebula_side - **static image**
 
-fractal_nebula_top   
+fractal_nebula_top - **static image**
