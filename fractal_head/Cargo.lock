@@ -218,7 +218,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "fractal_glorious_head"
+name = "fractal_head"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals_common",
