@@ -84,3 +84,31 @@ https://github.com/halzade/rusty_fractals.git
 ## Random ideas to do
 
 Make a fine fractal from Riemann Zeta function and zoom into -1/12
+
+## Java to Rust refactoring
+
+fractal_collatz_conjecture   
+
+fractal_collatz_mandelbrot   
+
+fractal_euler   
+
+fractal_fat_star - **broken infinite paths** 
+
+fractal_fat_star_magnific   
+
+fractal_fat_star_tentacle      
+
+fractal_head - **static image**     
+
+fractal_infinity   
+
+fractal_infinity_top   
+
+fractal_lotus - **static image**   
+
+fractal_nebula - **complete**  
+
+fractal_nebula_side   
+
+fractal_nebula_top   
