@@ -1,10 +1,8 @@
 use image::{RgbImage};
 use rayon::prelude::*;
 use rusty_fractals_common::area::{Area, AreaConfig};
-use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Fractal};
-use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::constants::CALCULATION_BOUNDARY;
-use rusty_fractals_common::{area, mem, result_data_static};
+use rusty_fractals_common::fractal::{CalculationConfig, Fractal};
+use rusty_fractals_common::{area, result_data_static};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
 use rusty_fractals_common::result_data_static::ResultDataStatic;
 use rusty_fractals_domain::{domain, pixel_states};
@@ -21,12 +19,10 @@ pub struct Machine<'lt> {
     iteration_min: u32,
     iteration_max: u32,
     resolution_multiplier: ResolutionMultiplier,
-    repeat: bool,
-    save_images: bool,
     palette: &'lt Palette,
 }
 
-pub fn init<'lt>(calculation_config: &CalculationConfig, app_config: &AppConfig, result_config: &'lt ResultConfig, area_config: &AreaConfig) -> Machine<'lt> {
+pub fn init<'lt>(calculation_config: &CalculationConfig, result_config: &'lt ResultConfig, area_config: &AreaConfig) -> Machine<'lt> {
     let area = area::init(&area_config);
     let domain = domain::init(&area);
     Machine {
@@ -35,14 +31,12 @@ pub fn init<'lt>(calculation_config: &CalculationConfig, app_config: &AppConfig,
         iteration_min: calculation_config.iteration_min,
         iteration_max: calculation_config.iteration_max,
         resolution_multiplier: calculation_config.resolution_multiplier,
-        repeat: app_config.repeat,
-        save_images: app_config.save_images,
         palette: &result_config.palette,
     }
 }
 
 impl Machine<'_> {
-    pub fn calculate(&self, fractal: &impl Fractal<Mem>) -> (RgbImage, RgbImage) {
+    pub fn calculate(&self, fractal: &impl Fractal) -> (RgbImage, RgbImage) {
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = self.domain.shuffled_calculation_coordinates();
 
@@ -85,7 +79,7 @@ impl Machine<'_> {
     // in sequence executes as 20x20 parallel for each domain chunk
     fn chunk_calculation(
         &self, xy: &[u32; 2],
-        fractal: &impl Fractal<Mem>,
+        fractal: &impl Fractal,
         result_static: &ResultDataStatic,
     ) {
         let (x_from, x_to, y_from, y_to) = self.chunk_boundaries(xy);
@@ -98,7 +92,7 @@ impl Machine<'_> {
 
     fn chunk_calculation_with_wrap(
         &self, xy: &[u32; 2],
-        fractal: &impl Fractal<Mem>,
+        fractal: &impl Fractal,
         result_static: &ResultDataStatic,
     ) {
         if self.resolution_multiplier == ResolutionMultiplier::Single {
@@ -111,7 +105,7 @@ impl Machine<'_> {
                     let (_, origin_re, origin_im) = self.domain.get_el_triplet(x, y);
                     let wrap = self.domain.wrap(origin_re, origin_im, self.resolution_multiplier, &self.area);
                     for [re, im] in wrap {
-                        self.calculate_path(re, im, fractal, result_static);
+                        fractal.calculate_path(&self.area, self.iteration_min, self.iteration_max, re, im, result_static);
                     }
                 }
             }
@@ -120,61 +114,15 @@ impl Machine<'_> {
 
     fn calculate_path_xy(
         &self, x: usize, y: usize,
-        fractal: &impl Fractal<Mem>,
+        fractal: &impl Fractal,
         result_static: &ResultDataStatic,
     ) {
         let (state, origin_re, origin_im) = self.domain.get_el_triplet(x, y);
         if pixel_states::is_active_new(state) {
-            let iterator = self.calculate_path(origin_re, origin_im, fractal, result_static);
-            self.domain.set_finished_state(
-                x, y,
-                Domain::state_from_path_length(iterator, self.iteration_min, self.iteration_max),
-            );
+            let (iterator, path_length) = fractal.calculate_path(&self.area, self.iteration_min, self.iteration_max, origin_re, origin_im, result_static);
+
+            let state = Domain::state_from_path_length(iterator, path_length, self.iteration_min, self.iteration_max);
+            self.domain.set_finished_state(x, y, state);
         }
-    }
-
-    fn calculate_path(
-        &self, origin_re: f64, origin_im: f64,
-        fractal: &impl Fractal<Mem>,
-        result_static: &ResultDataStatic,
-    ) -> u32 {
-        let cb = CALCULATION_BOUNDARY as f64;
-
-        let mut m = mem::new(origin_re, origin_im);
-        let mut iterator = 0;
-        let mut length = 0;
-
-        while m.quad() < cb && iterator < self.iteration_max {
-
-            // Investigate if this is a good calculation path
-            // Don't create path data yet. Too many origins don't produce good data
-            // Most of the long and expensive calculations end up inside Mandelbrot set, useless
-            // It is 1.68x faster to calculate path twice, and to record exclusively the good paths
-
-            fractal.math(&mut m, origin_re, origin_im);
-            if self.area.contains(m.re, m.im) {
-                // TODO comment why I shouldn't remove this
-                length += 1;
-            }
-            iterator += 1;
-        }
-
-        if fractal.path_test(self.iteration_min, self.iteration_max, length, iterator) {
-
-            // This origin produced good data
-            // Record the calculation path
-
-            let mut m = mem::new(origin_re, origin_im);
-            let mut path: Vec<[f64; 2]> = Vec::new();
-            for _ in 0..iterator {
-                fractal.math(&mut m, origin_re, origin_im);
-                if self.area.contains(m.re, m.im) {
-                    path.push([m.re, m.im]);
-                }
-            }
-            result_static.translate_path_to_point_grid(path, &self.area);
-            // stats.paths_new_points_amount += path.size();
-        }
-        iterator
     }
 }

@@ -3,12 +3,13 @@ use std::sync::{Arc, Mutex};
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use image::{Rgb, RgbImage};
+use DomainElementState::{ActiveNew, Finished, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort, HibernatedDeepBlack};
 use rusty_fractals_common::area::Area;
 use rusty_fractals_common::constants::{NEIGHBOURS};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
 use crate::domain_element::DomainElement;
 use crate::{domain_element, pixel_states};
-use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK, is_hibernated};
+use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK};
 use ResolutionMultiplier::{Square2, Square101, Square11, Square3, Square5, Square9, Square51};
 use pixel_states::is_finished_success_past;
 
@@ -95,13 +96,13 @@ impl Domain {
     pub fn color_for_state(state: DomainElementState) -> Rgb<u8> {
         match state {
             // most of the elements are going to be FinishedSuccessPast
-            DomainElementState::FinishedSuccessPast => FINISHED_SUCCESS_PAST,
-            DomainElementState::HibernatedDeepBlack => HIBERNATED_DEEP_BLACK,
-            DomainElementState::ActiveNew => ACTIVE_NEW,
-            DomainElementState::FinishedSuccess => FINISHED_SUCCESS,
-            DomainElementState::FinishedTooShort => FINISHED_TOO_SHORT,
-            DomainElementState::FinishedTooLong => FINISHED_TOO_LONG,
-            DomainElementState::Finished => FINISHED
+            FinishedSuccessPast => FINISHED_SUCCESS_PAST,
+            HibernatedDeepBlack => HIBERNATED_DEEP_BLACK,
+            ActiveNew => ACTIVE_NEW,
+            FinishedSuccess => FINISHED_SUCCESS,
+            FinishedTooShort => FINISHED_TOO_SHORT,
+            FinishedTooLong => FINISHED_TOO_LONG,
+            Finished => FINISHED
         }
     }
 
@@ -225,8 +226,6 @@ impl Domain {
     // for wrapping, search only elements, which have some past well finished neighbors
     // previous calculation must be completed
     pub fn is_on_mandelbrot_horizon(&self, x: usize, y: usize) -> bool {
-        let mut red = false;
-        let mut black = false; // TODO: remove black?
         let neigh = NEIGHBOURS as i32;
         for a in -neigh..neigh {
             for b in -neigh..neigh {
@@ -235,13 +234,6 @@ impl Domain {
                 if self.check_domain(xx, yy) {
                     let state = self.get_el_state(xx as usize, yy as usize);
                     if is_finished_success_past(state) {
-                        red = true;
-                    }
-                    if is_hibernated(state) {
-                        black = true;
-                    }
-                    // some of the neighbors were;
-                    if red && black {
                         return true;
                     }
                 }
@@ -250,14 +242,14 @@ impl Domain {
         false
     }
 
-    pub fn state_from_path_length(iterator: u32, min: u32, max: u32) -> DomainElementState {
-        if iterator < min {
-            return DomainElementState::FinishedTooShort;
+    pub fn state_from_path_length(iterator: u32, path_length: u32, min: u32, max: u32) -> DomainElementState {
+        if path_length < min {
+            return FinishedTooShort;
         }
         if iterator == max {
-            return DomainElementState::FinishedTooLong;
+            return FinishedTooLong;
         }
-        DomainElementState::FinishedSuccess
+        FinishedSuccess
     }
 }
 

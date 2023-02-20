@@ -1,21 +1,28 @@
 use rusty_fractals_core::{machine, window};
-use rusty_fractals_common::area::AreaConfig;
+use rusty_fractals_common::area::{Area, AreaConfig};
+use rusty_fractals_common::fractal;
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Fractal};
-use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Single;
+use rusty_fractals_common::fractal::{CalculationConfig, Fractal, MathMem};
+use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::{Single, Square9};
+use rusty_fractals_common::result_data_static::ResultDataStatic;
 use rusty_fractals_result::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals_result::result::ResultConfig;
 
 struct Infinity {}
 
-impl Fractal<Mem> for Infinity {
+impl MathMem for Infinity {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         m.square();
         m.plus(origin_re, origin_im);
     }
+}
+
+impl Fractal for Infinity {
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
-        // infinite orbits
-        length > min && iterator == max
+        fractal::infinite_orbits(min, max, length, iterator)
+    }
+    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, result_static: &ResultDataStatic) -> (u32, u32) {
+        fractal::calculate_path_mem(self, self, area, iteration_min, iteration_max, origin_re, origin_im, result_static)
     }
 }
 
@@ -28,12 +35,8 @@ fn main() {
 
     let calculation_config = CalculationConfig {
         iteration_min: 3000,
-        iteration_max: 30_000, // 180_000
-        resolution_multiplier: Single, //Square9,
-    };
-    let app_config = AppConfig {
-        repeat: false,
-        save_images: false,
+        iteration_max: 80_000,
+        resolution_multiplier: Single,
     };
     let area_config = AreaConfig {
         width_re: 2.6,
@@ -47,7 +50,7 @@ fn main() {
     };
 
     let infinity = Infinity {};
-    let machine = machine::init(&calculation_config, &app_config, &result_config, &area_config);
+    let machine = machine::init(&calculation_config, &result_config, &area_config);
     let (domain_image, result_image) = machine.calculate(&infinity);
 
     window::show(name, domain_image, &result_image);

@@ -1,4 +1,6 @@
 pub mod mem;
+pub mod mem_collatz;
+pub mod mem_phoenix;
 pub mod area;
 pub mod target;
 pub mod fractal;
