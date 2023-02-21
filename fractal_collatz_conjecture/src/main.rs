@@ -2,7 +2,7 @@ use rusty_fractals_core::{machine, window};
 use rusty_fractals_core::machine::Machine;
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{CalculationConfig, Fractal, MathCollatz};
+use rusty_fractals_common::fractal::{CalculationConfig, Fractal, FractalMath};
 use rusty_fractals_common::mem_collatz::MemCollatz;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square3;
 use rusty_fractals_common::result_data_static::ResultDataStatic;
@@ -11,7 +11,7 @@ use rusty_fractals_result::result::ResultConfig;
 
 struct CollatzConjecture {}
 
-impl MathCollatz for CollatzConjecture {
+impl FractalMath<MemCollatz> for CollatzConjecture {
     fn math(&self, m: &mut MemCollatz, origin_re: f64, origin_im: f64) {
         m.square();
         m.collatz_conjecture();
@@ -24,7 +24,7 @@ impl Fractal for CollatzConjecture {
         fractal::finite_orbits(min, max, length, iterator)
     }
     fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, result_static: &ResultDataStatic) -> (u32, u32) {
-        fractal::calculate_path_collatz(self, self, area, iteration_min, iteration_max, origin_re, origin_im, result_static)
+        fractal::calculate_path(self, self, area, iteration_min, iteration_max, origin_re, origin_im, result_static)
     }
 }
 
@@ -61,7 +61,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use rusty_fractals_common::fractal::MathCollatz;
+    use rusty_fractals_common::fractal::FractalMath;
     use rusty_fractals_common::mem::Mem;
     use rusty_fractals_common::mem_collatz::MemCollatz;
     use crate::CollatzConjecture;

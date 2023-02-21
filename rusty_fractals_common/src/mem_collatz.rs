@@ -1,3 +1,4 @@
+use crate::fractal::MemType;
 use crate::mem::Mem;
 
 pub struct MemCollatz {
@@ -5,15 +6,25 @@ pub struct MemCollatz {
     pub it: i32,
 }
 
+impl MemType<MemCollatz> for MemCollatz {
+    fn new(re: f64, im: f64) -> MemCollatz {
+        MemCollatz { m: Mem { re, im }, it: 0 }
+    }
+
+    fn quad(&self) -> f64 {
+        self.m.quad()
+    }
+
+    fn re(&self) -> f64 {
+        self.re()
+    }
+
+    fn im(&self) -> f64 {
+        self.im()
+    }
+}
+
 impl MemCollatz {
-    pub fn re(&self) -> f64 {
-        self.m.re
-    }
-
-    pub fn im(&self) -> f64 {
-        self.m.im
-    }
-
     pub fn plus(&mut self, r: f64, i: f64) {
         self.m.plus(r, i);
     }
@@ -38,13 +49,13 @@ impl MemCollatz {
         self.m.im += (3.0 * i + 1.0) / 2.0;
     }
 
-    pub fn quad(&mut self) -> f64 {
-        self.m.quad()
+    pub fn re(&self) -> f64 {
+        self.m.re
     }
-}
 
-pub fn new(re: f64, im: f64) -> MemCollatz {
-    MemCollatz { m: Mem { re, im }, it: 0 }
+    pub fn im(&self) -> f64 {
+        self.m.im
+    }
 }
 
 #[cfg(test)]
