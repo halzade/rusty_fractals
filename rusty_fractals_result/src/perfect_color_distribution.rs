@@ -4,9 +4,11 @@
 // - Zero elements and noise color by the lowest color
 // - Color all significant pixels ordered by value
 
+use std::cmp::Ordering::Equal;
 use image::RgbImage;
 use constants::COLORING_THRESHOLD;
 use rusty_fractals_common::constants;
+use rusty_fractals_common::result_data_mandelbrot::ResultDataMandelbrot;
 use crate::palette::Palette;
 use crate::result_pixels::ResultPixels;
 
@@ -90,13 +92,9 @@ pub fn perfectly_color_result_values(result_pixels: &ResultPixels, palette: &Pal
             }
         }
     }
+    assert_eq!(pixels.len(), pi);
     println!("painted:                   {}", pi);
-
     // Behold, the coloring is perfect
-
-    println!("clear pixels");
-    pixels.clear();
-
     result_image
 }
 
@@ -254,11 +252,10 @@ fn perfectly_color_values_euler() -> RgbImage {
 }
 */
 
-const NEIGHBOR_COORDINATES: [[i8; 2]; 8] = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]];
+const NEIGHBOR_COORDINATES: [[i32; 2]; 8] = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]];
 
-/*
-fn perfectly_color_values_mandelbrot() -> RgbImage {
-    println!("perfectly_color_values()");
+pub fn perfectly_color_mandelbrot_values(result_pixels: &ResultDataMandelbrot, palette: &Palette, palette_zero: &Palette) -> RgbImage {
+    println!("perfectly_color_mandelbrot_values()");
 
     let width = result_pixels.width;
     let height = result_pixels.height;
@@ -269,37 +266,32 @@ fn perfectly_color_values_mandelbrot() -> RgbImage {
 
     let mut zero_value_elements = 0;
 
-    // read screen values
-
     for y in 0..height {
         for x in 0..width {
-            let el = PixelsMandelbrot.elAt(x, y);
-            if el.value == 0 {
+            let (value, quad, quid) = result_pixels.values_at(x, y);
+            if value == 0 {
                 zero_value_elements += 1;
-                pixels_zero.add(MandelbrotPixelFactory.make(el, x, y));
+                pixels_zero.push(Mix { x, y, value, quad, quid });
             } else {
-                MandelbrotPixel
-                mp = MandelbrotPixelFactory.make(el, x, y);
-                pixels.add(mp);
-                field[x][y] = mp;
+                pixels.push(Mix { x, y, value, quad, quid });
             }
         }
     }
 
     //  order pixels from the smallest to the highest value
     pixels.sort_by(|first, second| {
-        let c = first.value.cmp(&second.value);
-        if c == Equal {
-            first.quid.cmp(&second.quid)
+        let ordering = first.value.cmp(&second.value);
+        if ordering == Equal {
+            return first.quid.total_cmp(&second.quid);
         }
-        c
+        ordering
     });
-    pixels_zero.sort_by(|first, second| first.quad.cmp(&second.quad));
-    
-    let all_pixels_total : u32 = width * height;
-    let all_pixels_non_zero : u32 = all_pixels_total - zero_value_elements;
-    let palette_color_count : u32 = Palette.colorResolution();
-    let single_color_use : u32 = all_pixels_non_zero / palette_color_count;
+    pixels_zero.sort_by(|first, second| first.quad.total_cmp(&second.quad));
+
+    let all_pixels_total: u32 = (width * height) as u32;
+    let all_pixels_non_zero: u32 = all_pixels_total - zero_value_elements;
+    let palette_color_count: u32 = palette.spectrum.len() as u32;
+    let single_color_use: u32 = (all_pixels_non_zero as f64 / palette_color_count as f64) as u32;
 
     let left = all_pixels_non_zero - (palette_color_count * single_color_use);
 
@@ -313,98 +305,100 @@ fn perfectly_color_values_mandelbrot() -> RgbImage {
     println!("left:                        {}", left);
     println!("------------------------------------");
 
-    // paint mismatched pixel amount with the least but not the lowest value colour
-    while pi < left {
-        let mp = pixels.get(pi + +);
-        MandelbrotImage.setRGB(mp.px, mp.py, Palette.getSpectrumValue(0).getRGB());
+    let mut result_image = RgbImage::new(width as u32, height as u32);
+
+    // paint mismatched pixel amount with the least value colour
+    let mut pi = 0;
+    for _ in 0..left {
+        let mp = pixels.get(pi).expect("pixels error");
+        pi += 1;
+        result_image.put_pixel(mp.x as u32, mp.y as u32, palette.spectrum_value(0));
     }
 
-    let mut palette_colour_index = 0;
-    while palette_colour_index < palette_color_count {
-        for _ in 0..singleColorUse {
-            let mp = pixels.get(pi + +);
-            mp.colorValue(palette_colour_index);
-            MandelbrotImage.setRGB(mp.px, mp.py, Palette.getSpectrumValue(palette_colour_index).getRGB());
+    for palette_colour_index in 0..palette_color_count {
+        for _ in 0..single_color_use {
+            // color all these pixels with same color
+            let mp = pixels.get(pi).expect("pixels error");
+            pi += 1;
+            // perfect-color all significant pixels
+            result_image.put_pixel(mp.x as u32, mp.y as u32, palette.spectrum_value(palette_colour_index as usize));
         }
-        palette_colour_index += 1;
     }
-
-    Assert.assertEquals(pixels.size(), pi);
+    assert_eq!(pixels.len(), pi);
 
     // Fix black dots caused by quad inverse imperfection
     // Keep incorrect quad results
 
     for mpp in pixels {
-        let average_colour_index = ac_if_black_dot(mpp);
+        let average_colour_index = ac_if_black_dot(&mpp, result_pixels);
         if average_colour_index != -1 {
-            let mpp.colorValue(average_colour_index);
-            MandelbrotImage.setRGB(mpp.x, mpp.y, Palette.getSpectrumValue(average_colour_index).getRGB());
+            // let mpp.colorValue(average_colour_index);
+            result_image.put_pixel(mpp.x as u32, mpp.y as u32, palette.spectrum_value(average_colour_index as usize));
         }
     }
 
     // Paint insides of Mandelbrot set
 
-    let zero_palette_color_count = PaletteZero.colorResolution();
-    let zero_single_color_use = ((int)((double) zero_value_elements / (double) zero_palette_color_count));
+    let zero_palette_color_count = palette.spectrum.len() as u32;
+    let zero_single_color_use = (zero_value_elements as f64 / zero_palette_color_count as f64) as u32;
     let zero_left = zero_value_elements - (zero_palette_color_count * zero_single_color_use);
 
     println!("zero_palette_color_count:    > {}", zero_palette_color_count);
     println!("zero_single_color_use:       > {}", zero_single_color_use);
     println!("zero_left:                   > {}", zero_left);
 
-    let piz;
-    for piz in 0..zeroLeft {
-        mp = pixels_zero.get(piz);
-        MandelbrotImage.setRGB(mp.px, mp.py, PaletteZero.getSpectrumValue(0).getRGB());
+    for piz in 0..zero_left {
+        let mp = pixels_zero.get(piz as usize).expect("pixel error");
+        result_image.put_pixel(mp.x as u32, mp.y as u32, palette_zero.spectrum_value(0 as usize));
     }
-    for zeropalette_colour_index in 0..zeropalette_color_count {
-        for _ in 0..zeroSingleColorUse {
+    let mut piz = zero_left as usize;
+    for zero_palette_colour_index in 0..zero_palette_color_count {
+        for _ in 0..zero_single_color_use {
             // color all these pixels with same color
-            mp = pixels_zero.get(piz + +);
-            MandelbrotImage.setRGB(mp.px, mp.py, PaletteZero.getSpectrumValue(zeropalette_colour_index).getRGB());
+            let mp = pixels_zero.get(piz).expect("pixel error");
+            piz += 1;
+            result_image.put_pixel(mp.x as u32, mp.y as u32, palette_zero.spectrum_value(zero_palette_colour_index as usize));
         }
     }
-
+    assert_eq!(pixels_zero.len(), piz);
     println!("painted:                   {}", pi);
-
     // Behold, the coloring is perfect
-
-    println!("clear pixels");
-    pixels.clear();
-    pixels_zero.clear();
-
     result_image
 }
 
 // Return average color of neighbour elements
-fn ac_if_black_dot(MandelbrotPixel mp) -> i32 {
-    let pv = mp.pixelValue;
-    let sum = 0;
-    let neighbours = 0;
+fn ac_if_black_dot(mp: &Mix, result_pixels: &ResultDataMandelbrot) -> i32 {
+    let width = result_pixels.width;
+    let height = result_pixels.height;
+    let pv = mp.value;
+    let mut sum = 0;
+    let mut neighbours = 0;
     for c in NEIGHBOR_COORDINATES {
-        let a = mp.px + c[0];
-        let b = mp.py + c[1];
-        let n = check_domain(a, b);
-        if n != null {
-            if Math.abs(pv - n.pixelValue) > 2 {
-                // verify only one value difference gradient //
+        let x = mp.x as i32 + c[0];
+        let y = mp.y as i32 + c[1];
+        if check_domain(x, y, width, height) {
+            let (neighbor_value, _, _) = result_pixels.values_at(x as usize, y as usize);
+            if (pv as i32 - neighbor_value as i32).abs() > 2 {
+                // verify only one value difference gradient
                 return -1;
             }
-            sum += n.colorValue;
+            sum += neighbor_value;
             neighbours += 1;
         } else {
             // don't fix elements of edges 
-            -1
+            return -1;
         }
     }
-
-    let cv = mp.colorValue;
-    let average_value = (int)(sum / neighbours);
+    let cv = mp.value as i32;
+    let average_value = (sum as f64 / neighbours as f64) as i32;
 
     if cv < average_value - 5 {
         // darker 
-        average_value
+        return average_value as i32;
     }
     -1
 }
-*/
+
+fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
+    x >= 0 && x < width as i32 && y >= 0 && y < height as i32
+}

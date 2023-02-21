@@ -1,16 +1,18 @@
 use image::{RgbImage};
 use rayon::prelude::*;
 use rusty_fractals_common::area::{Area, AreaConfig};
-use rusty_fractals_common::fractal::{CalculationConfig, Fractal};
-use rusty_fractals_common::{area, result_data_static};
+use rusty_fractals_common::fractal::{CalculationConfig, Fractal, FractalMandelbrot};
+use rusty_fractals_common::{area, result_data_mandelbrot, result_data_static};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
+use rusty_fractals_common::result_data_mandelbrot::ResultDataMandelbrot;
 use rusty_fractals_common::result_data_static::ResultDataStatic;
 use rusty_fractals_domain::{domain, pixel_states};
 use rusty_fractals_domain::domain::Domain;
 use rusty_fractals_result::palette::Palette;
 use rusty_fractals_result::result_pixels;
 use rusty_fractals_result::perfect_color_distribution::perfectly_color_result_values;
-use rusty_fractals_result::result::ResultConfig;
+use rusty_fractals_result::perfect_color_distribution::perfectly_color_mandelbrot_values;
+use rusty_fractals_result::result::{ResultConfig, ResultConfigMandelbrot};
 
 // to calculate single image
 pub struct Machine<'lt> {
@@ -20,6 +22,15 @@ pub struct Machine<'lt> {
     iteration_max: u32,
     resolution_multiplier: ResolutionMultiplier,
     palette: &'lt Palette,
+}
+
+pub struct MachineMandelbrot<'lt> {
+    area: Area,
+    domain: Domain,
+    iteration_min: u32,
+    iteration_max: u32,
+    palette: &'lt Palette,
+    palette_zero: &'lt Palette,
 }
 
 pub fn init<'lt>(calculation_config: &CalculationConfig, result_config: &'lt ResultConfig, area_config: &AreaConfig) -> Machine<'lt> {
@@ -32,6 +43,19 @@ pub fn init<'lt>(calculation_config: &CalculationConfig, result_config: &'lt Res
         iteration_max: calculation_config.iteration_max,
         resolution_multiplier: calculation_config.resolution_multiplier,
         palette: &result_config.palette,
+    }
+}
+
+pub fn init_for_mandelbrot<'lt>(calculation_config: &CalculationConfig, result_config: &'lt ResultConfigMandelbrot, area_config: &AreaConfig) -> MachineMandelbrot<'lt> {
+    let area = area::init(&area_config);
+    let domain = domain::init(&area);
+    MachineMandelbrot {
+        area,
+        domain,
+        iteration_min: calculation_config.iteration_min,
+        iteration_max: calculation_config.iteration_max,
+        palette: &result_config.palette,
+        palette_zero: &result_config.palette_zero,
     }
 }
 
@@ -66,23 +90,13 @@ impl Machine<'_> {
         (domain_image, result_image)
     }
 
-    fn chunk_boundaries(&self, xy: &[u32; 2]) -> (usize, usize, usize, usize) {
-        let chunk_size_x = (self.area.width_x / 20) as u32;
-        let chunk_size_y = (self.area.height_y / 20) as u32;
-
-        ((xy[0] * chunk_size_x) as usize,
-         ((xy[0] + 1) * chunk_size_x) as usize,
-         (xy[1] * chunk_size_y) as usize,
-         ((xy[1] + 1) * chunk_size_y) as usize)
-    }
-
     // in sequence executes as 20x20 parallel for each domain chunk
     fn chunk_calculation(
         &self, xy: &[u32; 2],
         fractal: &impl Fractal,
         result_static: &ResultDataStatic,
     ) {
-        let (x_from, x_to, y_from, y_to) = self.chunk_boundaries(xy);
+        let (x_from, x_to, y_from, y_to) = chunk_boundaries(xy, self.area.width_x, self.area.height_y);
         for x in x_from..x_to {
             for y in y_from..y_to {
                 self.calculate_path_xy(x, y, fractal, result_static);
@@ -98,12 +112,13 @@ impl Machine<'_> {
         if self.resolution_multiplier == ResolutionMultiplier::Single {
             panic!()
         }
-        let (x_from, x_to, y_from, y_to) = self.chunk_boundaries(xy);
+        let (x_from, x_to, y_from, y_to) = chunk_boundaries(xy, self.area.width_x, self.area.height_y);
         for x in x_from..x_to {
             for y in y_from..y_to {
                 if self.domain.is_on_mandelbrot_horizon(x, y) {
                     let (_, origin_re, origin_im) = self.domain.get_el_triplet(x, y);
                     let wrap = self.domain.wrap(origin_re, origin_im, self.resolution_multiplier, &self.area);
+                    // within the same pixel
                     for [re, im] in wrap {
                         fractal.calculate_path(&self.area, self.iteration_min, self.iteration_max, re, im, result_static);
                     }
@@ -125,4 +140,44 @@ impl Machine<'_> {
             self.domain.set_finished_state(x, y, state);
         }
     }
+}
+
+impl MachineMandelbrot<'_> {
+    pub fn calculate_mandelbrot(&self, fractal: &impl FractalMandelbrot) -> (RgbImage, RgbImage) {
+        println!("calculate_mandelbrot()");
+        let coordinates_xy: Vec<[u32; 2]> = self.domain.shuffled_calculation_coordinates();
+
+        let result_mandelbrot = result_data_mandelbrot::init(&self.area);
+        coordinates_xy.par_iter().for_each(|xy| { self.chunk_calculation_mandelbrot(&xy, fractal, &result_mandelbrot); });
+
+
+        let domain_image = self.domain.domain_element_states_to_image();
+        let result_image = perfectly_color_mandelbrot_values(&result_mandelbrot, &self.palette, &self.palette_zero);
+        (domain_image, result_image)
+    }
+
+    fn chunk_calculation_mandelbrot(
+        &self, xy: &[u32; 2],
+        fractal: &impl FractalMandelbrot,
+        result_mandelbrot: &ResultDataMandelbrot,
+    ) {
+        let (x_from, x_to, y_from, y_to) = chunk_boundaries(xy, self.area.width_x, self.area.height_y);
+        for x in x_from..x_to {
+            for y in y_from..y_to {
+                let (_, origin_re, origin_im) = self.domain.get_el_triplet(x, y);
+                let (iterator, quad) = fractal.calculate_mandelbrot_path(self.iteration_max, origin_re, origin_im);
+                result_mandelbrot.set_pixel(x, y, iterator, quad);
+
+                let state = Domain::state_from_path_length(iterator, iterator, self.iteration_min, self.iteration_max);
+                self.domain.set_finished_state(x, y, state);
+            }
+        }
+    }
+}
+
+fn chunk_boundaries(xy: &[u32; 2], width: usize, height: usize) -> (usize, usize, usize, usize) {
+    let chunk_size_x = (width / 20) as u32;
+    let chunk_size_y = (height / 20) as u32;
+    ((xy[0] * chunk_size_x) as usize, ((xy[0] + 1) * chunk_size_x) as usize,
+     (xy[1] * chunk_size_y) as usize, ((xy[1] + 1) * chunk_size_y) as usize)
 }

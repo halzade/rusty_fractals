@@ -1,7 +1,6 @@
 use crate::area::Area;
 use crate::constants::CALCULATION_BOUNDARY;
 use crate::resolution_multiplier::ResolutionMultiplier;
-use crate::{mem, mem_collatz, mem_phoenix};
 use crate::result_data_static::ResultDataStatic;
 
 pub struct CalculationConfig {
@@ -18,6 +17,10 @@ pub struct AppConfig {
 pub trait Fractal: Sync {
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool;
     fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, result_static: &ResultDataStatic) -> (u32, u32);
+}
+
+pub trait FractalMandelbrot: Sync {
+    fn calculate_mandelbrot_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64);
 }
 
 pub trait MemType<T> {
@@ -76,18 +79,16 @@ pub fn calculate_path<T: MemType<T>>(fractal: &impl Fractal, fractal_math: &impl
     (iterator, length)
 }
 
-/*
-pub fn calculate_iterations_mandelbrot<T: MathMem<T>>(fractal: &impl Fractal, fractal_collatz: &T, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, result_static: &ResultDataStatic) -> (u32, f64) {
+pub fn calculate_mandelbrot_path<T: MemType<T>>(fractal_math: &impl FractalMath<T>, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
     let cb = CALCULATION_BOUNDARY as f64;
-    let mut mc: MemCollatz = mem_collatz::new(origin_re, origin_im);
+    let mut m: T = T::new(origin_re, origin_im);
     let mut iterator = 0;
-    while mc.quad() < cb && iterator < iteration_max {
-        fractal_collatz.math(&mut mc, origin_re, origin_im);
+    while m.quad() < cb && iterator < iteration_max {
+        fractal_math.math(&mut m, origin_re, origin_im);
         iterator += 1;
     }
-    (iterator, mc.quad())
+    (iterator, m.quad())
 }
-*/
 
 /*
 pub fn update(mut stats: Stats) {

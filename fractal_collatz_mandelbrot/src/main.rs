@@ -1,13 +1,12 @@
-use rusty_fractals_common::area::{Area, AreaConfig};
+use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{CalculationConfig, Fractal, FractalMath};
+use rusty_fractals_common::fractal::{CalculationConfig, FractalMandelbrot, FractalMath};
 use rusty_fractals_common::mem_collatz::MemCollatz;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Single;
-use rusty_fractals_common::result_data_static::ResultDataStatic;
 use rusty_fractals_core::{machine, window};
-use rusty_fractals_core::machine::Machine;
-use rusty_fractals_result::palettes::palette_gray_to_blue;
-use rusty_fractals_result::result::ResultConfig;
+use rusty_fractals_core::machine::MachineMandelbrot;
+use rusty_fractals_result::palettes::{palette_blue_to_white_circle_up, palette_gray_to_blue};
+use rusty_fractals_result::result::ResultConfigMandelbrot;
 
 struct CollatzConjectureMandelbrot {}
 
@@ -18,12 +17,9 @@ impl FractalMath<MemCollatz> for CollatzConjectureMandelbrot {
     }
 }
 
-impl Fractal for CollatzConjectureMandelbrot {
-    fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
-        fractal::finite_orbits(min, max, length, iterator)
-    }
-    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, result_static: &ResultDataStatic) -> (u32, u32) {
-        fractal::calculate_path(self, self, area, iteration_min, iteration_max, origin_re, origin_im, result_static)
+impl FractalMandelbrot for CollatzConjectureMandelbrot {
+    fn calculate_mandelbrot_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
+        fractal::calculate_mandelbrot_path(self, iteration_max, origin_re, origin_im)
     }
 }
 
@@ -45,14 +41,14 @@ fn main() {
         width_x: WIDTH,
         height_y: HEIGHT,
     };
-    let result_config = ResultConfig {
-        palette: palette_gray_to_blue(),
+    let result_config = ResultConfigMandelbrot {
+        palette: palette_blue_to_white_circle_up(),
+        palette_zero: palette_gray_to_blue(),
     };
 
     let collatz = CollatzConjectureMandelbrot {};
-    let machine: Machine = machine::init(&calculation_config, &result_config, &area_config);
-    // TODO Mandelbrot type calculation
-    let (domain_image, result_image) = machine.calculate(&collatz);
+    let machine: MachineMandelbrot = machine::init_for_mandelbrot(&calculation_config, &result_config, &area_config);
+    let (domain_image, result_image) = machine.calculate_mandelbrot(&collatz);
 
     window::show(name, domain_image, &result_image);
 }
