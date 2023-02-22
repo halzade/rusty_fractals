@@ -89,7 +89,7 @@ Make a fine fractal from Riemann Zeta function and zoom into -1/12
 
 fractal_collatz_conjecture   
 
-fractal_collatz_mandelbrot   
+fractal_collatz_mandelbrot - **static image**   
 
 fractal_euler   
 

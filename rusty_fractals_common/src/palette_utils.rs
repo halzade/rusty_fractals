@@ -111,6 +111,7 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
             break;
         }
     }
+    assert_eq!(spectrum.len(), max_dif as usize);
     spectrum
 }
 

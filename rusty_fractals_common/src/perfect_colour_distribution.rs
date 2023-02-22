@@ -315,6 +315,7 @@ pub fn perfectly_colour_mandelbrot_values(data: &DataImage, palette: &Palette, p
             data.colour(mp.x, mp.y, palette.spectrum_value(palette_colour_index as usize));
         }
     }
+    let pixels_length = pixels.len();
     assert_eq!(pixels.len(), pi);
 
     // Fix black dots caused by quad inverse imperfection
@@ -328,20 +329,19 @@ pub fn perfectly_colour_mandelbrot_values(data: &DataImage, palette: &Palette, p
     }
 
     // Paint insides of Mandelbrot set
-
-    let zero_palette_colour_count = palette.spectrum.len() as u32;
+    let zero_palette_colour_count = palette_zero.spectrum.len() as u32;
     let zero_single_colour_use = (zero_value_elements as f64 / zero_palette_colour_count as f64) as u32;
     let zero_left = zero_value_elements - (zero_palette_colour_count * zero_single_colour_use);
 
-    println!("zero_palette_colour_count:    > {}", zero_palette_colour_count);
-    println!("zero_single_colour_use:       > {}", zero_single_colour_use);
-    println!("zero_left:                   > {}", zero_left);
-
-    for piz in 0..zero_left {
+    println!("zero_palette_colour_count:   {}", zero_palette_colour_count);
+    println!("zero_single_colour_use:      {}", zero_single_colour_use);
+    println!("zero_left:                   {}", zero_left);
+    let mut piz = 0;
+    for _ in 0..zero_left {
         let mp = pixels_zero.get(piz as usize).expect("pixel error");
+        piz += 1;
         data.colour(mp.x, mp.y, palette_zero.spectrum_value(0 as usize));
     }
-    let mut piz = zero_left as usize;
     for zero_palette_colour_index in 0..zero_palette_colour_count {
         for _ in 0..zero_single_colour_use {
             // colour all these pixels with same colour
@@ -351,7 +351,9 @@ pub fn perfectly_colour_mandelbrot_values(data: &DataImage, palette: &Palette, p
         }
     }
     assert_eq!(pixels_zero.len(), piz);
-    println!("painted:                   {}", pi);
+    assert_eq!(pixels_zero.len() + pixels_length, all_pixels_total as usize);
+    assert_eq!(all_pixels_total as usize, pi + piz);
+    println!("painted:                     {}", (pi + piz));
     // Behold, the colouring is perfect
 }
 

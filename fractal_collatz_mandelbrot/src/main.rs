@@ -49,8 +49,7 @@ fn main() {
     let collatz = CollatzConjectureMandelbrot {};
     let machine = machine_mandelbrot::init(&calculation_config, result_config, &area_config);
 
-    // rendering must be done from main thread
-    let data_image = data_image::init_data_image(machine.area(), calculation_config.iteration_max);
+    let data_image = data_image::init_data_image(machine.area());
     let mut app_window = window::init(name, WIDTH, HEIGHT);
     let app = app_window.show(&data_image.image_init().as_raw(), WIDTH, HEIGHT);
     let mutex_window = Arc::new(Mutex::new(app_window));
@@ -59,7 +58,6 @@ fn main() {
         machine.calculate_mandelbrot(&collatz, &data_image, mutex_window);
     });
     app.run().unwrap();
-    println!("end.");
 }
 
 #[cfg(test)]

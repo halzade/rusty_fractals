@@ -38,10 +38,10 @@ impl MachineMandelbrot {
             // calculation
             self.chunk_calculation_mandelbrot(&xy, fractal, &data_image);
             // window refresh
-            window::refresh_maybe(&data_image, &app_window);
+            window::refresh_maybe(data_image, &app_window);
         });
         perfectly_colour_mandelbrot_values(&data_image, &self.palette, &self.palette_zero);
-        window::refresh_final(&data_image, &app_window);
+        window::refresh_final(data_image, &app_window);
     }
 
     fn chunk_calculation_mandelbrot(

@@ -13,8 +13,9 @@ pub struct DataImage {
     pub width: usize,
     pub height: usize,
     pub pixels: Vec<Vec<Arc<Mutex<DataPx>>>>,
-    max_value: u32,
 }
+
+static MAX_VALUE: Mutex<u32> = Mutex::new(0);
 
 impl DataImage {
     pub fn colour(&self, x: usize, y: usize, palette_colour: Rgb<u8>) {
@@ -22,9 +23,16 @@ impl DataImage {
         p.colour = Some(palette_colour);
     }
 
-    pub fn image(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+    pub fn image(&self, final_image: bool) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+        return if final_image {
+            self.image_result()
+        } else {
+            self.image_temp()
+        };
+    }
+
+    pub fn image_temp(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
         let mut image = RgbImage::new(self.width as u32, self.height as u32);
-        let mut max = 0;
         for y in 0..self.height {
             for x in 0..self.width {
                 let (value, state, _, _, colour_index_o) = self.values_at(x, y);
@@ -37,15 +45,27 @@ impl DataImage {
                         if state == ActiveNew {
                             colour = colour_for_state(state);
                         } else {
-                            if value > max {
-                                max = value;
+                            let mut mv = MAX_VALUE.lock().unwrap();
+                            if value > *mv {
+                                *mv = value;
                             }
-                            let c: u8 = (value as f64 / max as f64 * 255.0) as u8;
+                            let c: u8 = (value as f64 / *mv as f64 * 255.0) as u8;
                             colour = Rgb([c, c, c]);
                         }
                     }
                 }
                 image.put_pixel(x as u32, y as u32, colour);
+            }
+        }
+        image
+    }
+
+    pub fn image_result(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+        let mut image = RgbImage::new(self.width as u32, self.height as u32);
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let (_, _, _, _, colour_index_o) = self.values_at(x, y);
+                image.put_pixel(x as u32, y as u32, colour_index_o.unwrap());
             }
         }
         image
@@ -221,7 +241,7 @@ impl DataImage {
     }
 }
 
-pub fn init_data_image(area: &Area, max_value: u32) -> DataImage {
+pub fn init_data_image(area: &Area) -> DataImage {
     let width = area.width_x;
     let height = area.height_y;
     let mut vx = Vec::new();
@@ -238,7 +258,6 @@ pub fn init_data_image(area: &Area, max_value: u32) -> DataImage {
         width,
         height,
         pixels: vx,
-        max_value,
     }
 }
 
