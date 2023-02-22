@@ -1,14 +1,9 @@
-use rayon::iter::{ParallelIterator};
-use rusty_fractals_common::area::Area;
 use rusty_fractals_common::fractal::{AppConfig, CalculationConfig};
-use rusty_fractals_domain::domain::Domain;
-use rusty_fractals_result::result::ResultConfig;
 
 // to calculate zoom, sequence of images
 pub struct Engine {
     pub calculation_config: CalculationConfig,
     pub app_config: AppConfig,
-    pub result_config: ResultConfig,
 }
 
 impl Engine  {
