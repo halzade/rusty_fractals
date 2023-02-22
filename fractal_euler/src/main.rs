@@ -2,12 +2,10 @@ mod euler;
 mod pixel;
 mod mandelbrot;
 mod mem_euler;
-
-use rusty_fractals_common::fractal::Fractal;
-use rusty_fractals_common::mem::Mem;
-use rusty_fractals_core::mathematician::Mathematician;
+use rusty_fractals_common::area::Area;
+use rusty_fractals_common::data_image::DataImage;
+use rusty_fractals_common::fractal::{Fractal, FractalMath};
 use crate::mem_euler::MemEuler;
-use crate::pixel::Spectra;
 
 /*
 const ITERATION_MAX: u32 = 80000;
@@ -23,20 +21,28 @@ const SAVE_IMAGES: bool = false;
 const PALETTE: Palette = PALETTE_3_RGB;
 */
 struct Euler {
-    pub name: String,
+    name: &'static str,
 }
 
-impl Fractal<MemEuler> for Euler {
-    fn math(&self, mp: &mut MemEuler, origin_re: f64, origin_im: f64) {
-        mp.m.square();
-        mp.m.plus(origin_re, origin_im);
-        mp.euler();
-        mp.m.square();
-        mp.m.plus(origin_re, origin_im);
+impl FractalMath<MemEuler> for Euler {
+    fn math(&self, me: &mut MemEuler, origin_re: f64, origin_im: f64) {
+        me.square();
+        me.plus(origin_re, origin_im);
+        me.euler();
+        me.square();
+        me.plus(origin_re, origin_im);
     }
+}
 
+impl Fractal for Euler {
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
         todo!()
+    }
+    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage) -> (u32, u32) {
+        todo!()
+    }
+    fn name(&self) -> &'static str {
+        self.name
     }
 }
 

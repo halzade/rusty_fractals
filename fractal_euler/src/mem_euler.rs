@@ -1,3 +1,4 @@
+use rusty_fractals_common::fractal::MemType;
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_core::mathematician::Mathematician;
 
@@ -12,15 +13,34 @@ pub struct MemEuler {
     pub spectra: Spectra,
 }
 
-impl MemEuler {
-    pub fn re(&self) -> f64 {
+impl MemType<MemEuler> for MemEuler {
+    fn new(re: f64, im: f64) -> MemEuler {
+        MemEuler {
+            m: Mem { re, im },
+            it: 0,
+            math: Mathematician {
+                // TODO
+                primes: Default::default(),
+                fibonacci: Default::default(),
+                perfect: Default::default(),
+                square: Default::default(),
+            },
+            // TODO
+            spectra: Spectra::Red,
+        }
+    }
+    fn quad(&self) -> f64 {
+        self.m.quad()
+    }
+    fn re(&self) -> f64 {
         self.m.re
     }
-
-    pub fn im(&self) -> f64 {
+    fn im(&self) -> f64 {
         self.m.im
     }
+}
 
+impl MemEuler {
     pub fn plus(&mut self, r: f64, i: f64) {
         self.m.plus(r, i);
     }

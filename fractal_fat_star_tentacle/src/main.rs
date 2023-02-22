@@ -1,11 +1,9 @@
-use rusty_fractals_common::fractal::Fractal;
+use rusty_fractals_common::area::Area;
+use rusty_fractals_common::data_image::DataImage;
+use rusty_fractals_common::fractal::{Fractal, FractalMath};
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Single;
-use rusty_fractals_result::palette::Palette;
-use rusty_fractals_result::palettes::palette_black_to_white_exp2;
-
-const NAME: &str = "Fat Star Tentacle";
 
 const ITERATION_MAX: u32 = 81_000;
 const ITERATION_MIN: u32 = 8;
@@ -24,19 +22,27 @@ const SAVE_IMAGES: bool = false;
 // const PALETTE: Palette = palette_black_to_white_exp2();
 
 struct FatStarTentacle {
-    pub name: String,
+    name: &'static str,
 }
 
-impl Fractal<Mem> for FatStarTentacle {
+impl FractalMath<Mem> for FatStarTentacle {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         m.square();
         m.conjugation();
         m.square();
         m.plus(origin_re, origin_im);
     }
+}
 
+impl Fractal for FatStarTentacle {
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
         todo!()
+    }
+    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage) -> (u32, u32) {
+        todo!()
+    }
+    fn name(&self) -> &'static str {
+        self.name
     }
 }
 
@@ -47,7 +53,7 @@ fn main() {
 
 #[test]
 fn test_math() {
-    let fat_star_tentacle = FatStarTentacle { name: NAME.to_string() };
+    let fat_star_tentacle = FatStarTentacle { name: "Fat Star" };
     let mut m = Mem { re: 0.0, im: 0.0 };
     fat_star_tentacle.math(&mut m, 1.0, 0.1);
     assert_eq!(m.re, 1.0);
