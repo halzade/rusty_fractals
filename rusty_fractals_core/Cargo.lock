@@ -552,6 +552,9 @@ dependencies = [
 [[package]]
 name = "rusty_fractals_common"
 version = "0.1.0"
+dependencies = [
+ "image",
+]
 
 [[package]]
 name = "rusty_fractals_core"
@@ -561,27 +564,8 @@ dependencies = [
  "fltk",
  "image",
  "num_cpus",
- "rayon",
- "rgb",
- "rusty_fractals_common",
- "rusty_fractals_domain",
- "rusty_fractals_result",
-]
-
-[[package]]
-name = "rusty_fractals_domain"
-version = "0.1.0"
-dependencies = [
- "image",
  "rand",
- "rusty_fractals_common",
-]
-
-[[package]]
-name = "rusty_fractals_result"
-version = "0.1.0"
-dependencies = [
- "image",
+ "rayon",
  "rgb",
  "rusty_fractals_common",
 ]
