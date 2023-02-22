@@ -1,3 +1,4 @@
+use std::sync::{Arc, Mutex};
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
@@ -9,34 +10,39 @@ use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
 use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::palettes::{ResultConfig};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
+use crate::window;
+use crate::window::AppWindow;
 
 // to calculate single image
-pub struct Machine<'lt> {
+pub struct Machine {
     area: Area,
     iteration_min: u32,
     iteration_max: u32,
     resolution_multiplier: ResolutionMultiplier,
-    palette: &'lt Palette,
+    palette: Palette,
 }
 
-pub fn init<'lt>(calculation_config: &CalculationConfig, result_config: &'lt ResultConfig, area_config: &AreaConfig) -> Machine<'lt> {
+pub fn init(calculation_config: &CalculationConfig, result_config: ResultConfig, area_config: &AreaConfig) -> Machine {
     let area = area::init(&area_config);
     Machine {
         area,
         iteration_min: calculation_config.iteration_min,
         iteration_max: calculation_config.iteration_max,
         resolution_multiplier: calculation_config.resolution_multiplier,
-        palette: &result_config.palette,
+        palette: result_config.palette,
     }
 }
 
-impl Machine<'_> {
-    pub fn calculate(&self, fractal: &impl Fractal, data_image: &mut DataImage) {
+impl Machine {
+    pub fn calculate(&self, fractal: &impl Fractal, data_image: &DataImage, app_window: Arc<Mutex<AppWindow>>) {
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
 
         coordinates_xy.par_iter().for_each(|xy| {
-            self.chunk_calculation(&xy, fractal, data_image);
+            // calculation
+            self.chunk_calculation(&xy, fractal, &data_image);
+            // window refresh
+            window::refresh_maybe(data_image, &app_window);
         });
         data_image.recalculate_pixels_states();
 
@@ -47,7 +53,8 @@ impl Machine<'_> {
                 self.chunk_calculation_with_wrap(&xy, fractal, data_image);
             });
         }
-        perfectly_colour_result_values(data_image, &self.palette);
+        perfectly_colour_result_values(&data_image, &self.palette);
+        window::refresh_final(data_image, &app_window);
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk

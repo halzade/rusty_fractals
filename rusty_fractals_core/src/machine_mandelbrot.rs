@@ -19,7 +19,7 @@ pub struct MachineMandelbrot {
     palette_zero: Palette,
 }
 
-pub fn init<'lt>(calculation_config: &CalculationConfig, result_config: ResultConfigMandelbrot, area_config: &AreaConfig) -> MachineMandelbrot {
+pub fn init(calculation_config: &CalculationConfig, result_config: ResultConfigMandelbrot, area_config: &AreaConfig) -> MachineMandelbrot {
     let area = area::init(&area_config);
     MachineMandelbrot {
         area,

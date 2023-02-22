@@ -25,7 +25,7 @@ struct Mix {
     quid: f64,
 }
 
-pub fn perfectly_colour_result_values(data: &mut DataImage, palette: &Palette) {
+pub fn perfectly_colour_result_values(data: &DataImage, palette: &Palette) {
     let width = data.width;
     let height = data.height;
 
