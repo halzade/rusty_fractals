@@ -1,8 +1,8 @@
-use std::sync::{Arc, Mutex};
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
-use rusty_fractals_common::{area, perfect_color_distribution, pixel_states};
+use perfect_colour_distribution::perfectly_colour_result_values;
+use rusty_fractals_common::{area, perfect_colour_distribution, pixel_states};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::fractal::{CalculationConfig, Fractal};
 use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
@@ -31,12 +31,12 @@ pub fn init<'lt>(calculation_config: &CalculationConfig, result_config: &'lt Res
 }
 
 impl Machine<'_> {
-    pub fn calculate(&self, fractal: &impl Fractal, data_image: &DataImage) {
+    pub fn calculate(&self, fractal: &impl Fractal, data_image: &mut DataImage) {
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
 
         coordinates_xy.par_iter().for_each(|xy| {
-            self.chunk_calculation(&xy, fractal, &data_image);
+            self.chunk_calculation(&xy, fractal, data_image);
         });
         data_image.recalculate_pixels_states();
 
@@ -44,10 +44,10 @@ impl Machine<'_> {
             println!("calculate() with wrap");
             // previous calculation completed, calculate more elements
             coordinates_xy.par_iter().for_each(|xy| {
-                self.chunk_calculation_with_wrap(&xy, fractal, &data_image);
+                self.chunk_calculation_with_wrap(&xy, fractal, data_image);
             });
         }
-        perfect_color_distribution::perfectly_color_result_values(&data_image, &self.palette);
+        perfectly_colour_result_values(data_image, &self.palette);
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
@@ -76,7 +76,7 @@ impl Machine<'_> {
         for x in x_from..x_to {
             for y in y_from..y_to {
                 if data_image.is_on_mandelbrot_horizon(x, y) {
-                    let (_, _, origin_re, origin_im) = data_image.values_at(x, y);
+                    let (origin_re, origin_im) = data_image.origin_at(x, y);
                     let wrap = data_image.wrap(origin_re, origin_im, self.resolution_multiplier, &self.area);
                     // within the same pixel
                     for [re, im] in wrap {
@@ -92,7 +92,7 @@ impl Machine<'_> {
         fractal: &impl Fractal,
         data_image: &DataImage,
     ) {
-        let (_, state, origin_re, origin_im) = data_image.values_at(x, y);
+        let (state, origin_re, origin_im) = data_image.state_origin_at(x, y);
         if pixel_states::is_active_new(state) {
             let (iterator, path_length) = fractal.calculate_path(&self.area, self.iteration_min, self.iteration_max, origin_re, origin_im, data_image);
 

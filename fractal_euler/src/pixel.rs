@@ -38,11 +38,11 @@ impl PixelsEuler {
         }
     }
 
-    fn set(&mut self, x: usize, y: usize, spec: Spectra, color_value: u32) {
+    fn set(&mut self, x: usize, y: usize, spec: Spectra, colour_value: u32) {
         match spec {
-            Spectra::Red => self.elements_red[x][y] = color_value,
-            Spectra::Green => self.elements_green[x][y] = color_value,
-            Spectra::Blue => self.elements_blue[x][y] = color_value,
+            Spectra::Red => self.elements_red[x][y] = colour_value,
+            Spectra::Green => self.elements_green[x][y] = colour_value,
+            Spectra::Blue => self.elements_blue[x][y] = colour_value,
         }
     }
 }

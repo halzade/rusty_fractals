@@ -12,5 +12,5 @@ pub mod data_image;
 pub mod pixel_states;
 pub mod result_data_dynamic;
 pub mod resolution_multiplier;
-pub mod perfect_color_distribution;
+pub mod perfect_colour_distribution;
 pub mod data_px;

@@ -18,10 +18,10 @@ fn a(v: i16) -> i16 {
     v.abs()
 }
 
-// Fill color spectrum with colors between colors:
-// from     : color for lower values
-// to       : color for higher values
-// function : defines gradient of color change
+// Fill colour spectrum with colours between colours:
+// from     : colour for lower values
+// to       : colour for higher values
+// function : defines gradient of colour change
 pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<u8>> {
     let r_from = from.channels()[0] as i16;
     let g_from = from.channels()[1] as i16;
@@ -104,7 +104,7 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
             stop = true;
         }
 
-        // Add colors to Palette
+        // Add colours to Palette
         spectrum.push(Rgb([r_new as u8, g_new as u8, b_new as u8]));
 
         if stop {
@@ -114,8 +114,8 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
     spectrum
 }
 
-// Calculates how much should color in smooth color palette change
-// function : defines gradient of change from color "from" (d=0) to color "to" (d=1)
+// Calculates how much should colour in smooth colour palette change
+// function : defines gradient of change from colour "from" (d=0) to colour "to" (d=1)
 // d : 0 <= d <= 1
 fn function_result(d: f64, function: &Function) -> f64 {
     match function {

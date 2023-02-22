@@ -11,7 +11,7 @@ pub struct DataPx {
     pub quad: f64,
     // inverted quadrance
     pub quid: f64,
-    pub color_value: u32,
+    pub colour: Option<Rgb<u8>>,
 }
 
 impl DataPx {
@@ -49,12 +49,12 @@ impl DataPx {
         self.state = state;
     }
 
-    fn color_value(&self) -> u32 {
-        self.color_value
+    fn colour(&self) -> Option<Rgb<u8>> {
+        self.colour
     }
 
-    fn set_color_value(&mut self, palette_colour_index: u32) {
-        self.color_value = palette_colour_index;
+    fn set_colour(&mut self, palette_colour: Rgb<u8>) {
+        self.colour = Some(palette_colour);
     }
 
     pub fn set_average_with(&mut self, other: DataPx) {
@@ -70,11 +70,11 @@ pub fn init(origin_re: f64, origin_im: f64) -> DataPx {
         state: ActiveNew,
         quad: 1.0,
         quid: 1.0,
-        color_value: 0,
+        colour: None,
     }
 }
 
-pub fn color_for_state(state: DomainElementState) -> Rgb<u8> {
+pub fn colour_for_state(state: DomainElementState) -> Rgb<u8> {
     match state {
         // most of the elements are going to be FinishedSuccessPast
         FinishedSuccessPast => FINISHED_SUCCESS_PAST,
@@ -90,8 +90,8 @@ pub fn color_for_state(state: DomainElementState) -> Rgb<u8> {
 
 #[test]
 fn test_set_average_with() {
-    let mut dp = DataPx { origin_re: 0.0, origin_im: 0.0, value: 10, state: FinishedSuccessPast, quad: 0.0, quid: 0.0, color_value: 0 };
-    let other = DataPx { origin_re: 0.0, origin_im: 0.0, value: 3, state: FinishedSuccessPast, quad: 0.0, quid: 0.0, color_value: 0 };
+    let mut dp = DataPx { origin_re: 0.0, origin_im: 0.0, value: 10, state: FinishedSuccessPast, quad: 0.0, quid: 0.0, colour: None };
+    let other = DataPx { origin_re: 0.0, origin_im: 0.0, value: 3, state: FinishedSuccessPast, quad: 0.0, quid: 0.0, colour: None };
 
     dp.set_average_with(other);
     assert_eq!(dp.value, 55);

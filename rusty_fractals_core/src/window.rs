@@ -1,22 +1,27 @@
 use std::borrow::BorrowMut;
 use std::sync::{Arc, Mutex};
-use ColorDepth::Rgb8;
+use std::thread::sleep;
+use std::time::{Duration, SystemTime};
 use fltk::{frame::Frame, prelude::*, window::Window};
 use fltk::app::{App, event_key};
 use fltk::enums::{ColorDepth, Event, Key};
 use fltk::image::RgbImage;
 use fltk::window::DoubleWindow;
+use ColorDepth::Rgb8;
 use rusty_fractals_common::data_image::DataImage;
 
 pub struct AppWindow {
     pub window: DoubleWindow,
     pub frame: Frame,
+    // refresh_time : Mutex<SystemTime>
+    refresh_time: SystemTime,
 }
 
 pub fn init(fractal_name: &'static str, width: usize, height: usize) -> AppWindow {
     AppWindow {
         window: Window::default().with_label(fractal_name).with_size(width as i32, height as i32).center_screen(),
         frame: Frame::new(0, 0, width as i32, height as i32, ""),
+        refresh_time: SystemTime::now(),
     }
 }
 
@@ -26,7 +31,6 @@ impl AppWindow {
         let image_rgb = RgbImage::new(initial_image, width as i32, height as i32, Rgb8).unwrap();
         self.frame.set_image(Some(image_rgb));
         self.window.add(&self.frame);
-        println!("a");
         self.window.handle(move |_, event| match event {
             Event::KeyDown => {
                 let ek = event_key();
@@ -50,18 +54,38 @@ impl AppWindow {
     }
 
     pub fn refresh(&mut self, data_image: &DataImage) {
-        let image_rgb = RgbImage::new(data_image.image().as_raw(), data_image.width as i32, data_image.height as i32, Rgb8).unwrap();
-        self.frame.set_image(Some(image_rgb));
-        self.window.redraw();
+        match SystemTime::now().duration_since(self.refresh_time) {
+            Ok(n) =>
+                if n.as_millis() > 300 {
+                    self.refresh_time = SystemTime::now();
+                    println!("since in ms: {}", n.as_millis());
+
+                    let image_rgb = RgbImage::new(data_image.image().as_raw(), data_image.width as i32, data_image.height as i32, Rgb8).unwrap();
+                    self.frame.set_image(Some(image_rgb));
+                    self.window.draw_children();
+                    self.frame.redraw();
+                    self.window.redraw();
+                    self.window.flush();
+                } else {
+                    println!("skip refresh");
+                },
+            Err(_) => panic!("refresh_maybe() error"),
+        }
     }
 }
 
-pub fn refresh(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>) {
+pub fn refresh_maybe(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>) {
     let mut mutex_guard = arc_mutex_window.lock().unwrap();
-    let mut app_window = mutex_guard.borrow_mut();
-    let image_rgb = RgbImage::new(data_image.image().as_raw(), data_image.width as i32, data_image.height as i32, Rgb8).unwrap();
-    app_window.frame.set_image(Some(image_rgb));
-    app_window.window.redraw();
+    let app_window = mutex_guard.borrow_mut();
     app_window.refresh(&data_image);
 }
 
+pub fn refresh_final(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>) {
+    println!("refresh final");
+    sleep(Duration::new(0, 100_000_000));
+    println!("refresh final go");
+    let mut mutex_guard = arc_mutex_window.lock().unwrap();
+    let app_window = mutex_guard.borrow_mut();
+    app_window.refresh(&data_image);
+    println!("refresh final done");
+}

@@ -1,12 +1,11 @@
-// The method used for perfect coloring is
+// The method used for perfect colouring is
 // - Gather all screen pixels and order them by value
-// - Count how many pixels should be colored by each color from spectrum
-// - Zero elements and noise color by the lowest color
-// - Color all significant pixels ordered by value
+// - Count how many pixels should be coloured by each colour from spectrum
+// - Zero elements and noise colour by the lowest colour
+// - colour all significant pixels ordered by value
 
 use std::cmp::Ordering::Equal;
-use image::RgbImage;
-use crate::constants::COLORING_THRESHOLD;
+use crate::constants::COLOURING_THRESHOLD;
 use crate::data_image::DataImage;
 use crate::palette::Palette;
 
@@ -26,7 +25,7 @@ struct Mix {
     quid: f64,
 }
 
-pub fn perfectly_color_result_values(data: &DataImage, palette: &Palette) -> RgbImage {
+pub fn perfectly_colour_result_values(data: &mut DataImage, palette: &Palette) {
     let width = data.width;
     let height = data.height;
 
@@ -37,8 +36,8 @@ pub fn perfectly_color_result_values(data: &DataImage, palette: &Palette) -> Rgb
     // read screen values
     for y in 0..height {
         for x in 0..width {
-            let (v, _, _, _) = data.values_at(x, y);
-            if v <= COLORING_THRESHOLD {
+            let v = data.value_at(x, y);
+            if v <= COLOURING_THRESHOLD {
                 zero_value_elements += 1;
             }
             pixels.push(Pix { x, y, value: v });
@@ -50,53 +49,50 @@ pub fn perfectly_color_result_values(data: &DataImage, palette: &Palette) -> Rgb
 
     let all_pixels_total: u32 = (width * height) as u32;
     let all_pixels_non_zero: u32 = (all_pixels_total - zero_value_elements) as u32;
-    let palette_color_count: u32 = palette.spectrum.len() as u32;
-    let single_color_use: u32 = (all_pixels_non_zero as f64 / palette_color_count as f64) as u32;
-    let left: u32 = all_pixels_non_zero - (palette_color_count * single_color_use);
+    let palette_colour_count: u32 = palette.spectrum.len() as u32;
+    let single_colour_use: u32 = (all_pixels_non_zero as f64 / palette_colour_count as f64) as u32;
+    let left: u32 = all_pixels_non_zero - (palette_colour_count * single_colour_use);
 
     println!("------------------------------------");
     println!("All pixels to paint:         {}", all_pixels_total);
-    println!("---------------------------> {}", (zero_value_elements + left + (single_color_use * palette_color_count)));
+    println!("---------------------------> {}", (zero_value_elements + left + (single_colour_use * palette_colour_count)));
     println!("Zero value pixels to paint:  {}", zero_value_elements);
     println!("Non zero pixels to paint:    {}", all_pixels_non_zero);
-    println!("Spectrum, available colors:  {}", palette_color_count);
-    println!("Pixels per each color:       {}", single_color_use);
+    println!("Spectrum, available colours: {}", palette_colour_count);
+    println!("Pixels per each colour:      {}", single_colour_use);
     println!("left:                        {}", left);
     println!("------------------------------------");
-
-    let mut result_image = RgbImage::new(width as u32, height as u32);
 
     // paint mismatched pixel amount with the least value colour
     let mut pi = 0;
     for _ in 0..(left + zero_value_elements) {
         let sp = pixels.get(pi).expect("pixels error");
         pi += 1;
-        result_image.put_pixel(sp.x as u32, sp.y as u32, palette.spectrum_value(0));
+        data.colour(sp.x, sp.y, palette.spectrum_value(0));
     }
 
-    // color all remaining pixels, these are order by value
-    for palette_colour_index in 0..palette_color_count {
-        for _ in 0..single_color_use {
-            // color all these pixels with same color
+    // colour all remaining pixels, these are order by value
+    for palette_colour_index in 0..palette_colour_count {
+        for _ in 0..single_colour_use {
+            // colour all these pixels with same colour
             let sp = pixels.get(pi).expect("pixels error");
             pi += 1;
-            if sp.value <= COLORING_THRESHOLD {
-                // color zero-value elements and low-value-noise with the darkest color
-                result_image.put_pixel(sp.x as u32, sp.y as u32, palette.spectrum_value(0));
+            if sp.value <= COLOURING_THRESHOLD {
+                // colour zero-value elements and low-value-noise with the darkest colour
+                data.colour(sp.x, sp.y, palette.spectrum_value(0));
             } else {
-                // perfect-color all significant pixels
-                result_image.put_pixel(sp.x as u32, sp.y as u32, palette.spectrum_value(palette_colour_index as usize));
+                // perfect-colour all significant pixels
+                data.colour(sp.x, sp.y, palette.spectrum_value(palette_colour_index as usize));
             }
         }
     }
     assert_eq!(pixels.len(), pi);
     println!("painted:                   {}", pi);
-    // Behold, the coloring is perfect
-    result_image
+    // Behold, the colouring is perfect
 }
 
 /*
-fn perfectly_color_values_euler() -> RgbImage {
+fn perfectly_colour_values_euler() -> RgbImage {
     let width = data_image.width;
     let height = data_image.height;
 
@@ -142,29 +138,29 @@ fn perfectly_color_values_euler() -> RgbImage {
     let all_pixels_non_zero_red : u32 = all_pixels_total - zero_value_elements_red;
     let all_pixels_non_zero_green : u32 = all_pixels_total - zero_value_elements_green;
     let all_pixels_non_zero_blue : u32 = all_pixels_total - zero_value_elements_blue;
-    let palette_color_count : u32 = PaletteEuler3.colorResolution();
-    let single_color_use_red : u32 = all_pixels_non_zero_red / palette_color_count;
-    let single_color_use_green : u32 = all_pixels_non_zero_green / palette_color_count;
-    let single_color_use_blue : u32 = all_pixels_non_zero_blue / palette_color_count;
-    let left_red : u32 = all_pixels_non_zero_red - (palette_color_count * single_color_use_red);
-    let left_green : u32 = all_pixels_non_zero_green - (palette_color_count * single_color_use_green);
-    let left_blue : u32 = all_pixels_non_zero_blue - (palette_color_count * single_color_use_blue);
+    let palette_colour_count : u32 = PaletteEuler3.colourResolution();
+    let single_colour_use_red : u32 = all_pixels_non_zero_red / palette_colour_count;
+    let single_colour_use_green : u32 = all_pixels_non_zero_green / palette_colour_count;
+    let single_colour_use_blue : u32 = all_pixels_non_zero_blue / palette_colour_count;
+    let left_red : u32 = all_pixels_non_zero_red - (palette_colour_count * single_colour_use_red);
+    let left_green : u32 = all_pixels_non_zero_green - (palette_colour_count * single_colour_use_green);
+    let left_blue : u32 = all_pixels_non_zero_blue - (palette_colour_count * single_colour_use_blue);
 
     println!("------------------------------------");
     println!("All pixels to paint:         {}", all_pixels_total);
-    println!("---------------------------> {}", (zero_value_elements_red + left_red + (single_color_use_red * palette_color_count)));
-    println!("---------------------------> {}", (zero_value_elements_green + left_green + (single_color_use_green * palette_color_count)));
-    println!("---------------------------> {}", (zero_value_elements_blue + left_blue + (single_color_use_blue * palette_color_count)));
+    println!("---------------------------> {}", (zero_value_elements_red + left_red + (single_colour_use_red * palette_colour_count)));
+    println!("---------------------------> {}", (zero_value_elements_green + left_green + (single_colour_use_green * palette_colour_count)));
+    println!("---------------------------> {}", (zero_value_elements_blue + left_blue + (single_colour_use_blue * palette_colour_count)));
     println!("Zero value pixels to paint:  {}", zero_value_elements_red);
     println!("Zero value pixels to paint:  {}", zero_value_elements_green);
     println!("Zero value pixels to paint:  {}", zero_value_elements_blue);
     println!("Non zero pixels to paint:    {}", all_pixels_non_zero_red);
     println!("Non zero pixels to paint:    {}", all_pixels_non_zero_green);
     println!("Non zero pixels to paint:    {}", all_pixels_non_zero_blue);
-    println!("Spectrum, available colors:  {}", palette_color_count);
-    println!("Pixels per each color:       {}", single_color_use_red);
-    println!("Pixels per each color:       {}", single_color_use_green);
-    println!("Pixels per each color:       {}", single_color_use_blue);
+    println!("Spectrum, available colours: {}", palette_colour_count);
+    println!("Pixels per each colour:      {}", single_colour_use_red);
+    println!("Pixels per each colour:      {}", single_colour_use_green);
+    println!("Pixels per each colour:      {}", single_colour_use_blue);
     println!("left:                        {}", left_red);
     println!("left:                        {}", left_green);
     println!("left:                        {}", left_blue);
@@ -175,15 +171,15 @@ fn perfectly_color_values_euler() -> RgbImage {
         let sp = pixelsRed.get(pi_red);
         result_image.put_pixel(sp.x, sp.y, red, 0);
     }
-    // color all remaining pixels, these are order by value
-    for palette_colour_index in 0..palette_color_count {
-        for _ in 0..single_color_use_red {
-            // color all these pixels with same color
+    // colour all remaining pixels, these are order by value
+    for palette_colour_index in 0..palette_colour_count {
+        for _ in 0..single_colour_use_red {
+            // colour all these pixels with same colour
             let sp = pixels_red.get(pi_red += 1);
             if sp.pixelValue() <= threshold {
                 result_image.put_pixel(sp.x, sp.y, red, 0);
             } else {
-                // perfect-color all significant pixels
+                // perfect-colour all significant pixels
                 result_image.put_pixel(sp.x, sp.y, red, PaletteEuler3.getSpectrumValueRed(palette_colour_index).getRed());
             }
         }
@@ -193,16 +189,16 @@ fn perfectly_color_values_euler() -> RgbImage {
         sp = pixelsGreen.get(pi_green);
         result_image.put_pixel(sp.x, sp.y, green, 0);
     }
-    // color all remaining pixels, these are order by value
-    for palette_colour_index in 0..palette_color_count {
-        for _ in 0..single_color_use_green {
-            // color all these pixels with same color
+    // colour all remaining pixels, these are order by value
+    for palette_colour_index in 0..palette_colour_count {
+        for _ in 0..single_colour_use_green {
+            // colour all these pixels with same colour
             sp = pixelsGreen.get(pi_green += 1);
             if sp.pixelValue() <= threshold {
-                // color zero-value elements and low-value-noise with the darkest color
+                // colour zero-value elements and low-value-noise with the darkest colour
                 result_image.put_pixel(sp.x, sp.y, green, 0);
             } else {
-                // perfect-color all significant pixels
+                // perfect-colour all significant pixels
                 result_image.put_pixel(sp.x, sp.y, green, PaletteEuler3.getSpectrumValueGreen(palette_colour_index).getGreen());
             }
         }
@@ -212,22 +208,22 @@ fn perfectly_color_values_euler() -> RgbImage {
         sp = pixelsBlue.get(pi_blue);
         result_image.put_pixel(sp.x, sp.y, blue, 0);
     }
-    // color all remaining pixels, these are order by value
-    for palette_colour_index in 0..palette_color_count {
-        for _ in 0..single_color_use_blue {
-            // color all these pixels with same color
+    // colour all remaining pixels, these are order by value
+    for palette_colour_index in 0..palette_colour_count {
+        for _ in 0..single_colour_use_blue {
+            // colour all these pixels with same colour
             sp = pixelsBlue.get(pi_blue += 1);
             if sp.pixelValue() <= threshold {
-                // color zero-value elements and low-value-noise with the darkest color
+                // colour zero-value elements and low-value-noise with the darkest colour
                 result_image.put_pixel(sp.x, sp.y, blue, 0);
             } else {
-                // perfect-color all significant pixels
+                // perfect-colour all significant pixels
                 result_image.put_pixel(sp.x, sp.y, blue, PaletteEuler3.getSpectrumValueBlue(palette_colour_index).getBlue());
             }
         }
     }
 
-    // read 3 euler spectra colors and write image colors
+    // read 3 euler spectra colours and write image colours
     for y in 0..height {
         for x in 0..width {
             let r = data_image.value_at(x, y, red);
@@ -237,7 +233,7 @@ fn perfectly_color_values_euler() -> RgbImage {
         }
     }
 
-    // Behold, the coloring is perfect
+    // Behold, the colouring is perfect
 
     println!("clear pixels");
     pixels_red.clear();
@@ -251,8 +247,8 @@ fn perfectly_color_values_euler() -> RgbImage {
 
 const NEIGHBOR_COORDINATES: [[i32; 2]; 8] = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]];
 
-pub fn perfectly_color_mandelbrot_values(data: &DataImage, palette: &Palette, palette_zero: &Palette) -> RgbImage {
-    println!("perfectly_color_mandelbrot_values()");
+pub fn perfectly_colour_mandelbrot_values(data: &DataImage, palette: &Palette, palette_zero: &Palette) {
+    println!("perfectly_colour_mandelbrot_values()");
 
     let width = data.width;
     let height = data.height;
@@ -265,7 +261,7 @@ pub fn perfectly_color_mandelbrot_values(data: &DataImage, palette: &Palette, pa
 
     for y in 0..height {
         for x in 0..width {
-            let (value, _, quad, quid) = data.values_at(x, y);
+            let (value, _, quad, quid, _) = data.values_at(x, y);
             if value == 0 {
                 zero_value_elements += 1;
                 pixels_zero.push(Mix { x, y, value, quad, quid });
@@ -287,83 +283,79 @@ pub fn perfectly_color_mandelbrot_values(data: &DataImage, palette: &Palette, pa
 
     let all_pixels_total: u32 = (width * height) as u32;
     let all_pixels_non_zero: u32 = all_pixels_total - zero_value_elements;
-    let palette_color_count: u32 = palette.spectrum.len() as u32;
-    let single_color_use: u32 = (all_pixels_non_zero as f64 / palette_color_count as f64) as u32;
+    let palette_colour_count: u32 = palette.spectrum.len() as u32;
+    let single_colour_use: u32 = (all_pixels_non_zero as f64 / palette_colour_count as f64) as u32;
 
-    let left = all_pixels_non_zero - (palette_color_count * single_color_use);
+    let left = all_pixels_non_zero - (palette_colour_count * single_colour_use);
 
     println!("------------------------------------");
     println!("All pixels to paint:         {}", all_pixels_total);
-    println!("---------------------------> {}", (zero_value_elements + left + (single_color_use * palette_color_count)));
+    println!("---------------------------> {}", (zero_value_elements + left + (single_colour_use * palette_colour_count)));
     println!("Zero value pixels to paint:  {}", zero_value_elements);
     println!("Non zero pixels to paint:    {}", all_pixels_non_zero);
-    println!("Spectrum, available colors:> {}", palette_color_count);
-    println!("Pixels per each color:       {}", single_color_use);
+    println!("Spectrum, available colours: {}", palette_colour_count);
+    println!("Pixels per each colour:      {}", single_colour_use);
     println!("left:                        {}", left);
     println!("------------------------------------");
-
-    let mut result_image = RgbImage::new(width as u32, height as u32);
 
     // paint mismatched pixel amount with the least value colour
     let mut pi = 0;
     for _ in 0..left {
         let mp = pixels.get(pi).expect("pixels error");
         pi += 1;
-        result_image.put_pixel(mp.x as u32, mp.y as u32, palette.spectrum_value(0));
+        data.colour(mp.x, mp.y, palette.spectrum_value(0));
     }
 
-    for palette_colour_index in 0..palette_color_count {
-        for _ in 0..single_color_use {
-            // color all these pixels with same color
+    for palette_colour_index in 0..palette_colour_count {
+        for _ in 0..single_colour_use {
+            // colour all these pixels with same colour
             let mp = pixels.get(pi).expect("pixels error");
             pi += 1;
-            // perfect-color all significant pixels
-            result_image.put_pixel(mp.x as u32, mp.y as u32, palette.spectrum_value(palette_colour_index as usize));
+            // perfect-colour all significant pixels
+            data.colour(mp.x, mp.y, palette.spectrum_value(palette_colour_index as usize));
         }
     }
     assert_eq!(pixels.len(), pi);
 
     // Fix black dots caused by quad inverse imperfection
     // Keep incorrect quad results
-
     for mpp in pixels {
         let average_colour_index = ac_if_black_dot(&mpp, data);
         if average_colour_index != -1 {
-            // let mpp.colorValue(average_colour_index);
-            result_image.put_pixel(mpp.x as u32, mpp.y as u32, palette.spectrum_value(average_colour_index as usize));
+            // let mpp.colourValue(average_colour_index);
+            data.colour(mpp.x, mpp.y, palette.spectrum_value(average_colour_index as usize));
         }
     }
 
     // Paint insides of Mandelbrot set
 
-    let zero_palette_color_count = palette.spectrum.len() as u32;
-    let zero_single_color_use = (zero_value_elements as f64 / zero_palette_color_count as f64) as u32;
-    let zero_left = zero_value_elements - (zero_palette_color_count * zero_single_color_use);
+    let zero_palette_colour_count = palette.spectrum.len() as u32;
+    let zero_single_colour_use = (zero_value_elements as f64 / zero_palette_colour_count as f64) as u32;
+    let zero_left = zero_value_elements - (zero_palette_colour_count * zero_single_colour_use);
 
-    println!("zero_palette_color_count:    > {}", zero_palette_color_count);
-    println!("zero_single_color_use:       > {}", zero_single_color_use);
+    println!("zero_palette_colour_count:    > {}", zero_palette_colour_count);
+    println!("zero_single_colour_use:       > {}", zero_single_colour_use);
     println!("zero_left:                   > {}", zero_left);
 
     for piz in 0..zero_left {
         let mp = pixels_zero.get(piz as usize).expect("pixel error");
-        result_image.put_pixel(mp.x as u32, mp.y as u32, palette_zero.spectrum_value(0 as usize));
+        data.colour(mp.x, mp.y, palette_zero.spectrum_value(0 as usize));
     }
     let mut piz = zero_left as usize;
-    for zero_palette_colour_index in 0..zero_palette_color_count {
-        for _ in 0..zero_single_color_use {
-            // color all these pixels with same color
+    for zero_palette_colour_index in 0..zero_palette_colour_count {
+        for _ in 0..zero_single_colour_use {
+            // colour all these pixels with same colour
             let mp = pixels_zero.get(piz).expect("pixel error");
             piz += 1;
-            result_image.put_pixel(mp.x as u32, mp.y as u32, palette_zero.spectrum_value(zero_palette_colour_index as usize));
+            data.colour(mp.x, mp.y, palette_zero.spectrum_value(zero_palette_colour_index as usize));
         }
     }
     assert_eq!(pixels_zero.len(), piz);
     println!("painted:                   {}", pi);
-    // Behold, the coloring is perfect
-    result_image
+    // Behold, the colouring is perfect
 }
 
-// Return average color of neighbour elements
+// Return average colour of neighbour elements
 fn ac_if_black_dot(mp: &Mix, data_image: &DataImage) -> i32 {
     let width = data_image.width;
     let height = data_image.height;
@@ -374,7 +366,7 @@ fn ac_if_black_dot(mp: &Mix, data_image: &DataImage) -> i32 {
         let x = mp.x as i32 + c[0];
         let y = mp.y as i32 + c[1];
         if check_domain(x, y, width, height) {
-            let (neighbor_value, _, _, _) = data_image.values_at(x as usize, y as usize);
+            let neighbor_value = data_image.value_at(x as usize, y as usize);
             if (pv as i32 - neighbor_value as i32).abs() > 2 {
                 // verify only one value difference gradient
                 return -1;

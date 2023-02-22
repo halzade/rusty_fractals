@@ -26,8 +26,8 @@ impl FractalMandelbrot for CollatzConjectureMandelbrot {
 fn main() {
     let name = "Collatz Conjecture Mandelbrot";
 
-    const WIDTH: usize = 600; // 1280
-    const HEIGHT: usize = 600; // 720
+    const WIDTH: usize = 1280;
+    const HEIGHT: usize = 720;
 
     let calculation_config = CalculationConfig {
         iteration_min: 0,
@@ -48,12 +48,11 @@ fn main() {
 
     let collatz = CollatzConjectureMandelbrot {};
     let machine = machine_mandelbrot::init(&calculation_config, result_config, &area_config);
-    let data_image = data_image::init_data_image(machine.area());
-    let initial_image = data_image.image();
 
     // rendering must be done from main thread
+    let data_image = data_image::init_data_image(machine.area(), calculation_config.iteration_max);
     let mut app_window = window::init(name, WIDTH, HEIGHT);
-    let app = app_window.show(&initial_image.as_raw(), WIDTH, HEIGHT);
+    let app = app_window.show(&data_image.image_init().as_raw(), WIDTH, HEIGHT);
     let mutex_window = Arc::new(Mutex::new(app_window));
 
     thread::spawn(move || {

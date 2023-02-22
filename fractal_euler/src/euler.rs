@@ -1,8 +1,6 @@
-use rusty_fractals_core::mathematician::Mathematician;
-use rusty_fractals_domain::domain_element::DomainElement;
 use crate::mem_euler::MemEuler;
 
-// Fractal Euler type uses three color spectra for better mathematical analysis and better coloring results.
+// Fractal Euler type uses three colour spectra for better mathematical analysis and better colouring results.
 // Possible use as:
 // - prime path length / el.order      -> Red spectrum
 // - Fibonacci path lengths / el.order -> Green spectrum
@@ -24,7 +22,7 @@ fn translate_paths_to_pixel_grid() {
             AreaFinebrot.pointToPixel(m, tmp[0], tmp[1]);
             if m.good {
                 added += 1;
-                FractalEuler.colorsFor(m, i, path.size());
+                FractalEuler.coloursFor(m, i, path.size());
                 PixelsEulerFinebrot.add(m.px, m.py, m.spectra);
             }
         }
@@ -36,7 +34,7 @@ fn translate_paths_to_pixel_grid() {
     */
 }
 
-fn colors_for(m: MemEuler, element_index: u32, path_length: u32) {
+fn colours_for(m: MemEuler, element_index: u32, path_length: u32) {
     /*
     if Mathematician.isPrime(element_index) {
         m.spectra = red;
@@ -50,7 +48,7 @@ fn colors_for(m: MemEuler, element_index: u32, path_length: u32) {
     */
 }
 
-fn calculate_path(el: &DomainElement) {
+fn calculate_path() {
     /*
     let mut iterator = 0;
     let length = 0;

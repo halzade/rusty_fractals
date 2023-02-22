@@ -6,7 +6,7 @@ use rusty_fractals_common::fractal::{CalculationConfig, FractalMandelbrot};
 use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
 use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::palettes::{ResultConfigMandelbrot};
-use rusty_fractals_common::perfect_color_distribution::perfectly_color_mandelbrot_values;
+use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_mandelbrot_values;
 use crate::{machine, window};
 use crate::window::AppWindow;
 
@@ -38,10 +38,10 @@ impl MachineMandelbrot {
             // calculation
             self.chunk_calculation_mandelbrot(&xy, fractal, &data_image);
             // window refresh
-            window::refresh(&data_image, &app_window);
+            window::refresh_maybe(&data_image, &app_window);
         });
-        perfectly_color_mandelbrot_values(&data_image, &self.palette, &self.palette_zero);
-        window::refresh(&data_image, &app_window);
+        perfectly_colour_mandelbrot_values(&data_image, &self.palette, &self.palette_zero);
+        window::refresh_final(&data_image, &app_window);
     }
 
     fn chunk_calculation_mandelbrot(
@@ -52,7 +52,7 @@ impl MachineMandelbrot {
         let (x_from, x_to, y_from, y_to) = machine::chunk_boundaries(xy, self.area.width_x, self.area.height_y);
         for x in x_from..x_to {
             for y in y_from..y_to {
-                let (_, _, origin_re, origin_im) = data_image.values_at(x, y);
+                let (origin_re, origin_im) = data_image.origin_at(x, y);
                 // calculation
                 let (iterator, quad) = fractal.calculate_mandelbrot_path(self.iteration_max, origin_re, origin_im);
                 let state = state_from_path_length(iterator, iterator, self.iteration_min, self.iteration_max);
