@@ -1,5 +1,4 @@
-use std::ops::DerefMut;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 use image::{ImageBuffer, Rgb, RgbImage};
 use crate::area::Area;
 use crate::constants::NEIGHBOURS;
@@ -14,22 +13,49 @@ pub struct DataImage {
     pub width: usize,
     pub height: usize,
     pub pixels: Vec<Vec<Arc<Mutex<DataPx>>>>,
+    max_value: u32,
 }
 
 impl DataImage {
+    pub fn colour(&self, x: usize, y: usize, palette_colour: Rgb<u8>) {
+        let mut p = self.px_at(x, y);
+        p.colour = Some(palette_colour);
+    }
+
     pub fn image(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+        let mut image = RgbImage::new(self.width as u32, self.height as u32);
+        let mut max = 0;
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let (value, state, _, _, colour_index_o) = self.values_at(x, y);
+                let colour: Rgb<u8>;
+                match colour_index_o {
+                    Some(pixel_colour) => {
+                        colour = pixel_colour;
+                    }
+                    None => {
+                        if state == ActiveNew {
+                            colour = colour_for_state(state);
+                        } else {
+                            if value > max {
+                                max = value;
+                            }
+                            let c: u8 = (value as f64 / max as f64 * 255.0) as u8;
+                            colour = Rgb([c, c, c]);
+                        }
+                    }
+                }
+                image.put_pixel(x as u32, y as u32, colour);
+            }
+        }
+        image
+    }
+
+    pub fn image_init(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
         let mut image = RgbImage::new(self.width as u32, self.height as u32);
         for y in 0..self.height {
             for x in 0..self.width {
-                let (_, state, _, _) = self.values_at(x, y);
-
-                let color;
-                if state == ActiveNew {
-                    color = color_for_state(state);
-                } else {
-                    color = Rgb([155, 50, 200]);
-                }
-                image.put_pixel(x as u32, y as u32, color);
+                image.put_pixel(x as u32, y as u32, colour_for_state(ActiveNew));
             }
         }
         image
@@ -43,49 +69,64 @@ impl DataImage {
     }
 
     fn add(&self, x: usize, y: usize) {
-        let arc = self.pixels.get(x).unwrap().get(y).unwrap();
-        let mut mutex_guard = arc.lock().unwrap();
-        let pd = mutex_guard.deref_mut();
-        pd.value += 1;
+        let mut p = self.px_at(x, y);
+        p.value += 1;
     }
 
-    pub fn values_at(&self, x: usize, y: usize) -> (u32, DomainElementState, f64, f64) {
-        let arc = self.pixels.get(x).unwrap().get(y).unwrap();
-        let mut mutex_guard = arc.lock().unwrap();
-        let pd = mutex_guard.deref_mut();
-        (pd.value, pd.state, pd.quad, pd.quid)
+    fn px_at(&self, x: usize, y: usize) -> MutexGuard<DataPx> {
+        let arc_mutex_dpx = self.pixels.get(x).unwrap().get(y).unwrap();
+        arc_mutex_dpx.lock().unwrap()
+    }
+
+    pub fn values_at(&self, x: usize, y: usize) -> (u32, DomainElementState, f64, f64, Option<Rgb<u8>>) {
+        let p = self.px_at(x, y);
+        (p.value, p.state, p.quad, p.quid, p.colour)
+    }
+
+    pub fn value_state_at(&self, x: usize, y: usize) -> (u32, DomainElementState) {
+        let p = self.px_at(x, y);
+        (p.value, p.state)
+    }
+
+    pub fn value_at(&self, x: usize, y: usize) -> u32 {
+        let p = self.px_at(x, y);
+        p.value
+    }
+
+    pub fn state_origin_at(&self, x: usize, y: usize) -> (DomainElementState, f64, f64) {
+        let p = self.px_at(x, y);
+        (p.state, p.origin_re, p.origin_im)
+    }
+
+    pub fn origin_at(&self, x: usize, y: usize) -> (f64, f64) {
+        let p = self.px_at(x, y);
+        (p.origin_re, p.origin_im)
     }
 
     pub fn set_pixel_mandelbrot(&self, x: usize, y: usize, iterator: u32, quad: f64, state: DomainElementState, max: u32) {
-        let arc = self.pixels.get(x).unwrap().get(y).unwrap();
-        let mut mutex_guard = arc.lock().unwrap();
-        let mrp = mutex_guard.deref_mut();
-
-        mrp.quad = quad;
-        mrp.quid = 1.0 / quad;
-        mrp.state = state;
-
+        let mut p = self.px_at(x, y);
+        p.quad = quad;
+        p.quid = 1.0 / quad;
+        p.state = state;
         if iterator < 1 {
-            mrp.value = 1;
+            p.value = 1;
         } else if iterator == max {
-            mrp.value = 0;
+            p.value = 0;
         } else {
-            mrp.value = iterator
+            p.value = iterator
         }
     }
 
     // for Nebula like fractals
     pub fn set_pixel_state(&self, x: usize, y: usize, state: DomainElementState) {
-        let arc = self.pixels.get(x).unwrap().get(y).unwrap();
-        let mut mutex_guard = arc.lock().unwrap();
-        let mrp = mutex_guard.deref_mut();
-        mrp.quad = 1.0;
-        mrp.quid = 1.0;
-        mrp.state = state;
+        let mut p = self.px_at(x, y);
+        p.quad = 1.0;
+        p.quid = 1.0;
+        p.state = state;
     }
 
     fn past(&self, x: usize, y: usize) {
-        self.pixels[x].get(y).expect("domain_elements problem").lock().unwrap().deref_mut().past();
+        self.px_at(x, y).past();
     }
 
     pub fn recalculate_pixels_states(&self) {
@@ -106,7 +147,7 @@ impl DataImage {
                 let xx = x as i32 + a;
                 let yy = y as i32 + b;
                 if check_domain(xx, yy, self.width, self.height) {
-                    let (_, state, _, _) = self.values_at(xx as usize, yy as usize);
+                    let (_, state) = self.value_state_at(xx as usize, yy as usize);
                     if is_finished_success_past(state) {
                         return true;
                     }
@@ -147,7 +188,7 @@ impl DataImage {
         let mut sum = 0;
         for x in x_from..x_to {
             for y in y_from..y_to {
-                sum += self.pixels[x][y].lock().unwrap().value;
+                sum += self.px_at(x, y).value;
             }
         }
         sum
@@ -180,7 +221,7 @@ impl DataImage {
     }
 }
 
-pub fn init_data_image(area: &Area) -> DataImage {
+pub fn init_data_image(area: &Area, max_value: u32) -> DataImage {
     let width = area.width_x;
     let height = area.height_y;
     let mut vx = Vec::new();
@@ -197,6 +238,7 @@ pub fn init_data_image(area: &Area) -> DataImage {
         width,
         height,
         pixels: vx,
+        max_value,
     }
 }
 
@@ -223,7 +265,7 @@ pub fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
     }
 }
 
-pub fn color_for_state(state: DomainElementState) -> Rgb<u8> {
+pub fn colour_for_state(state: DomainElementState) -> Rgb<u8> {
     match state {
         // most of the elements are going to be FinishedSuccessPast
         FinishedSuccessPast => FINISHED_SUCCESS_PAST,
