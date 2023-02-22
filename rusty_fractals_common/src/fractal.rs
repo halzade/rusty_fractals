@@ -1,7 +1,7 @@
 use crate::area::Area;
 use crate::constants::CALCULATION_BOUNDARY;
+use crate::data_image::DataImage;
 use crate::resolution_multiplier::ResolutionMultiplier;
-use crate::result_data_static::ResultDataStatic;
 
 pub struct CalculationConfig {
     pub iteration_min: u32,
@@ -16,7 +16,7 @@ pub struct AppConfig {
 
 pub trait Fractal: Sync {
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool;
-    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, result_static: &ResultDataStatic) -> (u32, u32);
+    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage) -> (u32, u32);
 }
 
 pub trait FractalMandelbrot: Sync {
@@ -44,7 +44,7 @@ pub fn infinite_orbits(min: u32, max: u32, length: u32, iterator: u32) -> bool {
 }
 
 
-pub fn calculate_path<T: MemType<T>>(fractal: &impl Fractal, fractal_math: &impl FractalMath<T>, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, result_static: &ResultDataStatic) -> (u32, u32) {
+pub fn calculate_path<T: MemType<T>>(fractal: &impl Fractal, fractal_math: &impl FractalMath<T>, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage) -> (u32, u32) {
     let cb = CALCULATION_BOUNDARY as f64;
     let mut m: T = T::new(origin_re, origin_im);
     let mut iterator = 0;
@@ -73,7 +73,7 @@ pub fn calculate_path<T: MemType<T>>(fractal: &impl Fractal, fractal_math: &impl
                 path.push([m.re(), m.im()]);
             }
         }
-        result_static.translate_path_to_point_grid(path, area);
+        data_image.translate_path_to_point_grid(path, area);
         // TODO stats.paths_new_points_amount += path.size();
     }
     (iterator, length)

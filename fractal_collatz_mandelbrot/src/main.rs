@@ -1,12 +1,12 @@
+use std::sync::{Arc, Mutex};
+use std::thread;
+use rusty_fractals_core::{machine_mandelbrot, window};
 use rusty_fractals_common::area::AreaConfig;
-use rusty_fractals_common::fractal;
+use rusty_fractals_common::{data_image, fractal};
 use rusty_fractals_common::fractal::{CalculationConfig, FractalMandelbrot, FractalMath};
 use rusty_fractals_common::mem_collatz::MemCollatz;
+use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, palette_gray_to_blue, ResultConfigMandelbrot};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Single;
-use rusty_fractals_core::{machine, window};
-use rusty_fractals_core::machine::MachineMandelbrot;
-use rusty_fractals_result::palettes::{palette_blue_to_white_circle_up, palette_gray_to_blue};
-use rusty_fractals_result::result::ResultConfigMandelbrot;
 
 struct CollatzConjectureMandelbrot {}
 
@@ -47,10 +47,20 @@ fn main() {
     };
 
     let collatz = CollatzConjectureMandelbrot {};
-    let machine: MachineMandelbrot = machine::init_for_mandelbrot(&calculation_config, &result_config, &area_config);
-    let (domain_image, result_image) = machine.calculate_mandelbrot(&collatz);
+    let machine = machine_mandelbrot::init(&calculation_config, result_config, &area_config);
+    let data_image = data_image::init_data_image(machine.area());
+    let initial_image = data_image.image();
 
-    window::show(name, domain_image, &result_image);
+    // rendering must be done from main thread
+    let mut app_window = window::init(name, WIDTH, HEIGHT);
+    let app = app_window.show(&initial_image.as_raw(), WIDTH, HEIGHT);
+    let mutex_window = Arc::new(Mutex::new(app_window));
+
+    thread::spawn(move || {
+        machine.calculate_mandelbrot(&collatz, &data_image, mutex_window);
+    });
+    app.run().unwrap();
+    println!("end.");
 }
 
 #[cfg(test)]

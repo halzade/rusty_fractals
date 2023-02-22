@@ -1,42 +1,67 @@
+use std::borrow::BorrowMut;
+use std::sync::{Arc, Mutex};
 use ColorDepth::Rgb8;
 use fltk::{frame::Frame, prelude::*, window::Window};
 use fltk::app::{App, event_key};
 use fltk::enums::{ColorDepth, Event, Key};
 use fltk::image::RgbImage;
 use fltk::window::DoubleWindow;
+use rusty_fractals_common::data_image::DataImage;
 
-pub fn show(fractal_name: &'static str, domain_image: image::RgbImage, result_image: &image::RgbImage) {
-    let width = domain_image.width() as i32;
-    let height = domain_image.height() as i32;
-
-    let app = App::default();
-    let mut window_domain = make_window(fractal_name, app, width, height, domain_image);
-    let mut window_result = make_window(fractal_name, app, width, height, result_image.clone());
-
-    window_domain.show();
-    window_result.show();
-    app.run().unwrap();
+pub struct AppWindow {
+    pub window: DoubleWindow,
+    pub frame: Frame,
 }
 
-fn make_window(fractal_name: &'static str, app: App, width: i32, height: i32, image: image::RgbImage) -> DoubleWindow {
-    let image_rgb = RgbImage::new(&image.into_raw(), width, height, Rgb8).unwrap();
+pub fn init(fractal_name: &'static str, width: usize, height: usize) -> AppWindow {
+    AppWindow {
+        window: Window::default().with_label(fractal_name).with_size(width as i32, height as i32).center_screen(),
+        frame: Frame::new(0, 0, width as i32, height as i32, ""),
+    }
+}
 
-    let mut window = Window::default().with_label(fractal_name).with_size(width, height).center_screen();
-    let mut frame = Frame::new(0, 0, width, height, "");
-    frame.set_image(Some(image_rgb));
-    window.add(&frame);
-    window.handle(move |_, event| match event {
-        Event::KeyDown => {
-            if event_key() == Key::Escape {
-                println!("exit");
-                app.quit();
-                true
-            } else {
-                false
+impl AppWindow {
+    pub fn show(&mut self, initial_image: &Vec<u8>, width: usize, height: usize) -> App {
+        let app = App::default();
+        let image_rgb = RgbImage::new(initial_image, width as i32, height as i32, Rgb8).unwrap();
+        self.frame.set_image(Some(image_rgb));
+        self.window.add(&self.frame);
+        println!("a");
+        self.window.handle(move |_, event| match event {
+            Event::KeyDown => {
+                let ek = event_key();
+                if ek == Key::Escape {
+                    println!("exit");
+                    app.quit();
+                    true
+                } else if ek == Key::IsoKey {
+                    println!("pressed {}", ek.to_char().unwrap());
+                    true
+                } else {
+                    println!("key {}", ek.to_char().unwrap());
+                    false
+                }
             }
-        }
-        _ => false,
-    });
-    window.end();
-    window
+            _ => false,
+        });
+        self.window.end();
+        self.window.show();
+        app
+    }
+
+    pub fn refresh(&mut self, data_image: &DataImage) {
+        let image_rgb = RgbImage::new(data_image.image().as_raw(), data_image.width as i32, data_image.height as i32, Rgb8).unwrap();
+        self.frame.set_image(Some(image_rgb));
+        self.window.redraw();
+    }
 }
+
+pub fn refresh(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>) {
+    let mut mutex_guard = arc_mutex_window.lock().unwrap();
+    let mut app_window = mutex_guard.borrow_mut();
+    let image_rgb = RgbImage::new(data_image.image().as_raw(), data_image.width as i32, data_image.height as i32, Rgb8).unwrap();
+    app_window.frame.set_image(Some(image_rgb));
+    app_window.window.redraw();
+    app_window.refresh(&data_image);
+}
+
