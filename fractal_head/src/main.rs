@@ -1,16 +1,16 @@
-use std::sync::{Arc, Mutex};
-use std::thread;
-use rusty_fractals_core::{machine, window};
+use rusty_fractals_core::machine;
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::constants::{PHOENIX_INIT_C, PHOENIX_INIT_P};
 use rusty_fractals_common::data_image::DataImage;
-use rusty_fractals_common::{data_image, fractal};
+use rusty_fractals_common::fractal;
 use rusty_fractals_common::fractal::{CalculationConfig, Fractal, FractalMath};
 use rusty_fractals_common::mem_phoenix::MemPhoenix;
 use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, ResultConfig};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square9;
 
-struct Head {}
+struct Head {
+    name: &'static str,
+}
 
 impl FractalMath<MemPhoenix> for Head {
     fn math(&self, mp: &mut MemPhoenix, origin_re: f64, origin_im: f64) {
@@ -37,11 +37,12 @@ impl Fractal for Head {
     fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data: &DataImage) -> (u32, u32) {
         fractal::calculate_path(self, self, area, iteration_min, iteration_max, origin_re, origin_im, data)
     }
+    fn name(&self) -> &'static str {
+        self.name
+    }
 }
 
 fn main() {
-    let name = "Head";
-
     const WIDTH: usize = 1280;
     const HEIGHT: usize = 720;
 
@@ -61,18 +62,8 @@ fn main() {
         palette: palette_blue_to_white_circle_up(),
     };
 
-    let head = Head {};
-    let machine = machine::init(&calculation_config, result_config, &area_config);
-
-    let data_image = data_image::init_data_image(machine.area());
-    let mut app_window = window::init(name, WIDTH, HEIGHT);
-    let app = app_window.show(&data_image.image_init().as_raw(), WIDTH, HEIGHT);
-    let mutex_window = Arc::new(Mutex::new(app_window));
-
-    thread::spawn(move || {
-        machine.calculate(&head, &data_image, mutex_window);
-    });
-    app.run().unwrap();
+    let head = &Head { name: "Head" };
+    machine::nebula_calculation_for(head, WIDTH, HEIGHT, calculation_config, result_config, area_config);
 }
 
 #[cfg(test)]
@@ -85,7 +76,7 @@ mod tests {
 
     #[test]
     fn test_math() {
-        let head = Head {};
+        let head = &Head { name: "Head" };
         let mut mp = MemPhoenix { m: Mem { re: 0.0, im: 0.0 }, prev_prev_re: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_prev_im: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_re: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_im: PHOENIX_INIT_PHOENIX_INITIALIZER };
         head.math(&mut mp, 1.0, 0.1);
         assert_eq!(mp.re(), 1.1);

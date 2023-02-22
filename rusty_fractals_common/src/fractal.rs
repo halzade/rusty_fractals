@@ -1,4 +1,4 @@
-use crate::area::Area;
+use crate::area::{Area};
 use crate::constants::CALCULATION_BOUNDARY;
 use crate::data_image::DataImage;
 use crate::resolution_multiplier::ResolutionMultiplier;
@@ -17,10 +17,12 @@ pub struct AppConfig {
 pub trait Fractal: Sync {
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool;
     fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage) -> (u32, u32);
+    fn name(&self) -> &'static str;
 }
 
 pub trait FractalMandelbrot: Sync {
     fn calculate_mandelbrot_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64);
+    fn name(&self) -> &'static str;
 }
 
 pub trait MemType<T> {

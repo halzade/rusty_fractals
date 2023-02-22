@@ -1,15 +1,17 @@
-use std::sync::{Arc, Mutex};
-use std::thread;
-use rusty_fractals_core::{machine, window};
+use rusty_fractals_core::{machine};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::fractal::{CalculationConfig, Fractal, FractalMath};
-use rusty_fractals_common::{data_image, fractal};
+use rusty_fractals_common::fractal;
 use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, ResultConfig};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square9;
 
-struct Nebula {}
+struct Nebula {
+    name: &'static str,
+}
+
+impl Nebula {}
 
 impl FractalMath<Mem> for Nebula {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
@@ -25,11 +27,12 @@ impl Fractal for Nebula {
     fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data: &DataImage) -> (u32, u32) {
         fractal::calculate_path(self, self, area, iteration_min, iteration_max, origin_re, origin_im, data)
     }
+    fn name(&self) -> &'static str {
+        self.name
+    }
 }
 
 fn main() {
-    let name = "Nebula";
-
     const WIDTH: usize = 1280;
     const HEIGHT: usize = 1000;
 
@@ -48,24 +51,14 @@ fn main() {
     let result_config = ResultConfig {
         palette: palette_blue_to_white_circle_up(),
     };
-
-    let nebula = Nebula {};
-    let machine = machine::init(&calculation_config, result_config, &area_config);
-
-    let data_image = data_image::init_data_image(machine.area());
-    let mut app_window = window::init(name, WIDTH, HEIGHT);
-    let app = app_window.show(&data_image.image_init().as_raw(), WIDTH, HEIGHT);
-    let mutex_window = Arc::new(Mutex::new(app_window));
-
-    thread::spawn(move || {
-        machine.calculate(&nebula, &data_image, mutex_window);
-    });
-    app.run().unwrap();
+    // nebula must be a reference so that it isn't dropped, when borrowed by nebula_calculation_for()
+    let nebula = &Nebula { name: "Nebula" };
+    machine::nebula_calculation_for(nebula, WIDTH, HEIGHT, calculation_config, result_config, area_config);
 }
 
 #[test]
 fn test_math() {
-    let nebula = Nebula {};
+    let nebula = Nebula { name: "Nebula" };
     let mut m = Mem { re: 0.0, im: 0.0 };
     nebula.math(&mut m, 1.0, 0.1);
     assert_eq!(m.re, 1.0);

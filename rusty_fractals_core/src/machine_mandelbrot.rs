@@ -1,6 +1,7 @@
 use std::sync::{Arc, Mutex};
+use std::thread;
 use rayon::prelude::*;
-use rusty_fractals_common::area;
+use rusty_fractals_common::{area, data_image};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::fractal::{CalculationConfig, FractalMandelbrot};
 use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
@@ -28,6 +29,28 @@ pub fn init(calculation_config: &CalculationConfig, result_config: ResultConfigM
         palette: result_config.palette,
         palette_zero: result_config.palette_zero,
     }
+}
+
+pub fn mandelbrot_calculation_for(
+    fractal: &'static impl FractalMandelbrot,
+    width: usize,
+    height: usize,
+    calculation_config: CalculationConfig,
+    result_config: ResultConfigMandelbrot,
+    area_config: AreaConfig,
+) {
+    let machine = init(&calculation_config, result_config, &area_config);
+    let data_image = data_image::init_data_image(machine.area());
+
+    // let name2 = *name.clone();
+    let mut app_window = window::init(fractal.name(), width, height);
+    let app = app_window.show(&data_image.image_init().as_raw(), width, height);
+    let mutex_window = Arc::new(Mutex::new(app_window));
+
+    thread::spawn(move || {
+        machine.calculate_mandelbrot(fractal, &data_image, mutex_window);
+    });
+    app.run().unwrap();
 }
 
 impl MachineMandelbrot {
