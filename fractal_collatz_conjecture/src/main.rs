@@ -1,13 +1,12 @@
-use rusty_fractals_core::{machine, window};
-use rusty_fractals_core::machine::Machine;
-use rusty_fractals_common::area::{Area, AreaConfig};
-use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{CalculationConfig, Fractal, FractalMath};
+use std::sync::{Arc, Mutex};
+use std::thread;
+use rusty_fractals_core::{machine_mandelbrot, window};
+use rusty_fractals_common::area::{AreaConfig};
+use rusty_fractals_common::{data_image, fractal};
+use rusty_fractals_common::fractal::{CalculationConfig, FractalMandelbrot, FractalMath};
 use rusty_fractals_common::mem_collatz::MemCollatz;
+use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, palette_gray_to_blue, ResultConfigMandelbrot};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square3;
-use rusty_fractals_common::result_data_static::ResultDataStatic;
-use rusty_fractals_result::palettes::palette_blue_to_white_circle_up;
-use rusty_fractals_result::result::ResultConfig;
 
 struct CollatzConjecture {}
 
@@ -19,20 +18,17 @@ impl FractalMath<MemCollatz> for CollatzConjecture {
     }
 }
 
-impl Fractal for CollatzConjecture {
-    fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
-        fractal::finite_orbits(min, max, length, iterator)
-    }
-    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, result_static: &ResultDataStatic) -> (u32, u32) {
-        fractal::calculate_path(self, self, area, iteration_min, iteration_max, origin_re, origin_im, result_static)
+impl FractalMandelbrot for CollatzConjecture {
+    fn calculate_mandelbrot_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
+        fractal::calculate_mandelbrot_path(self, iteration_max, origin_re, origin_im)
     }
 }
 
 fn main() {
     let name = "Collatz Conjecture";
 
-    const WIDTH: usize = 600; // 1280
-    const HEIGHT: usize = 600; // 720
+    const WIDTH: usize = 1280;
+    const HEIGHT: usize = 720;
 
     let calculation_config = CalculationConfig {
         iteration_min: 42,
@@ -46,16 +42,23 @@ fn main() {
         width_x: WIDTH,
         height_y: HEIGHT,
     };
-    let result_config = ResultConfig {
+    let result_config = ResultConfigMandelbrot {
         palette: palette_blue_to_white_circle_up(),
+        palette_zero: palette_gray_to_blue(),
     };
 
     let collatz = CollatzConjecture {};
-    let machine: Machine = machine::init(&calculation_config, &result_config, &area_config);
-    // TODO Mandelbrot type calculation
-    let (domain_image, result_image) = machine.calculate(&collatz);
+    let machine = machine_mandelbrot::init(&calculation_config, result_config, &area_config);
 
-    window::show(name, domain_image, &result_image);
+    let data_image = data_image::init_data_image(machine.area());
+    let mut app_window = window::init(name, WIDTH, HEIGHT);
+    let app = app_window.show(&data_image.image_init().as_raw(), WIDTH, HEIGHT);
+    let mutex_window = Arc::new(Mutex::new(app_window));
+
+    thread::spawn(move || {
+        machine.calculate_mandelbrot(&collatz, &data_image, mutex_window);
+    });
+    app.run().unwrap();
 }
 
 

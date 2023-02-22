@@ -87,23 +87,23 @@ Make a fine fractal from Riemann Zeta function and zoom into -1/12
 
 ## Java to Rust refactoring
 
-fractal_collatz_conjecture   
+fractal_collatz_conjecture -    
 
 fractal_collatz_mandelbrot - **static image**   
 
-fractal_euler   
+fractal_euler -
 
-fractal_fat_star - **broken infinite orbits** 
+fractal_fat_star - broken infinite orbits 
 
-fractal_fat_star_magnific   
+fractal_fat_star_magnific -
 
-fractal_fat_star_tentacle      
+fractal_fat_star_tentacle -
 
 fractal_head - **static image**     
 
-fractal_infinity - **broken infinite orbits**
+fractal_infinity - broken infinite orbits
 
-fractal_infinity_top   
+fractal_infinity_top -
 
 fractal_lotus - **static image**   
 

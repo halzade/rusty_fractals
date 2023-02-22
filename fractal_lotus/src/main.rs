@@ -1,12 +1,13 @@
+use std::sync::{Arc, Mutex};
+use std::thread;
 use rusty_fractals_core::{machine, window};
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::area::{Area, AreaConfig};
-use rusty_fractals_common::fractal;
+use rusty_fractals_common::data_image::DataImage;
+use rusty_fractals_common::{data_image, fractal};
 use rusty_fractals_common::fractal::{CalculationConfig, Fractal, FractalMath};
+use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, ResultConfig};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square11;
-use rusty_fractals_common::result_data_static::ResultDataStatic;
-use rusty_fractals_result::palettes::{palette_blue_to_white_circle_up};
-use rusty_fractals_result::result::ResultConfig;
 
 struct Lotus {}
 
@@ -23,8 +24,8 @@ impl Fractal for Lotus {
         fractal::finite_orbits(min, max, length, iterator)
     }
 
-    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, result_static: &ResultDataStatic) -> (u32, u32) {
-        fractal::calculate_path(self, self, area, iteration_min, iteration_max, origin_re, origin_im, result_static)
+    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data: &DataImage) -> (u32, u32) {
+        fractal::calculate_path(self, self, area, iteration_min, iteration_max, origin_re, origin_im, data)
     }
 }
 
@@ -51,10 +52,17 @@ fn main() {
     };
 
     let lotus = Lotus {};
-    let machine = machine::init(&calculation_config, &result_config, &area_config);
-    let (domain_image, result_image) = machine.calculate(&lotus);
+    let machine = machine::init(&calculation_config, result_config, &area_config);
 
-    window::show(name, domain_image, &result_image);
+    let data_image = data_image::init_data_image(machine.area());
+    let mut app_window = window::init(name, WIDTH, HEIGHT);
+    let app = app_window.show(&data_image.image_init().as_raw(), WIDTH, HEIGHT);
+    let mutex_window = Arc::new(Mutex::new(app_window));
+
+    thread::spawn(move || {
+        machine.calculate(&lotus, &data_image, mutex_window);
+    });
+    app.run().unwrap();
 }
 
 #[cfg(test)]
