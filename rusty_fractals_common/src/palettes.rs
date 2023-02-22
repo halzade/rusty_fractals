@@ -10,6 +10,16 @@ const RED: Rgb<u8> = Rgb([255, 0, 0]);
 const GREEN: Rgb<u8> = Rgb([0, 255, 0]);
 const BLUE: Rgb<u8> = Rgb([0, 0, 255]);
 
+pub struct ResultConfig {
+    pub palette: Palette,
+}
+
+pub struct ResultConfigMandelbrot {
+    pub palette: Palette,
+    // to color insides of mandelbrot set
+    pub palette_zero: Palette,
+}
+
 pub enum Function { Linear1, Linear3, Linear7, Quadratic, Exp, Exp2, CircleDown, CircleUp }
 
 pub fn palette_black_to_white_exp2() -> Palette {
