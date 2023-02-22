@@ -223,7 +223,6 @@ version = "0.1.0"
 dependencies = [
  "rusty_fractals_common",
  "rusty_fractals_core",
- "rusty_fractals_domain",
 ]
 
 [[package]]
@@ -578,10 +577,6 @@ dependencies = [
  "rgb",
  "rusty_fractals_common",
 ]
-
-[[package]]
-name = "rusty_fractals_domain"
-version = "0.1.0"
 
 [[package]]
 name = "scoped_threadpool"
