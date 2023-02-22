@@ -13,7 +13,6 @@ use rusty_fractals_common::data_image::DataImage;
 pub struct AppWindow {
     pub window: DoubleWindow,
     pub frame: Frame,
-    // refresh_time : Mutex<SystemTime>
     refresh_time: SystemTime,
 }
 
@@ -38,12 +37,9 @@ impl AppWindow {
                     println!("exit");
                     app.quit();
                     true
-                } else if ek == Key::IsoKey {
-                    println!("pressed {}", ek.to_char().unwrap());
-                    true
                 } else {
                     println!("key {}", ek.to_char().unwrap());
-                    false
+                    true
                 }
             }
             _ => false,
@@ -58,18 +54,15 @@ impl AppWindow {
             Ok(n) =>
                 if n.as_millis() > 300 {
                     self.refresh_time = SystemTime::now();
-                    println!("since in ms: {}", n.as_millis());
-
+                    println!("since last refresh ms: {}", n.as_millis());
                     let image_rgb = RgbImage::new(data_image.image().as_raw(), data_image.width as i32, data_image.height as i32, Rgb8).unwrap();
+                    let _ = fltk::app::lock();
                     self.frame.set_image(Some(image_rgb));
-                    self.window.draw_children();
-                    self.frame.redraw();
-                    self.window.redraw();
-                    self.window.flush();
-                } else {
-                    println!("skip refresh");
+                    let _ = fltk::app::unlock();
+                    fltk::app::awake();
+                    fltk::app::redraw();
                 },
-            Err(_) => panic!("refresh_maybe() error"),
+            Err(_) => panic!("refresh() error"),
         }
     }
 }
@@ -81,11 +74,8 @@ pub fn refresh_maybe(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWin
 }
 
 pub fn refresh_final(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>) {
-    println!("refresh final");
     sleep(Duration::new(0, 100_000_000));
-    println!("refresh final go");
     let mut mutex_guard = arc_mutex_window.lock().unwrap();
     let app_window = mutex_guard.borrow_mut();
     app_window.refresh(&data_image);
-    println!("refresh final done");
 }
