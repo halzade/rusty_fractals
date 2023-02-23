@@ -1,24 +1,11 @@
-use rusty_fractals_common::area::Area;
+use rusty_fractals_core::machine;
+use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
-use rusty_fractals_common::fractal::{Fractal, FractalMath};
+use rusty_fractals_common::fractal;
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
+use rusty_fractals_common::fractal::{CalculationConfig, Fractal, FractalMath};
+use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, ResultConfig};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Single;
-
-const ITERATION_MAX: u32 = 180_000;
-const ITERATION_MIN: u32 = 3000;
-const AREA_SIZE: f64 = 2.5;
-const TARGET_RE: f64 = -0.5;
-const TARGET_IM: f64 = 0.0;
-// INIT_FINEBROT_AREA_SIZE = 1.8;
-// INIT_FINEBROT_TARGET_re = -1.0;
-// INIT_FINEBROT_TARGET_im = 0.0;
-const RESOLUTION_WIDTH: u32 = 1920;
-const RESOLUTION_HEIGHT: u32 = 1080;
-const RESOLUTION_MULTIPLIER: ResolutionMultiplier = Single;
-const REPEAT: bool = false;
-const SAVE_IMAGES: bool = false;
-// const PALETTE: Palette = palette_black_to_white_exp2();
 
 struct InfinityTop {
     name: &'static str,
@@ -33,10 +20,10 @@ impl FractalMath<Mem> for InfinityTop {
 
 impl Fractal for InfinityTop {
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
-        todo!()
+        fractal::infinite_orbits(min, max, length, iterator)
     }
-    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage) -> (u32, u32) {
-        todo!()
+    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data: &DataImage) -> (u32, u32) {
+        fractal::calculate_path(self, self, area, iteration_min, iteration_max, origin_re, origin_im, data)
     }
     fn name(&self) -> &'static str {
         self.name
@@ -44,7 +31,31 @@ impl Fractal for InfinityTop {
 }
 
 fn main() {
+    const WIDTH: usize = 800; // 1920
+    const HEIGHT: usize = 800; // 1080
+
+    let calculation_config = CalculationConfig {
+        iteration_min: 3000,
+        iteration_max: 30_000, // 180_000
+        resolution_multiplier: Single,
+    };
     // TODO
+    // INIT_FINEBROT_AREA_SIZE = 1.8;
+    // INIT_FINEBROT_TARGET_re = -1.0;
+    // INIT_FINEBROT_TARGET_im = 0.0;
+    let area_config = AreaConfig {
+        width_re: 2.5,
+        center_re: -0.5,
+        center_im: 0.0,
+        width_x: WIDTH,
+        height_y: HEIGHT,
+    };
+    let result_config = ResultConfig {
+        palette: palette_blue_to_white_circle_up(),
+    };
+
+    let infinity = &InfinityTop { name: "Infinity" };
+    machine::nebula_calculation_for(infinity, WIDTH, HEIGHT, calculation_config, result_config, area_config);
 }
 
 

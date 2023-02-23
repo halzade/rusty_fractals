@@ -97,15 +97,15 @@ fractal_euler -
 
 fractal_fat_star - broken infinite orbits 
 
-fractal_fat_star_magnific -
+fractal_fat_star_magnific - partial image
 
-fractal_fat_star_tentacle -
+fractal_fat_star_tentacle - partial image
 
 fractal_head - **static image**     
 
 fractal_infinity - broken infinite orbits
 
-fractal_infinity_top -
+fractal_infinity_top - partial image
 
 fractal_lotus - **static image**   
 
