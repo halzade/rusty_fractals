@@ -23,7 +23,7 @@ impl DataImage {
         p.colour = Some(palette_colour);
     }
 
-    pub fn image(&self, final_image: bool) -> Vec<u8>  {
+    pub fn image(&self, final_image: bool) -> Vec<u8> {
         return if final_image {
             self.image_result()
         } else {

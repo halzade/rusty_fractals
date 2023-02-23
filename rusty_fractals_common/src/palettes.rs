@@ -2,7 +2,7 @@ use crate::palette::Palette;
 use crate::palette::Palette3;
 use crate::palette_utils::make_spectrum;
 use image::Rgb;
-use crate::palettes::Function::{CircleDown, CircleUp, Exp2};
+use crate::palettes::Function::{CircleDown, CircleUp, Exp2, Linear1};
 
 const WHITE: Rgb<u8> = Rgb([255, 255, 255]);
 const BLACK: Rgb<u8> = Rgb([0, 0, 0]);
@@ -28,9 +28,18 @@ pub fn palette_black_to_white_exp2() -> Palette {
     }
 }
 
+pub fn palette_bwb() -> Palette {
+    let mut black_to_white_work = make_spectrum(Linear1, BLACK, WHITE);
+    let mut white_to_black = make_spectrum(Linear1, WHITE, BLACK);
+    black_to_white_work.append(&mut white_to_black);
+    Palette {
+        spectrum: black_to_white_work
+    }
+}
+
 pub fn palette_blue_to_white_circle_up() -> Palette {
     Palette {
-        spectrum: make_spectrum(CircleUp, Rgb([4, 13, 33]), Rgb([255, 255, 255]))
+        spectrum: make_spectrum(CircleUp, Rgb([4, 13, 33]), WHITE)
     }
 }
 

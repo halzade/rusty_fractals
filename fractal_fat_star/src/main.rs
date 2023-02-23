@@ -53,6 +53,7 @@ fn main() {
     };
 
     let fat_star = &FatStar { name: "Fat Star" };
+    // TODO coloring based on path length
     machine::nebula_calculation_for(fat_star, WIDTH, HEIGHT, calculation_config, result_config, area_config);
 }
 

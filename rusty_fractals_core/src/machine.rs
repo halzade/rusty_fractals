@@ -1,5 +1,6 @@
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::time::SystemTime;
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
@@ -44,29 +45,25 @@ pub fn nebula_calculation_for(
 ) {
     let machine = init(&calculation_config, result_config, &area_config);
     let data_image = data_image::init_data_image(machine.area());
-
-    // let name2 = *name.clone();
     let mut app_window = window::init(fractal.name(), width, height);
     let app = app_window.show(&data_image.image_init(), width, height);
     let mutex_window = Arc::new(Mutex::new(app_window));
-
     thread::spawn(move || {
         machine.calculate(fractal, &data_image, mutex_window);
     });
     app.run().unwrap();
 }
 
-
 impl Machine {
     pub fn calculate(&self, fractal: &impl Fractal, data_image: &DataImage, app_window: Arc<Mutex<AppWindow>>) {
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
-
+        let refresh_locker = &Arc::new(Mutex::new(SystemTime::now()));
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
             self.chunk_calculation(&xy, fractal, &data_image);
             // window refresh
-            window::refresh_maybe(data_image, &app_window);
+            window::refresh_maybe(data_image, &app_window, refresh_locker);
         });
         data_image.recalculate_pixels_states();
 

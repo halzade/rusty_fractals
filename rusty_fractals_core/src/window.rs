@@ -1,4 +1,5 @@
 use std::borrow::BorrowMut;
+use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 use fltk::{frame::Frame, prelude::*, window::Window};
@@ -66,10 +67,15 @@ impl AppWindow {
     }
 }
 
-pub fn refresh_maybe(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>) {
-    let mut mutex_guard = arc_mutex_window.lock().unwrap();
-    let app_window = mutex_guard.borrow_mut();
-    app_window.refresh(data_image, false);
+pub fn refresh_maybe(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>, refresh_locker: &Arc<Mutex<SystemTime>>) {
+    let ms = SystemTime::now().duration_since(*refresh_locker.lock().unwrap()).unwrap().as_millis();
+    if ms > 300 {
+        let mut mutex_guard = arc_mutex_window.lock().unwrap();
+        let app_window = mutex_guard.borrow_mut();
+        // refresh window
+        app_window.refresh(data_image, false);
+        *refresh_locker.lock().unwrap().deref_mut() = SystemTime::now();
+    }
 }
 
 pub fn refresh_final(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>) {
