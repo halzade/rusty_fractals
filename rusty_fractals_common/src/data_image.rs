@@ -19,7 +19,7 @@ static MAX_VALUE: Mutex<u32> = Mutex::new(0);
 
 impl DataImage {
     pub fn colour(&self, x: usize, y: usize, palette_colour: Rgb<u8>) {
-        let mut p = self.px_at(x, y);
+        let mut p = self.mpx_at(x, y);
         p.colour = Some(palette_colour);
     }
 
@@ -83,17 +83,22 @@ impl DataImage {
 
     pub fn translate_path_to_point_grid(&self, path: Vec<[f64; 2]>, area: &Area) {
         for [re, im] in path {
-            let (x, y) = area.domain_point_to_result_pixel(re, im);
+            let (x, y) = area.point_to_pixel(re, im);
             self.add(x, y);
         }
     }
 
     fn add(&self, x: usize, y: usize) {
-        let mut p = self.px_at(x, y);
+        let mut p = self.mpx_at(x, y);
         p.value += 1;
     }
 
-    fn px_at(&self, x: usize, y: usize) -> MutexGuard<DataPx> {
+    fn px_at(&self, x: usize, y: usize) -> DataPx {
+        let arc_mutex_dpx = self.pixels.get(x).unwrap().get(y).unwrap();
+        *arc_mutex_dpx.lock().unwrap()
+    }
+
+    fn mpx_at(&self, x: usize, y: usize) -> MutexGuard<DataPx> {
         let arc_mutex_dpx = self.pixels.get(x).unwrap().get(y).unwrap();
         arc_mutex_dpx.lock().unwrap()
     }
@@ -124,7 +129,7 @@ impl DataImage {
     }
 
     pub fn set_pixel_mandelbrot(&self, x: usize, y: usize, iterator: u32, quad: f64, state: DomainElementState, max: u32) {
-        let mut p = self.px_at(x, y);
+        let mut p = self.mpx_at(x, y);
         p.quad = quad;
         p.quid = 1.0 / quad;
         p.state = state;
@@ -139,7 +144,7 @@ impl DataImage {
 
     // for Nebula like fractals
     pub fn set_pixel_state(&self, x: usize, y: usize, state: DomainElementState) {
-        let mut p = self.px_at(x, y);
+        let mut p = self.mpx_at(x, y);
         p.quad = 1.0;
         p.quid = 1.0;
         p.state = state;
@@ -240,6 +245,122 @@ impl DataImage {
         }
         ret
     }
+
+    // This is called after calculation finished, zoom was called and new area measures recalculated
+    pub fn recalculate_pixels_positions_for_this_zoom(&mut self, area: &Area) {
+        // Scan all elements : old positions from previous calculation
+        // Some elements will be moved to new positions
+        // For all the moved elements, subsequent calculations will be skipped.
+
+        let mut elements_to_move = Vec::new();
+
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let px = self.px_at(x as usize, y as usize);
+                // There was already zoom in, the new area is smaller
+                if area.contains(px.origin_re, px.origin_im) {
+                    // Element did not move out of the zoomed in area
+                    elements_to_move.push(px);
+                }
+            }
+        }
+
+        self.pixels.clear();
+
+        // If there is a conflict, two or more points moved to same pixel,don't drop conflicts around
+        // Simply calculate new elements in the next calculation iteration. Because that would create really bad mess.
+
+        let mut temp_vx: Vec<Vec<Option<DataPx>>> = Vec::new();
+        for _ in 0..self.width {
+            let mut vy = Vec::new();
+            for _ in 0..self.height {
+                vy.push(None);
+            }
+            temp_vx.push(vy);
+        }
+
+        for px in elements_to_move {
+            // translate [px,py] to [re,im]
+            let (x, y) = area.point_to_pixel(*&px.origin_re, *&px.origin_im);
+
+            let filled_already_o = tpx_at(&temp_vx, x, y);
+            match filled_already_o {
+                // conflict
+                Some(conf) => {
+                    if conf.has_worse_state_then(&px) {
+                        // Replace by element with better state
+                        // Better to delete the other one, then to drop it to other empty pixel.
+                        // That would cause problem with optimization, better calculate new and shiny pixel
+                        let mut _old = tpx_at(&temp_vx, x, y);
+                        let new: Option<DataPx> = Some(px);
+                        _old = new;
+                    }
+                }
+                // Excellent, there is no conflict
+                None => {
+                    let new: Option<DataPx> = Some(px);
+                    let mut _non = tpx_at(&temp_vx, x, y);
+                    _non = new;
+                }
+            }
+        }
+
+        // Repaint with only moved elements
+        // TODO refresh
+
+        // Create new elements on positions where nothing was moved to
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let el_o = tpx_at(&temp_vx, x, y);
+                match el_o {
+                    Some(mut el) => {
+                        // Mark it as element from previous calculation iteration
+                        let mut mpx = self.mpx_at(x, y);
+                        *mpx = el;
+                        el.past();
+                    }
+                    None => {
+                        let re = area.screen_to_domain_re(x);
+                        let im = area.screen_to_domain_im(y);
+                        if self.all_neighbors_finished_too_long(x, y) {
+                            // Calculation for some positions should be skipped as they are too far away form any long successful divergent position
+                            let el = data_px::hibernated_deep_black(re, im);
+                            let mut mpx = self.mpx_at(x, y);
+                            *mpx = el;
+                        } else {
+                            let el = data_px::active_new(re, im);
+                            let mut mpx = self.mpx_at(x, y);
+                            *mpx = el;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Verify if any neighbor px,py finished well, long or at least too short.
+    // This method identifies deep black convergent elements of Mandelbrot set interior.
+    // Don't do any calculation for those.
+    fn all_neighbors_finished_too_long(&mut self, x: usize, y: usize) -> bool {
+        let neigh = NEIGHBOURS as i32;
+        for a in -neigh..neigh {
+            for b in -neigh..neigh {
+                let xx = x as i32 + a;
+                let yy = y as i32 + b;
+                if check_domain(xx, yy, self.width, self.height) {
+                    let el = self.px_at(xx as usize, yy as usize);
+                    if el.is_finished_success_any() || el.is_finished_too_short() {
+                        return false;
+                    }
+                }
+            }
+        }
+        true
+    }
+}
+
+fn tpx_at(vec: &Vec<Vec<Option<DataPx>>>, x: usize, y: usize) -> Option<DataPx> {
+    *vec.get(x).unwrap().get(y).unwrap()
 }
 
 pub fn init_data_image(area: &Area) -> DataImage {

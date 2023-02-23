@@ -61,13 +61,5 @@ fn run() {
             PathsFinebrot.addEscapePathLong(path);
         }
     }
-    if lastMandelbrotRefresh + 97 < currentTimeMillis() {
-        // Handle refresh with calculation progress for all the threads
-
-        lastMandelbrotRefresh = currentTimeMillis();
-
-        MaskMandelbrot.maskFullUpdate();
-        Application.repaintMaskMandelbrotWindow();
-    }
     */
 }

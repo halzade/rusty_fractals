@@ -1,7 +1,8 @@
 use image::Rgb;
-use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK};
+use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooShort, HibernatedDeepBlack};
 
+#[derive(Clone, Copy)]
 pub struct DataPx {
     pub origin_re: f64,
     pub origin_im: f64,
@@ -41,20 +42,12 @@ impl DataPx {
         }
     }
 
-    pub fn has_worse_state_then(&self, other: DataPx) -> bool {
+    pub fn has_worse_state_then(&self, other: &DataPx) -> bool {
         self.state.cmp(&other.state).is_gt()
     }
 
     pub fn set_finished_state(&mut self, state: DomainElementState) {
         self.state = state;
-    }
-
-    fn colour(&self) -> Option<Rgb<u8>> {
-        self.colour
-    }
-
-    fn set_colour(&mut self, palette_colour: Rgb<u8>) {
-        self.colour = Some(palette_colour);
     }
 
     pub fn set_average_with(&mut self, other: DataPx) {
@@ -74,20 +67,6 @@ pub fn init(origin_re: f64, origin_im: f64) -> DataPx {
     }
 }
 
-pub fn colour_for_state(state: DomainElementState) -> Rgb<u8> {
-    match state {
-        // most of the elements are going to be FinishedSuccessPast
-        FinishedSuccessPast => FINISHED_SUCCESS_PAST,
-        HibernatedDeepBlack => HIBERNATED_DEEP_BLACK,
-        ActiveNew => ACTIVE_NEW,
-        FinishedSuccess => FINISHED_SUCCESS,
-        FinishedTooShort => FINISHED_TOO_SHORT,
-        FinishedTooLong => FINISHED_TOO_LONG,
-        Finished => FINISHED
-    }
-}
-
-
 #[test]
 fn test_set_average_with() {
     let mut dp = DataPx { origin_re: 0.0, origin_im: 0.0, value: 10, state: FinishedSuccessPast, quad: 0.0, quid: 0.0, colour: None };
@@ -97,3 +76,10 @@ fn test_set_average_with() {
     assert_eq!(dp.value, 55);
 }
 
+pub fn hibernated_deep_black(re: f64, im: f64) -> DataPx {
+    DataPx { origin_re: re, origin_im: im, value: 0, state: HibernatedDeepBlack, quad: 0.0, quid: 0.0, colour: None }
+}
+
+pub fn active_new(re: f64, im: f64) -> DataPx {
+    DataPx { origin_re: re, origin_im: im, value: 0, state: HibernatedDeepBlack, quad: 0.0, quid: 0.0, colour: None }
+}

@@ -44,7 +44,7 @@ impl Area {
     }
 
     // check first, if can convert
-    pub fn domain_point_to_result_pixel(&self, re: f64, im: f64) -> (usize, usize) {
+    pub fn point_to_pixel(&self, re: f64, im: f64) -> (usize, usize) {
         let px = (self.width_x as f64 * (re - self.center_re) / self.width_re) as f64 + self.width_half_x as f64;
         let py = (self.height_y as f64 * (im - self.center_im) / self.height_im) as f64 + self.height_half_y as f64;
         (px as usize, py as usize)
