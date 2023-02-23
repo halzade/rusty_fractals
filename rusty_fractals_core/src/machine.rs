@@ -1,12 +1,14 @@
+use std::ops::Sub;
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::SystemTime;
+use std::time::{Duration, SystemTime};
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
 use perfect_colour_distribution::perfectly_colour_result_values;
 use rusty_fractals_common::{area, data_image, perfect_colour_distribution, pixel_states};
 use rusty_fractals_common::area::{Area, AreaConfig};
+use rusty_fractals_common::constants::REFRESH_MS;
 use rusty_fractals_common::fractal::{CalculationConfig, Fractal};
 use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
 use rusty_fractals_common::palette::Palette;
@@ -58,7 +60,7 @@ impl Machine {
     pub fn calculate(&self, fractal: &impl Fractal, data_image: &DataImage, app_window: Arc<Mutex<AppWindow>>) {
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
-        let refresh_locker = &Arc::new(Mutex::new(SystemTime::now()));
+        let refresh_locker = &Arc::new(Mutex::new(SystemTime::now().sub(Duration::from_millis(REFRESH_MS as u64))));
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
             self.chunk_calculation(&xy, fractal, &data_image);

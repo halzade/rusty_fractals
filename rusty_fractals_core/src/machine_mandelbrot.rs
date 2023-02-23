@@ -1,9 +1,11 @@
+use std::ops::Sub;
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::SystemTime;
+use std::time::{Duration, SystemTime};
 use rayon::prelude::*;
 use rusty_fractals_common::{area, data_image};
 use rusty_fractals_common::area::{Area, AreaConfig};
+use rusty_fractals_common::constants::REFRESH_MS;
 use rusty_fractals_common::fractal::{CalculationConfigMandelbrot, FractalMandelbrot};
 use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
 use rusty_fractals_common::palette::Palette;
@@ -53,7 +55,7 @@ impl MachineMandelbrot {
     pub fn calculate_mandelbrot(&self, fractal: &impl FractalMandelbrot, data_image: &DataImage, app_window: Arc<Mutex<AppWindow>>) {
         println!("calculate_mandelbrot()");
         let coordinates_xy: Vec<[u32; 2]> = machine::shuffled_calculation_coordinates();
-        let refresh_locker = &Arc::new(Mutex::new(SystemTime::now()));
+        let refresh_locker = &Arc::new(Mutex::new(SystemTime::now().sub(Duration::from_millis(REFRESH_MS as u64))));
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
             self.chunk_calculation_mandelbrot(&xy, fractal, &data_image);

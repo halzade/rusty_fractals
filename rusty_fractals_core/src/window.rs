@@ -8,6 +8,7 @@ use fltk::enums::{ColorDepth, Event, Key};
 use fltk::image::RgbImage;
 use fltk::window::DoubleWindow;
 use ColorDepth::Rgb8;
+use rusty_fractals_common::constants::REFRESH_MS;
 use rusty_fractals_common::data_image::DataImage;
 
 pub struct AppWindow {
@@ -69,7 +70,7 @@ impl AppWindow {
 
 pub fn refresh_maybe(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>, refresh_locker: &Arc<Mutex<SystemTime>>) {
     let ms = SystemTime::now().duration_since(*refresh_locker.lock().unwrap()).unwrap().as_millis();
-    if ms > 120 {
+    if ms > REFRESH_MS {
         let mut mutex_guard = arc_mutex_window.lock().unwrap();
         let app_window = mutex_guard.borrow_mut();
         // refresh window
