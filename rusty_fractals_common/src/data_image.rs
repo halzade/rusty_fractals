@@ -1,5 +1,5 @@
 use std::sync::{Arc, Mutex, MutexGuard};
-use image::{ImageBuffer, Rgb, RgbImage};
+use image::{Rgb, RgbImage};
 use crate::area::Area;
 use crate::constants::NEIGHBOURS;
 use crate::data_px;
@@ -23,7 +23,7 @@ impl DataImage {
         p.colour = Some(palette_colour);
     }
 
-    pub fn image(&self, final_image: bool) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+    pub fn image(&self, final_image: bool) -> Vec<u8>  {
         return if final_image {
             self.image_result()
         } else {
@@ -31,20 +31,20 @@ impl DataImage {
         };
     }
 
-    pub fn image_temp(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+    pub fn image_temp(&self) -> Vec<u8> {
         let mut image = RgbImage::new(self.width as u32, self.height as u32);
         for y in 0..self.height {
             for x in 0..self.width {
                 let (value, state, _, _, colour_index_o) = self.values_at(x, y);
                 let colour: Rgb<u8>;
-                match colour_index_o {
-                    Some(pixel_colour) => {
-                        colour = pixel_colour;
-                    }
-                    None => {
-                        if state == ActiveNew {
-                            colour = colour_for_state(state);
-                        } else {
+                if state == ActiveNew {
+                    colour = colour_for_state(state);
+                } else {
+                    match colour_index_o {
+                        Some(pixel_colour) => {
+                            colour = pixel_colour;
+                        }
+                        None => {
                             let mut mv = MAX_VALUE.lock().unwrap();
                             if value > *mv {
                                 *mv = value;
@@ -57,10 +57,10 @@ impl DataImage {
                 image.put_pixel(x as u32, y as u32, colour);
             }
         }
-        image
+        image.as_raw().clone()
     }
 
-    pub fn image_result(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+    pub fn image_result(&self) -> Vec<u8> {
         let mut image = RgbImage::new(self.width as u32, self.height as u32);
         for y in 0..self.height {
             for x in 0..self.width {
@@ -68,17 +68,17 @@ impl DataImage {
                 image.put_pixel(x as u32, y as u32, colour_index_o.unwrap());
             }
         }
-        image
+        image.as_raw().clone()
     }
 
-    pub fn image_init(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+    pub fn image_init(&self) -> Vec<u8> {
         let mut image = RgbImage::new(self.width as u32, self.height as u32);
         for y in 0..self.height {
             for x in 0..self.width {
                 image.put_pixel(x as u32, y as u32, colour_for_state(ActiveNew));
             }
         }
-        image
+        image.as_raw().clone()
     }
 
     pub fn translate_path_to_point_grid(&self, path: Vec<[f64; 2]>, area: &Area) {

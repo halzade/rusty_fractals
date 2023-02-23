@@ -1,5 +1,7 @@
+use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::time::SystemTime;
 use rayon::prelude::*;
 use rusty_fractals_common::{area, data_image};
 use rusty_fractals_common::area::{Area, AreaConfig};
@@ -42,9 +44,8 @@ pub fn mandelbrot_calculation_for(
     let machine = init(&calculation_config, result_config, &area_config);
     let data_image = data_image::init_data_image(machine.area());
 
-    // let name2 = *name.clone();
     let mut app_window = window::init(fractal.name(), width, height);
-    let app = app_window.show(&data_image.image_init().as_raw(), width, height);
+    let app = app_window.show(&data_image.image_init(), width, height);
     let mutex_window = Arc::new(Mutex::new(app_window));
 
     thread::spawn(move || {
@@ -57,11 +58,17 @@ impl MachineMandelbrot {
     pub fn calculate_mandelbrot(&self, fractal: &impl FractalMandelbrot, data_image: &DataImage, app_window: Arc<Mutex<AppWindow>>) {
         println!("calculate_mandelbrot()");
         let coordinates_xy: Vec<[u32; 2]> = machine::shuffled_calculation_coordinates();
+        let refresh_locker = Arc::new(Mutex::new(SystemTime::now()));
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
             self.chunk_calculation_mandelbrot(&xy, fractal, &data_image);
             // window refresh
-            window::refresh_maybe(data_image, &app_window);
+            let ms = SystemTime::now().duration_since(*refresh_locker.lock().unwrap()).unwrap().as_millis();
+            if ms > 300 {
+                println!("refresh");
+                window::refresh_maybe(data_image, &app_window);
+                *refresh_locker.lock().unwrap().deref_mut() = SystemTime::now();
+            }
         });
         perfectly_colour_mandelbrot_values(&data_image, &self.palette, &self.palette_zero);
         window::refresh_final(data_image, &app_window);

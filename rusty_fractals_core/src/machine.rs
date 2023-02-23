@@ -47,7 +47,7 @@ pub fn nebula_calculation_for(
 
     // let name2 = *name.clone();
     let mut app_window = window::init(fractal.name(), width, height);
-    let app = app_window.show(&data_image.image_init().as_raw(), width, height);
+    let app = app_window.show(&data_image.image_init(), width, height);
     let mutex_window = Arc::new(Mutex::new(app_window));
 
     thread::spawn(move || {

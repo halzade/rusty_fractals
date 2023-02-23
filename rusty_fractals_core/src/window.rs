@@ -40,10 +40,8 @@ impl AppWindow {
                     let key = ek.to_char().unwrap();
                     println!("key {}", key);
                     if key == 'i' {
-
                         return true;
                     } else if key == 's' {
-
                         return true;
                     }
                     false
@@ -56,22 +54,15 @@ impl AppWindow {
         app
     }
 
-    pub fn refresh(&mut self, data_image: &DataImage, final_image : bool) {
-        match SystemTime::now().duration_since(self.refresh_time) {
-            Ok(n) =>
-                if n.as_millis() > 300 {
-                    self.refresh_time = SystemTime::now();
-                    println!("since last refresh ms: {}", n.as_millis());
-                    let image_rgb = RgbImage::new(data_image.image(final_image).as_raw(), data_image.width as i32, data_image.height as i32, Rgb8).unwrap();
-                    let _ = fltk::app::lock();
-                    self.frame.set_image(Some(image_rgb));
-                    let _ = fltk::app::unlock();
-                    // rendering must be done from main thread
-                    fltk::app::awake();
-                    fltk::app::redraw();
-                },
-            Err(_) => panic!("refresh() error"),
-        }
+    pub fn refresh(&mut self, data_image: &DataImage, final_image: bool) {
+        self.refresh_time = SystemTime::now();
+        let image_rgb = RgbImage::new(data_image.image(final_image).as_slice(), data_image.width as i32, data_image.height as i32, Rgb8).unwrap();
+        let _ = fltk::app::lock();
+        self.frame.set_image(Some(image_rgb));
+        let _ = fltk::app::unlock();
+        // rendering must be done from main thread
+        fltk::app::awake();
+        fltk::app::redraw();
     }
 }
 
