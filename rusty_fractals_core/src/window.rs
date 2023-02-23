@@ -69,7 +69,7 @@ impl AppWindow {
 
 pub fn refresh_maybe(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>, refresh_locker: &Arc<Mutex<SystemTime>>) {
     let ms = SystemTime::now().duration_since(*refresh_locker.lock().unwrap()).unwrap().as_millis();
-    if ms > 300 {
+    if ms > 120 {
         let mut mutex_guard = arc_mutex_window.lock().unwrap();
         let app_window = mutex_guard.borrow_mut();
         // refresh window
