@@ -1,10 +1,9 @@
 use rusty_fractals_core::machine_mandelbrot;
 use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{CalculationConfig, FractalMandelbrot, FractalMath};
+use rusty_fractals_common::fractal::{CalculationConfigMandelbrot, FractalMandelbrot, FractalMath};
 use rusty_fractals_common::mem_collatz::MemCollatz;
 use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, palette_gray_to_blue, ResultConfigMandelbrot};
-use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Single;
 
 struct CollatzConjectureMandelbrot {
     name: &'static str,
@@ -30,10 +29,8 @@ fn main() {
     const WIDTH: usize = 1280;
     const HEIGHT: usize = 720;
 
-    let calculation_config = CalculationConfig {
-        iteration_min: 0,
+    let calculation_config = CalculationConfigMandelbrot {
         iteration_max: 14800,
-        resolution_multiplier: Single,
     };
     let area_config = AreaConfig {
         width_re: 3.0,
@@ -61,7 +58,7 @@ mod tests {
     #[test]
     fn test_math() {
         let collatz = CollatzConjectureMandelbrot { name: "Collatz" };
-        let mut mc = MemCollatz { m: Mem { re: 0.0, im: 0.0 }, it: 0 };
+        let mut mc = MemCollatz { m: Mem { re: 0.0, im: 0.0 }, num: 0 };
         collatz.math(&mut mc, 1.0, 0.1);
         assert_eq!(mc.re(), 2.0);
         assert_eq!(mc.im(), 0.65);

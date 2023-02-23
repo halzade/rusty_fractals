@@ -85,9 +85,11 @@ https://github.com/halzade/rusty_fractals.git
 
 Make a fine fractal from Riemann Zeta function and zoom into -1/12
 
-## Java to Rust refactoring
+## Java to Rust migration status
 
-fractal_collatz_conjecture -    
+fractal_collatz_conjecture - **static image**    
+
+fractal_collatz_conjecture_orbits - **static image**
 
 fractal_collatz_mandelbrot - **static image**   
 

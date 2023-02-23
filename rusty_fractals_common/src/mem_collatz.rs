@@ -3,12 +3,13 @@ use crate::mem::Mem;
 
 pub struct MemCollatz {
     pub m: Mem,
-    pub it: i32,
+    pub num: i128,
 }
 
 impl MemType<MemCollatz> for MemCollatz {
     fn new(re: f64, im: f64) -> MemCollatz {
-        MemCollatz { m: Mem { re, im }, it: 0 }
+        // it has 1348 steps
+        MemCollatz { m: Mem { re, im }, num: 989_345_275_647 }
     }
 
     fn quad(&self) -> f64 {
@@ -34,14 +35,16 @@ impl MemCollatz {
     }
 
     pub fn collatz_conjecture(&mut self) {
-        if self.it % 2 == 1 {
-            self.m.re = 3.0 * self.m.re + 1.0;
-            self.m.im = 3.0 * self.m.im + 1.0;
-        } else {
+        // all other math methods ignore num
+        if (self.num % 2) == 0 {
+            self.num /= 2;
             self.m.re = self.m.re / 2.0;
             self.m.im = self.m.im / 2.0;
+        } else {
+            self.num = 3 * self.num + 1;
+            self.m.re = 3.0 * self.m.re + 1.0;
+            self.m.im = 3.0 * self.m.im + 1.0;
         }
-        self.it += 1;
     }
 
     pub fn plus_collatz(&mut self, r: f64, i: f64) {
@@ -65,7 +68,7 @@ mod tests {
 
     #[test]
     fn test_collatz_conjecture() {
-        let mut c = MemCollatz { m: Mem { re: 0.0, im: 1.0 }, it: 1 };
+        let mut c = MemCollatz { m: Mem { re: 0.0, im: 1.0 }, num: 1 };
         c.collatz_conjecture();
         assert_eq!(c.m.re, 1.0);
         assert_eq!(c.m.im, 4.0);
@@ -76,7 +79,7 @@ mod tests {
 
     #[test]
     fn test_plus_collatz() {
-        let mut c = MemCollatz { m: Mem { re: 0.0, im: 1.0 }, it: 1 };
+        let mut c = MemCollatz { m: Mem { re: 0.0, im: 1.0 }, num: 1 };
         c.plus_collatz(0.0, 0.0);
         assert_eq!(c.m.re, 0.5);
         assert_eq!(c.m.im, 1.5);

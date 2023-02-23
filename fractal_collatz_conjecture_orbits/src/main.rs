@@ -36,7 +36,7 @@ fn main() {
     const HEIGHT: usize = 720;
 
     let calculation_config = CalculationConfig {
-        iteration_min: 3,
+        iteration_min: 8,
         iteration_max: 1348,
         resolution_multiplier: Square11,
     };
