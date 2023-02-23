@@ -4,7 +4,7 @@ use crate::area::Area;
 use crate::constants::NEIGHBOURS;
 use crate::data_px;
 use crate::data_px::DataPx;
-use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK, is_finished_success_past};
+use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK, is_finished_success_past};
 use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort, HibernatedDeepBlack};
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Square2;
@@ -150,6 +150,7 @@ impl DataImage {
     }
 
     pub fn recalculate_pixels_states(&self) {
+        println!("recalculate_pixels_states()");
         for y in 0..self.height {
             for x in 0..self.width {
                 self.past(x, y);
@@ -229,8 +230,8 @@ impl DataImage {
             // multiplier was odd
             let half = ((multiplier - 1.0) / 2.0) as i32;
             // This fills the pixel with multiple points
-            for x in -half..half {
-                for y in -half..half {
+            for x in -half..(half + 1) {
+                for y in -half..(half + 1) {
                     if x != 0 || y != 0 {
                         ret.push([origin_re + (x as f64 * d), origin_im + (y as f64 * d)]);
                     }
@@ -272,20 +273,20 @@ pub fn state_from_path_length(iterator: u32, path_length: u32, min: u32, max: u3
 }
 
 pub fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
-    match rm {
+    return match rm {
         ResolutionMultiplier::Single => 1.0,
-        Square3 => 3.0,
-        Square5 => 5.0,
-        Square9 => 9.0,
-        Square11 => 11.0,
-        Square51 => 51.0,
-        Square101 => 101.0,
-        Square2 => 1.0
-    }
+        ResolutionMultiplier::Square3 => 3.0,
+        ResolutionMultiplier::Square5 => 5.0,
+        ResolutionMultiplier::Square9 => 9.0,
+        ResolutionMultiplier::Square11 => 11.0,
+        ResolutionMultiplier::Square51 => 51.0,
+        ResolutionMultiplier::Square101 => 101.0,
+        _ => 1.0
+    };
 }
 
 pub fn colour_for_state(state: DomainElementState) -> Rgb<u8> {
-    match state {
+    return match state {
         // most of the elements are going to be FinishedSuccessPast
         FinishedSuccessPast => FINISHED_SUCCESS_PAST,
         HibernatedDeepBlack => HIBERNATED_DEEP_BLACK,
@@ -293,10 +294,85 @@ pub fn colour_for_state(state: DomainElementState) -> Rgb<u8> {
         FinishedSuccess => FINISHED_SUCCESS,
         FinishedTooShort => FINISHED_TOO_SHORT,
         FinishedTooLong => FINISHED_TOO_LONG,
-        Finished => FINISHED
-    }
+        _ => panic!(),
+    };
 }
 
 fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
     x >= 0 && x < width as i32 && y >= 0 && y < height as i32
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::area;
+    use crate::area::{Area, AreaConfig};
+    use crate::data_image::{DataImage, init_data_image};
+    use crate::resolution_multiplier::ResolutionMultiplier::{Square101, Square11, Square3, Square5, Square51, Square9};
+
+    fn init() -> (Area, DataImage) {
+        let area_config = AreaConfig { width_re: 1.0, center_re: 0.0, center_im: 0.0, width_x: 10, height_y: 10 };
+        let area = area::init(&area_config);
+        let data = init_data_image(&area);
+        (area, data)
+    }
+
+
+    fn at(w: &Vec<[f64; 2]>, index: usize) -> (f64, f64) {
+        let a = w.get(index).unwrap();
+        (a[0], a[1])
+    }
+
+    #[test]
+    fn test_wrap_3() {
+        let (area, data) = init();
+        let (o_re, o_im) = data.origin_at(2, 3);
+        let w = data.wrap(o_re, o_im, Square3, &area);
+        assert_eq!(w.len(), 8);
+        let (re, im) = at(&w, 0);
+        assert_eq!(re, -0.3333333333333333);
+        assert_eq!(im, -0.23333333333333328);
+        assert_eq!(o_re - re, 0.033333333333333326);
+        assert_eq!(o_im - im, 0.033333333333333326);
+    }
+
+    #[test]
+    fn test_wrap_5() {
+        let (area, data) = init();
+        let (o_re, o_im) = data.origin_at(2, 3);
+        let w = data.wrap(o_re, o_im, Square5, &area);
+        assert_eq!(w.len(), 24);
+    }
+
+    #[test]
+    fn test_wrap_9() {
+        let (area, data) = init();
+        let (o_re, o_im) = data.origin_at(2, 3);
+        let w = data.wrap(o_re, o_im, Square9, &area);
+        assert_eq!(w.len(), 80);
+    }
+
+
+    #[test]
+    fn test_wrap_11() {
+        let (area, data) = init();
+        let (o_re, o_im) = data.origin_at(7, 8);
+        let w = data.wrap(o_re, o_im, Square11, &area);
+        assert_eq!(w.len(), 120);
+    }
+
+    #[test]
+    fn test_wrap_51() {
+        let (area, data) = init();
+        let (o_re, o_im) = data.origin_at(2, 3);
+        let w = data.wrap(o_re, o_im, Square51, &area);
+        assert_eq!(w.len(), 2600);
+    }
+
+    #[test]
+    fn test_wrap_101() {
+        let (area, data) = init();
+        let (o_re, o_im) = data.origin_at(2, 3);
+        let w = data.wrap(o_re, o_im, Square101, &area);
+        assert_eq!(w.len(), 10_200);
+    }
 }

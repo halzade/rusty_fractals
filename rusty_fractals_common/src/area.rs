@@ -101,6 +101,7 @@ pub fn init(config: &AreaConfig) -> Area {
     println!("border_high_re: {}", border_high_re);
     println!("border_low_im:  {}", border_low_im);
     println!("border_high_im: {}", border_high_im);
+    println!("(plank):        {}", plank);
 
     /* Generate domain elements */
     let mut numbers_re: Vec<f64> = Vec::new();
