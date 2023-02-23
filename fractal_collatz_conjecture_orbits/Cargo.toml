@@ -3,7 +3,7 @@ name = "fractal_collatz_conjecture_orbits"
 version = "0.1.0"
 edition = "2021"
 authors = ["lukas"]
-keywords = ["fractal"]
+keywords = ["fractal", "collatz conjecture"]
 
 [dependencies]
 rusty_fractals_core = { path = "../rusty_fractals_core" }
