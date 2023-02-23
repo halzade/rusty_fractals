@@ -1,17 +1,17 @@
-use rusty_fractals_core::{machine};
+use rusty_fractals_core::machine;
 use rusty_fractals_common::area::{Area, AreaConfig};
-use rusty_fractals_common::data_image::{DataImage, resolve_multiplier};
+use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::fractal;
 use rusty_fractals_common::fractal::{CalculationConfig, Fractal, FractalMath};
 use rusty_fractals_common::mem_collatz::MemCollatz;
 use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, ResultConfig};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square11;
 
-struct CollatzConjecture {
+struct CollatzConjectureOrbits {
     name: &'static str,
 }
 
-impl FractalMath<MemCollatz> for CollatzConjecture {
+impl FractalMath<MemCollatz> for CollatzConjectureOrbits {
     fn math(&self, m: &mut MemCollatz, origin_re: f64, origin_im: f64) {
         m.square();
         m.collatz_conjecture();
@@ -19,7 +19,7 @@ impl FractalMath<MemCollatz> for CollatzConjecture {
     }
 }
 
-impl Fractal for CollatzConjecture {
+impl Fractal for CollatzConjectureOrbits {
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
         fractal::infinite_orbits(min, max, length, iterator)
     }
@@ -36,12 +36,12 @@ fn main() {
     const HEIGHT: usize = 720;
 
     let calculation_config = CalculationConfig {
-        iteration_min: 8,
+        iteration_min: 7,
         iteration_max: 1348,
         resolution_multiplier: Square11,
     };
     let area_config = AreaConfig {
-        width_re: 7.0,
+        width_re: 5.0,
         center_re: -0.088485445553580480,
         center_im: -0.200679435068532800,
         width_x: WIDTH,
@@ -51,10 +51,7 @@ fn main() {
         palette: palette_blue_to_white_circle_up(),
     };
 
-    println!("MULTIPLIER {}" , resolve_multiplier(calculation_config.resolution_multiplier));
-    println!("MULTIPLIER {}" , resolve_multiplier(Square11));
-
-    let collatz = &CollatzConjecture { name: "Collatz Conjecture Orbits" };
+    let collatz = &CollatzConjectureOrbits { name: "Collatz Conjecture Orbits" };
     machine::nebula_calculation_for(collatz, WIDTH, HEIGHT, calculation_config, result_config, area_config);
 }
 
@@ -64,11 +61,11 @@ mod tests {
     use rusty_fractals_common::fractal::FractalMath;
     use rusty_fractals_common::mem::Mem;
     use rusty_fractals_common::mem_collatz::MemCollatz;
-    use crate::CollatzConjecture;
+    use crate::CollatzConjectureOrbits;
 
     #[test]
     fn test_math() {
-        let collatz = CollatzConjecture { name: "Collatz orbits" };
+        let collatz = CollatzConjectureOrbits { name: "Collatz orbits" };
         let mut mc = MemCollatz { m: Mem { re: 0.0, im: 0.0 }, num: 7 };
         collatz.math(&mut mc, 1.0, 0.1);
         assert_eq!(mc.re(), 2.0);
