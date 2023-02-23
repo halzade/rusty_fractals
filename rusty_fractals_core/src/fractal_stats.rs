@@ -1,17 +1,18 @@
 use rusty_fractals_common::constants::TAKE_MEASURES_AT_FRAME;
+use rusty_fractals_common::data_image::DataImage;
 
-pub(crate) struct Stats {
-    new_elements_too_long: i32,
-    new_elements_too_short: i32,
-    new_elements_long: i32,
+pub struct Stats {
+    new_elements_too_long: u32,
+    new_elements_too_short: u32,
+    new_elements_long: u32,
 
     // All paths including previous calculations
     // The amount of newly added paths is not the same as the amount of red elementLong
-    paths_total_amount: i32,
+    paths_total_amount: u32,
 
-    paths_new_points_amount: i32,
-    pixels_value_total: i32,
-    pixels_value_best: i32,
+    paths_new_points_amount: u32,
+    pixels_value_total: u32,
+    pixels_value_best: u32,
 
     not_enough_pixels_total_value: bool,
     less_pixels_total_value: bool,
@@ -21,19 +22,19 @@ pub(crate) struct Stats {
     pub too_many_paths_total: bool,
     not_enough_long_elements: bool,
 
-    new_elements_long_measure: i32,
-    new_elements_long_tolerance: i32,
-    paths_total_amount_measure: i32,
-    paths_total_amount_tolerance: i32,
-    pixels_value_total_measure: i32,
-    pixels_value_total_tolerance: i32,
-    pixels_value_best_measure: i32,
-    pixels_value_best_tolerance: i32,
-    average_path_length_measure: i32,
+    new_elements_long_measure: u32,
+    new_elements_long_tolerance: u32,
+    paths_total_amount_measure: u32,
+    paths_total_amount_tolerance: u32,
+    pixels_value_total_measure: u32,
+    pixels_value_total_tolerance: u32,
+    pixels_value_best_measure: u32,
+    pixels_value_best_tolerance: u32,
+    average_path_length_measure: u32,
 }
 
 impl Stats {
-    fn remember_this(&mut self) {
+    fn remember_this(&mut self, data: &DataImage) {
         println!("new_elements_long  {}", self.new_elements_long);
         println!("pixels_value_total {}", self.pixels_value_total);
         println!("paths_total_amount {}", self.paths_total_amount);
@@ -41,14 +42,13 @@ impl Stats {
         self.new_elements_long_measure = self.new_elements_long;
         self.pixels_value_total_measure = self.pixels_value_total;
         self.paths_total_amount_measure = self.paths_total_amount;
-        self.average_path_length_measure =
-            (self.pixels_value_total as f64 / self.paths_total_amount as f64) as i32;
-        // TODO self.pixels_value_best_measure = PixelsFinebrot.bestFourChunksValue();
+        self.average_path_length_measure = (self.pixels_value_total as f64 / self.paths_total_amount as f64) as u32;
+        self.pixels_value_best_measure = data.best_four_chunks_value();
 
-        self.new_elements_long_tolerance = (self.new_elements_long_measure as f64 * 0.5) as i32;
-        self.pixels_value_total_tolerance = (self.pixels_value_total_measure as f64 * 0.5) as i32;
-        self.paths_total_amount_tolerance = (self.paths_total_amount_measure as f64 * 0.5) as i32;
-        self.pixels_value_best_tolerance = (self.pixels_value_best_measure as f64 * 0.5) as i32;
+        self.new_elements_long_tolerance = (self.new_elements_long_measure as f64 * 0.5) as u32;
+        self.pixels_value_total_tolerance = (self.pixels_value_total_measure as f64 * 0.5) as u32;
+        self.paths_total_amount_tolerance = (self.paths_total_amount_measure as f64 * 0.5) as u32;
+        self.pixels_value_best_tolerance = (self.pixels_value_best_measure as f64 * 0.5) as u32;
 
         println!("elementsLong_measure        {} ", self.new_elements_long_measure);
         println!("pixels_value_total_measure  {} ", self.pixels_value_total_measure);
@@ -57,10 +57,10 @@ impl Stats {
         println!("average_path_length_measure {} ", self.average_path_length_measure);
     }
 
-    pub(crate) fn update(&mut self, it: u32) {
+    pub fn update(&mut self, data: &DataImage, it: u32) {
         // Check if Stats should remember this iteration data for subsequent comparison
         if it == TAKE_MEASURES_AT_FRAME {
-            self.remember_this();
+            self.remember_this(data);
         }
 
         /* Subsequent comparison */
@@ -78,7 +78,7 @@ impl Stats {
 
             // Best domain chunks, chunks with most image points
             self.not_enough_pixels_best_value = false;
-            // TODO self.pixels_value_best = PixelsFinebrot.bestFourChunksValue();
+            self.pixels_value_best = data.best_four_chunks_value();
             if self.pixels_value_best < self.pixels_value_best_measure {
                 self.not_enough_pixels_best_value = self.pixels_value_best_measure - self.pixels_value_best > self.pixels_value_best_tolerance;
             }

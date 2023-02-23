@@ -1,65 +1,47 @@
-use rusty_fractals_common::fractal::{AppConfig, CalculationConfig};
+use std::thread;
+use std::sync::{Arc, Mutex};
+use rusty_fractals_common::data_image;
+use rusty_fractals_common::area::AreaConfig;
+use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Fractal};
+use rusty_fractals_common::palettes::ResultConfig;
+use crate::{machine, window};
 
-// to calculate zoom, sequence of images
+// to calculate sequence of images for zoom video
 pub struct Engine {
     pub calculation_config: CalculationConfig,
     pub app_config: AppConfig,
 }
 
-impl Engine  {
-    pub fn calculate(&self) {
-        /*
-        let mut first = true;
+impl Engine {
+    pub fn calculate_nebula_zoom(
+        fractal: &'static impl Fractal,
+        width: usize,
+        height: usize,
+        calculation_config: CalculationConfig,
+        result_config: ResultConfig,
+        area_config: AreaConfig,
+    ) {
+        let machine = machine::init(&calculation_config, result_config, &area_config);
+        let mut data_image = data_image::init_data_image(machine.area());
+        let mut app_window = window::init(fractal.name(), width, height);
+        let app = app_window.show(&data_image.image_init(), width, height);
+        let mutex_window = Arc::new(Mutex::new(app_window));
+        thread::spawn(move || {
+            for it in 1.. {
+                println!("{}:", it);
+                machine.calculate(fractal, &data_image, &mutex_window);
+                data_image.recalculate_pixels_positions_for_this_zoom(machine.area());
 
-        for it in 1.. {
-            println!("{}", it);
-
-            if first {
-                first = false;
-                self.domain.init_domain_elements();
-            } else {
-                self.domain.recalculate_pixels_positions_for_this_zoom();
-            }
-
-            let coordinates_xy = self.domain.shuffled_calculation_coordinates();
-
-            // Calculate independently and in parallel each domain chunks
-            coordinates_xy.into_par_iter().for_each(
-                |xy| machine::chunk_calculation(&self.domain, xy)
-            );
-
-
-            PathsFinebrot.translatePathsToPixelGrid();
-            MaskMandelbrot.maskFullUpdate();
-
-            fractal.perfectly_color_values();
-            Application.repaint_mandelbrot_window();
-
-            if SAVE_IMAGES {
-                FractalImages.saveMandelbrotImages();
-            }
-
-            fractal.update();
-            // image_pixels.clear()
-            Application.zoomIn();
-        }
-        */
+                /*
+                translate_paths_to_pixel_grid();
+                perfectly_colour_result_values();
+                repaint_mandelbrot_window();
+                fractal.update();
+                image_pixels.clear()
+                zoom_in();
+                */
+            };
+        });
+        app.run().unwrap();
     }
-}
-
-fn run() {
-    /*
-    for el in maskMandelbrotElementsPart {
-        // Investigate calculation path for each mandelbrot pixel
-        final ArrayList < double
-        [] > path = finebrotFractal.calculatePath(el);
-        if path != null {
-            // Removed lastIteration, lastVisitedRe, lastVisitedIm
-            // There isn't continuation of unfinished iteration from previous calculation (ITERATION_MAX increased)
-            // The element and its path is going to migrate out of screen soon.
-
-            PathsFinebrot.addEscapePathLong(path);
-        }
-    }
-    */
 }

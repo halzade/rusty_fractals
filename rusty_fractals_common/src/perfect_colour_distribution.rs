@@ -25,7 +25,7 @@ struct Mix {
     quid: f64,
 }
 
-pub fn perfectly_colour_result_values(data: &DataImage, palette: &Palette) {
+pub fn perfectly_colour_nebula_values(data: &DataImage, palette: &Palette) {
     let width = data.width;
     let height = data.height;
 
@@ -92,9 +92,10 @@ pub fn perfectly_colour_result_values(data: &DataImage, palette: &Palette) {
 }
 
 /*
-fn perfectly_colour_values_euler() -> RgbImage {
-    let width = data_image.width;
-    let height = data_image.height;
+fn perfectly_colour_euler_values(data: &DataImage, palette3: &Palette3) {
+
+    let width = data.width;
+    let height = data.height;
 
     // Result pixels, order by value
     let mut pixels_red: Vec<Pix> = Vec::new();
@@ -108,12 +109,13 @@ fn perfectly_colour_values_euler() -> RgbImage {
     // identify zero and low-value elements as zero or noise
     let threshold = 1;
 
+
     // read screen values
     for y in 0..height {
         for x in 0..width {
-            let r = data_image.value_at(x, y, red);
-            let g = data_image.value_at(x, y, green);
-            let b = data_image.value_at(x, y, blue);
+            let r = data.value_at(x, y, red);
+            let g = data.value_at(x, y, green);
+            let b = data.value_at(x, y, blue);
             if r <= threshold {
                 zero_value_elements_red += 1;
             }
@@ -138,7 +140,7 @@ fn perfectly_colour_values_euler() -> RgbImage {
     let all_pixels_non_zero_red : u32 = all_pixels_total - zero_value_elements_red;
     let all_pixels_non_zero_green : u32 = all_pixels_total - zero_value_elements_green;
     let all_pixels_non_zero_blue : u32 = all_pixels_total - zero_value_elements_blue;
-    let palette_colour_count : u32 = PaletteEuler3.colourResolution();
+    let palette_colour_count : u32 = palette3.colour_resolution();
     let single_colour_use_red : u32 = all_pixels_non_zero_red / palette_colour_count;
     let single_colour_use_green : u32 = all_pixels_non_zero_green / palette_colour_count;
     let single_colour_use_blue : u32 = all_pixels_non_zero_blue / palette_colour_count;
@@ -226,22 +228,13 @@ fn perfectly_colour_values_euler() -> RgbImage {
     // read 3 euler spectra colours and write image colours
     for y in 0..height {
         for x in 0..width {
-            let r = data_image.value_at(x, y, red);
-            let g = data_image.value_at(x, y, green);
-            let b = data_image.value_at(x, y, blue);
+            let r = data.value_at(x, y, red);
+            let g = data.value_at(x, y, green);
+            let b = data.value_at(x, y, blue);
             result_image.setRGB(x, y, Rgb([r, g, b]));
         }
     }
-
     // Behold, the colouring is perfect
-
-    println!("clear pixels");
-    pixels_red.clear();
-    pixels_green.clear();
-    pixels_blue.clear();
-    PixelsEulerFinebrot.clear();
-
-    result_image
 }
 */
 
@@ -358,9 +351,9 @@ pub fn perfectly_colour_mandelbrot_values(data: &DataImage, palette: &Palette, p
 }
 
 // Return average colour of neighbour elements
-fn ac_if_black_dot(mp: &Mix, data_image: &DataImage) -> i32 {
-    let width = data_image.width;
-    let height = data_image.height;
+fn ac_if_black_dot(mp: &Mix, data: &DataImage) -> i32 {
+    let width = data.width;
+    let height = data.height;
     let pv = mp.value;
     let mut sum = 0;
     let mut neighbours = 0;
@@ -368,7 +361,7 @@ fn ac_if_black_dot(mp: &Mix, data_image: &DataImage) -> i32 {
         let x = mp.x as i32 + c[0];
         let y = mp.y as i32 + c[1];
         if check_domain(x, y, width, height) {
-            let neighbor_value = data_image.value_at(x as usize, y as usize);
+            let neighbor_value = data.value_at(x as usize, y as usize);
             if (pv as i32 - neighbor_value as i32).abs() > 2 {
                 // verify only one value difference gradient
                 return -1;

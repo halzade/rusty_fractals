@@ -79,6 +79,10 @@ pub fn calculate_path<T: MemType<T>>(fractal: &impl Fractal, fractal_math: &impl
                 path.push([m.re(), m.im()]);
             }
         }
+
+        // if iteration_max increased, ignore possible extension of previous calculation paths
+        // path elements are going to migrate out of the screen shortly
+        // removed last_iteration, last_visited_re, last_visited_im
         data_image.translate_path_to_point_grid(path, area);
         // TODO stats.paths_new_points_amount += path.size();
     }

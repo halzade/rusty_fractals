@@ -5,14 +5,14 @@ use std::time::{Duration, SystemTime};
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
-use perfect_colour_distribution::perfectly_colour_result_values;
-use rusty_fractals_common::{area, data_image, perfect_colour_distribution, pixel_states};
+use rusty_fractals_common::{area, data_image, pixel_states};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::constants::REFRESH_MS;
 use rusty_fractals_common::fractal::{CalculationConfig, Fractal};
 use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
 use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::palettes::{ResultConfig};
+use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_nebula_values;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
 use crate::window;
 use crate::window::AppWindow;
@@ -51,13 +51,13 @@ pub fn nebula_calculation_for(
     let app = app_window.show(&data_image.image_init(), width, height);
     let mutex_window = Arc::new(Mutex::new(app_window));
     thread::spawn(move || {
-        machine.calculate(fractal, &data_image, mutex_window);
+        machine.calculate(fractal, &data_image, &mutex_window);
     });
     app.run().unwrap();
 }
 
 impl Machine {
-    pub fn calculate(&self, fractal: &impl Fractal, data_image: &DataImage, app_window: Arc<Mutex<AppWindow>>) {
+    pub fn calculate(&self, fractal: &impl Fractal, data_image: &DataImage, app_window: &Arc<Mutex<AppWindow>>) {
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
         let refresh_locker = &Arc::new(Mutex::new(SystemTime::now().sub(Duration::from_millis(REFRESH_MS as u64))));
@@ -76,7 +76,7 @@ impl Machine {
                 self.chunk_calculation_with_wrap(&xy, fractal, data_image);
             });
         }
-        perfectly_colour_result_values(&data_image, &self.palette);
+        perfectly_colour_nebula_values(&data_image, &self.palette);
         window::refresh_final(data_image, &app_window);
     }
 
