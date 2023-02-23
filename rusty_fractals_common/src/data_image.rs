@@ -163,8 +163,8 @@ impl DataImage {
     // previous calculation must be completed
     pub fn is_on_mandelbrot_horizon(&self, x: usize, y: usize) -> bool {
         let neigh = NEIGHBOURS as i32;
-        for a in -neigh..neigh {
-            for b in -neigh..neigh {
+        for a in -neigh..(neigh + 1) {
+            for b in -neigh..(neigh + 1) {
                 let xx = x as i32 + a;
                 let yy = y as i32 + b;
                 if check_domain(xx, yy, self.width, self.height) {
