@@ -93,38 +93,33 @@ impl DataImage {
         p.value += 1;
     }
 
-    fn px_at(&self, x: usize, y: usize) -> DataPx {
-        let arc_mutex_dpx = self.pixels.get(x).unwrap().get(y).unwrap();
-        *arc_mutex_dpx.lock().unwrap()
-    }
-
     fn mpx_at(&self, x: usize, y: usize) -> MutexGuard<DataPx> {
         let arc_mutex_dpx = self.pixels.get(x).unwrap().get(y).unwrap();
         arc_mutex_dpx.lock().unwrap()
     }
 
     pub fn values_at(&self, x: usize, y: usize) -> (u32, DomainElementState, f64, f64, Option<Rgb<u8>>) {
-        let p = self.px_at(x, y);
+        let p = self.mpx_at(x, y);
         (p.value, p.state, p.quad, p.quid, p.colour)
     }
 
     pub fn value_state_at(&self, x: usize, y: usize) -> (u32, DomainElementState) {
-        let p = self.px_at(x, y);
+        let p = self.mpx_at(x, y);
         (p.value, p.state)
     }
 
     pub fn value_at(&self, x: usize, y: usize) -> u32 {
-        let p = self.px_at(x, y);
+        let p = self.mpx_at(x, y);
         p.value
     }
 
     pub fn state_origin_at(&self, x: usize, y: usize) -> (DomainElementState, f64, f64) {
-        let p = self.px_at(x, y);
+        let p = self.mpx_at(x, y);
         (p.state, p.origin_re, p.origin_im)
     }
 
     pub fn origin_at(&self, x: usize, y: usize) -> (f64, f64) {
-        let p = self.px_at(x, y);
+        let p = self.mpx_at(x, y);
         (p.origin_re, p.origin_im)
     }
 
@@ -151,7 +146,7 @@ impl DataImage {
     }
 
     fn past(&self, x: usize, y: usize) {
-        self.px_at(x, y).past();
+        self.mpx_at(x, y).past();
     }
 
     pub fn recalculate_pixels_states(&self) {
@@ -214,7 +209,7 @@ impl DataImage {
         let mut sum = 0;
         for x in x_from..x_to {
             for y in y_from..y_to {
-                sum += self.px_at(x, y).value;
+                sum += self.mpx_at(x, y).value;
             }
         }
         sum
@@ -252,15 +247,15 @@ impl DataImage {
         // Some elements will be moved to new positions
         // For all the moved elements, subsequent calculations will be skipped.
 
-        let mut elements_to_move = Vec::new();
+        let mut elements_to_move : Vec<DataPx> = Vec::new();
 
         for y in 0..self.height {
             for x in 0..self.width {
-                let px = self.px_at(x as usize, y as usize);
+                let px = self.mpx_at(x as usize, y as usize);
                 // There was already zoom in, the new area is smaller
                 if area.contains(px.origin_re, px.origin_im) {
                     // Element did not move out of the zoomed in area
-                    elements_to_move.push(px);
+                    elements_to_move.push(*px);
                 }
             }
         }
@@ -348,7 +343,7 @@ impl DataImage {
                 let xx = x as i32 + a;
                 let yy = y as i32 + b;
                 if check_domain(xx, yy, self.width, self.height) {
-                    let el = self.px_at(xx as usize, yy as usize);
+                    let el = self.mpx_at(xx as usize, yy as usize);
                     if el.is_finished_success_any() || el.is_finished_too_short() {
                         return false;
                     }
