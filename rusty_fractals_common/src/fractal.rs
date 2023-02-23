@@ -9,6 +9,10 @@ pub struct CalculationConfig {
     pub resolution_multiplier: ResolutionMultiplier,
 }
 
+pub struct CalculationConfigMandelbrot {
+    pub iteration_max: u32
+}
+
 pub struct AppConfig {
     pub repeat: bool,
     pub save_images: bool,

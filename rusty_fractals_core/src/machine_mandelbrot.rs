@@ -4,7 +4,7 @@ use std::time::SystemTime;
 use rayon::prelude::*;
 use rusty_fractals_common::{area, data_image};
 use rusty_fractals_common::area::{Area, AreaConfig};
-use rusty_fractals_common::fractal::{CalculationConfig, FractalMandelbrot};
+use rusty_fractals_common::fractal::{CalculationConfigMandelbrot, FractalMandelbrot};
 use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
 use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::palettes::{ResultConfigMandelbrot};
@@ -15,17 +15,15 @@ use crate::window::AppWindow;
 // to calculate single image
 pub struct MachineMandelbrot {
     area: Area,
-    iteration_min: u32,
     iteration_max: u32,
     palette: Palette,
     palette_zero: Palette,
 }
 
-pub fn init(calculation_config: &CalculationConfig, result_config: ResultConfigMandelbrot, area_config: &AreaConfig) -> MachineMandelbrot {
+pub fn init(calculation_config: &CalculationConfigMandelbrot, result_config: ResultConfigMandelbrot, area_config: &AreaConfig) -> MachineMandelbrot {
     let area = area::init(&area_config);
     MachineMandelbrot {
         area,
-        iteration_min: calculation_config.iteration_min,
         iteration_max: calculation_config.iteration_max,
         palette: result_config.palette,
         palette_zero: result_config.palette_zero,
@@ -36,7 +34,7 @@ pub fn mandelbrot_calculation_for(
     fractal: &'static impl FractalMandelbrot,
     width: usize,
     height: usize,
-    calculation_config: CalculationConfig,
+    calculation_config: CalculationConfigMandelbrot,
     result_config: ResultConfigMandelbrot,
     area_config: AreaConfig,
 ) {
@@ -77,7 +75,7 @@ impl MachineMandelbrot {
                 let (origin_re, origin_im) = data_image.origin_at(x, y);
                 // calculation
                 let (iterator, quad) = fractal.calculate_mandelbrot_path(self.iteration_max, origin_re, origin_im);
-                let state = state_from_path_length(iterator, iterator, self.iteration_min, self.iteration_max);
+                let state = state_from_path_length(iterator, iterator, 0, self.iteration_max);
                 data_image.set_pixel_mandelbrot(x, y, iterator, quad, state, self.iteration_max);
             }
         }
