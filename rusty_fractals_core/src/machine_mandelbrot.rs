@@ -6,10 +6,9 @@ use rayon::prelude::*;
 use rusty_fractals_common::{area, data_image};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::constants::REFRESH_MS;
-use rusty_fractals_common::fractal::{CalculationConfigMandelbrot, FractalMandelbrot};
+use rusty_fractals_common::fractal::{MandelbrotConfig, FractalMandelbrot};
 use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
 use rusty_fractals_common::palette::Palette;
-use rusty_fractals_common::palettes::{ResultConfigMandelbrot};
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_mandelbrot_values;
 use crate::{machine, window};
 use crate::window::AppWindow;
@@ -22,13 +21,13 @@ pub struct MachineMandelbrot {
     palette_zero: Palette,
 }
 
-pub fn init(calculation_config: &CalculationConfigMandelbrot, result_config: ResultConfigMandelbrot, area_config: &AreaConfig) -> MachineMandelbrot {
+pub fn init(mandelbrot_config: MandelbrotConfig, area_config: &AreaConfig) -> MachineMandelbrot {
     let area = area::init(&area_config);
     MachineMandelbrot {
         area,
-        iteration_max: calculation_config.iteration_max,
-        palette: result_config.palette,
-        palette_zero: result_config.palette_zero,
+        iteration_max: mandelbrot_config.iteration_max,
+        palette: mandelbrot_config.palette,
+        palette_zero: mandelbrot_config.palette_zero,
     }
 }
 
@@ -36,11 +35,10 @@ pub fn mandelbrot_calculation_for(
     fractal: &'static impl FractalMandelbrot,
     width: usize,
     height: usize,
-    calculation_config: CalculationConfigMandelbrot,
-    result_config: ResultConfigMandelbrot,
+    mandelbrot_config: MandelbrotConfig,
     area_config: AreaConfig,
 ) {
-    let machine = init(&calculation_config, result_config, &area_config);
+    let machine = init(mandelbrot_config, &area_config);
     let data_image = data_image::init_data_image(machine.area());
     let mut app_window = window::init(fractal.name(), width, height);
     let app = app_window.show(&data_image.image_init(), width, height);

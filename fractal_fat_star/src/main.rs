@@ -3,8 +3,8 @@ use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::fractal;
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::fractal::{CalculationConfig, Fractal, FractalMath};
-use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, ResultConfig};
+use rusty_fractals_common::fractal::{FractalConfig, Fractal, FractalMath};
+use rusty_fractals_common::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Single;
 
 struct FatStar {
@@ -35,11 +35,11 @@ impl Fractal for FatStar {
 fn main() {
     const WIDTH: usize = 1000;
     const HEIGHT: usize = 1000;
-
-    let calculation_config = CalculationConfig {
+    let fractal_config = FractalConfig {
         iteration_min: 42,
         iteration_max: 22000,
         resolution_multiplier: Single,
+        palette: palette_blue_to_white_circle_up(),
     };
     let area_config = AreaConfig {
         width_re: 3.5,
@@ -48,13 +48,9 @@ fn main() {
         width_x: WIDTH,
         height_y: HEIGHT,
     };
-    let result_config = ResultConfig {
-        palette: palette_blue_to_white_circle_up(),
-    };
-
     let fat_star = &FatStar { name: "Fat Star" };
     // TODO coloring based on path length
-    machine::nebula_calculation_for(fat_star, WIDTH, HEIGHT, calculation_config, result_config, area_config);
+    machine::nebula_calculation_for(fat_star, WIDTH, HEIGHT, fractal_config, area_config);
 }
 
 #[cfg(test)]

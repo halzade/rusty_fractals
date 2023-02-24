@@ -3,8 +3,8 @@ use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::fractal;
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::fractal::{CalculationConfig, Fractal, FractalMath};
-use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, ResultConfig};
+use rusty_fractals_common::fractal::{FractalConfig, Fractal, FractalMath};
+use rusty_fractals_common::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square2;
 
 struct NebulaSide {
@@ -35,11 +35,11 @@ fn main() {
     const HEIGHT: usize = 720;
     const TARGET_RE: f64 = -0.10675625916322415;
     const TARGET_IM: f64 = -0.8914368889277283;
-
-    let calculation_config = CalculationConfig {
+    let fractal_config = FractalConfig {
         iteration_min: 42,
         iteration_max: 14800,
         resolution_multiplier: Square2,
+        palette: palette_blue_to_white_circle_up(),
     };
     let area_config = AreaConfig {
         width_re: 7.0,
@@ -48,13 +48,9 @@ fn main() {
         width_x: WIDTH,
         height_y: HEIGHT,
     };
-    let result_config = ResultConfig {
-        palette: palette_blue_to_white_circle_up(),
-    };
-
     let nebula_side = &NebulaSide { name: "Nebula side" };
     // todo zoom video
-    machine::nebula_calculation_for(nebula_side, WIDTH, HEIGHT, calculation_config, result_config, area_config);
+    machine::nebula_calculation_for(nebula_side, WIDTH, HEIGHT, fractal_config, area_config);
 }
 
 #[test]

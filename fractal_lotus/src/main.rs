@@ -3,8 +3,8 @@ use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{CalculationConfig, Fractal, FractalMath};
-use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, ResultConfig};
+use rusty_fractals_common::fractal::{FractalConfig, Fractal, FractalMath};
+use rusty_fractals_common::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square11;
 
 struct Lotus {
@@ -34,11 +34,11 @@ impl Fractal for Lotus {
 fn main() {
     const WIDTH: usize = 1280;
     const HEIGHT: usize = 1000;
-
-    let calculation_config = CalculationConfig {
+    let fractal_config = FractalConfig {
         iteration_min: 42,
         iteration_max: 8000,
         resolution_multiplier: Square11,
+        palette: palette_blue_to_white_circle_up(),
     };
     let area_config = AreaConfig {
         width_re: 3.5,
@@ -47,12 +47,8 @@ fn main() {
         width_x: WIDTH,
         height_y: HEIGHT,
     };
-    let result_config = ResultConfig {
-        palette: palette_blue_to_white_circle_up(),
-    };
-
     let lotus = &Lotus { name: "Lotus" };
-    machine::nebula_calculation_for(lotus, WIDTH, HEIGHT, calculation_config, result_config, area_config);
+    machine::nebula_calculation_for(lotus, WIDTH, HEIGHT, fractal_config, area_config);
 }
 
 #[cfg(test)]

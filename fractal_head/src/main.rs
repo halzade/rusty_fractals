@@ -3,9 +3,9 @@ use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::constants::{PHOENIX_INIT_C, PHOENIX_INIT_P};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{CalculationConfig, Fractal, FractalMath};
+use rusty_fractals_common::fractal::{FractalConfig, Fractal, FractalMath};
 use rusty_fractals_common::mem_phoenix::MemPhoenix;
-use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, ResultConfig};
+use rusty_fractals_common::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square9;
 
 struct Head {
@@ -15,17 +15,14 @@ struct Head {
 impl FractalMath<MemPhoenix> for Head {
     fn math(&self, mp: &mut MemPhoenix, origin_re: f64, origin_im: f64) {
         mp.square();
-
         mp.m.re += PHOENIX_INIT_C;
         mp.m.re += PHOENIX_INIT_P * mp.prev_prev_re;
         mp.m.im += PHOENIX_INIT_P * mp.prev_prev_im;
-
         // previous iteration
         mp.prev_prev_re = mp.prev_re;
         mp.prev_prev_im = mp.prev_im;
         mp.prev_re = mp.m.re;
         mp.prev_im = mp.m.im;
-
         mp.plus(origin_re, origin_im);
     }
 }
@@ -45,11 +42,11 @@ impl Fractal for Head {
 fn main() {
     const WIDTH: usize = 1280;
     const HEIGHT: usize = 720;
-
-    let calculation_config = CalculationConfig {
+    let fractal_config = FractalConfig {
         iteration_min: 8,
         iteration_max: 25000,
         resolution_multiplier: Square9,
+        palette: palette_blue_to_white_circle_up(),
     };
     let area_config = AreaConfig {
         width_re: 5.0,
@@ -58,12 +55,8 @@ fn main() {
         width_x: WIDTH,
         height_y: HEIGHT,
     };
-    let result_config = ResultConfig {
-        palette: palette_blue_to_white_circle_up(),
-    };
-
     let head = &Head { name: "Head" };
-    machine::nebula_calculation_for(head, WIDTH, HEIGHT, calculation_config, result_config, area_config);
+    machine::nebula_calculation_for(head, WIDTH, HEIGHT, fractal_config, area_config);
 }
 
 #[cfg(test)]

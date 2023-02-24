@@ -8,10 +8,9 @@ use rayon::prelude::*;
 use rusty_fractals_common::{area, data_image, pixel_states};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::constants::REFRESH_MS;
-use rusty_fractals_common::fractal::{CalculationConfig, Fractal};
+use rusty_fractals_common::fractal::{FractalConfig, Fractal};
 use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
 use rusty_fractals_common::palette::Palette;
-use rusty_fractals_common::palettes::{ResultConfig};
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_nebula_values;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
 use crate::window;
@@ -26,14 +25,14 @@ pub struct Machine {
     palette: Palette,
 }
 
-pub fn init(calculation_config: &CalculationConfig, result_config: ResultConfig, area_config: &AreaConfig) -> Machine {
+pub fn init(fractal_config: FractalConfig, area_config: &AreaConfig) -> Machine {
     let area = area::init(&area_config);
     Machine {
         area,
-        iteration_min: calculation_config.iteration_min,
-        iteration_max: calculation_config.iteration_max,
-        resolution_multiplier: calculation_config.resolution_multiplier,
-        palette: result_config.palette,
+        iteration_min: fractal_config.iteration_min,
+        iteration_max: fractal_config.iteration_max,
+        resolution_multiplier: fractal_config.resolution_multiplier,
+        palette: fractal_config.palette,
     }
 }
 
@@ -41,11 +40,10 @@ pub fn nebula_calculation_for(
     fractal: &'static impl Fractal,
     width: usize,
     height: usize,
-    calculation_config: CalculationConfig,
-    result_config: ResultConfig,
+    fractal_config: FractalConfig,
     area_config: AreaConfig,
 ) {
-    let machine = init(&calculation_config, result_config, &area_config);
+    let machine = init(fractal_config, &area_config);
     let data_image = data_image::init_data_image(machine.area());
     let mut app_window = window::init(fractal.name(), width, height);
     let app = app_window.show(&data_image.image_init(), width, height);

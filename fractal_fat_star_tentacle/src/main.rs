@@ -3,8 +3,8 @@ use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::fractal;
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::fractal::{CalculationConfig, Fractal, FractalMath};
-use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, ResultConfig};
+use rusty_fractals_common::fractal::{FractalConfig, Fractal, FractalMath};
+use rusty_fractals_common::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Single;
 
 struct FatStarTentacle {
@@ -35,11 +35,11 @@ impl Fractal for FatStarTentacle {
 fn main() {
     const WIDTH: usize = 800; // 1920
     const HEIGHT: usize = 800; // 1080
-
-    let calculation_config = CalculationConfig {
+    let fractal_config = FractalConfig {
         iteration_min: 8,
         iteration_max: 81000,
         resolution_multiplier: Single,
+        palette: palette_blue_to_white_circle_up(),
     };
     // TODO
     // const INIT_FINEBROT_AREA_SIZE : f64= 0.5;
@@ -52,12 +52,8 @@ fn main() {
         width_x: WIDTH,
         height_y: HEIGHT,
     };
-    let result_config = ResultConfig {
-        palette: palette_blue_to_white_circle_up(),
-    };
-
     let fat_star = &FatStarTentacle { name: "Fat Star" };
-    machine::nebula_calculation_for(fat_star, WIDTH, HEIGHT, calculation_config, result_config, area_config);
+    machine::nebula_calculation_for(fat_star, WIDTH, HEIGHT, fractal_config, area_config);
 }
 
 #[test]

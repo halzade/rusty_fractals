@@ -1,16 +1,22 @@
 use crate::area::{Area};
 use crate::constants::CALCULATION_BOUNDARY;
 use crate::data_image::DataImage;
+use crate::palette::Palette;
 use crate::resolution_multiplier::ResolutionMultiplier;
 
-pub struct CalculationConfig {
+pub struct FractalConfig {
     pub iteration_min: u32,
     pub iteration_max: u32,
     pub resolution_multiplier: ResolutionMultiplier,
+    pub palette: Palette,
 }
 
-pub struct CalculationConfigMandelbrot {
-    pub iteration_max: u32
+pub struct MandelbrotConfig {
+    pub iteration_max: u32,
+    // color classic mandelbrot values
+    pub palette: Palette,
+    // color insides of mandelbrot set
+    pub palette_zero: Palette,
 }
 
 pub struct AppConfig {

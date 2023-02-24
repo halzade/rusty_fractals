@@ -2,13 +2,12 @@ use std::thread;
 use std::sync::{Arc, Mutex};
 use rusty_fractals_common::data_image;
 use rusty_fractals_common::area::AreaConfig;
-use rusty_fractals_common::fractal::{AppConfig, CalculationConfig, Fractal};
-use rusty_fractals_common::palettes::ResultConfig;
+use rusty_fractals_common::fractal::{AppConfig, FractalConfig, Fractal};
 use crate::{machine, window};
 
 // to calculate sequence of images for zoom video
 pub struct Engine {
-    pub calculation_config: CalculationConfig,
+    pub calculation_config: FractalConfig,
     pub app_config: AppConfig,
 }
 
@@ -17,11 +16,10 @@ impl Engine {
         fractal: &'static impl Fractal,
         width: usize,
         height: usize,
-        calculation_config: CalculationConfig,
-        result_config: ResultConfig,
+        fractal_config: FractalConfig,
         area_config: AreaConfig,
     ) {
-        let machine = machine::init(&calculation_config, result_config, &area_config);
+        let machine = machine::init(fractal_config, &area_config);
         let mut data_image = data_image::init_data_image(machine.area());
         let mut app_window = window::init(fractal.name(), width, height);
         let app = app_window.show(&data_image.image_init(), width, height);
