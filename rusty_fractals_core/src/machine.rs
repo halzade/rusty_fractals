@@ -71,7 +71,10 @@ impl Machine {
             println!("calculate() with wrap");
             // previous calculation completed, calculate more elements
             coordinates_xy.par_iter().for_each(|xy| {
+                // calculation
                 self.chunk_calculation_with_wrap(&xy, fractal, data_image);
+                // window refresh
+                window::refresh_maybe(data_image, &app_window, refresh_locker);
             });
         }
         perfectly_colour_nebula_values(&data_image, &self.palette);
