@@ -94,7 +94,7 @@ impl DataImage {
         image.as_raw().clone()
     }
 
-    pub fn translate_path_to_point_grid(&self, path: Vec<[f64; 2]>, area: &Area, time_lock_o: &Option<Arc<Mutex<SystemTime>>>) {
+    pub fn translate_path_to_point_grid(&self, path: Vec<[f64; 2]>, area: &Area, time_lock_o: &Option<Arc<Mutex<SystemTime>>>, max: u32) {
         match time_lock_o {
             Some(time_lock) => {
                 let lo = time_lock.lock();
@@ -102,10 +102,13 @@ impl DataImage {
                     Ok(_) => {
                         let ms = SystemTime::now().duration_since(*lo.unwrap()).unwrap().as_millis();
                         if ms > REFRESH_MS - 2 {
-                            println!("lock {}", ms);
                             // save path to show during recalculation with pixel wrap
-                            *self.show_path.lock().unwrap() = path.clone();
-                            *time_lock.lock().unwrap() = SystemTime::now();
+                            let l = path.len();
+                            // show only longer paths
+                            if l > (max as f64 / 3.0) as usize {
+                                *self.show_path.lock().unwrap() = path.clone();
+                                *time_lock.lock().unwrap() = SystemTime::now();
+                            }
                         }
                     }
                     Err(e) => {
