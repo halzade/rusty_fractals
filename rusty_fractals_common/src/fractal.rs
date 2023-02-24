@@ -1,7 +1,7 @@
-use crate::area::{Area};
-use crate::constants::CALCULATION_BOUNDARY;
-use crate::data_image::DataImage;
+use crate::area::Area;
 use crate::palette::Palette;
+use crate::data_image::DataImage;
+use crate::constants::CALCULATION_BOUNDARY;
 use crate::resolution_multiplier::ResolutionMultiplier;
 
 pub struct FractalConfig {
@@ -46,7 +46,6 @@ pub trait FractalMath<T: MemType<T>>: Sync {
     fn math(&self, m: &mut T, origin_re: f64, origin_im: f64);
 }
 
-
 pub fn finite_orbits(min: u32, max: u32, length: u32, iterator: u32) -> bool {
     length > min && iterator < max
 }
@@ -55,8 +54,16 @@ pub fn infinite_orbits(min: u32, max: u32, length: u32, iterator: u32) -> bool {
     length > min && iterator <= max
 }
 
-
-pub fn calculate_path<T: MemType<T>>(fractal: &impl Fractal, fractal_math: &impl FractalMath<T>, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage) -> (u32, u32) {
+pub fn calculate_path<T: MemType<T>>(
+    fractal: &impl Fractal,
+    fractal_math: &impl FractalMath<T>,
+    area: &Area,
+    iteration_min: u32,
+    iteration_max: u32,
+    origin_re: f64,
+    origin_im: f64,
+    data_image: &DataImage,
+) -> (u32, u32) {
     let cb = CALCULATION_BOUNDARY as f64;
     let mut m: T = T::new(origin_re, origin_im);
     let mut iterator = 0;
@@ -89,7 +96,7 @@ pub fn calculate_path<T: MemType<T>>(fractal: &impl Fractal, fractal_math: &impl
         // if iteration_max increased, ignore possible extension of previous calculation paths
         // path elements are going to migrate out of the screen shortly
         // removed last_iteration, last_visited_re, last_visited_im
-        data_image.translate_path_to_point_grid(path, area);
+        data_image.translate_path_to_point_grid(path, area, &data_image.path_locker);
         // TODO stats.paths_new_points_amount += path.size();
     }
     (iterator, length)

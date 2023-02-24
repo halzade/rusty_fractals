@@ -44,7 +44,8 @@ pub fn nebula_calculation_for(
     area_config: AreaConfig,
 ) {
     let machine = init(fractal_config, &area_config);
-    let data_image = data_image::init_data_image(machine.area());
+    let ams = Some(Arc::new(Mutex::new(SystemTime::now())));
+    let data_image = data_image::init_data_image(machine.area(), ams);
     let mut app_window = window::init(fractal.name(), width, height);
     let app = app_window.show(&data_image.image_init(), width, height);
     let mutex_window = Arc::new(Mutex::new(app_window));
@@ -63,7 +64,7 @@ impl Machine {
             // calculation
             self.chunk_calculation(&xy, fractal, &data_image);
             // window refresh
-            window::refresh_maybe(data_image, &app_window, refresh_locker);
+            window::refresh_maybe(data_image, &app_window, refresh_locker, None);
         });
         data_image.recalculate_pixels_states();
 
@@ -74,7 +75,7 @@ impl Machine {
                 // calculation
                 self.chunk_calculation_with_wrap(&xy, fractal, data_image);
                 // window refresh
-                window::refresh_maybe(data_image, &app_window, refresh_locker);
+                window::refresh_maybe(data_image, &app_window, refresh_locker, Some(&self.area));
             });
         }
         perfectly_colour_nebula_values(&data_image, &self.palette);

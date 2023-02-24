@@ -1,7 +1,8 @@
 use std::sync::{Arc, Mutex, MutexGuard};
+use std::time::SystemTime;
 use image::{Rgb, RgbImage};
 use crate::area::Area;
-use crate::constants::NEIGHBOURS;
+use crate::constants::{GRAY, NEIGHBOURS, REFRESH_MS};
 use crate::data_px;
 use crate::data_px::DataPx;
 use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK, is_finished_success_past};
@@ -13,6 +14,8 @@ pub struct DataImage {
     pub width: usize,
     pub height: usize,
     pub pixels: Vec<Vec<Arc<Mutex<DataPx>>>>,
+    pub show_path: Mutex<Vec<[f64; 2]>>,
+    pub path_locker: Option<Arc<Mutex<SystemTime>>>,
 }
 
 static MAX_VALUE: Mutex<u32> = Mutex::new(0);
@@ -23,15 +26,15 @@ impl DataImage {
         p.colour = Some(palette_colour);
     }
 
-    pub fn image(&self, final_image: bool) -> Vec<u8> {
+    pub fn image(&self, final_image: bool, area_o: Option<&Area>) -> Vec<u8> {
         return if final_image {
             self.image_result()
         } else {
-            self.image_temp()
+            self.image_temp(area_o)
         };
     }
 
-    pub fn image_temp(&self) -> Vec<u8> {
+    pub fn image_temp(&self, area_o: Option<&Area>) -> Vec<u8> {
         let mut image = RgbImage::new(self.width as u32, self.height as u32);
         for y in 0..self.height {
             for x in 0..self.width {
@@ -57,6 +60,16 @@ impl DataImage {
                 image.put_pixel(x as u32, y as u32, colour);
             }
         }
+        match area_o {
+            Some(area) => {
+                let path = self.show_path.lock().unwrap();
+                for p in path.as_slice() {
+                    let (x, y) = area.point_to_pixel(p[0], p[1]);
+                    image.put_pixel(x as u32, y as u32, GRAY);
+                }
+            }
+            None => {}
+        }
         image.as_raw().clone()
     }
 
@@ -81,7 +94,27 @@ impl DataImage {
         image.as_raw().clone()
     }
 
-    pub fn translate_path_to_point_grid(&self, path: Vec<[f64; 2]>, area: &Area) {
+    pub fn translate_path_to_point_grid(&self, path: Vec<[f64; 2]>, area: &Area, time_lock_o: &Option<Arc<Mutex<SystemTime>>>) {
+        match time_lock_o {
+            Some(time_lock) => {
+                let lo = time_lock.lock();
+                match lo {
+                    Ok(_) => {
+                        let ms = SystemTime::now().duration_since(*lo.unwrap()).unwrap().as_millis();
+                        if ms > REFRESH_MS - 2 {
+                            println!("lock {}", ms);
+                            // save path to show during recalculation with pixel wrap
+                            *self.show_path.lock().unwrap() = path.clone();
+                            *time_lock.lock().unwrap() = SystemTime::now();
+                        }
+                    }
+                    Err(e) => {
+                        println!("translate_path_to_point_grid() error: {}", e);
+                    }
+                }
+            }
+            None => {}
+        }
         for [re, im] in path {
             let (x, y) = area.point_to_pixel(re, im);
             self.add(x, y);
@@ -247,7 +280,7 @@ impl DataImage {
         // Some elements will be moved to new positions
         // For all the moved elements, subsequent calculations will be skipped.
 
-        let mut elements_to_move : Vec<DataPx> = Vec::new();
+        let mut elements_to_move: Vec<DataPx> = Vec::new();
 
         for y in 0..self.height {
             for x in 0..self.width {
@@ -358,7 +391,7 @@ fn tpx_at(vec: &Vec<Vec<Option<DataPx>>>, x: usize, y: usize) -> Option<DataPx> 
     *vec.get(x).unwrap().get(y).unwrap()
 }
 
-pub fn init_data_image(area: &Area) -> DataImage {
+pub fn init_data_image(area: &Area, lock: Option<Arc<Mutex<SystemTime>>>) -> DataImage {
     let width = area.width_x;
     let height = area.height_y;
     let mut vx = Vec::new();
@@ -375,6 +408,8 @@ pub fn init_data_image(area: &Area) -> DataImage {
         width,
         height,
         pixels: vx,
+        show_path: Mutex::new(Vec::new()),
+        path_locker: lock,
     }
 }
 
@@ -428,7 +463,7 @@ mod tests {
     fn init() -> (Area, DataImage) {
         let area_config = AreaConfig { width_re: 1.0, center_re: 0.0, center_im: 0.0, width_x: 10, height_y: 10 };
         let area = area::init(&area_config);
-        let data = init_data_image(&area);
+        let data = init_data_image(&area, None);
         (area, data)
     }
 

@@ -1,3 +1,4 @@
+use image::Rgb;
 
 // How many elements around specific domain element will be investigated for optimization.
 // If there is nothing interesting going on around the specific element, the (new) element will be ignored.
@@ -25,7 +26,10 @@ pub const TAKE_MEASURES_AT_FRAME: u32 = 20;
 // phoenix fractal constants
 pub const PHOENIX_INIT_C: f64 = 0.35;
 pub const PHOENIX_INIT_P: f64 = -0.25;
-pub const PHOENIX_INIT_PHOENIX_INITIALIZER: f64 = 1.0;
+pub const PHOENIX_INITIALIZER: f64 = 1.0;
 
 // window refresh during calculation 
 pub const REFRESH_MS : u128 = 120;
+
+// color for last path display
+pub const GRAY: Rgb<u8> = Rgb([254, 254, 254]);

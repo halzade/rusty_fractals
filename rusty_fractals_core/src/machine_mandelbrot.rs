@@ -39,7 +39,7 @@ pub fn mandelbrot_calculation_for(
     area_config: AreaConfig,
 ) {
     let machine = init(mandelbrot_config, &area_config);
-    let data_image = data_image::init_data_image(machine.area());
+    let data_image = data_image::init_data_image(machine.area(), None);
     let mut app_window = window::init(fractal.name(), width, height);
     let app = app_window.show(&data_image.image_init(), width, height);
     let mutex_window = Arc::new(Mutex::new(app_window));
@@ -58,7 +58,7 @@ impl MachineMandelbrot {
             // calculation
             self.chunk_calculation_mandelbrot(&xy, fractal, &data_image);
             // window refresh
-            window::refresh_maybe(data_image, &app_window, refresh_locker);
+            window::refresh_maybe(data_image, &app_window, refresh_locker, None);
         });
         perfectly_colour_mandelbrot_values(&data_image, &self.palette, &self.palette_zero);
         window::refresh_final(data_image, &app_window);

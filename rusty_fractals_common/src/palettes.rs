@@ -12,16 +12,15 @@ const BLUE: Rgb<u8> = Rgb([0, 0, 255]);
 
 pub enum Function { Linear1, Linear3, Linear7, Quadratic, Exp, Exp2, CircleDown, CircleUp }
 
-pub fn palette_black_to_white_exp2() -> Palette {
-    Palette {
-        spectrum: make_spectrum(Exp2, BLACK, WHITE)
-    }
-}
 
 pub fn new(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Palette {
     Palette {
         spectrum: make_spectrum(function, from, to)
     }
+}
+
+pub fn palette_black_to_white_exp2() -> Palette {
+    new(Exp2, BLACK, WHITE)
 }
 
 pub fn palette_bwb() -> Palette {

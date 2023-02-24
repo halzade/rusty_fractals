@@ -8,6 +8,7 @@ use fltk::enums::{ColorDepth, Event, Key};
 use fltk::image::RgbImage;
 use fltk::window::DoubleWindow;
 use ColorDepth::Rgb8;
+use rusty_fractals_common::area::Area;
 use rusty_fractals_common::constants::REFRESH_MS;
 use rusty_fractals_common::data_image::DataImage;
 
@@ -56,9 +57,9 @@ impl AppWindow {
         app
     }
 
-    pub fn refresh(&mut self, data_image: &DataImage, final_image: bool) {
+    pub fn refresh(&mut self, data_image: &DataImage, final_image: bool, area_o: Option<&Area>) {
         self.refresh_time = SystemTime::now();
-        let image_rgb = RgbImage::new(data_image.image(final_image).as_slice(), data_image.width as i32, data_image.height as i32, Rgb8).unwrap();
+        let image_rgb = RgbImage::new(data_image.image(final_image, area_o).as_slice(), data_image.width as i32, data_image.height as i32, Rgb8).unwrap();
         let _ = fltk::app::lock();
         self.frame.set_image(Some(image_rgb));
         let _ = fltk::app::unlock();
@@ -68,13 +69,20 @@ impl AppWindow {
     }
 }
 
-pub fn refresh_maybe(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>, refresh_locker: &Arc<Mutex<SystemTime>>) {
+pub fn refresh_maybe(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>, refresh_locker: &Arc<Mutex<SystemTime>>, area_o: Option<&Area>) {
     let ms = SystemTime::now().duration_since(*refresh_locker.lock().unwrap()).unwrap().as_millis();
     if ms > REFRESH_MS {
         let mut mutex_guard = arc_mutex_window.lock().unwrap();
         let app_window = mutex_guard.borrow_mut();
         // refresh window
-        app_window.refresh(data_image, false);
+        match area_o {
+            Some(area) => {
+                app_window.refresh(data_image, false, Some(area));
+            }
+            None => {
+                app_window.refresh(data_image, false, None);
+            }
+        }
         *refresh_locker.lock().unwrap().deref_mut() = SystemTime::now();
     }
 }
@@ -82,5 +90,5 @@ pub fn refresh_maybe(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWin
 pub fn refresh_final(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>) {
     let mut mutex_guard = arc_mutex_window.lock().unwrap();
     let app_window = mutex_guard.borrow_mut();
-    app_window.refresh(data_image, true);
+    app_window.refresh(data_image, true, None);
 }

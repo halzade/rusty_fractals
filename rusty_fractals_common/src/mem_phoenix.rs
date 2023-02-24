@@ -1,4 +1,4 @@
-use crate::constants::PHOENIX_INIT_PHOENIX_INITIALIZER;
+use crate::constants::PHOENIX_INITIALIZER;
 use crate::fractal::MemType;
 use crate::mem::Mem;
 
@@ -18,10 +18,10 @@ impl MemType<MemPhoenix> for MemPhoenix {
     fn new(re: f64, im: f64) -> MemPhoenix {
         MemPhoenix {
             m: Mem { re, im },
-            prev_prev_re: PHOENIX_INIT_PHOENIX_INITIALIZER,
-            prev_prev_im: PHOENIX_INIT_PHOENIX_INITIALIZER,
-            prev_re: PHOENIX_INIT_PHOENIX_INITIALIZER,
-            prev_im: PHOENIX_INIT_PHOENIX_INITIALIZER,
+            prev_prev_re: PHOENIX_INITIALIZER,
+            prev_prev_im: PHOENIX_INITIALIZER,
+            prev_re: PHOENIX_INITIALIZER,
+            prev_im: PHOENIX_INITIALIZER,
         }
     }
 

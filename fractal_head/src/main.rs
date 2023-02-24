@@ -61,7 +61,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use rusty_fractals_common::constants::PHOENIX_INIT_PHOENIX_INITIALIZER;
+    use rusty_fractals_common::constants::PHOENIX_INITIALIZER;
     use rusty_fractals_common::fractal::FractalMath;
     use rusty_fractals_common::mem::Mem;
     use rusty_fractals_common::mem_phoenix::MemPhoenix;
@@ -70,7 +70,7 @@ mod tests {
     #[test]
     fn test_math() {
         let head = &Head { name: "Head" };
-        let mut mp = MemPhoenix { m: Mem { re: 0.0, im: 0.0 }, prev_prev_re: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_prev_im: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_re: PHOENIX_INIT_PHOENIX_INITIALIZER, prev_im: PHOENIX_INIT_PHOENIX_INITIALIZER };
+        let mut mp = MemPhoenix { m: Mem { re: 0.0, im: 0.0 }, prev_prev_re: PHOENIX_INITIALIZER, prev_prev_im: PHOENIX_INITIALIZER, prev_re: PHOENIX_INITIALIZER, prev_im: PHOENIX_INITIALIZER };
         head.math(&mut mp, 1.0, 0.1);
         assert_eq!(mp.re(), 1.1);
         assert_eq!(mp.im(), -0.15);
