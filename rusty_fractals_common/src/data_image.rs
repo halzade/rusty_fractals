@@ -52,7 +52,12 @@ impl DataImage {
                             if value > *mv {
                                 *mv = value;
                             }
-                            let c: u8 = (value as f64 / *mv as f64 * 255.0) as u8;
+                            // make color (3x) brighter
+                            let mut cv = ((value * 3) as f64 / *mv as f64) as f64 * 255.0;
+                            if cv > 255.0 {
+                                cv = 255.0;
+                            }
+                            let c = cv as u8;
                             colour = Rgb([c, c, c]);
                         }
                     }
@@ -105,7 +110,7 @@ impl DataImage {
                             // save path to show during recalculation with pixel wrap
                             let l = path.len();
                             // show only longer paths
-                            if l > (max as f64 / 3.0) as usize {
+                            if l > (max as f64 / 42.0) as usize {
                                 *self.show_path.lock().unwrap() = path.clone();
                                 *time_lock.lock().unwrap() = SystemTime::now();
                             }
