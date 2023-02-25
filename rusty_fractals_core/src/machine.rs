@@ -22,7 +22,7 @@ pub struct Machine {
     iteration_min: u32,
     iteration_max: u32,
     resolution_multiplier: ResolutionMultiplier,
-    palette: Palette,
+    pub palette: Palette,
 }
 
 pub fn init(fractal_config: FractalConfig, area_config: &AreaConfig) -> Machine {
@@ -134,6 +134,10 @@ impl Machine {
 
     pub fn area(&self) -> &Area {
         &self.area
+    }
+
+    pub fn area_mut(&mut self) -> &mut Area {
+        &mut self.area
     }
 }
 

@@ -24,6 +24,8 @@ pub struct AppConfig {
     pub save_images: bool,
 }
 
+// traits
+
 pub trait Fractal: Sync {
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool;
     fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage) -> (u32, u32);
@@ -33,6 +35,14 @@ pub trait Fractal: Sync {
 pub trait FractalMandelbrot: Sync {
     fn calculate_mandelbrot_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64);
     fn name(&self) -> &'static str;
+}
+
+pub trait UpdateMandelbrot: Sync {
+    fn update(&self, conf: &mut MandelbrotConfig);
+}
+
+pub trait UpdateFractal: Sync {
+    fn update(&self, conf: &mut FractalConfig);
 }
 
 pub trait MemType<T> {
@@ -45,6 +55,8 @@ pub trait MemType<T> {
 pub trait FractalMath<T: MemType<T>>: Sync {
     fn math(&self, m: &mut T, origin_re: f64, origin_im: f64);
 }
+
+// functions
 
 pub fn finite_orbits(min: u32, max: u32, length: u32, iterator: u32) -> bool {
     length > min && iterator < max

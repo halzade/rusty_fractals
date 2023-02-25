@@ -1,6 +1,5 @@
 mod euler;
 mod pixel;
-mod mandelbrot;
 mod mem_euler;
 use rusty_fractals_common::area::Area;
 use rusty_fractals_common::data_image::DataImage;

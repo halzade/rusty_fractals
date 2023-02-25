@@ -107,6 +107,10 @@ impl DataImage {
         image.as_raw().clone()
     }
 
+    pub fn clear_screen_pixel_values(&self) {
+        todo!()
+    }
+
     fn set_show_path_maybe(&self, path: &Vec<[f64; 2]>, time_lock_o: &Option<Arc<Mutex<SystemTime>>>, max: u32) {
         match time_lock_o {
             Some(time_lock) => {
@@ -138,6 +142,16 @@ impl DataImage {
         for [re, im] in path {
             let (x, y) = area.point_to_pixel(re, im);
             self.add(x, y);
+        }
+    }
+
+    pub fn translate_all_paths_to_point_grid(&self, area: &Area) {
+        let all = self.paths.lock().unwrap().to_owned();
+        for path in all {
+            for [re, im] in path {
+                let (x, y) = area.point_to_pixel(re, im);
+                self.add(x, y);
+            }
         }
     }
 
@@ -445,7 +459,7 @@ pub fn init(area: &Area, lock: Option<Arc<Mutex<SystemTime>>>, dynamic: bool) ->
     }
 }
 
-fn init_domain(area : &Area) -> Vec<Vec<Arc<Mutex<DataPx>>>>{
+fn init_domain(area: &Area) -> Vec<Vec<Arc<Mutex<DataPx>>>> {
     let mut vx = Vec::new();
     for x in 0..area.width_x {
         let mut vy = Vec::new();
