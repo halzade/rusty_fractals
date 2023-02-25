@@ -86,7 +86,7 @@ impl Machine {
     fn chunk_calculation(
         &self, xy: &[u32; 2],
         fractal: &impl Fractal,
-        data_image: &DataImage,
+        data_image: &DataImage
     ) {
         let (x_from, x_to, y_from, y_to) = chunk_boundaries(xy, self.area.width_x, self.area.height_y);
         for x in x_from..x_to {
@@ -99,7 +99,7 @@ impl Machine {
     fn chunk_calculation_with_wrap(
         &self, xy: &[u32; 2],
         fractal: &impl Fractal,
-        data_image: &DataImage,
+        data_image: &DataImage
     ) {
         if self.resolution_multiplier == ResolutionMultiplier::Single {
             panic!()
@@ -122,12 +122,11 @@ impl Machine {
     fn calculate_path_xy(
         &self, x: usize, y: usize,
         fractal: &impl Fractal,
-        data_image: &DataImage,
+        data_image: &DataImage
     ) {
         let (state, origin_re, origin_im) = data_image.state_origin_at(x, y);
         if pixel_states::is_active_new(state) {
             let (iterator, path_length) = fractal.calculate_path(&self.area, self.iteration_min, self.iteration_max, origin_re, origin_im, data_image);
-
             let state = state_from_path_length(iterator, path_length, self.iteration_min, self.iteration_max);
             data_image.set_pixel_state(x, y, state);
         }

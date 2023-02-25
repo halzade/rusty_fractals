@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::SystemTime;
 use image::{Rgb, RgbImage};
 use crate::area::Area;
-use crate::constants::{GRAY, NEIGHBOURS, REFRESH_MS};
+use crate::constants::{GRAY, MINIMUM_PATH_LENGTH, NEIGHBOURS, REFRESH_MS};
 use crate::data_px;
 use crate::data_px::DataPx;
 use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK, is_finished_success_past};
@@ -13,7 +13,15 @@ use crate::resolution_multiplier::ResolutionMultiplier::Square2;
 pub struct DataImage {
     pub width: usize,
     pub height: usize,
+    pub dynamic: bool,
+    // static data for image
     pub pixels: Vec<Vec<Arc<Mutex<DataPx>>>>,
+    // dynamic data for zoom video
+    // As zoom progress, points [re,im] are projected to new pixels [px,py] until they migrate out of the the tiny area.
+    // Elements outside of tiny result_area are removed. Very short (calculation) paths are also removed.
+    // All elements on paths are already inside result_area because they are filtered like that during the calculation.
+    pub paths: Arc<Mutex<Vec<Vec<[f64; 2]>>>>,
+    // show one patch during calculation with pixel wrap
     pub show_path: Mutex<Vec<[f64; 2]>>,
     pub path_locker: Option<Arc<Mutex<SystemTime>>>,
 }
@@ -99,7 +107,7 @@ impl DataImage {
         image.as_raw().clone()
     }
 
-    pub fn translate_path_to_point_grid(&self, path: Vec<[f64; 2]>, area: &Area, time_lock_o: &Option<Arc<Mutex<SystemTime>>>, max: u32) {
+    fn set_show_path_maybe(&self, path: &Vec<[f64; 2]>, time_lock_o: &Option<Arc<Mutex<SystemTime>>>, max: u32) {
         match time_lock_o {
             Some(time_lock) => {
                 let lo = time_lock.lock();
@@ -123,10 +131,28 @@ impl DataImage {
             }
             None => {}
         }
+    }
+
+    pub fn translate_path_to_point_grid(&self, path: Vec<[f64; 2]>, area: &Area, time_lock_o: &Option<Arc<Mutex<SystemTime>>>, max: u32) {
+        self.set_show_path_maybe(&path, time_lock_o, max);
         for [re, im] in path {
             let (x, y) = area.point_to_pixel(re, im);
             self.add(x, y);
         }
+    }
+
+    pub fn save_path(&self, path: Vec<[f64; 2]>, time_lock_o: &Option<Arc<Mutex<SystemTime>>>, max: u32) {
+        self.set_show_path_maybe(&path, time_lock_o, max);
+        self.paths.lock().unwrap().push(path);
+    }
+
+    pub fn remove_elements_outside(&self, area: &Area) {
+        println!("remove_elements_outside()");
+        let all = self.paths.lock().unwrap().to_owned();
+        for mut path in all {
+            path.retain(|&el| area.contains(el[0], el[1]));
+        }
+        self.paths.lock().unwrap().retain(|path| path.len() as u32 > MINIMUM_PATH_LENGTH);
     }
 
     fn add(&self, x: usize, y: usize) {
@@ -400,25 +426,37 @@ fn tpx_at(vec: &Vec<Vec<Option<DataPx>>>, x: usize, y: usize) -> Option<DataPx> 
 }
 
 pub fn init_data_image(area: &Area, lock: Option<Arc<Mutex<SystemTime>>>) -> DataImage {
-    let width = area.width_x;
-    let height = area.height_y;
+    init(area, lock, false)
+}
+
+pub fn init_data_video(area: &Area, lock: Option<Arc<Mutex<SystemTime>>>) -> DataImage {
+    init(area, lock, true)
+}
+
+pub fn init(area: &Area, lock: Option<Arc<Mutex<SystemTime>>>, dynamic: bool) -> DataImage {
+    DataImage {
+        width: area.width_x,
+        height: area.height_y,
+        dynamic,
+        pixels: init_domain(area),
+        paths: Arc::new(Mutex::new(Vec::new())),
+        show_path: Mutex::new(Vec::new()),
+        path_locker: lock,
+    }
+}
+
+fn init_domain(area : &Area) -> Vec<Vec<Arc<Mutex<DataPx>>>>{
     let mut vx = Vec::new();
-    for x in 0..width {
+    for x in 0..area.width_x {
         let mut vy = Vec::new();
-        for y in 0..height {
+        for y in 0..area.height_y {
             let origin_re = area.screen_to_domain_re(x);
             let origin_im = area.screen_to_domain_im(y);
             vy.push(Arc::new(Mutex::new(data_px::init(origin_re, origin_im))));
         }
         vx.push(vy);
     }
-    DataImage {
-        width,
-        height,
-        pixels: vx,
-        show_path: Mutex::new(Vec::new()),
-        path_locker: lock,
-    }
+    vx
 }
 
 pub fn state_from_path_length(iterator: u32, path_length: u32, min: u32, max: u32) -> DomainElementState {
