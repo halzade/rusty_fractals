@@ -24,6 +24,11 @@ pub struct AppConfig {
     pub save_images: bool,
 }
 
+pub struct Conf {
+    pub min: u32,
+    pub max: u32,
+}
+
 // traits
 
 pub trait Fractal: Sync {
@@ -37,12 +42,8 @@ pub trait FractalMandelbrot: Sync {
     fn name(&self) -> &'static str;
 }
 
-pub trait UpdateMandelbrot: Sync {
-    fn update(&self, conf: &mut MandelbrotConfig);
-}
-
-pub trait UpdateFractal: Sync {
-    fn update(&self, conf: &mut FractalConfig);
+pub trait Update: Sync {
+    fn update(&self, conf: &mut Conf);
 }
 
 pub trait MemType<T> {

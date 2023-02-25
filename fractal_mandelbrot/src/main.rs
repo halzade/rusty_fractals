@@ -1,7 +1,7 @@
 use rusty_fractals_core::machine_mandelbrot;
 use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{FractalMandelbrot, FractalMath, MandelbrotConfig, Update};
+use rusty_fractals_common::fractal::{Conf, FractalMandelbrot, FractalMath, MandelbrotConfig, Update};
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, palette_gray_to_blue};
 
@@ -25,14 +25,6 @@ impl FractalMandelbrot for Mandelbrot {
     }
 }
 
-impl Update for Mandelbrot {
-    fn update(&self, conf: &mut MandelbrotConfig) {
-        println!("update()");
-        conf.iteration_max += 150;
-        println!("ITERATION_MAX = {}", conf.iteration_max);
-    }
-}
-
 fn main() {
     const WIDTH: usize = 1280;
     const HEIGHT: usize = 720;
@@ -50,4 +42,11 @@ fn main() {
     };
     let mandelbrot = &Mandelbrot { name: "Mandelbrot" };
     machine_mandelbrot::mandelbrot_calculation_for(mandelbrot, WIDTH, HEIGHT, mandelbrot_config, area_config);
+}
+
+impl Update for Mandelbrot {
+    fn update(&self, conf: &mut Conf) {
+        conf.max += 150;
+        println!("iteration_max = {}", conf.max);
+    }
 }

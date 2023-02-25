@@ -2,7 +2,7 @@ use std::thread;
 use std::sync::{Arc, Mutex};
 use rusty_fractals_common::data_image;
 use rusty_fractals_common::area::AreaConfig;
-use rusty_fractals_common::fractal::{FractalConfig, Fractal};
+use rusty_fractals_common::fractal::{FractalConfig, Fractal, Update};
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_nebula_values;
 use crate::{machine, window};
 
@@ -17,6 +17,7 @@ impl Engine {
     pub fn calculate_nebula_zoom(
         &self,
         fractal: &'static impl Fractal,
+        fractal_update: &'static impl Update,
         width: usize,
         height: usize,
         fractal_config: FractalConfig,
@@ -35,7 +36,7 @@ impl Engine {
                 perfectly_colour_nebula_values(&data_image, &machine.palette);
                 data_image.recalculate_pixels_positions_for_this_zoom(machine.area());
                 window::refresh_final(&data_image, &mutex_window);
-                fractal.update();
+                fractal_update.update(machine.conf_mut());
                 data_image.clear_screen_pixel_values();
                 machine.area_mut().zoom_in();
             };

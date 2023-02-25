@@ -8,7 +8,7 @@ use rayon::prelude::*;
 use rusty_fractals_common::{area, data_image, pixel_states};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::constants::REFRESH_MS;
-use rusty_fractals_common::fractal::{FractalConfig, Fractal};
+use rusty_fractals_common::fractal::{FractalConfig, Fractal, Conf};
 use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
 use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_nebula_values;
@@ -18,19 +18,20 @@ use crate::window::AppWindow;
 
 // to calculate single image
 pub struct Machine {
-    area: Area,
-    iteration_min: u32,
-    iteration_max: u32,
-    resolution_multiplier: ResolutionMultiplier,
+    pub conf: Conf,
     pub palette: Palette,
+    area: Area,
+    resolution_multiplier: ResolutionMultiplier,
 }
 
 pub fn init(fractal_config: FractalConfig, area_config: &AreaConfig) -> Machine {
     let area = area::init(&area_config);
     Machine {
         area,
-        iteration_min: fractal_config.iteration_min,
-        iteration_max: fractal_config.iteration_max,
+        conf: Conf {
+            max: fractal_config.iteration_max,
+            min: fractal_config.iteration_min,
+        },
         resolution_multiplier: fractal_config.resolution_multiplier,
         palette: fractal_config.palette,
     }
@@ -86,7 +87,7 @@ impl Machine {
     fn chunk_calculation(
         &self, xy: &[u32; 2],
         fractal: &impl Fractal,
-        data_image: &DataImage
+        data_image: &DataImage,
     ) {
         let (x_from, x_to, y_from, y_to) = chunk_boundaries(xy, self.area.width_x, self.area.height_y);
         for x in x_from..x_to {
@@ -99,7 +100,7 @@ impl Machine {
     fn chunk_calculation_with_wrap(
         &self, xy: &[u32; 2],
         fractal: &impl Fractal,
-        data_image: &DataImage
+        data_image: &DataImage,
     ) {
         if self.resolution_multiplier == ResolutionMultiplier::Single {
             panic!()
@@ -109,10 +110,10 @@ impl Machine {
             for y in y_from..y_to {
                 if data_image.is_on_mandelbrot_horizon(x, y) {
                     let (origin_re, origin_im) = data_image.origin_at(x, y);
-                    let wrap = data_image.wrap(origin_re, origin_im, self.resolution_multiplier, &self.area);
+                    let wrap = data_image.wrap(origin_re, origin_im, self.resolution_multiplier.clone(), &self.area);
                     // within the same pixel
                     for [re, im] in wrap {
-                        fractal.calculate_path(&self.area, self.iteration_min, self.iteration_max, re, im, data_image);
+                        fractal.calculate_path(&self.area, self.conf.min, self.conf.max, re, im, data_image);
                     }
                 }
             }
@@ -122,12 +123,12 @@ impl Machine {
     fn calculate_path_xy(
         &self, x: usize, y: usize,
         fractal: &impl Fractal,
-        data_image: &DataImage
+        data_image: &DataImage,
     ) {
         let (state, origin_re, origin_im) = data_image.state_origin_at(x, y);
         if pixel_states::is_active_new(state) {
-            let (iterator, path_length) = fractal.calculate_path(&self.area, self.iteration_min, self.iteration_max, origin_re, origin_im, data_image);
-            let state = state_from_path_length(iterator, path_length, self.iteration_min, self.iteration_max);
+            let (iterator, path_length) = fractal.calculate_path(&self.area, self.conf.min, self.conf.max, origin_re, origin_im, data_image);
+            let state = state_from_path_length(iterator, path_length, self.conf.min, self.conf.max);
             data_image.set_pixel_state(x, y, state);
         }
     }
@@ -138,6 +139,10 @@ impl Machine {
 
     pub fn area_mut(&mut self) -> &mut Area {
         &mut self.area
+    }
+
+    pub fn conf_mut(&mut self) -> &mut Conf {
+        &mut self.conf
     }
 }
 
