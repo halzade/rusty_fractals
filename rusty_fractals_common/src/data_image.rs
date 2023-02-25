@@ -336,7 +336,7 @@ impl DataImage {
                 // There was already zoom in, the new area is smaller
                 if area.contains(px.origin_re, px.origin_im) {
                     // Element did not move out of the zoomed in area
-                    elements_to_move.push(*px);
+                    elements_to_move.push(px.clone());
                 }
             }
         }
@@ -368,15 +368,15 @@ impl DataImage {
                         // Better to delete the other one, then to drop it to other empty pixel.
                         // That would cause problem with optimization, better calculate new and shiny pixel
                         let mut _old = tpx_at(&temp_vx, x, y);
-                        let new: Option<DataPx> = Some(px);
+                        let new: &Option<DataPx> = &Some(px);
                         _old = new;
                     }
                 }
                 // Excellent, there is no conflict
                 None => {
-                    let new: Option<DataPx> = Some(px);
-                    let mut _non = tpx_at(&temp_vx, x, y);
-                    _non = new;
+                    let new: &Option<DataPx> = &Some(px);
+                    let mut _none = tpx_at(&temp_vx, x, y);
+                    _none = new;
                 }
             }
         }
@@ -388,12 +388,13 @@ impl DataImage {
         for y in 0..self.height {
             for x in 0..self.width {
                 let el_o = tpx_at(&temp_vx, x, y);
-                match el_o {
+                // TODO really clone?
+                match el_o.clone() {
                     Some(mut el) => {
                         // Mark it as element from previous calculation iteration
                         let mut mpx = self.mpx_at(x, y);
-                        *mpx = el;
                         el.past();
+                        *mpx = el;
                     }
                     None => {
                         let re = area.screen_to_domain_re(x);
@@ -435,8 +436,8 @@ impl DataImage {
     }
 }
 
-fn tpx_at(vec: &Vec<Vec<Option<DataPx>>>, x: usize, y: usize) -> Option<DataPx> {
-    *vec.get(x).unwrap().get(y).unwrap()
+fn tpx_at(vec: &Vec<Vec<Option<DataPx>>>, x: usize, y: usize) -> &Option<DataPx> {
+    vec.get(x).unwrap().get(y).unwrap()
 }
 
 pub fn init_data_image(area: &Area, lock: Option<Arc<Mutex<SystemTime>>>) -> DataImage {
