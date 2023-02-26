@@ -6,7 +6,7 @@ use crate::area::Area;
 use crate::constants::{GRAY, MINIMUM_PATH_LENGTH, NEIGHBOURS, REFRESH_MS};
 use crate::data_px;
 use crate::data_px::DataPx;
-use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK, is_finished_success_past};
+use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK, is_finished_any, is_finished_success_past};
 use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort, HibernatedDeepBlack};
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Square2;
@@ -49,7 +49,7 @@ impl DataImage {
             for x in 0..self.width {
                 let (value, state, _, _, colour_index_o) = self.values_at(x, y);
                 let colour: Rgb<u8>;
-                if state == ActiveNew {
+                if !is_finished_any(state) {
                     colour = colour_for_state(state);
                 } else {
                     match colour_index_o {
@@ -113,10 +113,6 @@ impl DataImage {
             }
         }
         image.as_raw().clone()
-    }
-
-    pub fn clear_screen_pixel_values(&self) {
-        // TODO
     }
 
     fn set_show_path_maybe(&self, path: &Vec<[f64; 2]>, time_lock_o: &Option<Arc<Mutex<SystemTime>>>, max: u32) {
@@ -266,6 +262,15 @@ impl DataImage {
         }
     }
 
+    pub fn clear_screen_pixel_values(&self) {
+        println!("clear_screen_pixel_values()");
+        for y in 0..self.height {
+            for x in 0..self.width {
+                self.mpx_at(x, y).clear_screen_values();
+            }
+        }
+    }
+
     // all new elements are Active New
     // for wrapping, search only elements, which have some past well finished neighbors
     // previous calculation must be completed
@@ -356,61 +361,68 @@ impl DataImage {
         // Some elements will be moved to new positions
         // For all the moved elements, subsequent calculations will be skipped.
         // 1. save references for elements moving to now positions
-        let mut references_for_move: Vec<DataPx> = Vec::new();
+        let mut c_to_move = 0;
+        let mut c_to_drop = 0;
+        let mut px_for_move: Vec<DataPx> = Vec::new();
         for y in 0..self.height {
             for x in 0..self.width {
                 let px = self.mpx_at(x as usize, y as usize);
                 // There was already zoom in, the new area is smaller
                 if area.contains(px.origin_re, px.origin_im) {
                     // Element did not move out of the zoomed in area
-                    references_for_move.push(px.clone());
+                    c_to_move += 1;
+                    px_for_move.push(px.clone());
+                } else {
+                    c_to_drop += 1;
                 }
             }
         }
         // If there is a conflict, two or more points moved to same pixel, don't drop conflicts around, because that would create really bad mess,
         // Simply calculate new elements in the next calculation iteration, it gives better results without complications.
-        let mut all_some_none: Vec<Vec<Option<DataPx>>> = Vec::new();
+        let mut all_some_none: Vec<Vec<Mutex<Option<DataPx>>>> = Vec::new();
         for _ in 0..self.width {
             let mut vy = Vec::new();
             for _ in 0..self.height {
-                vy.push(None);
+                vy.push(Mutex::new(None));
             }
             all_some_none.push(vy);
         }
         // 2. calculate position for moving elements and resolve conflicts
-        for px in references_for_move {
+        let mut c_conflict = 0;
+        for px in px_for_move {
             // translate [px,py] to [re,im]
-            let (x, y) = area.point_to_pixel(*&px.origin_re, *&px.origin_im);
-            let filled_already_o = tpx_at(&all_some_none, x, y);
+            let (x, y) = area.point_to_pixel(px.origin_re, px.origin_im);
+            let filled_already_o = tpx_at(&all_some_none, x, y).lock().unwrap().clone();
             match filled_already_o {
                 // conflict
                 Some(conf) => {
+                    c_conflict += 1;
                     if conf.has_worse_state_then(&px) {
                         // Replace by element with better state
                         // Better to delete the other one, then to drop it to other empty pixel.
                         // That would cause problem with optimization, better calculate new and shiny pixel
-                        let mut _old = tpx_at(&all_some_none, x, y);
-                        let new: Option<DataPx> = Some(px);
-                        _old = &new;
+                        set_tpx_at(&all_some_none, x, y, px.clone());
                     }
                 }
                 // Excellent, there is no conflict
                 None => {
-                    let new: Option<DataPx> = Some(px);
-                    let mut _none = tpx_at(&all_some_none, x, y);
-                    _none = &new;
+                    set_tpx_at(&all_some_none, x, y, px.clone());
                 }
             }
         }
         // 3. drop moved elements to new positions and create new elements on positions where nothing was moved to
+        let mut c_moved = 0;
+        let mut c_created = 0;
         for y in 0..self.height {
             for x in 0..self.width {
-                let el_o = tpx_at(&all_some_none, x, y);
-                match el_o {
-                    Some(moved) => {
-                        self.replace_px(x, y, moved.clone());
+                let mg_el_co = tpx_at(&all_some_none, x, y).lock().unwrap();
+                match &*mg_el_co {
+                    Some(cop) => {
+                        self.replace_px(x, y, cop.clone());
+                        c_moved += 1;
                     }
                     None => {
+                        c_created += 1;
                         let re = area.screen_to_domain_re(x);
                         let im = area.screen_to_domain_im(y);
                         if self.all_neighbors_finished_too_long(x, y) {
@@ -423,6 +435,15 @@ impl DataImage {
                 }
             }
         }
+        println!("to move:   {}", c_to_move);
+        println!("to drop:   {}", c_to_drop);
+        println!("conflicts: {}", c_conflict);
+        println!("moved:     {}", c_moved);
+        println!("created:   {}", c_created);
+        assert!(c_to_move > 0);
+        assert!(c_to_drop > 0);
+        assert!(c_moved > 0);
+        assert!(c_created > 0);
     }
 
     // Verify if any neighbor px,py finished well, long or at least too short.
@@ -430,8 +451,8 @@ impl DataImage {
     // Don't do any calculation for those.
     fn all_neighbors_finished_too_long(&mut self, x: usize, y: usize) -> bool {
         let neigh = NEIGHBOURS as i32;
-        for a in -neigh..neigh {
-            for b in -neigh..neigh {
+        for a in -neigh..(neigh + 1) {
+            for b in -neigh..(neigh + 1) {
                 let xx = x as i32 + a;
                 let yy = y as i32 + b;
                 if check_domain(xx, yy, self.width, self.height) {
@@ -454,18 +475,13 @@ impl DataImage {
     }
 }
 
-fn tpx_at(vec: &Vec<Vec<Option<DataPx>>>, x: usize, y: usize) -> &Option<DataPx> {
-    let ovy = vec.get(x);
-    match ovy {
-        None => {
-            println!("error: {} {}", x, y);
-            panic!();
-        }
-        Some(vy) => {
-            let y = vy.get(y).unwrap();
-            y
-        }
-    }
+fn tpx_at(vec: &Vec<Vec<Mutex<Option<DataPx>>>>, x: usize, y: usize) -> &Mutex<Option<DataPx>> {
+    vec.get(x).unwrap().get(y).unwrap()
+}
+
+fn set_tpx_at(vec: &Vec<Vec<Mutex<Option<DataPx>>>>, x: usize, y: usize, px_ref: DataPx) {
+    let vy = vec.get(x).unwrap().to_owned();
+    vy[y].lock().unwrap().replace(px_ref.clone());
 }
 
 pub fn init_data_image(area: &Area, lock: Option<Arc<Mutex<SystemTime>>>) -> DataImage {
@@ -534,7 +550,6 @@ pub fn colour_for_state(state: DomainElementState) -> Rgb<u8> {
         FinishedSuccess => FINISHED_SUCCESS,
         FinishedTooShort => FINISHED_TOO_SHORT,
         FinishedTooLong => FINISHED_TOO_LONG,
-        _ => panic!(),
     };
 }
 

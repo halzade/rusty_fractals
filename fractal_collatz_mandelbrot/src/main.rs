@@ -1,4 +1,4 @@
-use rusty_fractals_core::machine_mandelbrot;
+use rusty_fractals_core::engine;
 use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::fractal;
 use rusty_fractals_common::fractal::{Conf, FractalMandelbrot, FractalMath, MandelbrotConfig, UpdateMandelbrot};
@@ -46,8 +46,7 @@ fn main() {
         center_im: -0.214699221335319460,
     };
     let collatz = &CollatzConjectureMandelbrot { name: "Collatz Conjecture Mandelbrot" };
-    machine_mandelbrot::mandelbrot_calculation_for(collatz, mandelbrot_config, area_config);
-    // engine::calculate_mandelbrot_zoom(collatz, collatz, mandelbrot_config, area_config);
+    engine::calculate_mandelbrot_zoom(collatz, collatz, mandelbrot_config, area_config);
 }
 
 #[cfg(test)]
