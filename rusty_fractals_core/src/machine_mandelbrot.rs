@@ -64,6 +64,7 @@ impl MachineMandelbrot {
             // window refresh
             window::refresh_maybe(data_image, &app_window, Some(refresh_locker), None);
         });
+        data_image.recalculate_pixels_states();
         perfectly_colour_mandelbrot_values(&data_image, &self.palette, &self.palette_zero);
         window::refresh_final(data_image, &app_window);
     }

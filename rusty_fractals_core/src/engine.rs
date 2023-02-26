@@ -38,7 +38,6 @@ pub fn calculate_mandelbrot_zoom(
             machine.area_mut().zoom_in();
             data_image.recalculate_pixels_positions_for_next_calculation(machine.area());
             window::refresh_maybe(&data_image, &mutex_window, None, Some(machine.area()));
-            data_image.clear_screen_pixel_values();
             fractal_update.update(machine.conf_mut());
         };
     });
@@ -69,7 +68,6 @@ pub fn calculate_nebula_zoom(
             machine.area_mut().zoom_in();
             data_image.recalculate_pixels_positions_for_next_calculation(machine.area());
             window::refresh_maybe(&data_image, &mutex_window, None, Some(machine.area()));
-            data_image.clear_screen_pixel_values();
             stats.update(&data_image, it);
             fractal_update.update(machine.conf_mut(), stats);
         };

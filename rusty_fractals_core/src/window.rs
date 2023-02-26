@@ -15,14 +15,12 @@ use rusty_fractals_common::data_image::DataImage;
 pub struct AppWindow {
     pub window: DoubleWindow,
     pub frame: Frame,
-    refresh_time: SystemTime,
 }
 
 pub fn init(fractal_name: &'static str, width: usize, height: usize) -> AppWindow {
     AppWindow {
         window: Window::default().with_label(fractal_name).with_size(width as i32, height as i32).center_screen(),
         frame: Frame::new(0, 0, width as i32, height as i32, ""),
-        refresh_time: SystemTime::now(),
     }
 }
 
@@ -58,7 +56,6 @@ impl AppWindow {
     }
 
     pub fn refresh(&mut self, data_image: &DataImage, final_image: bool, area_o: Option<&Area>) {
-        self.refresh_time = SystemTime::now();
         let image_rgb = RgbImage::new(data_image.image(final_image, area_o).as_slice(), data_image.width as i32, data_image.height as i32, Rgb8).unwrap();
         let _ = fltk::app::lock();
         self.frame.set_image(Some(image_rgb));
