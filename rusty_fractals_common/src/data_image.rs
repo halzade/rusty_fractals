@@ -262,15 +262,6 @@ impl DataImage {
         }
     }
 
-    pub fn clear_screen_pixel_values(&self) {
-        println!("clear_screen_pixel_values()");
-        for y in 0..self.height {
-            for x in 0..self.width {
-                self.mpx_at(x, y).clear_screen_values();
-            }
-        }
-    }
-
     // all new elements are Active New
     // for wrapping, search only elements, which have some past well finished neighbors
     // previous calculation must be completed
