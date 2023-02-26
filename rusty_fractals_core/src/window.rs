@@ -69,34 +69,28 @@ impl AppWindow {
     }
 }
 
+fn refresh_unlocked(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>, area_o: Option<&Area>) {
+    let mut mutex_guard = arc_mutex_window.lock().unwrap();
+    let app_window = mutex_guard.borrow_mut();
+    match area_o {
+        Some(area) => {
+            app_window.refresh(data_image, false, Some(area));
+        }
+        None => {
+            app_window.refresh(data_image, false, None);
+        }
+    }
+}
+
 pub fn refresh_maybe(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>, o_refresh_locker: Option<&Arc<Mutex<SystemTime>>>, area_o: Option<&Area>) {
     match o_refresh_locker {
         None => {
-            let mut mutex_guard = arc_mutex_window.lock().unwrap();
-            let app_window = mutex_guard.borrow_mut();
-            match area_o {
-                Some(area) => {
-                    app_window.refresh(data_image, false, Some(area));
-                }
-                None => {
-                    app_window.refresh(data_image, false, None);
-                }
-            }
+            refresh_unlocked(data_image, arc_mutex_window, area_o);
         }
         Some(refresh_locker) => {
             let ms = SystemTime::now().duration_since(*refresh_locker.lock().unwrap()).unwrap().as_millis();
             if ms > REFRESH_MS {
-                let mut mutex_guard = arc_mutex_window.lock().unwrap();
-                let app_window = mutex_guard.borrow_mut();
-                // refresh window
-                match area_o {
-                    Some(area) => {
-                        app_window.refresh(data_image, false, Some(area));
-                    }
-                    None => {
-                        app_window.refresh(data_image, false, None);
-                    }
-                }
+                refresh_unlocked(data_image, arc_mutex_window, area_o);
                 *refresh_locker.lock().unwrap().deref_mut() = SystemTime::now();
             }
         }
