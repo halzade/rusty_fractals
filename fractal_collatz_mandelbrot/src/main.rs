@@ -33,22 +33,20 @@ impl UpdateMandelbrot for CollatzConjectureMandelbrot {
 }
 
 fn main() {
-    const WIDTH: usize = 1280;
-    const HEIGHT: usize = 720;
     let mandelbrot_config = MandelbrotConfig {
         iteration_max: 14800,
         palette: palette_blue_to_white_circle_up(),
         palette_zero: palette_gray_to_blue(),
     };
     let area_config = AreaConfig {
+        width_x: 1280,
+        height_y: 720,
         width_re: 3.0,
         center_re: -0.882952991714172300,
         center_im: -0.214699221335319460,
-        width_x: WIDTH,
-        height_y: HEIGHT,
     };
     let collatz = &CollatzConjectureMandelbrot { name: "Collatz Conjecture Mandelbrot" };
-    machine_mandelbrot::mandelbrot_calculation_for(collatz, WIDTH, HEIGHT, mandelbrot_config, area_config);
+    machine_mandelbrot::mandelbrot_calculation_for(collatz, mandelbrot_config, area_config);
     // engine::calculate_mandelbrot_zoom(collatz, collatz, mandelbrot_config, area_config);
 }
 

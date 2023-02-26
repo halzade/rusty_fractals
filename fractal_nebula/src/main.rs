@@ -54,8 +54,6 @@ impl Update for Nebula {
 }
 
 fn main() {
-    const WIDTH: usize = 1280;
-    const HEIGHT: usize = 1000;
     let fractal_config = FractalConfig {
         iteration_min: 42,
         iteration_max: 14800,
@@ -63,14 +61,14 @@ fn main() {
         palette: palette_blue_to_white_circle_up(),
     };
     let area_config = AreaConfig {
+        width_x: 1280,
+        height_y: 1000,
         width_re: 3.5,
         center_re: -0.5,
         center_im: 0.0,
-        width_x: WIDTH,
-        height_y: HEIGHT,
     };
     let nebula = &Nebula { name: "Nebula" };
-    machine::nebula_calculation_for(nebula, WIDTH, HEIGHT, fractal_config, area_config);
+    machine::nebula_calculation_for(nebula, fractal_config, area_config);
 }
 
 #[test]

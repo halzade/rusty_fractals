@@ -39,14 +39,15 @@ pub fn init(fractal_config: FractalConfig, area_config: &AreaConfig) -> Machine 
 
 pub fn nebula_calculation_for(
     fractal: &'static impl Fractal,
-    width: usize,
-    height: usize,
     fractal_config: FractalConfig,
     area_config: AreaConfig,
 ) {
     let machine = init(fractal_config, &area_config);
+    let area = machine.area();
+    let width = area.width_x;
+    let height = area.height_y;
     let ams = Some(Arc::new(Mutex::new(SystemTime::now())));
-    let data_image = data_image::init_data_image(machine.area(), ams);
+    let data_image = data_image::init_data_image(area, ams);
     let mut app_window = window::init(fractal.name(), width, height);
     let app = app_window.show(&data_image.image_init(), width, height);
     let mutex_window = Arc::new(Mutex::new(app_window));

@@ -31,10 +31,6 @@ impl Fractal for NebulaSide {
 }
 
 fn main() {
-    const WIDTH: usize = 1280;
-    const HEIGHT: usize = 720;
-    const TARGET_RE: f64 = -0.10675625916322415;
-    const TARGET_IM: f64 = -0.8914368889277283;
     let fractal_config = FractalConfig {
         iteration_min: 42,
         iteration_max: 14800,
@@ -42,15 +38,14 @@ fn main() {
         palette: palette_blue_to_white_circle_up(),
     };
     let area_config = AreaConfig {
+        width_x: 1280,
+        height_y: 720,
         width_re: 7.0,
-        center_re: TARGET_RE,
-        center_im: TARGET_IM,
-        width_x: WIDTH,
-        height_y: HEIGHT,
+        center_re: -0.10675625916322415,
+        center_im: -0.8914368889277283,
     };
     let nebula_side = &NebulaSide { name: "Nebula side" };
-    // todo zoom video
-    machine::nebula_calculation_for(nebula_side, WIDTH, HEIGHT, fractal_config, area_config);
+    machine::nebula_calculation_for(nebula_side, fractal_config, area_config);
 }
 
 #[test]

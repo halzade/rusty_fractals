@@ -31,8 +31,6 @@ impl Fractal for InfinityTop {
 }
 
 fn main() {
-    const WIDTH: usize = 800; // 1920
-    const HEIGHT: usize = 800; // 1080
     let fractal_config = FractalConfig {
         iteration_min: 3000,
         iteration_max: 30_000, // 180_000
@@ -44,14 +42,14 @@ fn main() {
     // INIT_FINEBROT_TARGET_re = -1.0;
     // INIT_FINEBROT_TARGET_im = 0.0;
     let area_config = AreaConfig {
+        width_x: 600,
+        height_y: 600,
         width_re: 2.5,
         center_re: -0.5,
         center_im: 0.0,
-        width_x: WIDTH,
-        height_y: HEIGHT,
     };
     let infinity = &InfinityTop { name: "Infinity" };
-    machine::nebula_calculation_for(infinity, WIDTH, HEIGHT, fractal_config, area_config);
+    machine::nebula_calculation_for(infinity, fractal_config, area_config);
 }
 
 #[test]

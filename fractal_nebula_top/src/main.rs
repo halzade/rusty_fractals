@@ -7,9 +7,6 @@ use rusty_fractals_common::fractal::{FractalConfig, Fractal, FractalMath};
 use rusty_fractals_common::palettes::palette_purple_to_white;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square2;
 
-const TARGET_RE: f64 = -1.40115859004747;
-const TARGET_IM: f64 = -0.00000000709356;
-
 struct NebulaTop {
     name: &'static str,
 }
@@ -34,8 +31,6 @@ impl Fractal for NebulaTop {
 }
 
 fn main() {
-    const WIDTH: usize = 1280;
-    const HEIGHT: usize = 720;
     let fractal_config = FractalConfig {
         iteration_min: 42,
         iteration_max: 14800,
@@ -43,15 +38,14 @@ fn main() {
         palette: palette_purple_to_white(),
     };
     let area_config = AreaConfig {
+        width_x: 1280,
+        height_y: 720,
         width_re: 6.0,
-        center_re: TARGET_RE,
-        center_im: TARGET_IM,
-        width_x: WIDTH,
-        height_y: HEIGHT,
+        center_re: -1.40115859004747,
+        center_im: -0.00000000709356,
     };
     let nebula_top = &NebulaTop { name: "Nebula top" };
-    // todo zoom video
-    machine::nebula_calculation_for(nebula_top, WIDTH, HEIGHT, fractal_config, area_config);
+    machine::nebula_calculation_for(nebula_top, fractal_config, area_config);
 }
 
 

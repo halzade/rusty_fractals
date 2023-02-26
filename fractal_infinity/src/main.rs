@@ -31,8 +31,6 @@ impl Fractal for Infinity {
 }
 
 fn main() {
-    const WIDTH: usize = 800; // 1920
-    const HEIGHT: usize = 800; // 1080
     let fractal_config = FractalConfig {
         iteration_min: 3000,
         iteration_max: 30_000,
@@ -40,14 +38,14 @@ fn main() {
         palette: palette_blue_to_white_circle_up(),
     };
     let area_config = AreaConfig {
+        width_x: 600,
+        height_y: 600,
         width_re: 2.6,
         center_re: -0.5,
         center_im: 0.0,
-        width_x: WIDTH,
-        height_y: HEIGHT,
     };
     let infinity = &Infinity { name: "Infinity" };
-    machine::nebula_calculation_for(infinity, WIDTH, HEIGHT, fractal_config, area_config);
+    machine::nebula_calculation_for(infinity, fractal_config, area_config);
 }
 
 #[test]

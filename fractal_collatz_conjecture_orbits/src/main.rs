@@ -32,8 +32,6 @@ impl Fractal for CollatzConjectureOrbits {
 }
 
 fn main() {
-    const WIDTH: usize = 1280;
-    const HEIGHT: usize = 720;
     let fractal_config = FractalConfig {
         iteration_min: 7,
         iteration_max: 1348,
@@ -41,14 +39,14 @@ fn main() {
         palette: palette_blue_to_white_circle_up(),
     };
     let area_config = AreaConfig {
+        width_x: 1280,
+        height_y: 720,
         width_re: 5.0,
         center_re: -0.088485445553580480,
         center_im: -0.200679435068532800,
-        width_x: WIDTH,
-        height_y: HEIGHT,
     };
     let collatz = &CollatzConjectureOrbits { name: "Collatz Conjecture Orbits" };
-    machine::nebula_calculation_for(collatz, WIDTH, HEIGHT, fractal_config, area_config);
+    machine::nebula_calculation_for(collatz, fractal_config, area_config);
 }
 
 #[cfg(test)]

@@ -1,20 +1,20 @@
 use crate::constants::ZOOM;
 
 pub struct AreaConfig {
+    pub width_x: usize,
+    pub height_y: usize,
     pub width_re: f64,
     pub center_re: f64,
     pub center_im: f64,
-    pub width_x: usize,
-    pub height_y: usize,
 }
 
 pub struct Area {
+    pub width_x: usize,
+    pub height_y: usize,
     pub width_re: f64,
     pub height_im: f64,
     pub width_half_x: usize,
     pub height_half_y: usize,
-    pub width_x: usize,
-    pub height_y: usize,
     pub numbers_re: Vec<f64>,
     pub numbers_im: Vec<f64>,
     pub center_re: f64,
@@ -117,12 +117,12 @@ pub fn init(config: &AreaConfig) -> Area {
     }
 
     Area {
+        width_x,
+        height_y,
         width_re,
         height_im,
         width_half_x,
         height_half_y,
-        width_x,
-        height_y,
         numbers_re,
         numbers_im,
         center_re,

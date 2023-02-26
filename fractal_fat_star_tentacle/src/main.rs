@@ -33,8 +33,6 @@ impl Fractal for FatStarTentacle {
 }
 
 fn main() {
-    const WIDTH: usize = 800; // 1920
-    const HEIGHT: usize = 800; // 1080
     let fractal_config = FractalConfig {
         iteration_min: 8,
         iteration_max: 81000,
@@ -46,14 +44,14 @@ fn main() {
     // const INIT_FINEBROT_TARGET_re : f64= 0.5;
     // const INIT_FINEBROT_TARGET_im : f64= -0.38;
     let area_config = AreaConfig {
+        width_x: 600,
+        height_y: 600,
         width_re: 3.5,
         center_re: 0.0,
         center_im: 0.0,
-        width_x: WIDTH,
-        height_y: HEIGHT,
     };
     let fat_star = &FatStarTentacle { name: "Fat Star" };
-    machine::nebula_calculation_for(fat_star, WIDTH, HEIGHT, fractal_config, area_config);
+    machine::nebula_calculation_for(fat_star, fractal_config, area_config);
 }
 
 #[test]

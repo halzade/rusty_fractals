@@ -40,8 +40,6 @@ impl Fractal for Head {
 }
 
 fn main() {
-    const WIDTH: usize = 1280;
-    const HEIGHT: usize = 720;
     let fractal_config = FractalConfig {
         iteration_min: 8,
         iteration_max: 25000,
@@ -49,14 +47,14 @@ fn main() {
         palette: palette_blue_to_white_circle_up(),
     };
     let area_config = AreaConfig {
+        width_x: 1280,
+        height_y: 720,
         width_re: 5.0,
         center_re: -0.16884290496519,
         center_im: -0.37573460559804,
-        width_x: WIDTH,
-        height_y: HEIGHT,
     };
     let head = &Head { name: "Head" };
-    machine::nebula_calculation_for(head, WIDTH, HEIGHT, fractal_config, area_config);
+    machine::nebula_calculation_for(head, fractal_config, area_config);
 }
 
 #[cfg(test)]

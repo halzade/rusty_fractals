@@ -32,8 +32,6 @@ impl Fractal for Lotus {
 }
 
 fn main() {
-    const WIDTH: usize = 1280;
-    const HEIGHT: usize = 1000;
     let fractal_config = FractalConfig {
         iteration_min: 42,
         iteration_max: 8000,
@@ -41,14 +39,14 @@ fn main() {
         palette: palette_blue_to_white_circle_up(),
     };
     let area_config = AreaConfig {
+        width_x: 1280,
+        height_y: 1000,
         width_re: 3.5,
         center_re: 0.0, //  0.67748277351478,
         center_im: 0.0, // -1.18770078111202,
-        width_x: WIDTH,
-        height_y: HEIGHT,
     };
     let lotus = &Lotus { name: "Lotus" };
-    machine::nebula_calculation_for(lotus, WIDTH, HEIGHT, fractal_config, area_config);
+    machine::nebula_calculation_for(lotus, fractal_config, area_config);
 }
 
 #[cfg(test)]

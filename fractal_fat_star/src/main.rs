@@ -33,8 +33,6 @@ impl Fractal for FatStar {
 }
 
 fn main() {
-    const WIDTH: usize = 1000;
-    const HEIGHT: usize = 1000;
     let fractal_config = FractalConfig {
         iteration_min: 42,
         iteration_max: 22000,
@@ -42,15 +40,15 @@ fn main() {
         palette: palette_blue_to_white_circle_up(),
     };
     let area_config = AreaConfig {
+        width_x: 800,
+        height_y: 800,
         width_re: 3.5,
         center_re: 0.0,
         center_im: 0.0,
-        width_x: WIDTH,
-        height_y: HEIGHT,
     };
     let fat_star = &FatStar { name: "Fat Star" };
     // TODO coloring based on path length
-    machine::nebula_calculation_for(fat_star, WIDTH, HEIGHT, fractal_config, area_config);
+    machine::nebula_calculation_for(fat_star, fractal_config, area_config);
 }
 
 #[cfg(test)]
