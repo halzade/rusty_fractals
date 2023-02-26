@@ -25,6 +25,13 @@ impl FractalMandelbrot for Mandelbrot {
     }
 }
 
+impl Update for Mandelbrot {
+    fn update(&self, conf: &mut Conf) {
+        conf.max += 150;
+        println!("iteration_max = {}", conf.max);
+    }
+}
+
 fn main() {
     const WIDTH: usize = 1280;
     const HEIGHT: usize = 720;
@@ -42,11 +49,4 @@ fn main() {
     };
     let mandelbrot = &Mandelbrot { name: "Mandelbrot" };
     machine_mandelbrot::mandelbrot_calculation_for(mandelbrot, WIDTH, HEIGHT, mandelbrot_config, area_config);
-}
-
-impl Update for Mandelbrot {
-    fn update(&self, conf: &mut Conf) {
-        conf.max += 150;
-        println!("iteration_max = {}", conf.max);
-    }
 }
