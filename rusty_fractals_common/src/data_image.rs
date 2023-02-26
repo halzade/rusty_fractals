@@ -1,6 +1,7 @@
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::SystemTime;
 use image::{Rgb, RgbImage};
+use data_px::{active_new, hibernated_deep_black};
 use crate::area::Area;
 use crate::constants::{GRAY, MINIMUM_PATH_LENGTH, NEIGHBOURS, REFRESH_MS};
 use crate::data_px;
@@ -91,7 +92,14 @@ impl DataImage {
         for y in 0..self.height {
             for x in 0..self.width {
                 let (_, _, _, _, colour_index_o) = self.values_at(x, y);
-                image.put_pixel(x as u32, y as u32, colour_index_o.unwrap());
+                match colour_index_o {
+                    None => {
+                        panic!();
+                    }
+                    Some(ci) => {
+                        image.put_pixel(x as u32, y as u32, ci);
+                    }
+                }
             }
         }
         image.as_raw().clone()
@@ -108,7 +116,7 @@ impl DataImage {
     }
 
     pub fn clear_screen_pixel_values(&self) {
-        todo!()
+        // TODO
     }
 
     fn set_show_path_maybe(&self, path: &Vec<[f64; 2]>, time_lock_o: &Option<Arc<Mutex<SystemTime>>>, max: u32) {
@@ -179,6 +187,29 @@ impl DataImage {
         arc_mutex_dpx.lock().unwrap()
     }
 
+    fn mpx_o_at(&self, x: usize, y: usize) -> Option<&Arc<Mutex<DataPx>>> {
+        // let arc_mutex_dpx = self.pixels.get(x).unwrap().get(y).unwrap();
+        let ovx = self.pixels.get(x);
+        match ovx {
+            None => { None }
+            Some(vx) => {
+                let ovy = vx.get(y);
+                match ovy {
+                    None => { None }
+                    Some(vy) => {
+                        return Some(vy);
+                    }
+                }
+            }
+        }
+    }
+
+    fn replace_px(&self, x: usize, y: usize, dp: DataPx) {
+        let arc_mut_px = self.pixels.get(x).unwrap().get(y).unwrap();
+        let mut _old = arc_mut_px.lock().unwrap();
+        *_old = dp;
+    }
+
     pub fn values_at(&self, x: usize, y: usize) -> (u32, DomainElementState, f64, f64, Option<Rgb<u8>>) {
         let p = self.mpx_at(x, y);
         (p.value, p.state, p.quad, p.quid, p.colour)
@@ -224,19 +255,6 @@ impl DataImage {
         p.quad = 1.0;
         p.quid = 1.0;
         p.state = state;
-    }
-
-    fn past(&self, x: usize, y: usize) {
-        self.mpx_at(x, y).past();
-    }
-
-    pub fn recalculate_pixels_states(&self) {
-        println!("recalculate_pixels_states()");
-        for y in 0..self.height {
-            for x in 0..self.width {
-                self.past(x, y);
-            }
-        }
     }
 
     // all new elements are Active New
@@ -323,43 +341,39 @@ impl DataImage {
     }
 
     // This is called after calculation finished, zoom was called and new area measures recalculated
-    pub fn recalculate_pixels_positions_for_this_zoom(&mut self, area: &Area) {
+    pub fn recalculate_pixels_positions_for_next_calculation(&mut self, area: &Area) {
+        println!("recalculate_pixels_positions_for_next_calculation()");
         // Scan all elements : old positions from previous calculation
         // Some elements will be moved to new positions
         // For all the moved elements, subsequent calculations will be skipped.
-
-        let mut elements_to_move: Vec<DataPx> = Vec::new();
-
+        // 1. save references for elements moving to now positions
+        let mut references_for_move: Vec<DataPx> = Vec::new();
         for y in 0..self.height {
             for x in 0..self.width {
-                let px = self.mpx_at(x as usize, y as usize);
+                let mut px = self.mpx_at(x as usize, y as usize);
                 // There was already zoom in, the new area is smaller
                 if area.contains(px.origin_re, px.origin_im) {
                     // Element did not move out of the zoomed in area
-                    elements_to_move.push(px.clone());
+                    px.past();
+                    references_for_move.push(px.clone());
                 }
             }
         }
-
-        self.pixels.clear();
-
-        // If there is a conflict, two or more points moved to same pixel,don't drop conflicts around
-        // Simply calculate new elements in the next calculation iteration. Because that would create really bad mess.
-
-        let mut temp_vx: Vec<Vec<Option<DataPx>>> = Vec::new();
+        // If there is a conflict, two or more points moved to same pixel, don't drop conflicts around, because that would create really bad mess,
+        // Simply calculate new elements in the next calculation iteration, it gives better results without complications.
+        let mut all_some_none: Vec<Vec<Option<DataPx>>> = Vec::new();
         for _ in 0..self.width {
             let mut vy = Vec::new();
             for _ in 0..self.height {
                 vy.push(None);
             }
-            temp_vx.push(vy);
+            all_some_none.push(vy);
         }
-
-        for px in elements_to_move {
+        // 2. calculate position for moving elements and resolve conflicts
+        for px in references_for_move {
             // translate [px,py] to [re,im]
             let (x, y) = area.point_to_pixel(*&px.origin_re, *&px.origin_im);
-
-            let filled_already_o = tpx_at(&temp_vx, x, y);
+            let filled_already_o = tpx_at(&all_some_none, x, y);
             match filled_already_o {
                 // conflict
                 Some(conf) => {
@@ -367,47 +381,35 @@ impl DataImage {
                         // Replace by element with better state
                         // Better to delete the other one, then to drop it to other empty pixel.
                         // That would cause problem with optimization, better calculate new and shiny pixel
-                        let mut _old = tpx_at(&temp_vx, x, y);
-                        let new: &Option<DataPx> = &Some(px);
-                        _old = new;
+                        let mut _old = tpx_at(&all_some_none, x, y);
+                        let new: Option<DataPx> = Some(px);
+                        _old = &new;
                     }
                 }
                 // Excellent, there is no conflict
                 None => {
-                    let new: &Option<DataPx> = &Some(px);
-                    let mut _none = tpx_at(&temp_vx, x, y);
-                    _none = new;
+                    let new: Option<DataPx> = Some(px);
+                    let mut _none = tpx_at(&all_some_none, x, y);
+                    _none = &new;
                 }
             }
         }
-
-        // Repaint with only moved elements
-        // TODO refresh
-
-        // Create new elements on positions where nothing was moved to
+        // 3. drop moved elements to new positions and create new elements on positions where nothing was moved to
         for y in 0..self.height {
             for x in 0..self.width {
-                let el_o = tpx_at(&temp_vx, x, y);
-                // TODO really clone?
-                match el_o.clone() {
-                    Some(mut el) => {
-                        // Mark it as element from previous calculation iteration
-                        let mut mpx = self.mpx_at(x, y);
-                        el.past();
-                        *mpx = el;
+                let el_o = tpx_at(&all_some_none, x, y);
+                match el_o {
+                    Some(moved) => {
+                        self.replace_px(x, y, moved.clone());
                     }
                     None => {
                         let re = area.screen_to_domain_re(x);
                         let im = area.screen_to_domain_im(y);
                         if self.all_neighbors_finished_too_long(x, y) {
                             // Calculation for some positions should be skipped as they are too far away form any long successful divergent position
-                            let el = data_px::hibernated_deep_black(re, im);
-                            let mut mpx = self.mpx_at(x, y);
-                            *mpx = el;
+                            self.replace_px(x, y, hibernated_deep_black(re, im));
                         } else {
-                            let el = data_px::active_new(re, im);
-                            let mut mpx = self.mpx_at(x, y);
-                            *mpx = el;
+                            self.replace_px(x, y, active_new(re, im));
                         }
                     }
                 }
@@ -425,9 +427,17 @@ impl DataImage {
                 let xx = x as i32 + a;
                 let yy = y as i32 + b;
                 if check_domain(xx, yy, self.width, self.height) {
-                    let el = self.mpx_at(xx as usize, yy as usize);
-                    if el.is_finished_success_any() || el.is_finished_too_short() {
-                        return false;
+                    let oel = self.mpx_o_at(xx as usize, yy as usize);
+                    match oel {
+                        None => {
+                            // no element moved to this position
+                        }
+                        Some(ael) => {
+                            let el = ael.lock().unwrap();
+                            if el.is_finished_success_any() || el.is_finished_too_short() {
+                                return false;
+                            }
+                        }
                     }
                 }
             }
