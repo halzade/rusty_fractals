@@ -455,7 +455,17 @@ impl DataImage {
 }
 
 fn tpx_at(vec: &Vec<Vec<Option<DataPx>>>, x: usize, y: usize) -> &Option<DataPx> {
-    vec.get(x).unwrap().get(y).unwrap()
+    let ovy = vec.get(x);
+    match ovy {
+        None => {
+            println!("error: {} {}", x, y);
+            panic!();
+        }
+        Some(vy) => {
+            let y = vy.get(y).unwrap();
+            y
+        }
+    }
 }
 
 pub fn init_data_image(area: &Area, lock: Option<Arc<Mutex<SystemTime>>>) -> DataImage {

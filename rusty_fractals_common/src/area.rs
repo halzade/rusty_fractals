@@ -56,17 +56,18 @@ impl Area {
         self.height_im = self.height_im * ZOOM;
         self.plank = self.width_re / self.width_x as f64;
         self.border_low_re = self.center_re - self.width_re / 2.0;
-        self.border_high_re = self.center_re + self.width_re / 2.0;
+        self.border_high_re = self.center_re + self.width_re / 2.0 - self.plank;
         self.border_low_im = self.center_im - self.height_im / 2.0;
-        self.border_high_im = self.center_im + self.height_im / 2.0;
-
+        self.border_high_im = self.center_im + self.height_im / 2.0 - self.plank;
         self.numbers_re.clear();
         self.numbers_im.clear();
+        // use re, im in the center of each pixel
+        let ph = self.plank / 2.0;
         for x in 0..self.width_x {
-            self.numbers_re.push(self.border_low_re + (self.plank * x as f64));
+            self.numbers_re.push(self.border_low_re + (self.plank * x as f64) + ph);
         }
         for y in 0..self.height_y {
-            self.numbers_im.push(self.border_low_im + (self.plank * y as f64));
+            self.numbers_im.push(self.border_low_im + (self.plank * y as f64) + ph);
         }
     }
 

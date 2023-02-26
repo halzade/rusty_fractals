@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use rusty_fractals_common::{data_image, fractal_stats};
 use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::fractal::{FractalConfig, Fractal, Update, FractalMandelbrot, MandelbrotConfig, UpdateMandelbrot};
-use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_nebula_values;
+use rusty_fractals_common::perfect_colour_distribution::{perfectly_colour_mandelbrot_values, perfectly_colour_nebula_values};
 use crate::{machine, machine_mandelbrot, window};
 
 // to calculate sequence of images for zoom video
@@ -33,11 +33,11 @@ pub fn calculate_mandelbrot_zoom(
             println!("{}:", it);
             machine.calculate_mandelbrot(fractal, &data_image, &mutex_window);
             data_image.translate_all_paths_to_point_grid(machine.area());
-            perfectly_colour_nebula_values(&data_image, &machine.palette);
-            data_image.recalculate_pixels_positions_for_next_calculation(machine.area());
-            window::refresh_maybe(&data_image, &mutex_window, None, Some(machine.area()));
+            perfectly_colour_mandelbrot_values(&data_image, &machine.palette, &machine.palette_zero);
             // prepare next frame
             machine.area_mut().zoom_in();
+            data_image.recalculate_pixels_positions_for_next_calculation(machine.area());
+            window::refresh_maybe(&data_image, &mutex_window, None, Some(machine.area()));
             data_image.clear_screen_pixel_values();
             fractal_update.update(machine.conf_mut());
         };
@@ -65,13 +65,13 @@ pub fn calculate_nebula_zoom(
             machine.calculate(fractal, &data_image, &mutex_window);
             data_image.translate_all_paths_to_point_grid(machine.area());
             perfectly_colour_nebula_values(&data_image, &machine.palette);
+            // prepare next frame
+            machine.area_mut().zoom_in();
             data_image.recalculate_pixels_positions_for_next_calculation(machine.area());
             window::refresh_maybe(&data_image, &mutex_window, None, Some(machine.area()));
-            // prepare next frame
+            data_image.clear_screen_pixel_values();
             stats.update(&data_image, it);
             fractal_update.update(machine.conf_mut(), stats);
-            data_image.clear_screen_pixel_values();
-            machine.area_mut().zoom_in();
         };
     });
     app.run().unwrap();
