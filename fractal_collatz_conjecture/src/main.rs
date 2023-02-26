@@ -1,7 +1,7 @@
 use rusty_fractals_core::engine;
 use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{MandelbrotConfig, FractalMandelbrot, FractalMath, Update, Conf};
+use rusty_fractals_common::fractal::{MandelbrotConfig, FractalMandelbrot, FractalMath, Update, Conf, UpdateMandelbrot};
 use rusty_fractals_common::mem_collatz::MemCollatz;
 use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, palette_gray_to_blue};
 
@@ -26,7 +26,7 @@ impl FractalMandelbrot for CollatzConjecture {
     }
 }
 
-impl Update for CollatzConjecture {
+impl UpdateMandelbrot for CollatzConjecture {
     fn update(&self, conf: &mut Conf) {
         conf.max += 150;
         println!("iteration_max = {}", conf.max);

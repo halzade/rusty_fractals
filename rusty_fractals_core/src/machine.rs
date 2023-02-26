@@ -65,7 +65,7 @@ impl Machine {
             // calculation
             self.chunk_calculation(&xy, fractal, &data_image);
             // window refresh
-            window::refresh_maybe(data_image, &app_window, refresh_locker, None);
+            window::refresh_maybe(data_image, &app_window, Some(refresh_locker), None);
         });
         data_image.recalculate_pixels_states();
 
@@ -76,7 +76,7 @@ impl Machine {
                 // calculation
                 self.chunk_calculation_with_wrap(&xy, fractal, data_image);
                 // window refresh
-                window::refresh_maybe(data_image, &app_window, refresh_locker, Some(&self.area));
+                window::refresh_maybe(data_image, &app_window, Some(refresh_locker), Some(&self.area));
             });
         }
         perfectly_colour_nebula_values(&data_image, &self.palette);

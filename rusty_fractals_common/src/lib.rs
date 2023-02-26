@@ -6,6 +6,7 @@ pub mod data_px;
 pub mod data_image;
 pub mod target;
 pub mod fractal;
+pub mod fractal_stats;
 pub mod palette;
 pub mod palette_utils;
 pub mod palettes;

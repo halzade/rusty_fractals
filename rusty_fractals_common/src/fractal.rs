@@ -2,6 +2,7 @@ use crate::area::Area;
 use crate::palette::Palette;
 use crate::data_image::DataImage;
 use crate::constants::CALCULATION_BOUNDARY;
+use crate::fractal_stats::Stats;
 use crate::resolution_multiplier::ResolutionMultiplier;
 
 pub struct FractalConfig {
@@ -42,8 +43,12 @@ pub trait FractalMandelbrot: Sync {
     fn name(&self) -> &'static str;
 }
 
-pub trait Update: Sync {
+pub trait UpdateMandelbrot: Sync {
     fn update(&self, conf: &mut Conf);
+}
+
+pub trait Update: Sync {
+    fn update(&self, conf: &mut Conf, stats: &mut Stats);
 }
 
 pub trait MemType<T> {
@@ -129,27 +134,3 @@ pub fn calculate_mandelbrot_path<T: MemType<T>>(fractal_math: &impl FractalMath<
     }
     (iterator, m.quad())
 }
-
-/*
-pub fn update(mut stats: Stats) {
-    // TODO ITERATION_MAX += 150;
-
-    stats.update(0); // TODO
-
-    if stats.not_enough_pixels_best_value {
-        // ("increase ITERATION_MAX, not enough Points");
-        // TODO ITERATION_MAX += 20_000;
-    }
-    if stats.less_pixels_best_value {
-        // TODO ITERATION_MAX += 2_000;
-        // ("increase ITERATION_MAX, bit less Points");
-    }
-    if stats.too_many_paths_total {
-        // ("increase a bit ITERATION_MIN, too many paths total");
-        // TODO ITERATION_min += 1;
-    }
-
-    stats.print();
-    stats.clean();
-}
-*/

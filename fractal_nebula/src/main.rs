@@ -2,8 +2,9 @@ use rusty_fractals_core::{machine};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::fractal::{FractalConfig, Fractal, FractalMath};
+use rusty_fractals_common::fractal::{FractalConfig, Fractal, FractalMath, Update, Conf};
 use rusty_fractals_common::fractal;
+use rusty_fractals_common::fractal_stats::Stats;
 use rusty_fractals_common::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square9;
 
@@ -29,6 +30,26 @@ impl Fractal for Nebula {
     }
     fn name(&self) -> &'static str {
         self.name
+    }
+}
+
+impl Update for Nebula {
+    fn update(&self, conf: &mut Conf, stats: &mut Stats) {
+        conf.max += 150;
+        if stats.not_enough_pixels_best_value {
+            conf.max += 20_000;
+            println!("increase ITERATION_MAX, not enough Points");
+        }
+        if stats.less_pixels_best_value {
+            conf.max += 2_000;
+            println!("increase ITERATION_MAX, bit less Points");
+        }
+        if stats.too_many_paths_total {
+            conf.min += 1;
+            println!("increase a bit ITERATION_MIN, too many paths total");
+        }
+        stats.print();
+        stats.clean();
     }
 }
 

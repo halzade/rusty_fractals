@@ -257,6 +257,15 @@ impl DataImage {
         p.state = state;
     }
 
+    pub fn recalculate_pixels_states(&self) {
+        println!("recalculate_pixels_states()");
+        for y in 0..self.height {
+            for x in 0..self.width {
+                self.mpx_at(x, y).past();
+            }
+        }
+    }
+
     // all new elements are Active New
     // for wrapping, search only elements, which have some past well finished neighbors
     // previous calculation must be completed
@@ -350,11 +359,10 @@ impl DataImage {
         let mut references_for_move: Vec<DataPx> = Vec::new();
         for y in 0..self.height {
             for x in 0..self.width {
-                let mut px = self.mpx_at(x as usize, y as usize);
+                let px = self.mpx_at(x as usize, y as usize);
                 // There was already zoom in, the new area is smaller
                 if area.contains(px.origin_re, px.origin_im) {
                     // Element did not move out of the zoomed in area
-                    px.past();
                     references_for_move.push(px.clone());
                 }
             }

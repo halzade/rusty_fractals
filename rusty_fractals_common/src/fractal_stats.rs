@@ -1,5 +1,5 @@
-use rusty_fractals_common::constants::TAKE_MEASURES_AT_FRAME;
-use rusty_fractals_common::data_image::DataImage;
+use crate::constants::TAKE_MEASURES_AT_FRAME;
+use crate::data_image::DataImage;
 
 pub struct Stats {
     new_elements_too_long: u32,
@@ -130,5 +130,33 @@ impl Stats {
         println!("pixels_value_total      {}", self.pixels_value_total);
         println!("pixels_value_best       {}", self.pixels_value_best);
         println!("paths_new_points_amount {}", self.paths_new_points_amount);
+    }
+}
+
+pub fn init() -> Stats {
+    Stats {
+        new_elements_too_long: 0,
+        new_elements_too_short: 0,
+        new_elements_long: 0,
+        paths_total_amount: 0,
+        paths_new_points_amount: 0,
+        pixels_value_total: 0,
+        pixels_value_best: 0,
+        not_enough_pixels_total_value: false,
+        less_pixels_total_value: false,
+        too_many_pixels_total_value: false,
+        not_enough_pixels_best_value: false,
+        less_pixels_best_value: false,
+        too_many_paths_total: false,
+        not_enough_long_elements: false,
+        new_elements_long_measure: 0,
+        new_elements_long_tolerance: 0,
+        paths_total_amount_measure: 0,
+        paths_total_amount_tolerance: 0,
+        pixels_value_total_measure: 0,
+        pixels_value_total_tolerance: 0,
+        pixels_value_best_measure: 0,
+        pixels_value_best_tolerance: 0,
+        average_path_length_measure: 0,
     }
 }
