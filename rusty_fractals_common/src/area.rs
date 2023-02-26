@@ -55,18 +55,21 @@ impl Area {
         self.width_re = self.width_re * ZOOM;
         self.height_im = self.height_im * ZOOM;
         self.plank = self.width_re / self.width_x as f64;
-        // TODO initiate();
+        self.border_low_re = self.center_re - self.width_re / 2.0;
+        self.border_high_re = self.center_re + self.width_re / 2.0;
+        self.border_low_im = self.center_im - self.height_im / 2.0;
+        self.border_high_im = self.center_im + self.height_im / 2.0;
+
+        self.numbers_re.clear();
+        self.numbers_im.clear();
+        for x in 0..self.width_x {
+            self.numbers_re.push(self.border_low_re + (self.plank * x as f64));
+        }
+        for y in 0..self.height_y {
+            self.numbers_im.push(self.border_low_im + (self.plank * y as f64));
+        }
     }
 
-    // fn move_to_coordinates(&mut self) {
-    //     self.center_re = screenToDomainCreateRe(Target.getScreenFromCornerX());
-    //     self.center_im = screenToDomainCreateIm(Target.getScreenFromCornerY());
-    //     println!("Move to: {}, {}", self.center_re, self.center_im);
-    // }
-
-    /**
-     * move to zoom target
-     */
     pub fn move_to_initial_coordinates(&mut self, init_target_re: f64, init_target_im: f64) {
         println!("move_to_initial_coordinates()");
         self.center_re = init_target_re;
