@@ -77,11 +77,14 @@ impl MachineMandelbrot {
         let (x_from, x_to, y_from, y_to) = machine::chunk_boundaries(xy, self.area.width_x, self.area.height_y);
         for x in x_from..x_to {
             for y in y_from..y_to {
-                let (origin_re, origin_im) = data_image.origin_at(x, y);
-                // calculation
-                let (iterator, quad) = fractal.calculate_mandelbrot_path(self.conf.max, origin_re, origin_im);
-                let state = state_from_path_length(iterator, iterator, 0, self.conf.max);
-                data_image.set_pixel_mandelbrot(x, y, iterator, quad, state, self.conf.max);
+                let (state, origin_re, origin_im) = data_image.state_origin_at(x, y);
+                // TODO, calculate only ActiveNew elements, copy quad and quid
+                if !pixel_states::is_finished_any(state) {
+                    // calculation
+                    let (iterator, quad) = fractal.calculate_mandelbrot_path(self.conf.max, origin_re, origin_im);
+                    let state = state_from_path_length(iterator, iterator, 0, self.conf.max);
+                    data_image.set_pixel_mandelbrot(x, y, iterator, quad, state, self.conf.max);
+                }
             }
         }
     }
