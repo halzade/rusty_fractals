@@ -1,0 +1,10 @@
+[package]
+name = "fractal_nebula_of_nebula"
+version = "0.1.0"
+edition = "2021"
+authors = ["lukas"]
+keywords = ["fractal"]
+
+[dependencies]
+rusty_fractals_core = { path = "../rusty_fractals_core" }
+rusty_fractals_common = { path = "../rusty_fractals_common" }
