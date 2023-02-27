@@ -41,7 +41,7 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
     println!("rgb dif  {} {} {} ", r_dif, g_dif, b_dif);
 
     let max_dif = max(r_dif, g_dif, b_dif) as f64;
-    let max_dif_abs = a(max_dif as i32);
+    let max_dif_abs = a(max_dif as i32) as u32;
     println!("max dif: {}", max_dif);
 
     let r_step: f64 = (r_dif as f64 / max_dif_abs as f64) as f64;
