@@ -36,7 +36,7 @@ pub fn calculate_mandelbrot_zoom(
             perfectly_colour_mandelbrot_values(&data_image, &machine.palette, &machine.palette_zero);
             // prepare next frame
             machine.area_mut().zoom_in();
-            data_image.recalculate_pixels_positions_for_next_calculation(machine.area());
+            data_image.recalculate_pixels_positions_for_next_calculation(machine.area(), true);
             window::refresh_maybe(&data_image, &mutex_window, None, Some(machine.area()));
             fractal_update.update(machine.conf_mut());
         };
@@ -47,13 +47,13 @@ pub fn calculate_mandelbrot_zoom(
 pub fn calculate_nebula_zoom(
     fractal: &'static impl Fractal,
     fractal_update: &'static impl Update,
-    width: usize,
-    height: usize,
     fractal_config: FractalConfig,
     area_config: AreaConfig,
 ) {
     let mut machine = machine::init(fractal_config, &area_config);
     let mut data_image = data_image::init_data_video(machine.area(), None);
+    let width = machine.area().width_x;
+    let height = machine.area().height_y;
     let mut app_window = window::init(fractal.name(), width, height);
     let app = app_window.show(&data_image.image_init(), width, height);
     let mutex_window = Arc::new(Mutex::new(app_window));
@@ -66,7 +66,7 @@ pub fn calculate_nebula_zoom(
             perfectly_colour_nebula_values(&data_image, &machine.palette);
             // prepare next frame
             machine.area_mut().zoom_in();
-            data_image.recalculate_pixels_positions_for_next_calculation(machine.area());
+            data_image.recalculate_pixels_positions_for_next_calculation(machine.area(), false);
             window::refresh_maybe(&data_image, &mutex_window, None, Some(machine.area()));
             stats.update(&data_image, it);
             fractal_update.update(machine.conf_mut(), stats);
