@@ -37,7 +37,7 @@ impl Fractal for Euler {
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
         todo!()
     }
-    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage) -> (u32, u32) {
+    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage, is_wrap: bool) -> (u32, u32) {
         todo!()
     }
     fn name(&self) -> &'static str {

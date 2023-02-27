@@ -4,7 +4,6 @@ use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::fractal::{FractalConfig, Fractal, FractalMath, Update, Conf};
 use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal_stats::Stats;
 use rusty_fractals_common::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square9;
 
@@ -25,31 +24,11 @@ impl Fractal for Nebula {
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
         fractal::finite_orbits(min, max, length, iterator)
     }
-    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data: &DataImage) -> (u32, u32) {
-        fractal::calculate_path(self, self, area, iteration_min, iteration_max, origin_re, origin_im, data)
+    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data: &DataImage, is_wrap: bool) -> (u32, u32) {
+        fractal::calculate_path(self, self, area, iteration_min, iteration_max, origin_re, origin_im, data, is_wrap)
     }
     fn name(&self) -> &'static str {
         self.name
-    }
-}
-
-impl Update for Nebula {
-    fn update(&self, conf: &mut Conf, stats: &mut Stats) {
-        conf.max += 150;
-        if stats.not_enough_pixels_best_value {
-            conf.max += 20_000;
-            println!("increase ITERATION_MAX, not enough Points");
-        }
-        if stats.less_pixels_best_value {
-            conf.max += 2_000;
-            println!("increase ITERATION_MAX, bit less Points");
-        }
-        if stats.too_many_paths_total {
-            conf.min += 1;
-            println!("increase a bit ITERATION_MIN, too many paths total");
-        }
-        stats.print();
-        stats.clean();
     }
 }
 
