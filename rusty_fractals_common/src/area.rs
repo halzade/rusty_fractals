@@ -53,7 +53,7 @@ impl Area {
     pub fn zoom_in(&mut self) {
         println!("zoom_in()");
         self.width_re = self.width_re * ZOOM;
-        self.height_im = self.height_im * ZOOM;
+        self.height_im = self.width_re * ((self.height_y as f64) / (self.width_x as f64));
         self.plank = self.width_re / self.width_x as f64;
         self.border_low_re = self.center_re - self.width_re / 2.0;
         self.border_high_re = self.center_re + self.width_re / 2.0 - self.plank;
