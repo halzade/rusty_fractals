@@ -125,15 +125,16 @@ impl DataImage {
                         if ms > REFRESH_MS - 2 {
                             // save path to show during recalculation with pixel wrap
                             let l = path.len();
+                            println!("set_show_path_maybe() unlock ms: {}", ms);
                             // show only longer paths
-                            if l > (max as f64 / 42.0) as usize {
+                            if l > (max as f64 / 42.0) as usize || l > 100 {
                                 *self.show_path.lock().unwrap() = path.clone();
                                 *time_lock.lock().unwrap() = SystemTime::now();
                             }
                         }
                     }
                     Err(e) => {
-                        println!("translate_path_to_point_grid() error: {}", e);
+                        println!("set_show_path_maybe() error: {}", e);
                     }
                 }
             }
@@ -141,8 +142,10 @@ impl DataImage {
         }
     }
 
-    pub fn translate_path_to_point_grid(&self, path: Vec<[f64; 2]>, area: &Area, time_lock_o: &Option<Arc<Mutex<SystemTime>>>, max: u32) {
-        self.set_show_path_maybe(&path, time_lock_o, max);
+    pub fn translate_path_to_point_grid(&self, path: Vec<[f64; 2]>, area: &Area, time_lock_o: &Option<Arc<Mutex<SystemTime>>>, max: u32, is_wrap: bool) {
+        if is_wrap {
+            self.set_show_path_maybe(&path, time_lock_o, max);
+        }
         for [re, im] in path {
             let (x, y) = area.point_to_pixel(re, im);
             self.add(x, y);
@@ -159,8 +162,10 @@ impl DataImage {
         }
     }
 
-    pub fn save_path(&self, path: Vec<[f64; 2]>, time_lock_o: &Option<Arc<Mutex<SystemTime>>>, max: u32) {
-        self.set_show_path_maybe(&path, time_lock_o, max);
+    pub fn save_path(&self, path: Vec<[f64; 2]>, time_lock_o: &Option<Arc<Mutex<SystemTime>>>, max: u32, is_wrap: bool) {
+        if is_wrap {
+            self.set_show_path_maybe(&path, time_lock_o, max);
+        }
         self.paths.lock().unwrap().push(path);
     }
 
@@ -200,10 +205,9 @@ impl DataImage {
         }
     }
 
-    fn replace_px(&self, x: usize, y: usize, dp: DataPx) {
-        let arc_mut_px = self.pixels.get(x).unwrap().get(y).unwrap();
-        let mut _old = arc_mut_px.lock().unwrap();
-        *_old = dp;
+    fn replace_px(&self, x: usize, y: usize, px_clone: DataPx) {
+        let vy = self.pixels.get(x).unwrap().to_owned();
+        *vy[y].lock().unwrap() = px_clone;
     }
 
     pub fn values_at(&self, x: usize, y: usize) -> (u32, DomainElementState, f64, f64, Option<Rgb<u8>>) {
@@ -346,7 +350,7 @@ impl DataImage {
     }
 
     // This is called after calculation finished, zoom was called and new area measures recalculated
-    pub fn recalculate_pixels_positions_for_next_calculation(&mut self, area: &Area) {
+    pub fn recalculate_pixels_positions_for_next_calculation(&mut self, area: &Area, is_mandelbrot: bool) {
         println!("recalculate_pixels_positions_for_next_calculation()");
         // Scan all elements : old positions from previous calculation
         // Some elements will be moved to new positions
@@ -409,14 +413,20 @@ impl DataImage {
                 let mg_el_co = tpx_at(&all_some_none, x, y).lock().unwrap();
                 match &*mg_el_co {
                     Some(cop) => {
-                        self.replace_px(x, y, cop.clone());
+                        // to minimize conflict in next zoom in, must recalculate pixel centers for move elements
+                        let re = area.screen_to_domain_re(x);
+                        let im = area.screen_to_domain_im(y);
+                        let mut cl = cop.clone();
+                        cl.origin_re = re;
+                        cl.origin_im = im;
+                        self.replace_px(x, y, cl);
                         c_moved += 1;
                     }
                     None => {
                         c_created += 1;
                         let re = area.screen_to_domain_re(x);
                         let im = area.screen_to_domain_im(y);
-                        if self.all_neighbors_finished_too_long(x, y) {
+                        if self.all_neighbors_finished_bad(x, y, is_mandelbrot) {
                             // Calculation for some positions should be skipped as they are too far away form any long successful divergent position
                             self.replace_px(x, y, hibernated_deep_black(re, im));
                         } else {
@@ -440,7 +450,7 @@ impl DataImage {
     // Verify if any neighbor px,py finished well, long or at least too short.
     // This method identifies deep black convergent elements of Mandelbrot set interior.
     // Don't do any calculation for those.
-    fn all_neighbors_finished_too_long(&mut self, x: usize, y: usize) -> bool {
+    fn all_neighbors_finished_bad(&mut self, x: usize, y: usize, is_mandelbrot: bool) -> bool {
         let neigh = NEIGHBOURS as i32;
         for a in -neigh..(neigh + 1) {
             for b in -neigh..(neigh + 1) {
@@ -454,8 +464,14 @@ impl DataImage {
                         }
                         Some(ael) => {
                             let el = ael.lock().unwrap();
-                            if el.is_finished_success_any() || el.is_finished_too_short() {
-                                return false;
+                            if is_mandelbrot {
+                                if el.is_finished_too_long() || el.is_hibernated() {
+                                    return false;
+                                }
+                            } else {
+                                if el.is_finished_success_any() || el.is_finished_too_short() {
+                                    return false;
+                                }
                             }
                         }
                     }

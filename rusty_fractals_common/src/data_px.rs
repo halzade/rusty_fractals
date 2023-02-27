@@ -1,6 +1,6 @@
 use image::Rgb;
 use crate::pixel_states::DomainElementState;
-use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooShort, HibernatedDeepBlack};
+use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort, HibernatedDeepBlack};
 
 #[derive(Clone)]
 pub struct DataPx {
@@ -22,6 +22,10 @@ impl DataPx {
 
     pub fn is_finished_too_short(&self) -> bool {
         self.state == FinishedTooShort
+    }
+
+    pub fn is_finished_too_long(&self) -> bool {
+        self.state == FinishedTooLong
     }
 
     pub fn is_hibernated(&self) -> bool {
@@ -77,9 +81,11 @@ fn test_set_average_with() {
 }
 
 pub fn hibernated_deep_black(re: f64, im: f64) -> DataPx {
-    DataPx { origin_re: re, origin_im: im, value: 0, state: HibernatedDeepBlack, quad: 0.0, quid: 0.0, colour: None }
+    // TODO copy quad and quid
+    DataPx { origin_re: re, origin_im: im, value: 0, state: HibernatedDeepBlack, quad: 1.0, quid: 1.0, colour: None }
 }
 
 pub fn active_new(re: f64, im: f64) -> DataPx {
-    DataPx { origin_re: re, origin_im: im, value: 0, state: HibernatedDeepBlack, quad: 0.0, quid: 0.0, colour: None }
+    // todo copy quad and quid
+    DataPx { origin_re: re, origin_im: im, value: 0, state: ActiveNew, quad: 1.0, quid: 1.0, colour: None }
 }

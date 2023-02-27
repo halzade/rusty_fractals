@@ -34,7 +34,7 @@ pub struct Conf {
 
 pub trait Fractal: Sync {
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool;
-    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage) -> (u32, u32);
+    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage, is_wrap: bool) -> (u32, u32);
     fn name(&self) -> &'static str;
 }
 
@@ -81,6 +81,7 @@ pub fn calculate_path<T: MemType<T>>(
     origin_re: f64,
     origin_im: f64,
     data_image: &DataImage,
+    is_wrap: bool,
 ) -> (u32, u32) {
     let cb = CALCULATION_BOUNDARY as f64;
     let mut m: T = T::new(origin_re, origin_im);
@@ -115,9 +116,9 @@ pub fn calculate_path<T: MemType<T>>(
         // path elements are going to migrate out of the screen shortly
         // removed last_iteration, last_visited_re, last_visited_im
         if data_image.dynamic {
-            data_image.save_path(path, &data_image.path_locker, iteration_max);
+            data_image.save_path(path, &data_image.path_locker, iteration_max, is_wrap);
         } else {
-            data_image.translate_path_to_point_grid(path, area, &data_image.path_locker, iteration_max);
+            data_image.translate_path_to_point_grid(path, area, &data_image.path_locker, iteration_max, is_wrap);
         }
         // TODO stats.paths_new_points_amount += path.size();
     }

@@ -114,7 +114,7 @@ impl Machine {
                     let wrap = data_image.wrap(origin_re, origin_im, self.resolution_multiplier.clone(), &self.area);
                     // within the same pixel
                     for [re, im] in wrap {
-                        fractal.calculate_path(&self.area, self.conf.min, self.conf.max, re, im, data_image);
+                        fractal.calculate_path(&self.area, self.conf.min, self.conf.max, re, im, data_image, true);
                     }
                 }
             }
@@ -128,7 +128,7 @@ impl Machine {
     ) {
         let (state, origin_re, origin_im) = data_image.state_origin_at(x, y);
         if pixel_states::is_active_new(state) {
-            let (iterator, path_length) = fractal.calculate_path(&self.area, self.conf.min, self.conf.max, origin_re, origin_im, data_image);
+            let (iterator, path_length) = fractal.calculate_path(&self.area, self.conf.min, self.conf.max, origin_re, origin_im, data_image, false);
             let state = state_from_path_length(iterator, path_length, self.conf.min, self.conf.max);
             data_image.set_pixel_state(x, y, state);
         }
