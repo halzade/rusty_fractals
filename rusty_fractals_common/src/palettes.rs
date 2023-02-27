@@ -23,6 +23,10 @@ pub fn palette_black_to_white_exp2() -> Palette {
     new(Exp2, BLACK, WHITE)
 }
 
+pub fn palette_black_to_white_circle_up() -> Palette {
+    new(CircleUp, BLACK, WHITE)
+}
+
 pub fn palette_bwb() -> Palette {
     let mut black_to_white_work = make_spectrum(Linear1, BLACK, WHITE);
     let mut white_to_black = make_spectrum(Linear1, WHITE, BLACK);
@@ -38,6 +42,10 @@ pub fn palette_blue_to_white_circle_up() -> Palette {
 
 pub fn palette_gray_to_blue() -> Palette {
     new(CircleDown, Rgb([104, 113, 133]), Rgb([4, 13, 33]))
+}
+
+pub fn palette_gray_to_black_circle_down() -> Palette {
+    new(CircleDown, Rgb([100, 100, 100]), Rgb([0, 0, 0]))
 }
 
 pub fn palette_purple_to_white() -> Palette {
