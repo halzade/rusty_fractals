@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, SystemTime};
 use rayon::prelude::*;
-use rusty_fractals_common::{area, data_image};
+use rusty_fractals_common::{area, data_image, pixel_states};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::constants::REFRESH_MS;
 use rusty_fractals_common::fractal::{MandelbrotConfig, FractalMandelbrot, Conf};
@@ -43,7 +43,7 @@ pub fn mandelbrot_calculation_for(
     let area = machine.area();
     let width = area.width_x;
     let height = area.height_y;
-    let data_image = data_image::init_data_image(area, None);
+    let data_image = data_image::init_data_image(area);
     let mut app_window = window::init(fractal.name(), width, height);
     let app = app_window.show(&data_image.image_init(), width, height);
     let mutex_window = Arc::new(Mutex::new(app_window));

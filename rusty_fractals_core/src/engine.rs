@@ -22,7 +22,7 @@ pub fn calculate_mandelbrot_zoom(
     area_config: AreaConfig,
 ) {
     let mut machine = machine_mandelbrot::init(mandelbrot_config, &area_config);
-    let mut data_image = data_image::init_data_video(machine.area(), None);
+    let mut data_image = data_image::init_data_video(machine.area());
     let width = machine.area().width_x;
     let height = machine.area().height_y;
     let mut app_window = window::init(fractal.name(), width, height);
@@ -51,7 +51,7 @@ pub fn calculate_nebula_zoom(
     area_config: AreaConfig,
 ) {
     let mut machine = machine::init(fractal_config, &area_config);
-    let mut data_image = data_image::init_data_video(machine.area(), None);
+    let mut data_image = data_image::init_data_video(machine.area());
     let width = machine.area().width_x;
     let height = machine.area().height_y;
     let mut app_window = window::init(fractal.name(), width, height);

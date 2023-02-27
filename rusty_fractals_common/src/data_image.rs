@@ -1,9 +1,8 @@
 use std::sync::{Arc, Mutex, MutexGuard};
-use std::time::SystemTime;
 use image::{Rgb, RgbImage};
 use data_px::{active_new, hibernated_deep_black};
 use crate::area::Area;
-use crate::constants::{GRAY, MINIMUM_PATH_LENGTH, NEIGHBOURS, REFRESH_MS};
+use crate::constants::{GRAY, MINIMUM_PATH_LENGTH, NEIGHBOURS};
 use crate::data_px;
 use crate::data_px::DataPx;
 use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK, is_finished_any, is_finished_success_past};
@@ -24,7 +23,7 @@ pub struct DataImage {
     pub paths: Arc<Mutex<Vec<Vec<[f64; 2]>>>>,
     // show one patch during calculation with pixel wrap
     pub show_path: Mutex<Vec<[f64; 2]>>,
-    pub path_locker: Option<Arc<Mutex<SystemTime>>>,
+    pub show_path_update: Mutex<bool>,
 }
 
 static MAX_VALUE: Mutex<u32> = Mutex::new(0);
@@ -84,6 +83,8 @@ impl DataImage {
             }
             None => {}
         }
+        // allow to set another display path
+        *self.show_path_update.lock().unwrap() = true;
         image.as_raw().clone()
     }
 
@@ -115,36 +116,21 @@ impl DataImage {
         image.as_raw().clone()
     }
 
-    fn set_show_path_maybe(&self, path: &Vec<[f64; 2]>, time_lock_o: &Option<Arc<Mutex<SystemTime>>>, max: u32) {
-        match time_lock_o {
-            Some(time_lock) => {
-                let lo = time_lock.lock();
-                match lo {
-                    Ok(_) => {
-                        let ms = SystemTime::now().duration_since(*lo.unwrap()).unwrap().as_millis();
-                        if ms > REFRESH_MS - 2 {
-                            // save path to show during recalculation with pixel wrap
-                            let l = path.len();
-                            println!("set_show_path_maybe() unlock ms: {}", ms);
-                            // show only longer paths
-                            if l > (max as f64 / 42.0) as usize || l > 100 {
-                                *self.show_path.lock().unwrap() = path.clone();
-                                *time_lock.lock().unwrap() = SystemTime::now();
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        println!("set_show_path_maybe() error: {}", e);
-                    }
-                }
+    fn set_show_path_maybe(&self, path: &Vec<[f64; 2]>, max: u32) {
+        if *self.show_path_update.lock().unwrap() == true {
+            // save path to show during recalculation with pixel wrap
+            let l = path.len();
+            // show only longer paths
+            if l > (max as f64 / 42.0) as usize || l > 100 {
+                *self.show_path_update.lock().unwrap() = false;
+                *self.show_path.lock().unwrap() = path.clone();
             }
-            None => {}
         }
     }
 
-    pub fn translate_path_to_point_grid(&self, path: Vec<[f64; 2]>, area: &Area, time_lock_o: &Option<Arc<Mutex<SystemTime>>>, max: u32, is_wrap: bool) {
+    pub fn translate_path_to_point_grid(&self, path: Vec<[f64; 2]>, area: &Area, max: u32, is_wrap: bool) {
         if is_wrap {
-            self.set_show_path_maybe(&path, time_lock_o, max);
+            self.set_show_path_maybe(&path, max);
         }
         for [re, im] in path {
             let (x, y) = area.point_to_pixel(re, im);
@@ -162,9 +148,9 @@ impl DataImage {
         }
     }
 
-    pub fn save_path(&self, path: Vec<[f64; 2]>, time_lock_o: &Option<Arc<Mutex<SystemTime>>>, max: u32, is_wrap: bool) {
+    pub fn save_path(&self, path: Vec<[f64; 2]>, max: u32, is_wrap: bool) {
         if is_wrap {
-            self.set_show_path_maybe(&path, time_lock_o, max);
+            self.set_show_path_maybe(&path, max);
         }
         self.paths.lock().unwrap().push(path);
     }
@@ -491,15 +477,15 @@ fn set_tpx_at(vec: &Vec<Vec<Mutex<Option<DataPx>>>>, x: usize, y: usize, px_ref:
     vy[y].lock().unwrap().replace(px_ref.clone());
 }
 
-pub fn init_data_image(area: &Area, lock: Option<Arc<Mutex<SystemTime>>>) -> DataImage {
-    init(area, lock, false)
+pub fn init_data_image(area: &Area) -> DataImage {
+    init(area, false)
 }
 
-pub fn init_data_video(area: &Area, lock: Option<Arc<Mutex<SystemTime>>>) -> DataImage {
-    init(area, lock, true)
+pub fn init_data_video(area: &Area) -> DataImage {
+    init(area, true)
 }
 
-pub fn init(area: &Area, lock: Option<Arc<Mutex<SystemTime>>>, dynamic: bool) -> DataImage {
+pub fn init(area: &Area, dynamic: bool) -> DataImage {
     DataImage {
         width: area.width_x,
         height: area.height_y,
@@ -507,7 +493,7 @@ pub fn init(area: &Area, lock: Option<Arc<Mutex<SystemTime>>>, dynamic: bool) ->
         pixels: init_domain(area),
         paths: Arc::new(Mutex::new(Vec::new())),
         show_path: Mutex::new(Vec::new()),
-        path_locker: lock,
+        show_path_update: Mutex::new(false),
     }
 }
 
@@ -574,7 +560,7 @@ mod tests {
     fn init() -> (Area, DataImage) {
         let area_config = AreaConfig { width_re: 1.0, center_re: 0.0, center_im: 0.0, width_x: 10, height_y: 10 };
         let area = area::init(&area_config);
-        let data = init_data_image(&area, None);
+        let data = init_data_image(&area);
         (area, data)
     }
 
