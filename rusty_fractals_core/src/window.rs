@@ -1,101 +1,75 @@
-use std::borrow::BorrowMut;
-use std::ops::DerefMut;
-use std::sync::{Arc, Mutex};
-use std::time::SystemTime;
-use fltk::{frame::Frame, prelude::*, window::Window};
-use fltk::app::{App, event_key};
+use fltk::{app, frame::Frame, prelude::*, window::Window};
+use fltk::app::{App, event_button, event_coords, event_key, Receiver, Sender};
 use fltk::enums::{ColorDepth, Event, Key};
 use fltk::image::RgbImage;
-use fltk::window::DoubleWindow;
 use ColorDepth::Rgb8;
-use rusty_fractals_common::area::Area;
-use rusty_fractals_common::constants::REFRESH_MS;
-use rusty_fractals_common::data_image::DataImage;
+use rusty_fractals_common::area;
+use rusty_fractals_common::area::{Area, AreaConfig};
 
-pub struct AppWindow {
-    pub window: DoubleWindow,
-    pub frame: Frame,
-}
+pub fn show(fractal_name: &'static str, initial_image: Vec<u8>, area_config: AreaConfig) -> (App, Area, Sender<Vec<u8>>) {
+    let width = area_config.width_x;
+    let height = area_config.height_y;
+    let area: Area = area::init(&area_config);
+    let init_image_rgb = RgbImage::new(&initial_image, width as i32, height as i32, Rgb8).unwrap();
+    let app = App::default();
+    let mut window = Window::default().with_label(fractal_name).with_size(width as i32, height as i32).center_screen();
+    let mut frame = Frame::new(0, 0, width as i32, height as i32, "");
+    frame.set_image(Some(init_image_rgb));
+    window.add(&frame);
 
-pub fn init(fractal_name: &'static str, width: usize, height: usize) -> AppWindow {
-    AppWindow {
-        window: Window::default().with_label(fractal_name).with_size(width as i32, height as i32).center_screen(),
-        frame: Frame::new(0, 0, width as i32, height as i32, ""),
-    }
-}
+    let (sender_machine, receiver_frame): (Sender<Vec<u8>>, Receiver<Vec<u8>>) = app::channel();
 
-impl AppWindow {
-    pub fn show(&mut self, initial_image: &Vec<u8>, width: usize, height: usize) -> App {
-        let app = App::default();
-        let image_rgb = RgbImage::new(initial_image, width as i32, height as i32, Rgb8).unwrap();
-        self.frame.set_image(Some(image_rgb));
-        self.window.add(&self.frame);
-        self.window.handle(move |_, event| match event {
-            Event::KeyDown => {
-                let ek = event_key();
-                if ek == Key::Escape {
-                    println!("exit");
-                    app.quit();
-                    true
-                } else {
-                    let key = ek.to_char().unwrap();
-                    println!("key {}", key);
-                    if key == 'i' {
-                        return true;
-                    } else if key == 's' {
-                        return true;
-                    }
-                    false
+    window.handle(move |_, event| match event {
+        Event::KeyDown => {
+            let ek = event_key();
+            if ek == Key::Escape {
+                println!("exit");
+                app.quit();
+                true
+            } else {
+                let key = ek.to_char().unwrap();
+                if key == 'i' {
+                    println!("i");
+                    return true;
+                } else if key == 's' {
+                    println!("s");
+                    return true;
                 }
-            }
-            _ => false,
-        });
-        self.window.end();
-        self.window.show();
-        app
-    }
-
-    pub fn refresh(&mut self, data_image: &DataImage, final_image: bool, area_o: Option<&Area>) {
-        let image_rgb = RgbImage::new(data_image.image(final_image, area_o).as_slice(), data_image.width as i32, data_image.height as i32, Rgb8).unwrap();
-        let _ = fltk::app::lock();
-        self.frame.set_image(Some(image_rgb));
-        let _ = fltk::app::unlock();
-        // rendering must be done from main thread
-        fltk::app::awake();
-        fltk::app::redraw();
-    }
-}
-
-fn refresh_unlocked(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>, area_o: Option<&Area>) {
-    let mut mutex_guard = arc_mutex_window.lock().unwrap();
-    let app_window = mutex_guard.borrow_mut();
-    match area_o {
-        Some(area) => {
-            app_window.refresh(data_image, false, Some(area));
-        }
-        None => {
-            app_window.refresh(data_image, false, None);
-        }
-    }
-}
-
-pub fn refresh_maybe(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>, o_refresh_locker: Option<&Arc<Mutex<SystemTime>>>, area_o: Option<&Area>) {
-    match o_refresh_locker {
-        None => {
-            refresh_unlocked(data_image, arc_mutex_window, area_o);
-        }
-        Some(refresh_locker) => {
-            let ms = SystemTime::now().duration_since(*refresh_locker.lock().unwrap()).unwrap().as_millis();
-            if ms > REFRESH_MS {
-                refresh_unlocked(data_image, arc_mutex_window, area_o);
-                *refresh_locker.lock().unwrap().deref_mut() = SystemTime::now();
+                false
             }
         }
-    }
-}
+        Event::Released => {
+            // mouse button click
+            let left = event_button() == 1;
+            if left {
+                let (x, y) = event_coords();
+                println!("c: {} {}", x, y);
+                // to change target coordinates
+                // sender_window.send([x as usize, y as usize]);
+                area::move_target(x as usize, y as usize);
+            }
+            false
+        }
+        _ => false,
+    });
+    app::add_idle3(move |_| {
+        let bo = receiver_frame.recv();
+        match bo {
+            None => {}
+            Some(data) => {
+                println!("refresh");
+                let image_rgb = RgbImage::new(data.as_slice(), width as i32, height as i32, Rgb8).unwrap();
+                frame.set_image(Some(image_rgb));
+                app::unlock();
+                // rendering must be done from main thread
+                app::awake();
+                app::redraw();
+                println!("refresh ok");
+            }
+        }
+    });
 
-pub fn refresh_final(data_image: &DataImage, arc_mutex_window: &Arc<Mutex<AppWindow>>) {
-    let mut mutex_guard = arc_mutex_window.lock().unwrap();
-    let app_window = mutex_guard.borrow_mut();
-    app_window.refresh(data_image, true, None);
+    window.end();
+    window.show();
+    (app, area, sender_machine)
 }

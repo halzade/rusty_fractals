@@ -28,8 +28,5 @@ pub const PHOENIX_INIT_C: f64 = 0.35;
 pub const PHOENIX_INIT_P: f64 = -0.25;
 pub const PHOENIX_INITIALIZER: f64 = 1.0;
 
-// window refresh during calculation 
-pub const REFRESH_MS : u128 = 120;
-
 // color for last path display
 pub const GRAY: Rgb<u8> = Rgb([254, 254, 254]);

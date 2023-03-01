@@ -1,3 +1,4 @@
+use std::sync::Mutex;
 use crate::constants::ZOOM;
 
 pub struct AreaConfig {
@@ -26,6 +27,7 @@ pub struct Area {
     plank: f64,
 }
 
+pub static AREA: Mutex<Option<Area>> = Mutex::new(None);
 
 impl Area {
     pub fn contains(&self, re: f64, im: f64) -> bool {
@@ -79,6 +81,21 @@ impl Area {
 
     pub fn plank(&self) -> f64 {
         self.plank
+    }
+}
+
+pub fn move_target(x: usize, y: usize) {
+    println!("move_target({}, {})", x, y);
+    let lo = AREA.lock().unwrap();
+    let area_o = lo.as_ref();
+    match area_o {
+        None => {}
+        Some(area) => {
+            let re = area.screen_to_domain_re(x);
+            let im = area.screen_to_domain_im(y);
+            println!("move_target({}, {})", re, im);
+            // TODO recalculate
+        }
     }
 }
 

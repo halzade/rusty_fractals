@@ -116,9 +116,9 @@ pub fn calculate_path<T: MemType<T>>(
         // path elements are going to migrate out of the screen shortly
         // removed last_iteration, last_visited_re, last_visited_im
         if data_image.dynamic {
-            data_image.save_path(path, iteration_max, is_wrap);
+            data_image.save_path(path, is_wrap);
         } else {
-            data_image.translate_path_to_point_grid(path, area, iteration_max, is_wrap);
+            data_image.translate_path_to_point_grid(path, area, is_wrap);
         }
         // TODO stats.paths_new_points_amount += path.size();
     }

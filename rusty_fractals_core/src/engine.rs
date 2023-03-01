@@ -1,10 +1,10 @@
 use std::thread;
-use std::sync::{Arc, Mutex};
-use rusty_fractals_common::{data_image, fractal_stats};
+use rusty_fractals_common::{area, data_image, fractal_stats};
 use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::fractal::{FractalConfig, Fractal, Update, FractalMandelbrot, MandelbrotConfig, UpdateMandelbrot};
 use rusty_fractals_common::perfect_colour_distribution::{perfectly_colour_mandelbrot_values, perfectly_colour_nebula_values};
 use crate::{machine, machine_mandelbrot, window};
+use crate::machine::MachineRefresh;
 
 // to calculate sequence of images for zoom video
 pub struct Engine {}
@@ -21,23 +21,28 @@ pub fn calculate_mandelbrot_zoom(
     mandelbrot_config: MandelbrotConfig,
     area_config: AreaConfig,
 ) {
-    let mut machine = machine_mandelbrot::init(mandelbrot_config, &area_config);
-    let mut data_image = data_image::init_data_video(machine.area());
-    let width = machine.area().width_x;
-    let height = machine.area().height_y;
-    let mut app_window = window::init(fractal.name(), width, height);
-    let app = app_window.show(&data_image.image_init(), width, height);
-    let mutex_window = Arc::new(Mutex::new(app_window));
+    let width = area_config.width_x;
+    let height = area_config.height_y;
+    let (app, area, machine_sender) = window::show(fractal.name(), data_image::image_init(width, height), area_config);
+
+    area::AREA.lock().unwrap().replace(area);
+
+    let mut data_image = data_image::init_data_dynamic();
+    let mut machine = machine_mandelbrot::init(mandelbrot_config, machine_sender);
     thread::spawn(move || {
+        let lo = area::AREA.lock().unwrap();
+        let area_o = lo.as_ref();
+        let area_here = area_o.unwrap();
+
         for it in 1.. {
             println!("{}:", it);
-            machine.calculate_mandelbrot(fractal, &data_image, &mutex_window);
-            data_image.translate_all_paths_to_point_grid(machine.area());
+            machine.calculate_mandelbrot(fractal, &data_image);
             perfectly_colour_mandelbrot_values(&data_image, &machine.palette, &machine.palette_zero);
             // prepare next frame
-            machine.area_mut().zoom_in();
-            data_image.recalculate_pixels_positions_for_next_calculation(machine.area(), true);
-            window::refresh_maybe(&data_image, &mutex_window, None, Some(machine.area()));
+
+            // TODO area_here.zoom_in();
+            data_image.recalculate_pixels_positions_for_next_calculation(area_here, true);
+            machine.refresh_final(&data_image);
             fractal_update.update(machine.conf_mut());
         };
     });
@@ -50,24 +55,29 @@ pub fn calculate_nebula_zoom(
     fractal_config: FractalConfig,
     area_config: AreaConfig,
 ) {
-    let mut machine = machine::init(fractal_config, &area_config);
-    let mut data_image = data_image::init_data_video(machine.area());
-    let width = machine.area().width_x;
-    let height = machine.area().height_y;
-    let mut app_window = window::init(fractal.name(), width, height);
-    let app = app_window.show(&data_image.image_init(), width, height);
-    let mutex_window = Arc::new(Mutex::new(app_window));
+    let width = area_config.width_x;
+    let height = area_config.height_y;
+    let (app, area, machine_sender) = window::show(fractal.name(), data_image::image_init(width, height), area_config);
+
+    area::AREA.lock().unwrap().replace(area);
+
+    let mut data_image = data_image::init_data_dynamic();
+    let mut machine = machine::init(fractal_config, machine_sender);
     thread::spawn(move || {
         let stats = &mut fractal_stats::init();
         for it in 1.. {
             println!("{}:", it);
-            machine.calculate(fractal, &data_image, &mutex_window);
-            data_image.translate_all_paths_to_point_grid(machine.area());
+
+            let lo = area::AREA.lock().unwrap();
+            let area_o = lo.as_ref();
+            let area_here = area_o.unwrap();
+            machine.calculate(fractal, &data_image, area_here.plank());
+            data_image.translate_all_paths_to_point_grid();
             perfectly_colour_nebula_values(&data_image, &machine.palette);
             // prepare next frame
-            machine.area_mut().zoom_in();
-            data_image.recalculate_pixels_positions_for_next_calculation(machine.area(), false);
-            window::refresh_maybe(&data_image, &mutex_window, None, Some(machine.area()));
+            // TODO area_here.zoom_in();
+            data_image.recalculate_pixels_positions_for_next_calculation(&area_here, false);
+            machine.refresh_final(&data_image);
             stats.update(&data_image, it);
             fractal_update.update(machine.conf_mut(), stats);
         };

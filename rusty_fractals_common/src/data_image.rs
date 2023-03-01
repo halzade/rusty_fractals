@@ -3,7 +3,7 @@ use image::{Rgb, RgbImage};
 use data_px::{active_new, hibernated_deep_black};
 use crate::area::Area;
 use crate::constants::{GRAY, MINIMUM_PATH_LENGTH, NEIGHBOURS};
-use crate::data_px;
+use crate::{area, data_px};
 use crate::data_px::DataPx;
 use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK, is_finished_any, is_finished_success_past};
 use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort, HibernatedDeepBlack};
@@ -34,15 +34,7 @@ impl DataImage {
         p.colour = Some(palette_colour);
     }
 
-    pub fn image(&self, final_image: bool, area_o: Option<&Area>) -> Vec<u8> {
-        return if final_image {
-            self.image_result()
-        } else {
-            self.image_temp(area_o)
-        };
-    }
-
-    pub fn image_temp(&self, area_o: Option<&Area>) -> Vec<u8> {
+    pub fn image_temp(&self, with_path: bool, area_o: Option<&Area>) -> Vec<u8> {
         let mut image = RgbImage::new(self.width as u32, self.height as u32);
         for y in 0..self.height {
             for x in 0..self.width {
@@ -73,18 +65,14 @@ impl DataImage {
                 image.put_pixel(x as u32, y as u32, colour);
             }
         }
-        match area_o {
-            Some(area) => {
-                let path = self.show_path.lock().unwrap();
-                for p in path.as_slice() {
-                    let (x, y) = area.point_to_pixel(p[0], p[1]);
-                    image.put_pixel(x as u32, y as u32, GRAY);
-                }
+        if with_path {
+            let path = self.show_path.lock().unwrap();
+            let area = area_o.unwrap();
+            for p in path.as_slice() {
+                let (x, y) = area.point_to_pixel(p[0], p[1]);
+                image.put_pixel(x as u32, y as u32, GRAY);
             }
-            None => {}
         }
-        // allow to set another display path
-        *self.show_path_update.lock().unwrap() = true;
         image.as_raw().clone()
     }
 
@@ -106,31 +94,17 @@ impl DataImage {
         image.as_raw().clone()
     }
 
-    pub fn image_init(&self) -> Vec<u8> {
-        let mut image = RgbImage::new(self.width as u32, self.height as u32);
-        for y in 0..self.height {
-            for x in 0..self.width {
-                image.put_pixel(x as u32, y as u32, colour_for_state(ActiveNew));
-            }
-        }
-        image.as_raw().clone()
+    // save path to show during recalculation with pixel wrap
+    fn set_show_path(&self, path: &Vec<[f64; 2]>) {
+        println!("set_show_path()");
+        *self.show_path.lock().unwrap() = path.clone();
     }
 
-    fn set_show_path_maybe(&self, path: &Vec<[f64; 2]>, max: u32) {
-        if *self.show_path_update.lock().unwrap() == true {
-            // save path to show during recalculation with pixel wrap
-            let l = path.len();
-            // show only longer paths
-            if l > (max as f64 / 42.0) as usize || l > 100 {
-                *self.show_path_update.lock().unwrap() = false;
-                *self.show_path.lock().unwrap() = path.clone();
-            }
-        }
-    }
-
-    pub fn translate_path_to_point_grid(&self, path: Vec<[f64; 2]>, area: &Area, max: u32, is_wrap: bool) {
+    pub fn translate_path_to_point_grid(&self, path: Vec<[f64; 2]>, area: &Area, is_wrap: bool) {
         if is_wrap {
-            self.set_show_path_maybe(&path, max);
+            if std::mem::replace(&mut self.show_path_update.lock().unwrap(), false) {
+                self.set_show_path(&path);
+            }
         }
         for [re, im] in path {
             let (x, y) = area.point_to_pixel(re, im);
@@ -138,7 +112,10 @@ impl DataImage {
         }
     }
 
-    pub fn translate_all_paths_to_point_grid(&self, area: &Area) {
+    pub fn translate_all_paths_to_point_grid(&self) {
+        let lo = area::AREA.lock().unwrap();
+        let area_o = lo.as_ref();
+        let area = area_o.unwrap();
         let all = self.paths.lock().unwrap().to_owned();
         for path in all {
             for [re, im] in path {
@@ -148,9 +125,11 @@ impl DataImage {
         }
     }
 
-    pub fn save_path(&self, path: Vec<[f64; 2]>, max: u32, is_wrap: bool) {
+    pub fn save_path(&self, path: Vec<[f64; 2]>, is_wrap: bool) {
         if is_wrap {
-            self.set_show_path_maybe(&path, max);
+            if std::mem::replace(&mut self.show_path_update.lock().unwrap(), false) {
+                self.set_show_path(&path);
+            }
         }
         self.paths.lock().unwrap().push(path);
     }
@@ -310,17 +289,17 @@ impl DataImage {
     }
 
     // Don't do any wrapping the first time because Mandelbrot elements are not optimized.
-    pub fn wrap(&self, origin_re: f64, origin_im: f64, rm: ResolutionMultiplier, area: &Area) -> Vec<[f64; 2]> {
+    pub fn wrap(&self, origin_re: f64, origin_im: f64, rm: ResolutionMultiplier, plank: f64) -> Vec<[f64; 2]> {
         let mut ret = Vec::new();
         if rm == Square2 {
-            let d = area.plank() / 3.0;
+            let d = plank / 3.0;
             ret.push([origin_re + d, origin_im + d]);
             ret.push([origin_re - d, origin_im - d]);
             ret.push([origin_re - d, origin_im + d]);
             ret.push([origin_re + d, origin_im - d]);
         } else {
             let multiplier: f64 = resolve_multiplier(rm);
-            let d: f64 = area.plank() / multiplier;
+            let d: f64 = plank / multiplier;
             // multiplier was odd
             let half = ((multiplier - 1.0) / 2.0) as i32;
             // This fills the pixel with multiple points
@@ -399,7 +378,7 @@ impl DataImage {
                 let mg_el_co = tpx_at(&all_some_none, x, y).lock().unwrap();
                 match &*mg_el_co {
                     Some(cop) => {
-                        // to minimize conflict in next zoom in, must recalculate pixel centers for move elements
+                        // to minimize conflict in next zoom in, must recalculate pixel centers for moved elements
                         let re = area.screen_to_domain_re(x);
                         let im = area.screen_to_domain_im(y);
                         let mut cl = cop.clone();
@@ -477,15 +456,18 @@ fn set_tpx_at(vec: &Vec<Vec<Mutex<Option<DataPx>>>>, x: usize, y: usize, px_ref:
     vy[y].lock().unwrap().replace(px_ref.clone());
 }
 
-pub fn init_data_image(area: &Area) -> DataImage {
-    init(area, false)
+pub fn init_data_static() -> DataImage {
+    init(false)
 }
 
-pub fn init_data_video(area: &Area) -> DataImage {
-    init(area, true)
+pub fn init_data_dynamic() -> DataImage {
+    init(true)
 }
 
-pub fn init(area: &Area, dynamic: bool) -> DataImage {
+pub fn init(dynamic: bool) -> DataImage {
+    let lo = area::AREA.lock().unwrap();
+    let area_o = lo.as_ref();
+    let area = area_o.unwrap();
     DataImage {
         width: area.width_x,
         height: area.height_y,
@@ -509,6 +491,16 @@ fn init_domain(area: &Area) -> Vec<Vec<Arc<Mutex<DataPx>>>> {
         vx.push(vy);
     }
     vx
+}
+
+pub fn image_init(width: usize, height: usize) -> Vec<u8> {
+    let mut image = RgbImage::new(width as u32, height as u32);
+    for y in 0..height {
+        for x in 0..width {
+            image.put_pixel(x as u32, y as u32, colour_for_state(ActiveNew));
+        }
+    }
+    image.as_raw().clone()
 }
 
 pub fn state_from_path_length(iterator: u32, path_length: u32, min: u32, max: u32) -> DomainElementState {
@@ -554,13 +546,13 @@ fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
 mod tests {
     use crate::area;
     use crate::area::{Area, AreaConfig};
-    use crate::data_image::{DataImage, init_data_image};
+    use crate::data_image::{DataImage, init_data_static};
     use crate::resolution_multiplier::ResolutionMultiplier::{Square101, Square11, Square3, Square5, Square51, Square9};
 
     fn init() -> (Area, DataImage) {
         let area_config = AreaConfig { width_re: 1.0, center_re: 0.0, center_im: 0.0, width_x: 10, height_y: 10 };
         let area = area::init(&area_config);
-        let data = init_data_image(&area);
+        let data = init_data_static();
         (area, data)
     }
 
@@ -574,7 +566,7 @@ mod tests {
     fn test_wrap_3() {
         let (area, data) = init();
         let (o_re, o_im) = data.origin_at(2, 3);
-        let w = data.wrap(o_re, o_im, Square3, &area);
+        let w = data.wrap(o_re, o_im, Square3, area.plank());
         assert_eq!(w.len(), 8);
         let (re, im) = at(&w, 0);
         assert_eq!(re, -0.3333333333333333);
@@ -587,7 +579,7 @@ mod tests {
     fn test_wrap_5() {
         let (area, data) = init();
         let (o_re, o_im) = data.origin_at(2, 3);
-        let w = data.wrap(o_re, o_im, Square5, &area);
+        let w = data.wrap(o_re, o_im, Square5, area.plank());
         assert_eq!(w.len(), 24);
     }
 
@@ -595,7 +587,7 @@ mod tests {
     fn test_wrap_9() {
         let (area, data) = init();
         let (o_re, o_im) = data.origin_at(2, 3);
-        let w = data.wrap(o_re, o_im, Square9, &area);
+        let w = data.wrap(o_re, o_im, Square9, area.plank());
         assert_eq!(w.len(), 80);
     }
 
@@ -604,7 +596,7 @@ mod tests {
     fn test_wrap_11() {
         let (area, data) = init();
         let (o_re, o_im) = data.origin_at(7, 8);
-        let w = data.wrap(o_re, o_im, Square11, &area);
+        let w = data.wrap(o_re, o_im, Square11, area.plank());
         assert_eq!(w.len(), 120);
     }
 
@@ -612,7 +604,7 @@ mod tests {
     fn test_wrap_51() {
         let (area, data) = init();
         let (o_re, o_im) = data.origin_at(2, 3);
-        let w = data.wrap(o_re, o_im, Square51, &area);
+        let w = data.wrap(o_re, o_im, Square51, area.plank());
         assert_eq!(w.len(), 2600);
     }
 
@@ -620,7 +612,7 @@ mod tests {
     fn test_wrap_101() {
         let (area, data) = init();
         let (o_re, o_im) = data.origin_at(2, 3);
-        let w = data.wrap(o_re, o_im, Square101, &area);
+        let w = data.wrap(o_re, o_im, Square101, area.plank());
         assert_eq!(w.len(), 10_200);
     }
 }
