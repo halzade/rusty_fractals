@@ -1,13 +1,11 @@
 use rusty_fractals_core::machine_mandelbrot;
 use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{MandelbrotConfig, FractalMandelbrot, FractalMath, Conf, UpdateMandelbrot};
+use rusty_fractals_common::fractal::{MandelbrotConfig, FractalMandelbrot, FractalMath, Conf, UpdateMandelbrot, FractalName, Recalculate};
 use rusty_fractals_common::mem_collatz::MemCollatz;
 use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, palette_gray_to_blue};
 
-struct CollatzConjecture {
-    name: &'static str,
-}
+struct CollatzConjecture {}
 
 impl FractalMath<MemCollatz> for CollatzConjecture {
     fn math(&self, m: &mut MemCollatz, origin_re: f64, origin_im: f64) {
@@ -21,9 +19,14 @@ impl FractalMandelbrot for CollatzConjecture {
     fn calculate_mandelbrot_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
         fractal::calculate_mandelbrot_path(self, iteration_max, origin_re, origin_im)
     }
-    fn name(&self) -> &'static str {
-        self.name
-    }
+}
+
+impl FractalName for CollatzConjecture {
+    fn name(&self) -> &'static str { "Collatz Conjecture" }
+}
+
+impl Recalculate for CollatzConjecture {
+    fn recalculate() { todo!() }
 }
 
 impl UpdateMandelbrot for CollatzConjecture {
@@ -46,7 +49,7 @@ fn main() {
         center_re: -0.088485445553580480,
         center_im: -0.200679435068532800,
     };
-    let collatz = &CollatzConjecture { name: "Collatz Conjecture" };
+    let collatz = &CollatzConjecture {};
     machine_mandelbrot::mandelbrot_calculation_for(collatz, mandelbrot_config, area_config);
 }
 
@@ -59,7 +62,7 @@ mod tests {
 
     #[test]
     fn test_math() {
-        let collatz = CollatzConjecture { name: "Collatz" };
+        let collatz = CollatzConjecture {};
         let mut mc = MemCollatz { m: Mem { re: 0.0, im: 0.0 }, num: 7 };
         collatz.math(&mut mc, 1.0, 0.1);
         assert_eq!(mc.re(), 2.0);

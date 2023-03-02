@@ -1,22 +1,19 @@
 use rusty_fractals_core::machine_mandelbrot;
 use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{Conf, FractalMandelbrot, FractalMath, MandelbrotConfig, UpdateMandelbrot};
+use rusty_fractals_common::fractal::{Conf, FractalMandelbrot, FractalMath, FractalName, MandelbrotConfig, Recalculate, UpdateMandelbrot};
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::palettes::{palette_black_to_white_circle_up, palette_gray_to_black_circle_down};
 
-struct MandelbrotOfMandelbrot {
-    name: &'static str,
-}
+struct MandelbrotOfMandelbrot {}
 
 impl FractalMath<Mem> for MandelbrotOfMandelbrot {
-    // f = z^2 + c
-    // f(f(z))
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         let r = m.re;
         let i = m.im;
         let or = origin_re;
         let oi = origin_im;
+        // f(f(z)) : f = z^2 + c
         m.re = r * r * r * r - 6.0 * r * r * i * i + i * i * i * i + 2.0 * r * r * or - 2.0 * i * i * or - 4.0 * r * i * oi + or * or - oi * oi + or - r;
         m.im = 4.0 * r * r * r * i - 4.0 * r * i * i * i + 4.0 * r * i * or + 2.0 * r * r * oi - 2.0 * i * i * oi + 2.0 * or * oi + oi - i;
     }
@@ -26,15 +23,23 @@ impl FractalMandelbrot for MandelbrotOfMandelbrot {
     fn calculate_mandelbrot_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
         fractal::calculate_mandelbrot_path(self, iteration_max, origin_re, origin_im)
     }
-    fn name(&self) -> &'static str {
-        self.name
-    }
+}
+
+impl FractalName for MandelbrotOfMandelbrot {
+    fn name(&self) -> &'static str { "Mandelbrot of Mandelbrot" }
 }
 
 impl UpdateMandelbrot for MandelbrotOfMandelbrot {
     fn update(&self, conf: &mut Conf) {
         conf.max += 150;
         println!("iteration_max = {}", conf.max);
+    }
+}
+
+impl Recalculate for MandelbrotOfMandelbrot {
+    fn recalculate() {
+        let f = &MandelbrotOfMandelbrot {};
+        machine_mandelbrot::recalculate(f);
     }
 }
 
@@ -51,6 +56,6 @@ fn main() {
         center_re: -0.5,
         center_im: 0.0,
     };
-    let mandelbrot_mandelbrot = &MandelbrotOfMandelbrot { name: "Mandelbrot of Mandelbrot" };
+    let mandelbrot_mandelbrot = &MandelbrotOfMandelbrot {};
     machine_mandelbrot::mandelbrot_calculation_for(mandelbrot_mandelbrot, mandelbrot_config, area_config);
 }

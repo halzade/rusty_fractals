@@ -1,9 +1,10 @@
 mod euler;
 mod pixel;
 mod mem_euler;
+
 use rusty_fractals_common::area::Area;
 use rusty_fractals_common::data_image::DataImage;
-use rusty_fractals_common::fractal::{Fractal, FractalMath};
+use rusty_fractals_common::fractal::{Fractal, FractalMath, FractalName, Recalculate};
 use crate::mem_euler::MemEuler;
 
 /*
@@ -19,9 +20,7 @@ const REPEAT: bool = false;
 const SAVE_IMAGES: bool = false;
 const PALETTE: Palette = PALETTE_3_RGB;
 */
-struct Euler {
-    name: &'static str,
-}
+struct Euler {}
 
 impl FractalMath<MemEuler> for Euler {
     fn math(&self, me: &mut MemEuler, origin_re: f64, origin_im: f64) {
@@ -40,9 +39,14 @@ impl Fractal for Euler {
     fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage, is_wrap: bool) -> (u32, u32) {
         todo!()
     }
-    fn name(&self) -> &'static str {
-        self.name
-    }
+}
+
+impl FractalName for Euler {
+    fn name(&self) -> &'static str { "Euler" }
+}
+
+impl Recalculate for Euler {
+    fn recalculate() { todo!() }
 }
 
 fn main() {

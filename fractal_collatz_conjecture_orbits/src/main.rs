@@ -2,14 +2,12 @@ use rusty_fractals_core::machine;
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{FractalConfig, Fractal, FractalMath};
+use rusty_fractals_common::fractal::{FractalConfig, Fractal, FractalMath, FractalName, Recalculate};
 use rusty_fractals_common::mem_collatz::MemCollatz;
 use rusty_fractals_common::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square11;
 
-struct CollatzConjectureOrbits {
-    name: &'static str,
-}
+struct CollatzConjectureOrbits {}
 
 impl FractalMath<MemCollatz> for CollatzConjectureOrbits {
     fn math(&self, m: &mut MemCollatz, origin_re: f64, origin_im: f64) {
@@ -26,9 +24,14 @@ impl Fractal for CollatzConjectureOrbits {
     fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data: &DataImage, is_wrap: bool) -> (u32, u32) {
         fractal::calculate_path(self, self, area, iteration_min, iteration_max, origin_re, origin_im, data, is_wrap)
     }
-    fn name(&self) -> &'static str {
-        self.name
-    }
+}
+
+impl FractalName for CollatzConjectureOrbits {
+    fn name(&self) -> &'static str { "Collatz Conjecture Orbits" }
+}
+
+impl Recalculate for CollatzConjectureOrbits {
+    fn recalculate() { todo!() }
 }
 
 fn main() {
@@ -45,7 +48,7 @@ fn main() {
         center_re: -0.088485445553580480,
         center_im: -0.200679435068532800,
     };
-    let collatz = &CollatzConjectureOrbits { name: "Collatz Conjecture Orbits" };
+    let collatz = &CollatzConjectureOrbits {};
     machine::nebula_calculation_for(collatz, fractal_config, area_config);
 }
 
@@ -58,7 +61,7 @@ mod tests {
 
     #[test]
     fn test_math() {
-        let collatz = CollatzConjectureOrbits { name: "Collatz orbits" };
+        let collatz = CollatzConjectureOrbits {};
         let mut mc = MemCollatz { m: Mem { re: 0.0, im: 0.0 }, num: 7 };
         collatz.math(&mut mc, 1.0, 0.1);
         assert_eq!(mc.re(), 2.0);

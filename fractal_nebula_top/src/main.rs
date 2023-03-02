@@ -3,13 +3,11 @@ use rusty_fractals_common::fractal;
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::fractal::{FractalConfig, Fractal, FractalMath};
+use rusty_fractals_common::fractal::{FractalConfig, Fractal, FractalMath, FractalName, Recalculate};
 use rusty_fractals_common::palettes::palette_purple_to_white;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square2;
 
-struct NebulaTop {
-    name: &'static str,
-}
+struct NebulaTop {}
 
 impl FractalMath<Mem> for NebulaTop {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
@@ -25,9 +23,14 @@ impl Fractal for NebulaTop {
     fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data: &DataImage, is_wrap: bool) -> (u32, u32) {
         fractal::calculate_path(self, self, area, iteration_min, iteration_max, origin_re, origin_im, data, is_wrap)
     }
-    fn name(&self) -> &'static str {
-        self.name
-    }
+}
+
+impl FractalName for NebulaTop {
+    fn name(&self) -> &'static str { "Nebula top" }
+}
+
+impl Recalculate for NebulaTop {
+    fn recalculate() { todo!() }
 }
 
 fn main() {
@@ -44,14 +47,14 @@ fn main() {
         center_re: -1.40115859004747,
         center_im: -0.00000000709356,
     };
-    let nebula_top = &NebulaTop { name: "Nebula top" };
+    let nebula_top = &NebulaTop {};
     machine::nebula_calculation_for(nebula_top, fractal_config, area_config);
 }
 
 
 #[test]
 fn test_math() {
-    let nebula = NebulaTop { name: "Nebula top" };
+    let nebula = NebulaTop {};
     let mut m = Mem { re: 0.0, im: 0.0 };
     nebula.math(&mut m, 1.0, 0.1);
     assert_eq!(m.re, 1.0);

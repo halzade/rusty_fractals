@@ -1,13 +1,11 @@
 use rusty_fractals_core::engine;
 use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{Conf, FractalMandelbrot, FractalMath, MandelbrotConfig, UpdateMandelbrot};
+use rusty_fractals_common::fractal::{Conf, FractalMandelbrot, FractalMath, FractalName, MandelbrotConfig, Recalculate, UpdateMandelbrot};
 use rusty_fractals_common::mem_collatz::MemCollatz;
 use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, palette_gray_to_blue};
 
-struct CollatzConjectureMandelbrot {
-    name: &'static str,
-}
+struct CollatzConjectureMandelbrot {}
 
 impl FractalMath<MemCollatz> for CollatzConjectureMandelbrot {
     fn math(&self, mc: &mut MemCollatz, origin_re: f64, origin_im: f64) {
@@ -20,9 +18,14 @@ impl FractalMandelbrot for CollatzConjectureMandelbrot {
     fn calculate_mandelbrot_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
         fractal::calculate_mandelbrot_path(self, iteration_max, origin_re, origin_im)
     }
-    fn name(&self) -> &'static str {
-        self.name
-    }
+}
+
+impl FractalName for CollatzConjectureMandelbrot {
+    fn name(&self) -> &'static str { "Collatz Conjecture Mandelbrot" }
+}
+
+impl Recalculate for CollatzConjectureMandelbrot {
+    fn recalculate() { todo!() }
 }
 
 impl UpdateMandelbrot for CollatzConjectureMandelbrot {
@@ -45,8 +48,8 @@ fn main() {
         center_re: -0.882952991714172300,
         center_im: -0.214699221335319460,
     };
-    let collatz = &CollatzConjectureMandelbrot { name: "Collatz Conjecture Mandelbrot" };
-    engine::calculate_mandelbrot_zoom(collatz, collatz, mandelbrot_config, area_config);
+    let collatz = &CollatzConjectureMandelbrot {};
+    engine::calculate_mandelbrot_zoom(collatz, mandelbrot_config, area_config);
 }
 
 #[cfg(test)]
@@ -58,7 +61,7 @@ mod tests {
 
     #[test]
     fn test_math() {
-        let collatz = CollatzConjectureMandelbrot { name: "Collatz" };
+        let collatz = CollatzConjectureMandelbrot {};
         let mut mc = MemCollatz { m: Mem { re: 0.0, im: 0.0 }, num: 0 };
         collatz.math(&mut mc, 1.0, 0.1);
         assert_eq!(mc.re(), 2.0);
