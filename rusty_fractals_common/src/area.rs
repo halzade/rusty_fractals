@@ -11,11 +11,15 @@ pub struct AreaConfig {
 
 pub struct Area {
     pub width_x: usize,
+    pub width_xf64: f64,
     pub height_y: usize,
+    pub height_yf64: f64,
     pub width_re: f64,
     pub height_im: f64,
     pub width_half_x: usize,
+    pub width_half_xf64: f64,
     pub height_half_y: usize,
+    pub height_half_yf64: f64,
     pub numbers_re: Vec<f64>,
     pub numbers_im: Vec<f64>,
     pub center_re: f64,
@@ -47,8 +51,8 @@ impl Area {
 
     // check first, if can convert
     pub fn point_to_pixel(&self, re: f64, im: f64) -> (usize, usize) {
-        let px = (self.width_x as f64 * (re - self.center_re) / self.width_re) as f64 + self.width_half_x as f64;
-        let py = (self.height_y as f64 * (im - self.center_im) / self.height_im) as f64 + self.height_half_y as f64;
+        let px = (self.width_xf64 * (re - self.center_re) / self.width_re) + self.width_half_xf64;
+        let py = (self.height_yf64 * (im - self.center_im) / self.height_im) + self.height_half_yf64;
         (px as usize, py as usize)
     }
 
@@ -86,15 +90,21 @@ impl Area {
 
 pub fn move_target(x: usize, y: usize) {
     println!("move_target({}, {})", x, y);
-    let lo = AREA.lock().unwrap();
-    let area_o = lo.as_ref();
-    match area_o {
-        None => {}
-        Some(area) => {
-            let re = area.screen_to_domain_re(x);
-            let im = area.screen_to_domain_im(y);
-            println!("move_target({}, {})", re, im);
-            // TODO recalculate
+    match AREA.lock() {
+        Ok(unlock) => {
+            let area_o = unlock.as_ref();
+            match area_o {
+                None => {}
+                Some(area) => {
+                    let re = area.screen_to_domain_re(x);
+                    let im = area.screen_to_domain_im(y);
+                    println!("move_target({}, {})", re, im);
+                    // TODO recalculate
+                }
+            }
+        }
+        Err(_) => {
+            println!("can't move target");
         }
     }
 }
@@ -136,11 +146,15 @@ pub fn init(config: &AreaConfig) -> Area {
 
     Area {
         width_x,
+        width_xf64 : width_x as f64,
         height_y,
+        height_yf64 : height_y as f64,
         width_re,
         height_im,
         width_half_x,
+        width_half_xf64 : width_half_x as f64,
         height_half_y,
+        height_half_yf64 : height_half_y as f64,
         numbers_re,
         numbers_im,
         center_re,
