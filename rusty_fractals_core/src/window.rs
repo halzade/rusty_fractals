@@ -4,11 +4,12 @@ use fltk::enums::{ColorDepth, Event, Key};
 use fltk::image::RgbImage;
 use ColorDepth::Rgb8;
 use rusty_fractals_common::area;
+use rusty_fractals_common::fractal::{FractalName, Recalculate};
 
-pub fn show(fractal_name: &'static str, initial_image: Vec<u8>, width: i32, height: i32) -> (App, Sender<Vec<u8>>) {
+pub fn show<F: Recalculate + FractalName>(fractal: &F, initial_image: Vec<u8>, width: i32, height: i32) -> (App, Sender<Vec<u8>>) {
     let init_image_rgb = RgbImage::new(&initial_image, width, height, Rgb8).unwrap();
     let app = App::default();
-    let mut window = Window::default().with_label(fractal_name).with_size(width, height).center_screen();
+    let mut window = Window::default().with_label(fractal.name()).with_size(width, height).center_screen();
     let mut frame = Frame::new(0, 0, width, height, "");
     frame.set_image(Some(init_image_rgb));
     window.add(&frame);
@@ -43,6 +44,8 @@ pub fn show(fractal_name: &'static str, initial_image: Vec<u8>, width: i32, heig
                 // to change target coordinates
                 // sender_window.send([x as usize, y as usize]);
                 area::move_target(x as usize, y as usize);
+                area::zoom_in_static();
+                F::recalculate();
             }
             false
         }

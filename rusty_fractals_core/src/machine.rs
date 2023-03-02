@@ -7,7 +7,7 @@ use rand::seq::SliceRandom;
 use rayon::prelude::*;
 use rusty_fractals_common::{area, data_image, pixel_states};
 use rusty_fractals_common::area::{Area, AreaConfig};
-use rusty_fractals_common::fractal::{FractalConfig, Fractal, Conf};
+use rusty_fractals_common::fractal::{FractalConfig, Fractal, Conf, FractalName, Recalculate};
 use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
 use rusty_fractals_common::fractal_log::now;
 use rusty_fractals_common::palette::Palette;
@@ -72,14 +72,18 @@ pub fn init(fractal_config: FractalConfig, sender: Sender<Vec<u8>>) -> Machine {
     }
 }
 
-pub fn nebula_calculation_for(
-    fractal: &'static impl Fractal,
+// TODO
+const MACHINE: Option<&'static Machine> = None;
+const DATA: Option<&'static DataImage> = None;
+
+pub fn nebula_calculation_for<M: Fractal + FractalName + Recalculate>(
+    fractal: &'static M,
     fractal_config: FractalConfig,
     area_config: AreaConfig,
 ) {
     let width = area_config.width_x;
     let height = area_config.height_y;
-    let (app, sender_machine) = window::show(fractal.name(), data_image::image_init(width, height), width as i32, height as i32);
+    let (app, sender_machine) = window::show(fractal, data_image::image_init(width, height), width as i32, height as i32);
 
     let area: Area = area::init(&area_config);
     let plank = area.plank();

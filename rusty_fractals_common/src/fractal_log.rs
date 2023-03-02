@@ -1,6 +1,6 @@
 use chrono::Utc;
 
-const TIME_FORMAT: &str = "%Y.%m.%d %H:%M:%S.%F";
+const TIME_FORMAT: &str = "%Y.%m.%d %H:%M:%S.%f";
 
 pub fn now(message: &str) {
     println!("{}: {}", no(), message);

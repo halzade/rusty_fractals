@@ -4,7 +4,7 @@ use fltk::app::Sender;
 use rayon::prelude::*;
 use rusty_fractals_common::{area, data_image, pixel_states};
 use rusty_fractals_common::area::{Area, AreaConfig};
-use rusty_fractals_common::fractal::{MandelbrotConfig, FractalMandelbrot, Conf};
+use rusty_fractals_common::fractal::{MandelbrotConfig, FractalMandelbrot, Conf, FractalName, Recalculate};
 use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
 use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_mandelbrot_values;
@@ -37,20 +37,29 @@ impl MachineRefresh for MachineMandelbrot {
     }
 }
 
-pub fn mandelbrot_calculation_for(
-    fractal: &'static impl FractalMandelbrot,
+// TODO
+const MACHINE: Option<&'static MachineMandelbrot> = None;
+const DATA: Option<&'static DataImage> = None;
+
+pub fn mandelbrot_calculation_for<M: FractalMandelbrot + FractalName + Recalculate>(
+    fractal: &'static M,
     mandelbrot_config: MandelbrotConfig,
     area_config: AreaConfig,
 ) {
     let width = area_config.width_x;
     let height = area_config.height_y;
-    let (app, sender_machine) = window::show(fractal.name(), data_image::image_init(width, height), width as i32, height as i32);
+    let (app, sender_machine) = window::show(fractal, data_image::image_init(width, height), width as i32, height as i32);
 
     let area: Area = area::init(&area_config);
     area::AREA.lock().unwrap().replace(area);
 
     let data = data_image::init_data_static();
     let machine = init(mandelbrot_config, sender_machine);
+
+    // TODO
+    // MACHINE.replace(&machine);
+    // DATA.replace(&data);
+
     thread::spawn(move || {
         machine.calculate_mandelbrot(fractal, &data);
     });
@@ -58,7 +67,11 @@ pub fn mandelbrot_calculation_for(
 }
 
 impl MachineMandelbrot {
-    pub fn calculate_mandelbrot(&self, fractal: &impl FractalMandelbrot, data_image: &DataImage) {
+    pub fn calculate_mandelbrot<M: FractalMandelbrot>(
+        &self,
+        fractal: &'static M,
+        data_image: &DataImage,
+    ) {
         println!("calculate_mandelbrot()");
         let coordinates_xy: Vec<[u32; 2]> = machine::shuffled_calculation_coordinates();
         let refresh_lock = Arc::new(Mutex::new(true));
@@ -73,9 +86,9 @@ impl MachineMandelbrot {
         self.refresh_final(data_image);
     }
 
-    fn chunk_calculation_mandelbrot(
+    fn chunk_calculation_mandelbrot<M: FractalMandelbrot>(
         &self, xy: &[u32; 2],
-        fractal: &impl FractalMandelbrot,
+        fractal: &M,
         data_image: &DataImage,
     ) {
         let (x_from, x_to, y_from, y_to) = machine::chunk_boundaries(xy, data_image.width, data_image.height);
@@ -96,4 +109,11 @@ impl MachineMandelbrot {
     pub fn conf_mut(&mut self) -> &mut Conf {
         &mut self.conf
     }
+}
+
+pub fn recalculate<M: FractalMandelbrot>(fractal: &'static M) {
+    println!("recalculate()");
+    thread::spawn(move || {
+        MACHINE.unwrap().calculate_mandelbrot(fractal, DATA.unwrap());
+    });
 }
