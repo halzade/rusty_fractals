@@ -3,7 +3,7 @@ use std::thread;
 use fltk::app::Sender;
 use rayon::prelude::*;
 use rusty_fractals_common::{area, data_image, pixel_states};
-use rusty_fractals_common::area::AreaConfig;
+use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::fractal::{MandelbrotConfig, FractalMandelbrot, Conf};
 use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
 use rusty_fractals_common::palette::Palette;
@@ -44,9 +44,11 @@ pub fn mandelbrot_calculation_for(
 ) {
     let width = area_config.width_x;
     let height = area_config.height_y;
-    let (app, area, sender_machine) = window::show(fractal.name(), data_image::image_init(width, height), area_config);
+    let (app, sender_machine) = window::show(fractal.name(), data_image::image_init(width, height), width as i32, height as i32);
 
+    let area: Area = area::init(&area_config);
     area::AREA.lock().unwrap().replace(area);
+
     let data = data_image::init_data_static();
     let machine = init(mandelbrot_config, sender_machine);
     thread::spawn(move || {

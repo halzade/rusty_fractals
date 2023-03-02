@@ -1,6 +1,5 @@
 use std::sync::{Arc, Mutex};
 use std::thread;
-use chrono::Utc;
 use fltk::app;
 use fltk::app::Sender;
 use rand::thread_rng;
@@ -10,6 +9,7 @@ use rusty_fractals_common::{area, data_image, pixel_states};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::fractal::{FractalConfig, Fractal, Conf};
 use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
+use rusty_fractals_common::fractal_log::now;
 use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_nebula_values;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
@@ -28,7 +28,7 @@ pub trait MachineRefresh {
     fn refresh_main(&self, refresh_lock: &Arc<Mutex<bool>>, data: &DataImage) {
         if std::mem::replace(&mut refresh_lock.lock().unwrap(), false) {
             *refresh_lock.lock().unwrap() = false;
-            println!("refresh_main(): {}", Utc::now().format("%Y.%m.%d %H:%M:%S.%f").to_string());
+            now("refresh_main()");
             let image_rgb = data.image_temp(false, None);
             self.sender().send(image_rgb);
             app::sleep(0.02);
@@ -38,7 +38,7 @@ pub trait MachineRefresh {
     fn refresh_wrap(&self, refresh_lock: &Arc<Mutex<bool>>, data: &DataImage, area: &Area) {
         if std::mem::replace(&mut refresh_lock.lock().unwrap(), false) {
             *refresh_lock.lock().unwrap() = false;
-            println!("refresh_wrap(): {}", Utc::now().format("%Y.%m.%d %H:%M:%S.%f").to_string());
+            now("refresh_wrap()");
             let image_rgb = data.image_temp(true, Some(area));
             self.sender().send(image_rgb);
             app::sleep(0.02);
@@ -48,7 +48,7 @@ pub trait MachineRefresh {
         }
     }
     fn refresh_final(&self, data: &DataImage) {
-        println!("refresh_final()");
+        now("refresh_final()");
         let image_rgb = data.image_result();
         self.sender().send(image_rgb);
     }
@@ -79,10 +79,12 @@ pub fn nebula_calculation_for(
 ) {
     let width = area_config.width_x;
     let height = area_config.height_y;
-    let (app, area, sender_machine) = window::show(fractal.name(), data_image::image_init(width, height), area_config);
-    let plank = area.plank();
+    let (app, sender_machine) = window::show(fractal.name(), data_image::image_init(width, height), width as i32, height as i32);
 
+    let area: Area = area::init(&area_config);
+    let plank = area.plank();
     area::AREA.lock().unwrap().replace(area);
+
     let data = data_image::init_data_static();
     let machine = init(fractal_config, sender_machine);
     thread::spawn(move || {
