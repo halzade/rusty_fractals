@@ -641,6 +641,7 @@ dependencies = [
 name = "rusty_fractals_common"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "image",
 ]
 
@@ -648,7 +649,6 @@ dependencies = [
 name = "rusty_fractals_core"
 version = "0.1.0"
 dependencies = [
- "chrono",
  "fltk",
  "image",
  "rand",
