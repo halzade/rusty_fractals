@@ -90,21 +90,51 @@ impl Area {
 
 pub fn move_target(x: usize, y: usize) {
     println!("move_target({}, {})", x, y);
-    match AREA.lock() {
-        Ok(unlock) => {
-            let area_o = unlock.as_ref();
+    let lo = AREA.lock();
+    match lo {
+        Ok(mut unlock) => {
+            // let mut area_o = unlock.as_ref();
+            let area_o = unlock.as_mut();
             match area_o {
                 None => {}
-                Some(area) => {
+                Some(mut area) => {
                     let re = area.screen_to_domain_re(x);
                     let im = area.screen_to_domain_im(y);
                     println!("move_target({}, {})", re, im);
-                    // TODO recalculate
+                    area.center_re = re;
+                    area.center_im = im;
+                    area.border_low_re = area.center_re - area.width_re / 2.0;
+                    area.border_high_re = area.center_re + area.width_re / 2.0 - area.plank;
+                    area.border_low_im = area.center_im - area.height_im / 2.0;
+                    area.border_high_im = area.center_im + area.height_im / 2.0 - area.plank;
+                    area.numbers_re.clear();
+                    area.numbers_im.clear();
+                    // use re, im in the center of each pixel
+                    let ph = area.plank / 2.0;
+                    for x in 0..area.width_x {
+                        area.numbers_re.push(area.border_low_re + (area.plank * x as f64) + ph);
+                    }
+                    for y in 0..area.height_y {
+                        area.numbers_im.push(area.border_low_im + (area.plank * y as f64) + ph);
+                    }
+                    println!("recalculated");
                 }
             }
         }
         Err(_) => {
-            println!("can't move target");
+            println!("move_target(): can't move target");
+        }
+    }
+}
+
+pub fn zoom_in_static() {
+    let lo = AREA.lock();
+    match lo {
+        Ok(mut area) => {
+            area.as_mut().unwrap().zoom_in();
+        }
+        Err(_) => {
+            println!("zoom_in_static(): can't zoom in");
         }
     }
 }
@@ -146,15 +176,15 @@ pub fn init(config: &AreaConfig) -> Area {
 
     Area {
         width_x,
-        width_xf64 : width_x as f64,
+        width_xf64: width_x as f64,
         height_y,
-        height_yf64 : height_y as f64,
+        height_yf64: height_y as f64,
         width_re,
         height_im,
         width_half_x,
-        width_half_xf64 : width_half_x as f64,
+        width_half_xf64: width_half_x as f64,
         height_half_y,
-        height_half_yf64 : height_half_y as f64,
+        height_half_yf64: height_half_y as f64,
         numbers_re,
         numbers_im,
         center_re,
