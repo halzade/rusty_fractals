@@ -1,25 +1,19 @@
 use std::sync::{Arc, Mutex};
-use std::thread;
 use fltk::app;
-use fltk::app::Sender;
+use fltk::app::{Receiver, Sender};
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
-use rusty_fractals_common::{area, data_image, pixel_states};
-use rusty_fractals_common::area::{Area, AreaConfig};
-use rusty_fractals_common::fractal::{FractalConfig, Fractal, Conf, FractalName, Recalculate};
+use rusty_fractals_common::{pixel_states};
+use rusty_fractals_common::area::{Area};
+use rusty_fractals_common::fractal::{FractalNebulaCommon, FractalCommon};
 use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
 use rusty_fractals_common::fractal_log::now;
-use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_nebula_values;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
-use crate::window;
 
 // to calculate single image
 pub struct Machine {
-    pub conf: Conf,
-    pub palette: Palette,
-    resolution_multiplier: ResolutionMultiplier,
     sender: Sender<Vec<u8>>,
 }
 
@@ -60,131 +54,98 @@ impl MachineRefresh for Machine {
     }
 }
 
-pub fn init(fractal_config: FractalConfig, sender: Sender<Vec<u8>>) -> Machine {
+pub fn init() -> Machine {
+    let (sender, _): (Sender<Vec<u8>>, Receiver<Vec<u8>>) = app::channel();
     Machine {
-        conf: Conf {
-            max: fractal_config.iteration_max,
-            min: fractal_config.iteration_min,
-        },
-        resolution_multiplier: fractal_config.resolution_multiplier,
-        palette: fractal_config.palette,
         sender,
     }
 }
 
-// TODO
-const MACHINE: Option<&'static Machine> = None;
-const DATA: Option<&'static DataImage> = None;
-
-pub fn nebula_calculation_for<M: Fractal + FractalName + Recalculate>(
-    fractal: &'static M,
-    fractal_config: FractalConfig,
-    area_config: AreaConfig,
-) {
-    let width = area_config.width_x;
-    let height = area_config.height_y;
-    let (app, sender_machine) = window::show(fractal, data_image::image_init(width, height), width as i32, height as i32);
-
-    let area: Area = area::init(&area_config);
-    let plank = area.plank();
-    area::AREA.lock().unwrap().replace(area);
-
-    let data = data_image::init_data_static();
-    let machine = init(fractal_config, sender_machine);
-    thread::spawn(move || {
-        machine.calculate(fractal, &data, plank);
-    });
-    app.run().unwrap();
-}
-
 impl Machine {
-    pub fn calculate(&self, fractal: &impl Fractal, data_image: &DataImage, plank: f64) {
+    pub fn calculate<F: FractalNebulaCommon + FractalCommon>(&self, fractal: &F) {
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
         let refresh_lock = Arc::new(Mutex::new(true));
 
-        let lo = area::AREA.lock().unwrap();
-        let area_o = lo.as_ref();
-        let area = area_o.unwrap().clone();
-
+        let data = fractal.data();
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
-            self.chunk_calculation(&xy, fractal, &data_image, area);
+            self.chunk_calculation(&xy, fractal);
             // window refresh
-            self.refresh_main(&refresh_lock, &data_image);
+            self.refresh_main(&refresh_lock, &data);
         });
-        data_image.recalculate_pixels_states();
+        data.recalculate_pixels_states();
 
-        if self.resolution_multiplier != ResolutionMultiplier::Single {
+        let area = fractal.area();
+        if fractal.rm() != ResolutionMultiplier::Single {
             println!("calculate() with wrap");
             // previous calculation completed, calculate more elements
             coordinates_xy.par_iter().for_each(|xy| {
                 // calculation
-                self.chunk_calculation_with_wrap(&xy, fractal, data_image, plank, area);
+                self.chunk_calculation_with_wrap(&xy, fractal);
                 // window refresh
-                self.refresh_wrap(&refresh_lock, &data_image, area);
+                self.refresh_wrap(&refresh_lock, &data, area);
             });
         }
-        perfectly_colour_nebula_values(&data_image, &self.palette);
-        self.refresh_final(data_image);
+        let palette = fractal.palette();
+        perfectly_colour_nebula_values(&data, palette);
+        self.refresh_final(data);
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
-    fn chunk_calculation(
-        &self, xy: &[u32; 2],
-        fractal: &impl Fractal,
-        data: &DataImage,
-        area: &Area,
+    fn chunk_calculation<F: FractalNebulaCommon + FractalCommon>(
+        &self,
+        xy: &[u32; 2],
+        fractal: &F,
     ) {
-        let (x_from, x_to, y_from, y_to) = chunk_boundaries(xy, data.width, data.height);
+        let (x_from, x_to, y_from, y_to) = chunk_boundaries(xy, fractal.width(), fractal.height());
         for x in x_from..x_to {
             for y in y_from..y_to {
-                self.calculate_path_xy(x, y, fractal, data, area);
+                self.calculate_path_xy(x, y, fractal);
             }
         }
     }
 
-    fn chunk_calculation_with_wrap(
+    fn chunk_calculation_with_wrap<F: FractalNebulaCommon + FractalCommon>(
         &self, xy: &[u32; 2],
-        fractal: &impl Fractal,
-        data: &DataImage,
-        plank: f64,
-        area: &Area,
+        fractal: &F,
     ) {
-        if self.resolution_multiplier == ResolutionMultiplier::Single {
+        if fractal.rm() == ResolutionMultiplier::Single {
             panic!()
         }
-        let (x_from, x_to, y_from, y_to) = chunk_boundaries(xy, data.width, data.height);
+        let (x_from, x_to, y_from, y_to) = chunk_boundaries(xy, fractal.width(), fractal.height());
+        let data = fractal.data();
+        let conf = fractal.conf();
+        let area = fractal.area();
         for x in x_from..x_to {
             for y in y_from..y_to {
                 if data.is_on_mandelbrot_horizon(x, y) {
                     let (origin_re, origin_im) = data.origin_at(x, y);
-                    let wrap = data.wrap(origin_re, origin_im, self.resolution_multiplier.clone(), plank);
+                    let wrap = data.wrap(origin_re, origin_im, fractal.rm(), area.plank());
                     // within the same pixel
                     for [re, im] in wrap {
-                        fractal.calculate_path(area, self.conf.min, self.conf.max, re, im, data, true);
+                        fractal.calculate_path(area, conf.min, conf.max, re, im, data, true);
                     }
                 }
             }
         }
     }
 
-    fn calculate_path_xy(
-        &self, x: usize, y: usize,
-        fractal: &impl Fractal,
-        data: &DataImage,
-        area: &Area,
+    fn calculate_path_xy<F: FractalNebulaCommon + FractalCommon>(
+        &self,
+        x: usize,
+        y: usize,
+        fractal: &F,
     ) {
+        let data = fractal.data();
+        let conf = fractal.conf();
+        let area = fractal.area();
         let (state, origin_re, origin_im) = data.state_origin_at(x, y);
         if pixel_states::is_active_new(state) {
-            let (iterator, path_length) = fractal.calculate_path(area, self.conf.min, self.conf.max, origin_re, origin_im, data, false);
-            let state = state_from_path_length(iterator, path_length, self.conf.min, self.conf.max);
+            let (iterator, path_length) = fractal.calculate_path(area, conf.min, conf.max, origin_re, origin_im, data, false);
+            let state = state_from_path_length(iterator, path_length, conf.min, conf.max);
             data.set_pixel_state(x, y, state);
         }
-    }
-
-    pub fn conf_mut(&mut self) -> &mut Conf {
-        &mut self.conf
     }
 }
 
