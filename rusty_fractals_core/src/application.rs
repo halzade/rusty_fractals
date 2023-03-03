@@ -5,8 +5,9 @@ use rusty_fractals_common::{area, data_image, palettes};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::data_image::DataType::Static;
-use rusty_fractals_common::fractal::{Conf, MandelbrotConfig};
+use rusty_fractals_common::fractal::{Conf, FractalConfig, MandelbrotConfig};
 use rusty_fractals_common::palette::Palette;
+use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
 
 pub struct Application<'lt> {
     pub data: DataImage<'lt>,
@@ -15,7 +16,10 @@ pub struct Application<'lt> {
     pub area: Area<'lt>,
     pub conf: Conf,
     pub palette: Palette<'lt>,
+    //  mandelbrot specific
     pub palette_zero: Palette<'lt>,
+    //  nebula specific
+    pub resolution_multiplier: ResolutionMultiplier,
 }
 
 impl<'lt> Application<'lt> {
@@ -30,16 +34,31 @@ impl<'lt> Application<'lt> {
     }
 }
 
-pub fn init(area_config: AreaConfig, mandelbrot_config: MandelbrotConfig) -> Application {
+pub fn init(area_config: AreaConfig, config: MandelbrotConfig) -> Application {
     let area = area::init(area_config);
     Application {
         data: data_image::init(Static, &area),
         width: area.width_x,
         height: area.height_y,
         area,
-        conf: Conf { min: 0, max: mandelbrot_config.iteration_max },
-        palette: mandelbrot_config.palette,
-        palette_zero: mandelbrot_config.palette_zero,
+        conf: Conf { min: 0, max: config.iteration_max },
+        palette: config.palette,
+        palette_zero: config.palette_zero,
+        resolution_multiplier: ResolutionMultiplier::Single,
+    }
+}
+
+pub fn init_nebula(area_config: AreaConfig, config: FractalConfig) -> Application {
+    let area = area::init(area_config);
+    Application {
+        data: data_image::init(Static, &area),
+        width: area.width_x,
+        height: area.height_y,
+        area,
+        conf: Conf { min: 0, max: config.iteration_max },
+        palette: config.palette,
+        palette_zero: palettes::init_none(),
+        resolution_multiplier: config.resolution_multiplier,
     }
 }
 
@@ -52,5 +71,6 @@ pub fn init_none<'lt>() -> Application<'lt> {
         conf: Conf { min: 0, max: 10 },
         palette: palettes::init_none(),
         palette_zero: palettes::init_none(),
+        resolution_multiplier: ResolutionMultiplier::Single,
     }
 }
