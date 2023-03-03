@@ -1,3 +1,6 @@
+use std::marker::PhantomData;
+use std::sync::Mutex;
+use std::thread;
 use crate::area::Area;
 use crate::palette::Palette;
 use crate::data_image::DataImage;
@@ -5,24 +8,21 @@ use crate::constants::CALCULATION_BOUNDARY;
 use crate::fractal_stats::Stats;
 use crate::resolution_multiplier::ResolutionMultiplier;
 
-pub struct FractalConfig {
+pub struct FractalConfig<'lt> {
     pub iteration_min: u32,
     pub iteration_max: u32,
     pub resolution_multiplier: ResolutionMultiplier,
-    pub palette: Palette,
+    pub palette: Palette<'lt>,
+    phantom: PhantomData<&'lt bool>,
 }
 
-pub struct MandelbrotConfig {
+pub struct MandelbrotConfig<'lt> {
     pub iteration_max: u32,
     // color classic mandelbrot values
-    pub palette: Palette,
+    pub palette: Palette<'lt>,
     // color insides of mandelbrot set
-    pub palette_zero: Palette,
-}
-
-pub struct AppConfig {
-    pub repeat: bool,
-    pub save_images: bool,
+    pub palette_zero: Palette<'lt>,
+    pub phantom: PhantomData<&'lt bool>,
 }
 
 pub struct Conf {
@@ -30,24 +30,8 @@ pub struct Conf {
     pub max: u32,
 }
 
-// traits
-
-// pub trait Fractal<F>: Sync {
-pub trait Fractal: Sync {
-    fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool;
-    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage, is_wrap: bool) -> (u32, u32);
-}
-
-pub trait FractalMandelbrot: Sync {
-    fn calculate_mandelbrot_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64);
-}
-
-pub trait UpdateMandelbrot: Sync {
-    fn update(&self, conf: &mut Conf);
-}
-
-pub trait Update: Sync {
-    fn update(&self, conf: &mut Conf, stats: &mut Stats);
+pub trait FractalMath<T: MemType<T>>: Sync {
+    fn math(&self, m: &mut T, origin_re: f64, origin_im: f64);
 }
 
 pub trait MemType<T> {
@@ -57,19 +41,49 @@ pub trait MemType<T> {
     fn im(&self) -> f64;
 }
 
-pub trait FractalMath<T: MemType<T>>: Sync {
-    fn math(&self, m: &mut T, origin_re: f64, origin_im: f64);
-}
-
-pub trait Recalculate: Sync {
-    fn recalculate();
-}
-
-pub trait FractalName {
+pub trait FractalCommon: Sync {
     fn name(&self) -> &'static str;
+    fn width(&self) -> usize;
+    fn height(&self) -> usize;
+    fn data(&self) -> &DataImage;
+    fn palette(&self) -> &Palette;
+    fn max(&self) -> u32;
+    fn conf(&self) -> &Conf;
+    fn conf_mut(&mut self) -> &mut Conf;
+    // remote actions
+    fn move_zoom_recalculate(&mut self, x: usize, y: usize);
+    fn move_target_zoom_in_recalculate(x: usize, y: usize);
 }
 
-// functions
+pub trait FractalNebulaCommon: Sync {
+    fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool;
+    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage, is_wrap: bool) -> (u32, u32);
+    fn update(&self, conf: &mut Conf, stats: &mut Stats);
+}
+
+pub trait FractalMandelbrotCommon: Sync {
+    fn calculate_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64);
+    fn update(&mut self);
+    fn palette_zero(&self) -> &Palette;
+    fn calculate_mandelbrot(&mut self);
+    fn calculate_mandelbrot_new_thread<M: FractalMandelbrotCommon + FractalCommon + Sync + Send>(&self, application_fractal: &'static Mutex<Option<M>>) {
+        thread::spawn(move || {
+            let lo = application_fractal.lock();
+            match lo {
+                Ok(mut unlock) => {
+                    let fractal_o = unlock.as_mut();
+                    match fractal_o {
+                        None => {}
+                        Some(fractal) => {
+                            fractal.calculate_mandelbrot();
+                        }
+                    }
+                }
+                Err(_) => {}
+            }
+        });
+    }
+}
 
 pub fn finite_orbits(min: u32, max: u32, length: u32, iterator: u32) -> bool {
     length > min && iterator < max
@@ -80,7 +94,7 @@ pub fn infinite_orbits(min: u32, max: u32, length: u32, iterator: u32) -> bool {
 }
 
 pub fn calculate_path<T: MemType<T>>(
-    fractal: &impl Fractal,
+    fractal: &impl FractalNebulaCommon,
     fractal_math: &impl FractalMath<T>,
     area: &Area,
     iteration_min: u32,
@@ -122,7 +136,7 @@ pub fn calculate_path<T: MemType<T>>(
         // if iteration_max increased, ignore possible extension of previous calculation paths
         // path elements are going to migrate out of the screen shortly
         // removed last_iteration, last_visited_re, last_visited_im
-        if data_image.dynamic {
+        if data_image.is_dynamic() {
             data_image.save_path(path, is_wrap);
         } else {
             data_image.translate_path_to_point_grid(path, area, is_wrap);
