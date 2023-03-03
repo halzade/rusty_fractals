@@ -3,18 +3,22 @@ use fltk::app::{App, event_button, event_coords, event_key, Receiver, Sender};
 use fltk::enums::{ColorDepth, Event, Key};
 use fltk::image::RgbImage;
 use ColorDepth::Rgb8;
-use rusty_fractals_common::area;
-use rusty_fractals_common::fractal::{FractalName, Recalculate};
+use rusty_fractals_common::data_image;
+use rusty_fractals_common::fractal::{FractalCommon};
 
-pub fn show<F: Recalculate + FractalName>(fractal: &F, initial_image: Vec<u8>, width: i32, height: i32) -> (App, Sender<Vec<u8>>) {
-    let init_image_rgb = RgbImage::new(&initial_image, width, height, Rgb8).unwrap();
+pub fn show<F: FractalCommon>(fractal: &F) -> App {
+    let width = fractal.width() as i32;
+    let height = fractal.height() as i32;
+    let image = data_image::image_init(fractal.width(), fractal.height());
+    let init_image_rgb = RgbImage::new(&image, width, height, Rgb8).unwrap();
     let app = App::default();
     let mut window = Window::default().with_label(fractal.name()).with_size(width, height).center_screen();
     let mut frame = Frame::new(0, 0, width, height, "");
+
     frame.set_image(Some(init_image_rgb));
     window.add(&frame);
 
-    let (sender_machine, receiver_frame): (Sender<Vec<u8>>, Receiver<Vec<u8>>) = app::channel();
+    let (_, receiver_frame): (Sender<Vec<u8>>, Receiver<Vec<u8>>) = app::channel();
 
     window.handle(move |_, event| match event {
         Event::KeyDown => {
@@ -41,11 +45,7 @@ pub fn show<F: Recalculate + FractalName>(fractal: &F, initial_image: Vec<u8>, w
             if left {
                 let (x, y) = event_coords();
                 println!("c: {} {}", x, y);
-                // to change target coordinates
-                // sender_window.send([x as usize, y as usize]);
-                area::move_target(x as usize, y as usize);
-                area::zoom_in_static();
-                F::recalculate();
+                F::move_target_zoom_in_recalculate(x as usize, y as usize)
             }
             false
         }
@@ -68,5 +68,5 @@ pub fn show<F: Recalculate + FractalName>(fractal: &F, initial_image: Vec<u8>, w
 
     window.end();
     window.show();
-    (app, sender_machine)
+    app
 }

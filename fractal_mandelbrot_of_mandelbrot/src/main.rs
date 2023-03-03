@@ -1,13 +1,20 @@
-use rusty_fractals_core::machine_mandelbrot;
+use std::thread;
+use std::sync::Mutex;
+use rusty_fractals_core::{application, machine_mandelbrot, window};
+use rusty_fractals_core::application::Application;
 use rusty_fractals_common::area::AreaConfig;
 use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{Conf, FractalMandelbrot, FractalMath, FractalName, MandelbrotConfig, Recalculate, UpdateMandelbrot};
+use rusty_fractals_common::data_image::DataImage;
+use rusty_fractals_common::fractal::{Conf, FractalCommon, FractalMandelbrotCommon, FractalMath, MandelbrotConfig};
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::palettes::{palette_black_to_white_circle_up, palette_gray_to_black_circle_down};
+use rusty_fractals_common::palette::Palette;
+use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, palette_gray_to_black_circle_down};
 
-struct MandelbrotOfMandelbrot {}
+pub struct MandelbrotOfMandelbrot<'lt> {
+    app: Application<'lt>,
+}
 
-impl FractalMath<Mem> for MandelbrotOfMandelbrot {
+impl FractalMath<Mem> for MandelbrotOfMandelbrot<'_> {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         let r = m.re;
         let i = m.im;
@@ -19,35 +26,52 @@ impl FractalMath<Mem> for MandelbrotOfMandelbrot {
     }
 }
 
-impl FractalMandelbrot for MandelbrotOfMandelbrot {
-    fn calculate_mandelbrot_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
+impl FractalMandelbrotCommon for MandelbrotOfMandelbrot<'_> {
+    fn calculate_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
         fractal::calculate_mandelbrot_path(self, iteration_max, origin_re, origin_im)
     }
+    fn update(&mut self) {
+        let c = self.conf_mut();
+        c.max += 150;
+        println!("iteration_max = {}", c.max);
+    }
+    fn palette_zero(&self) -> &Palette {
+        &self.app.palette_zero
+    }
+    fn calculate_mandelbrot(&mut self) {
+        let fm = machine_mandelbrot::init();
+        fm.calculate_mandelbrot(self);
+    }
 }
 
-impl FractalName for MandelbrotOfMandelbrot {
+impl FractalCommon for MandelbrotOfMandelbrot<'_> {
     fn name(&self) -> &'static str { "Mandelbrot of Mandelbrot" }
-}
-
-impl UpdateMandelbrot for MandelbrotOfMandelbrot {
-    fn update(&self, conf: &mut Conf) {
-        conf.max += 150;
-        println!("iteration_max = {}", conf.max);
+    fn width(&self) -> usize { self.app.width }
+    fn height(&self) -> usize { self.app.height }
+    fn data(&self) -> &DataImage { &self.app.data }
+    fn palette(&self) -> &Palette { &self.app.palette }
+    fn max(&self) -> u32 { self.app.conf.max }
+    fn conf(&self) -> &Conf { &self.app.conf }
+    fn conf_mut(&mut self) -> &mut Conf { &mut self.app.conf }
+    fn move_zoom_recalculate(&mut self, x: usize, y: usize) {
+        println!("move_zoom_recalculate()");
+        self.app.move_target_zoom_in_recalculate_pixel_positions(x, y, true);
+        self.calculate_mandelbrot_new_thread(&FRACTAL);
+    }
+    fn move_target_zoom_in_recalculate(x: usize, y: usize) {
+        println!("move_target_zoom_in_recalculate()");
+        FRACTAL.lock().unwrap().as_mut().unwrap().move_zoom_recalculate(x, y);
     }
 }
 
-impl Recalculate for MandelbrotOfMandelbrot {
-    fn recalculate() {
-        let f = &MandelbrotOfMandelbrot {};
-        machine_mandelbrot::recalculate(f);
-    }
-}
+pub static FRACTAL: Mutex<Option<MandelbrotOfMandelbrot>> = Mutex::new(None);
 
 fn main() {
-    let mandelbrot_config = MandelbrotConfig {
+    let mandelbrot_config: MandelbrotConfig<'static> = MandelbrotConfig {
         iteration_max: 2500,
-        palette: palette_black_to_white_circle_up(),
+        palette: palette_blue_to_white_circle_up(),
         palette_zero: palette_gray_to_black_circle_down(),
+        phantom: Default::default(),
     };
     let area_config = AreaConfig {
         width_x: 1280,
@@ -56,6 +80,12 @@ fn main() {
         center_re: -0.5,
         center_im: 0.0,
     };
-    let mandelbrot_mandelbrot = &MandelbrotOfMandelbrot {};
-    machine_mandelbrot::mandelbrot_calculation_for(mandelbrot_mandelbrot, mandelbrot_config, area_config);
+    let application: Application<'static> = application::init(area_config, mandelbrot_config);
+    let mut mandelbrot_mandelbrot: MandelbrotOfMandelbrot<'static> = MandelbrotOfMandelbrot { app: application };
+    let app = window::show(&mandelbrot_mandelbrot);
+    thread::spawn(move || {
+        mandelbrot_mandelbrot.calculate_mandelbrot();
+        FRACTAL.lock().unwrap().replace(mandelbrot_mandelbrot);
+    });
+    app.run().unwrap();
 }

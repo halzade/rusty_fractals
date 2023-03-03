@@ -2,7 +2,7 @@ use image::Rgb;
 use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort, HibernatedDeepBlack};
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct DataPx {
     pub origin_re: f64,
     pub origin_im: f64,
