@@ -1,9 +1,11 @@
+use std::marker::PhantomData;
 use std::sync::{Arc, Mutex, MutexGuard};
 use image::{Rgb, RgbImage};
 use data_px::{active_new, hibernated_deep_black};
 use crate::area::Area;
 use crate::constants::{GRAY, MINIMUM_PATH_LENGTH, NEIGHBOURS};
-use crate::{area, data_px};
+use crate::data_image::DataType::Dynamic;
+use crate::data_px;
 use crate::data_px::DataPx;
 use crate::fractal_log::now;
 use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK, is_finished_any, is_finished_success_past};
@@ -11,10 +13,10 @@ use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccess, Finish
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Square2;
 
-pub struct DataImage {
+pub struct DataImage<'lt> {
     pub width: usize,
     pub height: usize,
-    pub dynamic: bool,
+    pub data_type: DataType,
     // static data for image
     pub pixels: Vec<Vec<Mutex<Option<DataPx>>>>,
     // dynamic data for zoom video
@@ -25,11 +27,18 @@ pub struct DataImage {
     // show one patch during calculation with pixel wrap
     pub show_path: Mutex<Vec<[f64; 2]>>,
     pub show_path_update: Mutex<bool>,
+    phantom: PhantomData<&'lt bool>,
 }
 
 static MAX_VALUE: Mutex<u32> = Mutex::new(0);
 
-impl DataImage {
+#[derive(PartialOrd, Ord, PartialEq, Eq, Clone, Copy)]
+pub enum DataType {
+    Dynamic,
+    Static,
+}
+
+impl DataImage<'_> {
     pub fn colour(&self, x: usize, y: usize, palette_colour: Rgb<u8>) {
         let mut mo_px = self.mo_px_at(x, y);
         let p = mo_px.as_mut().unwrap();
@@ -114,10 +123,7 @@ impl DataImage {
         }
     }
 
-    pub fn translate_all_paths_to_point_grid(&self) {
-        let lo = area::AREA.lock().unwrap();
-        let area_o = lo.as_ref();
-        let area = area_o.unwrap();
+    pub fn translate_all_paths_to_point_grid(&self, area: &Area) {
         let all = self.paths.lock().unwrap().to_owned();
         for path in all {
             for [re, im] in path {
@@ -425,28 +431,22 @@ impl DataImage {
         }
         true
     }
+
+    pub fn is_dynamic(&self) -> bool {
+        self.data_type == Dynamic
+    }
 }
 
-pub fn init_data_static() -> DataImage {
-    init(false)
-}
-
-pub fn init_data_dynamic() -> DataImage {
-    init(true)
-}
-
-pub fn init(dynamic: bool) -> DataImage {
-    let lo = area::AREA.lock().unwrap();
-    let area_o = lo.as_ref();
-    let area = area_o.unwrap();
+pub fn init<'lt>(data_type: DataType, area: &Area) -> DataImage<'lt> {
     DataImage {
         width: area.width_x,
         height: area.height_y,
-        dynamic,
+        data_type,
         pixels: init_domain(area),
         paths: Arc::new(Mutex::new(Vec::new())),
         show_path: Mutex::new(Vec::new()),
         show_path_update: Mutex::new(false),
+        phantom: PhantomData::default(),
     }
 }
 
@@ -517,13 +517,14 @@ fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
 mod tests {
     use crate::area;
     use crate::area::{Area, AreaConfig};
-    use crate::data_image::{DataImage, init_data_static};
+    use crate::data_image::{DataImage, init};
+    use crate::data_image::DataType::Static;
     use crate::resolution_multiplier::ResolutionMultiplier::{Square101, Square11, Square3, Square5, Square51, Square9};
 
-    fn init() -> (Area, DataImage) {
+    fn init_test<'lt>() -> (Area<'lt>, DataImage<'lt>) {
         let area_config = AreaConfig { width_re: 1.0, center_re: 0.0, center_im: 0.0, width_x: 10, height_y: 10 };
-        let area = area::init(&area_config);
-        let data = init_data_static();
+        let area = area::init(area_config);
+        let data = init(Static, &area);
         (area, data)
     }
 
@@ -535,7 +536,7 @@ mod tests {
 
     #[test]
     fn test_wrap_3() {
-        let (area, data) = init();
+        let (area, data) = init_test();
         let (o_re, o_im) = data.origin_at(2, 3);
         let w = data.wrap(o_re, o_im, Square3, area.plank());
         assert_eq!(w.len(), 8);
@@ -548,7 +549,7 @@ mod tests {
 
     #[test]
     fn test_wrap_5() {
-        let (area, data) = init();
+        let (area, data) = init_test();
         let (o_re, o_im) = data.origin_at(2, 3);
         let w = data.wrap(o_re, o_im, Square5, area.plank());
         assert_eq!(w.len(), 24);
@@ -556,7 +557,7 @@ mod tests {
 
     #[test]
     fn test_wrap_9() {
-        let (area, data) = init();
+        let (area, data) = init_test();
         let (o_re, o_im) = data.origin_at(2, 3);
         let w = data.wrap(o_re, o_im, Square9, area.plank());
         assert_eq!(w.len(), 80);
@@ -565,7 +566,7 @@ mod tests {
 
     #[test]
     fn test_wrap_11() {
-        let (area, data) = init();
+        let (area, data) = init_test();
         let (o_re, o_im) = data.origin_at(7, 8);
         let w = data.wrap(o_re, o_im, Square11, area.plank());
         assert_eq!(w.len(), 120);
@@ -573,7 +574,7 @@ mod tests {
 
     #[test]
     fn test_wrap_51() {
-        let (area, data) = init();
+        let (area, data) = init_test();
         let (o_re, o_im) = data.origin_at(2, 3);
         let w = data.wrap(o_re, o_im, Square51, area.plank());
         assert_eq!(w.len(), 2600);
@@ -581,7 +582,7 @@ mod tests {
 
     #[test]
     fn test_wrap_101() {
-        let (area, data) = init();
+        let (area, data) = init_test();
         let (o_re, o_im) = data.origin_at(2, 3);
         let w = data.wrap(o_re, o_im, Square101, area.plank());
         assert_eq!(w.len(), 10_200);
