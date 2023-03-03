@@ -1,4 +1,6 @@
 use std::borrow::BorrowMut;
+use fltk::app;
+use fltk::app::{Receiver, Sender};
 use rusty_fractals_common::{area, data_image, palettes};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
@@ -21,6 +23,10 @@ impl<'lt> Application<'lt> {
         self.area.move_target(x, y);
         self.area.zoom_in();
         self.data.borrow_mut().recalculate_pixels_positions_for_next_calculation(&self.area, is_mandelbrot);
+
+        let image_rgb = self.data.image_temp(false, None);
+        let (sender, _): (Sender<Vec<u8>>, Receiver<Vec<u8>>) = app::channel();
+        sender.send(image_rgb);
     }
 }
 
