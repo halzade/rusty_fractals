@@ -169,6 +169,31 @@ pub fn init<'lt>(config: AreaConfig) -> Area<'lt> {
     }
 }
 
+pub fn init_none<'lt>() -> Area<'lt> {
+    Area {
+        width_x: 1,
+        width_xf64: 1.0,
+        height_y: 1,
+        height_yf64: 1.0,
+        width_re: 1.0,
+        height_im: 1.0,
+        width_half_x: 1,
+        width_half_xf64: 1.0,
+        height_half_y: 1,
+        height_half_yf64: 1.0,
+        numbers_re: Vec::new(),
+        numbers_im: Vec::new(),
+        center_re: 0.5,
+        center_im: 0.5,
+        border_low_re: 0.0,
+        border_low_im: 0.0,
+        border_high_re: 1.0,
+        border_high_im: 1.0,
+        plank: 0.1,
+        phantom: PhantomData::default(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::area::{AreaConfig, init};

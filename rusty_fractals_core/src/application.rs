@@ -1,5 +1,5 @@
 use std::borrow::BorrowMut;
-use rusty_fractals_common::{area, data_image};
+use rusty_fractals_common::{area, data_image, palettes};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::data_image::DataType::Static;
@@ -34,5 +34,17 @@ pub fn init(area_config: AreaConfig, mandelbrot_config: MandelbrotConfig) -> App
         conf: Conf { min: 0, max: mandelbrot_config.iteration_max },
         palette: mandelbrot_config.palette,
         palette_zero: mandelbrot_config.palette_zero,
+    }
+}
+
+pub fn init_none<'lt>() -> Application<'lt> {
+    Application {
+        data: data_image::init_none(),
+        width: 0,
+        height: 0,
+        area: area::init_none(),
+        conf: Conf { min: 0, max: 10 },
+        palette: palettes::init_none(),
+        palette_zero: palettes::init_none(),
     }
 }

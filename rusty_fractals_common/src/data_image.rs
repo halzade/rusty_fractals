@@ -4,7 +4,7 @@ use image::{Rgb, RgbImage};
 use data_px::{active_new, hibernated_deep_black};
 use crate::area::Area;
 use crate::constants::{GRAY, MINIMUM_PATH_LENGTH, NEIGHBOURS};
-use crate::data_image::DataType::Dynamic;
+use crate::data_image::DataType::{Dynamic, Static};
 use crate::data_px;
 use crate::data_px::DataPx;
 use crate::fractal_log::now;
@@ -443,6 +443,19 @@ pub fn init<'lt>(data_type: DataType, area: &Area) -> DataImage<'lt> {
         height: area.height_y,
         data_type,
         pixels: init_domain(area),
+        paths: Arc::new(Mutex::new(Vec::new())),
+        show_path: Mutex::new(Vec::new()),
+        show_path_update: Mutex::new(false),
+        phantom: PhantomData::default(),
+    }
+}
+
+pub fn init_none<'lt>() -> DataImage<'lt> {
+    DataImage {
+        width: 1,
+        height: 1,
+        data_type: Static,
+        pixels: Vec::new(),
         paths: Arc::new(Mutex::new(Vec::new())),
         show_path: Mutex::new(Vec::new()),
         show_path_update: Mutex::new(false),
