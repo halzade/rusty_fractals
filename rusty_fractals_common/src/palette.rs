@@ -1,9 +1,11 @@
+use std::marker::PhantomData;
 use image::Rgb;
 
 const ERROR_MESSAGE: &str = "error in color index";
 
-pub struct Palette {
+pub struct Palette<'lt> {
     pub spectrum: Vec<Rgb<u8>>,
+    pub phantom: PhantomData<&'lt bool>,
 }
 
 pub struct Palette3 {
@@ -12,7 +14,7 @@ pub struct Palette3 {
     pub spectrum_blue: Vec<Rgb<u8>>,
 }
 
-impl Palette {
+impl <'lt>Palette<'_> {
     pub fn spectrum_value(&self, i: usize) -> Rgb<u8> {
         *self.spectrum.get(i).expect(ERROR_MESSAGE)
     }
