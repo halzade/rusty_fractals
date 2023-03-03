@@ -1,4 +1,4 @@
-use std::sync::Mutex;
+use std::marker::PhantomData;
 use crate::constants::ZOOM;
 
 pub struct AreaConfig {
@@ -9,7 +9,7 @@ pub struct AreaConfig {
     pub center_im: f64,
 }
 
-pub struct Area {
+pub struct Area<'lt> {
     pub width_x: usize,
     pub width_xf64: f64,
     pub height_y: usize,
@@ -29,11 +29,10 @@ pub struct Area {
     border_high_re: f64,
     border_high_im: f64,
     plank: f64,
+    phantom: PhantomData<&'lt bool>,
 }
 
-pub static AREA: Mutex<Option<Area>> = Mutex::new(None);
-
-impl Area {
+impl<'lt> Area<'_> {
     pub fn contains(&self, re: f64, im: f64) -> bool {
         re > self.border_low_re
             && re < self.border_high_re
@@ -86,60 +85,32 @@ impl Area {
     pub fn plank(&self) -> f64 {
         self.plank
     }
-}
-
-pub fn move_target(x: usize, y: usize) {
-    println!("move_target({}, {})", x, y);
-    let lo = AREA.lock();
-    match lo {
-        Ok(mut unlock) => {
-            // let mut area_o = unlock.as_ref();
-            let area_o = unlock.as_mut();
-            match area_o {
-                None => {}
-                Some(mut area) => {
-                    let re = area.screen_to_domain_re(x);
-                    let im = area.screen_to_domain_im(y);
-                    println!("move_target({}, {})", re, im);
-                    area.center_re = re;
-                    area.center_im = im;
-                    area.border_low_re = area.center_re - area.width_re / 2.0;
-                    area.border_high_re = area.center_re + area.width_re / 2.0 - area.plank;
-                    area.border_low_im = area.center_im - area.height_im / 2.0;
-                    area.border_high_im = area.center_im + area.height_im / 2.0 - area.plank;
-                    area.numbers_re.clear();
-                    area.numbers_im.clear();
-                    // use re, im in the center of each pixel
-                    let ph = area.plank / 2.0;
-                    for x in 0..area.width_x {
-                        area.numbers_re.push(area.border_low_re + (area.plank * x as f64) + ph);
-                    }
-                    for y in 0..area.height_y {
-                        area.numbers_im.push(area.border_low_im + (area.plank * y as f64) + ph);
-                    }
-                    println!("recalculated");
-                }
-            }
+    pub fn move_target(&mut self, x: usize, y: usize) {
+        println!("move_target({}, {})", x, y);
+        let re = self.screen_to_domain_re(x);
+        let im = self.screen_to_domain_im(y);
+        println!("move_target({}, {})", re, im);
+        self.center_re = re;
+        self.center_im = im;
+        self.border_low_re = self.center_re - self.width_re / 2.0;
+        self.border_high_re = self.center_re + self.width_re / 2.0 - self.plank;
+        self.border_low_im = self.center_im - self.height_im / 2.0;
+        self.border_high_im = self.center_im + self.height_im / 2.0 - self.plank;
+        self.numbers_re.clear();
+        self.numbers_im.clear();
+        // use re, im in the center of each pixel
+        let ph = self.plank / 2.0;
+        for x in 0..self.width_x {
+            self.numbers_re.push(self.border_low_re + (self.plank * x as f64) + ph);
         }
-        Err(_) => {
-            println!("move_target(): can't move target");
+        for y in 0..self.height_y {
+            self.numbers_im.push(self.border_low_im + (self.plank * y as f64) + ph);
         }
+        println!("recalculated");
     }
 }
 
-pub fn zoom_in_static() {
-    let lo = AREA.lock();
-    match lo {
-        Ok(mut area) => {
-            area.as_mut().unwrap().zoom_in();
-        }
-        Err(_) => {
-            println!("zoom_in_static(): can't zoom in");
-        }
-    }
-}
-
-pub fn init(config: &AreaConfig) -> Area {
+pub fn init<'lt>(config: AreaConfig) -> Area<'lt> {
     println!("init()");
     let width_re = config.width_re;
     let center_re = config.center_re;
@@ -194,6 +165,7 @@ pub fn init(config: &AreaConfig) -> Area {
         border_high_re,
         border_high_im,
         plank,
+        phantom: PhantomData::default(),
     }
 }
 
@@ -201,7 +173,7 @@ pub fn init(config: &AreaConfig) -> Area {
 mod tests {
     use crate::area::{AreaConfig, init};
 
-    const VANILLA_AREA_CONFIG: &AreaConfig = &AreaConfig { width_re: 1.0, center_re: 0.0, center_im: 0.0, width_x: 10, height_y: 5 };
+    const VANILLA_AREA_CONFIG: AreaConfig = AreaConfig { width_re: 1.0, center_re: 0.0, center_im: 0.0, width_x: 10, height_y: 5 };
 
     #[test]
     fn test_init() {
