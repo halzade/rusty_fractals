@@ -2,7 +2,7 @@ use std::thread;
 use std::sync::Mutex;
 use rusty_fractals_core::{application, machine_mandelbrot, window};
 use rusty_fractals_core::application::Application;
-use rusty_fractals_common::area::AreaConfig;
+use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::fractal;
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::fractal::{Conf, FractalCommon, FractalMandelbrotCommon, FractalMath, MandelbrotConfig};
@@ -30,11 +30,6 @@ impl FractalMandelbrotCommon for MandelbrotOfMandelbrot<'_> {
     fn calculate_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
         fractal::calculate_mandelbrot_path(self, iteration_max, origin_re, origin_im)
     }
-    fn update(&mut self) {
-        let c = self.conf_mut();
-        c.max += 150;
-        println!("iteration_max = {}", c.max);
-    }
     fn palette_zero(&self) -> &Palette {
         &self.app.palette_zero
     }
@@ -53,6 +48,12 @@ impl FractalCommon for MandelbrotOfMandelbrot<'_> {
     fn max(&self) -> u32 { self.app.conf.max }
     fn conf(&self) -> &Conf { &self.app.conf }
     fn conf_mut(&mut self) -> &mut Conf { &mut self.app.conf }
+    fn area(&self) -> &Area { &self.app.area }
+    fn update(&mut self) {
+        let c = self.conf_mut();
+        c.max += 150;
+        println!("iteration_max = {}", c.max);
+    }
     fn move_zoom_recalculate(&mut self, x: usize, y: usize) {
         println!("move_zoom_recalculate()");
         self.app.move_target_zoom_in_recalculate_pixel_positions(x, y, true);
