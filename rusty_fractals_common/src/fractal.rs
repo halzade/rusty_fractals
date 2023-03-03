@@ -5,7 +5,6 @@ use crate::area::Area;
 use crate::palette::Palette;
 use crate::data_image::DataImage;
 use crate::constants::CALCULATION_BOUNDARY;
-use crate::fractal_stats::Stats;
 use crate::resolution_multiplier::ResolutionMultiplier;
 
 pub struct FractalConfig<'lt> {
@@ -13,7 +12,7 @@ pub struct FractalConfig<'lt> {
     pub iteration_max: u32,
     pub resolution_multiplier: ResolutionMultiplier,
     pub palette: Palette<'lt>,
-    phantom: PhantomData<&'lt bool>,
+    pub phantom: PhantomData<&'lt bool>,
 }
 
 pub struct MandelbrotConfig<'lt> {
@@ -50,20 +49,39 @@ pub trait FractalCommon: Sync {
     fn max(&self) -> u32;
     fn conf(&self) -> &Conf;
     fn conf_mut(&mut self) -> &mut Conf;
+    fn area(&self) -> &Area;
+    fn update(&mut self);
     // remote actions
     fn move_zoom_recalculate(&mut self, x: usize, y: usize);
     fn move_target_zoom_in_recalculate(x: usize, y: usize);
 }
 
 pub trait FractalNebulaCommon: Sync {
+    fn rm(&self) -> ResolutionMultiplier;
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool;
     fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage, is_wrap: bool) -> (u32, u32);
-    fn update(&self, conf: &mut Conf, stats: &mut Stats);
+    fn calculate_fractal(&mut self);
+    fn calculate_fractal_new_thread<M: FractalNebulaCommon + FractalCommon + Sync + Send>(&self, application_fractal: &'static Mutex<Option<M>>) {
+        thread::spawn(move || {
+            let lo = application_fractal.lock();
+            match lo {
+                Ok(mut unlock) => {
+                    let fractal_o = unlock.as_mut();
+                    match fractal_o {
+                        None => {}
+                        Some(fractal) => {
+                            fractal.calculate_fractal();
+                        }
+                    }
+                }
+                Err(_) => {}
+            }
+        });
+    }
 }
 
 pub trait FractalMandelbrotCommon: Sync {
     fn calculate_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64);
-    fn update(&mut self);
     fn palette_zero(&self) -> &Palette;
     fn calculate_mandelbrot(&mut self);
     fn calculate_mandelbrot_new_thread<M: FractalMandelbrotCommon + FractalCommon + Sync + Send>(&self, application_fractal: &'static Mutex<Option<M>>) {
