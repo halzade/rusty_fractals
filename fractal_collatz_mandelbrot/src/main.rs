@@ -4,7 +4,7 @@ use rusty_fractals_core::{application, machine_mandelbrot, window};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{Conf, FractalCommon, FractalMandelbrotCommon, FractalMath, MandelbrotConfig};
+use rusty_fractals_common::fractal::{Conf, FractalApplication, FractalCommon, FractalMandelbrotCommon, FractalMath, MandelbrotConfig};
 use rusty_fractals_common::mem_collatz::MemCollatz;
 use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, palette_gray_to_blue};
@@ -36,14 +36,6 @@ impl FractalMandelbrotCommon for CollatzConjectureMandelbrot<'_> {
 
 impl FractalCommon for CollatzConjectureMandelbrot<'_> {
     fn name(&self) -> &'static str { "Collatz Conjecture Mandelbrot" }
-    fn width(&self) -> usize { self.app.width }
-    fn height(&self) -> usize { self.app.height }
-    fn data(&self) -> &DataImage { &self.app.data }
-    fn palette(&self) -> &Palette { &self.app.palette }
-    fn max(&self) -> u32 { self.app.conf.max }
-    fn conf(&self) -> &Conf { &self.app.conf }
-    fn conf_mut(&mut self) -> &mut Conf { &mut self.app.conf }
-    fn area(&self) -> &Area { &self.app.area }
     fn update(&mut self) {
         let c = self.conf_mut();
         c.max += 150;
@@ -86,6 +78,16 @@ fn main() {
     app.run().unwrap();
 }
 
+impl FractalApplication for CollatzConjectureMandelbrot<'_> {
+    fn width(&self) -> usize { self.app.width }
+    fn height(&self) -> usize { self.app.height }
+    fn data(&self) -> &DataImage { &self.app.data }
+    fn palette(&self) -> &Palette { &self.app.palette }
+    fn max(&self) -> u32 { self.app.conf.max }
+    fn conf(&self) -> &Conf { &self.app.conf }
+    fn conf_mut(&mut self) -> &mut Conf { &mut self.app.conf }
+    fn area(&self) -> &Area { &self.app.area }
+}
 
 #[cfg(test)]
 mod tests {
