@@ -42,14 +42,6 @@ pub trait MemType<T> {
 
 pub trait FractalCommon: Sync {
     fn name(&self) -> &'static str;
-    fn width(&self) -> usize;
-    fn height(&self) -> usize;
-    fn data(&self) -> &DataImage;
-    fn palette(&self) -> &Palette;
-    fn max(&self) -> u32;
-    fn conf(&self) -> &Conf;
-    fn conf_mut(&mut self) -> &mut Conf;
-    fn area(&self) -> &Area;
     fn update(&mut self);
     // remote actions
     fn move_zoom_recalculate(&mut self, x: usize, y: usize);
@@ -101,6 +93,17 @@ pub trait FractalMandelbrotCommon: Sync {
         });
     }
     fn palette_zero(&self) -> &Palette;
+}
+
+pub trait FractalApplication: Sync {
+    fn width(&self) -> usize;
+    fn height(&self) -> usize;
+    fn data(&self) -> &DataImage;
+    fn palette(&self) -> &Palette;
+    fn max(&self) -> u32;
+    fn conf(&self) -> &Conf;
+    fn conf_mut(&mut self) -> &mut Conf;
+    fn area(&self) -> &Area;
 }
 
 pub fn finite_orbits(min: u32, max: u32, length: u32, iterator: u32) -> bool {
