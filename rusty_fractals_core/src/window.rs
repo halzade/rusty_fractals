@@ -4,9 +4,9 @@ use fltk::enums::{ColorDepth, Event, Key};
 use fltk::image::RgbImage;
 use ColorDepth::Rgb8;
 use rusty_fractals_common::data_image;
-use rusty_fractals_common::fractal::{FractalCommon};
+use rusty_fractals_common::fractal::{FractalApplication, FractalCommon};
 
-pub fn show<F: FractalCommon>(fractal: &F) -> App {
+pub fn show<F: FractalCommon + FractalApplication>(fractal: &F) -> App {
     let width = fractal.width() as i32;
     let height = fractal.height() as i32;
     let image = data_image::image_init(fractal.width(), fractal.height());

@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 use fltk::app;
 use fltk::app::{Receiver, Sender};
 use rayon::prelude::*;
-use rusty_fractals_common::fractal::{FractalMandelbrotCommon, FractalCommon};
+use rusty_fractals_common::fractal::{FractalMandelbrotCommon, FractalCommon, FractalApplication};
 use rusty_fractals_common::data_image::state_from_path_length;
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_mandelbrot_values;
 use rusty_fractals_common::pixel_states;
@@ -28,7 +28,7 @@ impl MachineRefresh for MachineMandelbrot {
 }
 
 impl MachineMandelbrot {
-    pub fn calculate_mandelbrot<M: FractalMandelbrotCommon + FractalCommon>(&self, fractal: &M) {
+    pub fn calculate_mandelbrot<M: FractalMandelbrotCommon + FractalCommon + FractalApplication>(&self, fractal: &M) {
         println!("calculate_mandelbrot()");
         let coordinates_xy: Vec<[u32; 2]> = machine::shuffled_calculation_coordinates();
         let refresh_lock = Arc::new(Mutex::new(true));
@@ -46,7 +46,7 @@ impl MachineMandelbrot {
         self.refresh_final(&data);
     }
 
-    fn chunk_calculation_mandelbrot<M: FractalMandelbrotCommon + FractalCommon>(
+    fn chunk_calculation_mandelbrot<M: FractalMandelbrotCommon + FractalCommon + FractalApplication>(
         &self,
         fractal: &M,
         xy: &[u32; 2],

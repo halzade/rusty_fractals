@@ -6,7 +6,7 @@ use rand::seq::SliceRandom;
 use rayon::prelude::*;
 use rusty_fractals_common::{pixel_states};
 use rusty_fractals_common::area::{Area};
-use rusty_fractals_common::fractal::{FractalNebulaCommon, FractalCommon};
+use rusty_fractals_common::fractal::{FractalNebulaCommon, FractalCommon, FractalApplication};
 use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
 use rusty_fractals_common::fractal_log::now;
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_nebula_values;
@@ -62,7 +62,7 @@ pub fn init() -> Machine {
 }
 
 impl Machine {
-    pub fn calculate<F: FractalNebulaCommon + FractalCommon>(&self, fractal: &F) {
+    pub fn calculate<F: FractalNebulaCommon + FractalCommon + FractalApplication>(&self, fractal: &F) {
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
         let refresh_lock = Arc::new(Mutex::new(true));
@@ -93,7 +93,7 @@ impl Machine {
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
-    fn chunk_calculation<F: FractalNebulaCommon + FractalCommon>(
+    fn chunk_calculation<F: FractalNebulaCommon + FractalCommon + FractalApplication>(
         &self,
         xy: &[u32; 2],
         fractal: &F,
@@ -106,7 +106,7 @@ impl Machine {
         }
     }
 
-    fn chunk_calculation_with_wrap<F: FractalNebulaCommon + FractalCommon>(
+    fn chunk_calculation_with_wrap<F: FractalNebulaCommon + FractalCommon + FractalApplication>(
         &self, xy: &[u32; 2],
         fractal: &F,
     ) {
@@ -131,7 +131,7 @@ impl Machine {
         }
     }
 
-    fn calculate_path_xy<F: FractalNebulaCommon + FractalCommon>(
+    fn calculate_path_xy<F: FractalNebulaCommon + FractalCommon + FractalApplication>(
         &self,
         x: usize,
         y: usize,
