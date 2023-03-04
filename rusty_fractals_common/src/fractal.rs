@@ -82,7 +82,6 @@ pub trait FractalNebulaCommon: Sync {
 
 pub trait FractalMandelbrotCommon: Sync {
     fn calculate_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64);
-    fn palette_zero(&self) -> &Palette;
     fn calculate_mandelbrot(&mut self);
     fn calculate_mandelbrot_new_thread<M: FractalMandelbrotCommon + FractalCommon + Sync + Send>(&self, application_fractal: &'static Mutex<Option<M>>) {
         thread::spawn(move || {
@@ -101,6 +100,7 @@ pub trait FractalMandelbrotCommon: Sync {
             }
         });
     }
+    fn palette_zero(&self) -> &Palette;
 }
 
 pub fn finite_orbits(min: u32, max: u32, length: u32, iterator: u32) -> bool {
