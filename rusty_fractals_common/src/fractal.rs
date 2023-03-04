@@ -111,7 +111,7 @@ pub fn finite_orbits(min: u32, max: u32, length: u32, iterator: u32) -> bool {
 }
 
 pub fn infinite_orbits(min: u32, max: u32, length: u32, iterator: u32) -> bool {
-    length > min && iterator <= max
+    length > min && iterator == max
 }
 
 pub fn calculate_path<T: MemType<T>>(
