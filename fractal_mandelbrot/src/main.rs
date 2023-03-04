@@ -25,12 +25,12 @@ impl FractalMandelbrotCommon for Mandelbrot<'_> {
     fn calculate_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
         fractal::calculate_mandelbrot_path(self, iteration_max, origin_re, origin_im)
     }
-    fn palette_zero(&self) -> &Palette {
-        &self.app.palette_zero
-    }
     fn calculate_mandelbrot(&mut self) {
         let fm = machine_mandelbrot::init();
         fm.calculate_mandelbrot(self);
+    }
+    fn palette_zero(&self) -> &Palette {
+        &self.app.palette_zero
     }
 }
 
