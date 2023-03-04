@@ -1,59 +1,59 @@
-use rusty_fractals_core::engine;
+use std::sync::Mutex;
+use std::thread;
+use rusty_fractals_core::{application, machine, window};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::fractal;
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::fractal::{FractalConfig, Fractal, FractalMath, Update, Conf, FractalName, Recalculate};
-use rusty_fractals_common::fractal_stats::Stats;
+use rusty_fractals_common::fractal::{FractalConfig, FractalMath, Conf, FractalApplication, FractalNebulaCommon, FractalCommon};
+use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::palettes::palette_blue_to_white_circle_up;
+use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square2;
+use rusty_fractals_core::application::Application;
 
-struct NebulaSide {}
+pub struct NebulaSide<'lt> {
+    app: Application<'lt>,
+}
 
-impl FractalMath<Mem> for NebulaSide {
+impl FractalMath<Mem> for NebulaSide<'_> {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         m.square();
         m.plus(origin_re, origin_im);
     }
 }
 
-impl Fractal for NebulaSide {
+impl FractalNebulaCommon for NebulaSide<'_> {
+    fn rm(&self) -> ResolutionMultiplier { self.app.resolution_multiplier }
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
         fractal::finite_orbits(min, max, length, iterator)
     }
     fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data: &DataImage, is_wrap: bool) -> (u32, u32) {
         fractal::calculate_path(self, self, area, iteration_min, iteration_max, origin_re, origin_im, data, is_wrap)
     }
-}
-
-impl FractalName for NebulaSide {
-    fn name(&self) -> &'static str { "Nebula side" }
-}
-
-impl Recalculate for NebulaSide {
-    fn recalculate() { todo!() }
-}
-
-
-impl Update for NebulaSide {
-    fn update(&self, conf: &mut Conf, stats: &mut Stats) {
-        conf.max += 150;
-        if stats.not_enough_pixels_best_value {
-            conf.max += 20_000;
-            println!("increase ITERATION_MAX, not enough Points");
-        }
-        if stats.less_pixels_best_value {
-            conf.max += 2_000;
-            println!("increase ITERATION_MAX, bit less Points");
-        }
-        if stats.too_many_paths_total {
-            conf.min += 1;
-            println!("increase a bit ITERATION_MIN, too many paths total");
-        }
-        stats.print();
-        stats.clean();
+    fn calculate_fractal(&mut self) {
+        let fm = machine::init();
+        fm.calculate(self);
     }
 }
+
+impl FractalCommon for NebulaSide<'_> {
+    fn name(&self) -> &'static str { "Nebula" }
+    fn update(&mut self) {
+        let c = self.conf_mut();
+        c.max += 150;
+        println!("iteration_max = {}", c.max);
+    }
+    fn move_zoom_recalculate(&mut self, x: usize, y: usize) {
+        self.app.move_target_zoom_in_recalculate_pixel_positions(x, y, true);
+        self.calculate_fractal_new_thread(&FRACTAL);
+    }
+    fn move_target_zoom_in_recalculate(x: usize, y: usize) {
+        FRACTAL.lock().unwrap().as_mut().unwrap().move_zoom_recalculate(x, y);
+    }
+}
+
+pub static FRACTAL: Mutex<Option<NebulaSide>> = Mutex::new(None);
 
 fn main() {
     let fractal_config = FractalConfig {
@@ -61,6 +61,7 @@ fn main() {
         iteration_max: 14800,
         resolution_multiplier: Square2,
         palette: palette_blue_to_white_circle_up(),
+        phantom: Default::default(),
     };
     let area_config = AreaConfig {
         width_x: 1280,
@@ -69,15 +70,40 @@ fn main() {
         center_re: -0.10675625916322415,
         center_im: -0.8914368889277283,
     };
-    let nebula_side = &NebulaSide {};
-    engine::calculate_nebula_zoom(nebula_side, fractal_config, area_config);
+    let application: Application<'static> = application::init_nebula(area_config, fractal_config);
+    let mut fractal: NebulaSide<'static> = NebulaSide { app: application };
+    let app = window::show(&fractal);
+    thread::spawn(move || {
+        fractal.calculate_fractal();
+        FRACTAL.lock().unwrap().replace(fractal);
+    });
+    app.run().unwrap();
 }
 
-#[test]
-fn test_math() {
-    let nebula_side = NebulaSide {};
-    let mut m = Mem { re: 0.0, im: 0.0 };
-    nebula_side.math(&mut m, 1.0, 0.1);
-    assert_eq!(m.re, 1.0);
-    assert_eq!(m.im, 0.1);
+impl FractalApplication for NebulaSide<'_> {
+    fn width(&self) -> usize { self.app.width }
+    fn height(&self) -> usize { self.app.height }
+    fn data(&self) -> &DataImage { &self.app.data }
+    fn palette(&self) -> &Palette { &self.app.palette }
+    fn max(&self) -> u32 { self.app.conf.max }
+    fn conf(&self) -> &Conf { &self.app.conf }
+    fn conf_mut(&mut self) -> &mut Conf { &mut self.app.conf }
+    fn area(&self) -> &Area { &self.app.area }
+}
+
+#[cfg(test)]
+mod tests {
+    use rusty_fractals_common::fractal::FractalMath;
+    use rusty_fractals_common::mem::Mem;
+    use rusty_fractals_core::application;
+    use crate::NebulaSide;
+
+    #[test]
+    fn test_math() {
+        let nebula = NebulaSide { app: application::init_none() };
+        let mut m = Mem { re: 0.0, im: 0.0 };
+        nebula.math(&mut m, 1.0, 0.1);
+        assert_eq!(m.re, 1.0);
+        assert_eq!(m.im, 0.1);
+    }
 }
