@@ -26,7 +26,6 @@ pub struct DataImage<'lt> {
     pub paths: Arc<Mutex<Vec<Vec<[f64; 2]>>>>,
     // show one patch during calculation with pixel wrap
     pub show_path: Mutex<Vec<[f64; 2]>>,
-    pub show_path_update: Mutex<bool>,
     phantom: PhantomData<&'lt bool>,
 }
 
@@ -107,15 +106,17 @@ impl DataImage<'_> {
 
     // save path to show during recalculation with pixel wrap
     fn set_show_path(&self, path: &Vec<[f64; 2]>) {
-        println!("set_show_path()");
-        *self.show_path.lock().unwrap() = path.clone();
+        let saved_len = self.show_path.lock().unwrap().len();
+        let new_len = path.len();
+        if new_len > (saved_len * 2) {
+            println!("set_show_path() : {}", new_len);
+            *self.show_path.lock().unwrap() = path.clone();
+        }
     }
 
     pub fn translate_path_to_point_grid(&self, path: Vec<[f64; 2]>, area: &Area, is_wrap: bool) {
         if is_wrap {
-            if std::mem::replace(&mut self.show_path_update.lock().unwrap(), false) {
-                self.set_show_path(&path);
-            }
+            self.set_show_path(&path);
         }
         for [re, im] in path {
             let (x, y) = area.point_to_pixel(re, im);
@@ -135,9 +136,7 @@ impl DataImage<'_> {
 
     pub fn save_path(&self, path: Vec<[f64; 2]>, is_wrap: bool) {
         if is_wrap {
-            if std::mem::replace(&mut self.show_path_update.lock().unwrap(), false) {
-                self.set_show_path(&path);
-            }
+            self.set_show_path(&path);
         }
         self.paths.lock().unwrap().push(path);
     }
@@ -445,7 +444,6 @@ pub fn init<'lt>(data_type: DataType, area: &Area) -> DataImage<'lt> {
         pixels: init_domain(area),
         paths: Arc::new(Mutex::new(Vec::new())),
         show_path: Mutex::new(Vec::new()),
-        show_path_update: Mutex::new(false),
         phantom: PhantomData::default(),
     }
 }
@@ -458,7 +456,6 @@ pub fn init_none<'lt>() -> DataImage<'lt> {
         pixels: Vec::new(),
         paths: Arc::new(Mutex::new(Vec::new())),
         show_path: Mutex::new(Vec::new()),
-        show_path_update: Mutex::new(false),
         phantom: PhantomData::default(),
     }
 }

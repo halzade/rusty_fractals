@@ -25,7 +25,7 @@ pub trait MachineRefresh {
             now("refresh_main()");
             let image_rgb = data.image_temp(false, None);
             self.sender().send(image_rgb);
-            app::sleep(0.02);
+            app::sleep(0.01);
             *refresh_lock.lock().unwrap() = true;
         }
     }
@@ -35,9 +35,9 @@ pub trait MachineRefresh {
             now("refresh_wrap()");
             let image_rgb = data.image_temp(true, Some(area));
             self.sender().send(image_rgb);
-            app::sleep(0.02);
+            app::sleep(0.01);
             // allow to set another display path
-            *data.show_path_update.lock().unwrap() = true;
+            *data.show_path.lock().unwrap() = Vec::new();
             *refresh_lock.lock().unwrap() = true;
         }
     }
