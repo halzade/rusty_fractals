@@ -1,10 +1,10 @@
-use std::borrow::BorrowMut;
 use std::thread;
 use rusty_fractals_common::{area, data_image, fractal_stats};
 use rusty_fractals_common::area::{Area, AreaConfig};
-use rusty_fractals_common::fractal::{FractalConfig, Fractal, Update, FractalMandelbrot, MandelbrotConfig, UpdateMandelbrot, Recalculate, FractalName};
+use rusty_fractals_common::fractal::{FractalApplication, FractalCommon, FractalConfig, FractalMandelbrotCommon, FractalNebulaCommon, MandelbrotConfig};
 use rusty_fractals_common::perfect_colour_distribution::{perfectly_colour_nebula_values};
-use crate::{machine, machine_mandelbrot, window};
+use crate::{application, machine, machine_mandelbrot, window};
+use crate::application::Application;
 use crate::machine::MachineRefresh;
 
 // to calculate sequence of images for zoom video
@@ -14,68 +14,36 @@ pub fn init() -> Engine {
     Engine {}
 }
 
-pub fn calculate_mandelbrot_zoom<F: FractalMandelbrot + UpdateMandelbrot + Recalculate + FractalName>(
-    fractal: &'static F,
-    mandelbrot_config: MandelbrotConfig,
-    area_config: AreaConfig,
-) {
-    let width = area_config.width_x;
-    let height = area_config.height_y;
-    let (app, machine_sender) = window::show(fractal, data_image::image_init(width, height), width as i32, height as i32);
-
-    let area: Area = area::init(&area_config);
-    area::AREA.lock().unwrap().replace(area);
-
-    let mut data_image = data_image::init_data_dynamic();
-    let mut machine = machine_mandelbrot::init(mandelbrot_config, machine_sender);
+pub fn calculate_mandelbrot_zoom<F: FractalMandelbrotCommon + FractalCommon + FractalApplication>(fractal: &'static F) {
+    let mut machine = machine_mandelbrot::init();
+    let mut area = fractal.area();
+    let mut data = fractal.data();
     thread::spawn(move || {
-        let mut lo = area::AREA.lock().unwrap();
-        let area_o = lo.as_mut();
-        let area_here = area_o.unwrap();
-
         for it in 1.. {
             println!("{}:", it);
-            machine.calculate_mandelbrot(fractal, &data_image);
+            machine.calculate_mandelbrot(fractal);
             // prepare next frame
-            area_here.zoom_in();
-            data_image.recalculate_pixels_positions_for_next_calculation(area_here, true);
-            fractal.update(machine.conf_mut());
+            // TODO
+            // area.zoom_in();
+            // data.recalculate_pixels_positions_for_next_calculation(area, true);
+            // fractal.update();
         };
     });
-    app.run().unwrap();
 }
 
-pub fn calculate_nebula_zoom<F: Fractal + Update + Recalculate + FractalName>(
-    fractal: &'static F,
-    fractal_config: FractalConfig,
-    area_config: AreaConfig,
-) {
-    let width = area_config.width_x;
-    let height = area_config.height_y;
-    let (app, machine_sender) = window::show(fractal, data_image::image_init(width, height), width as i32, height as i32);
-
-    let area: Area = area::init(&area_config);
-    area::AREA.lock().unwrap().replace(area);
-
-    let mut data_image = data_image::init_data_dynamic();
-    let mut machine = machine::init(fractal_config, machine_sender);
+pub fn calculate_nebula_zoom<F: FractalNebulaCommon + FractalCommon + FractalApplication>(fractal: &'static F) {
+    let mut machine = machine::init();
+    let mut area = fractal.area();
+    let mut data = fractal.data();
     thread::spawn(move || {
-        let stats = &mut fractal_stats::init();
         for it in 1.. {
             println!("{}:", it);
-            let mut lo = area::AREA.lock().unwrap();
-            let area_o = lo.as_mut();
-            let area_here = area_o.unwrap().borrow_mut();
-            machine.calculate(fractal, &data_image, area_here.plank());
-            data_image.translate_all_paths_to_point_grid();
-            perfectly_colour_nebula_values(&data_image, &machine.palette);
+            machine.calculate(fractal);
             // prepare next frame
-            area_here.zoom_in();
-            data_image.recalculate_pixels_positions_for_next_calculation(&area_here, false);
-            machine.refresh_final(&data_image);
-            stats.update(&data_image, it);
-            fractal.update(machine.conf_mut(), stats);
+            // TODO
+            // area.zoom_in();
+            // data.recalculate_pixels_positions_for_next_calculation(area, false);
+            // fractal.update();
         };
     });
-    app.run().unwrap();
 }
