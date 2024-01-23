@@ -4,7 +4,6 @@ pub mod mem_phoenix;
 pub mod area;
 pub mod data_px;
 pub mod data_image;
-pub mod target;
 pub mod fractal;
 pub mod fractal_log;
 pub mod fractal_stats;

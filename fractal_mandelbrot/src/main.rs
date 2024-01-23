@@ -4,7 +4,7 @@ use rusty_fractals_core::{application, machine_mandelbrot, window};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{Conf, FractalApplication, FractalCommon, FractalMandelbrotCommon, FractalMath, MandelbrotConfig};
+use rusty_fractals_common::fractal::{FractalApplication, FractalCommon, FractalMandelbrotCommon, FractalMath, MandelbrotConfig};
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, palette_gray_to_black_circle_down};
@@ -36,19 +36,19 @@ impl FractalMandelbrotCommon for Mandelbrot<'_> {
 
 impl FractalCommon for Mandelbrot<'_> {
     fn name(&self) -> &'static str { "Mandelbrot" }
-    fn update(&mut self) {
-        let c = self.conf_mut();
-        c.max += 150;
-        println!("iteration_max = {}", c.max);
+    fn update(&self) { self.app.conf_add(0, 150); }
+    fn zoom_in(&self) { self.app.zoom_in(); }
+    fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {
+        self.app.recalculate_pixels_positions_for_next_calculation(is_mandelbrot);
     }
-    fn move_zoom_recalculate(&mut self, x: usize, y: usize) {
-        println!("move_zoom_recalculate()");
-        self.app.move_target_zoom_in_recalculate_pixel_positions(x, y, true);
-        self.calculate_mandelbrot_new_thread(&FRACTAL);
+    fn move_target(x: usize, y: usize) {
+        println!("move_target()");
+        FRACTAL.lock().unwrap().as_mut().unwrap().app.move_target(x, y);
     }
-    fn move_target_zoom_in_recalculate(x: usize, y: usize) {
-        println!("move_target_zoom_in_recalculate()");
-        FRACTAL.lock().unwrap().as_mut().unwrap().move_zoom_recalculate(x, y);
+    fn zoom_and_recalculate() {
+        println!("zoom_and_recalculate()");
+        FRACTAL.lock().unwrap().as_mut().unwrap().app.zoom_in_recalculate_pixel_positions(true);
+        FRACTAL.lock().unwrap().as_mut().unwrap().calculate_mandelbrot_new_thread(&FRACTAL);
     }
 }
 
@@ -78,13 +78,12 @@ fn main() {
     app.run().unwrap();
 }
 
-impl FractalApplication for Mandelbrot<'_> {
+impl<'lt> FractalApplication for Mandelbrot<'lt> {
     fn width(&self) -> usize { self.app.width }
     fn height(&self) -> usize { self.app.height }
     fn data(&self) -> &DataImage { &self.app.data }
     fn palette(&self) -> &Palette { &self.app.palette }
-    fn max(&self) -> u32 { self.app.conf.max }
-    fn conf(&self) -> &Conf { &self.app.conf }
-    fn conf_mut(&mut self) -> &mut Conf { &mut self.app.conf }
-    fn area(&self) -> &Area { &self.app.area }
+    fn min(&self) -> u32 { self.app.conf.lock().unwrap().min }
+    fn max(&self) -> u32 { self.app.conf.lock().unwrap().max }
+    fn area(&self) -> &'lt Mutex<Area> { &self.app.area }
 }

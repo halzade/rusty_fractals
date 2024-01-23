@@ -1,14 +1,12 @@
 use std::marker::PhantomData;
 use std::sync::{Arc, Mutex, MutexGuard};
-use image::{Rgb, RgbImage};
-use data_px::{active_new, hibernated_deep_black};
+use image::{Rgb};
 use crate::area::Area;
-use crate::constants::{GRAY, MINIMUM_PATH_LENGTH, NEIGHBOURS};
+use crate::constants::{MINIMUM_PATH_LENGTH, NEIGHBOURS};
 use crate::data_image::DataType::{Dynamic, Static};
 use crate::data_px;
 use crate::data_px::DataPx;
-use crate::fractal_log::now;
-use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK, is_finished_any, is_finished_success_past};
+use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK, is_finished_success_past};
 use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort, HibernatedDeepBlack};
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Square2;
@@ -29,8 +27,6 @@ pub struct DataImage<'lt> {
     phantom: PhantomData<&'lt bool>,
 }
 
-static MAX_VALUE: Mutex<u32> = Mutex::new(0);
-
 #[derive(PartialOrd, Ord, PartialEq, Eq, Clone, Copy)]
 pub enum DataType {
     Dynamic,
@@ -42,66 +38,6 @@ impl DataImage<'_> {
         let mut mo_px = self.mo_px_at(x, y);
         let p = mo_px.as_mut().unwrap();
         p.colour = Some(palette_colour);
-    }
-
-    pub fn image_temp(&self, with_path: bool, area_o: Option<&Area>) -> Vec<u8> {
-        let mut image = RgbImage::new(self.width as u32, self.height as u32);
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let (value, state, _, _, colour_index_o) = self.values_at(x, y);
-                let colour: Rgb<u8>;
-                if !is_finished_any(state) {
-                    colour = colour_for_state(state);
-                } else {
-                    match colour_index_o {
-                        Some(pixel_colour) => {
-                            colour = pixel_colour;
-                        }
-                        None => {
-                            let mut mv = MAX_VALUE.lock().unwrap();
-                            if value > *mv {
-                                *mv = value;
-                            }
-                            // make color (3x) brighter
-                            let mut cv = ((value * 3) as f64 / *mv as f64) as f64 * 255.0;
-                            if cv > 255.0 {
-                                cv = 255.0;
-                            }
-                            let c = cv as u8;
-                            colour = Rgb([c, c, c]);
-                        }
-                    }
-                }
-                image.put_pixel(x as u32, y as u32, colour);
-            }
-        }
-        if with_path {
-            let path = self.show_path.lock().unwrap();
-            let area = area_o.unwrap();
-            for p in path.as_slice() {
-                let (x, y) = area.point_to_pixel(p[0], p[1]);
-                image.put_pixel(x as u32, y as u32, GRAY);
-            }
-        }
-        image.as_raw().clone()
-    }
-
-    pub fn image_result(&self) -> Vec<u8> {
-        let mut image = RgbImage::new(self.width as u32, self.height as u32);
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let (_, _, _, _, colour_index_o) = self.values_at(x, y);
-                match colour_index_o {
-                    None => {
-                        panic!();
-                    }
-                    Some(ci) => {
-                        image.put_pixel(x as u32, y as u32, ci);
-                    }
-                }
-            }
-        }
-        image.as_raw().clone()
     }
 
     // save path to show during recalculation with pixel wrap
@@ -156,7 +92,7 @@ impl DataImage<'_> {
         p.value += 1;
     }
 
-    fn mo_px_at(&self, x: usize, y: usize) -> MutexGuard<Option<DataPx>> {
+    pub fn mo_px_at(&self, x: usize, y: usize) -> MutexGuard<Option<DataPx>> {
         self.pixels.get(x).unwrap().get(y).unwrap().lock().unwrap()
     }
 
@@ -177,6 +113,12 @@ impl DataImage<'_> {
         let mut mo_px = self.mo_px_at(x, y);
         let p = mo_px.as_mut().unwrap();
         (p.value, p.state, p.quad, p.quid, p.colour)
+    }
+
+    pub fn colour_at(&self, x: usize, y: usize) -> Option<Rgb<u8>> {
+        let mut mo_px = self.mo_px_at(x, y);
+        let p = mo_px.as_mut().unwrap();
+        p.colour
     }
 
     pub fn value_state_at(&self, x: usize, y: usize) -> (u32, DomainElementState) {
@@ -321,66 +263,7 @@ impl DataImage<'_> {
         ret
     }
 
-    // This is called after calculation finished, zoom was called and new area measures recalculated
-    pub fn recalculate_pixels_positions_for_next_calculation(&mut self, area: &Area, is_mandelbrot: bool) {
-        println!("recalculate_pixels_positions_for_next_calculation()");
-        // Scan all elements : old positions from previous calculation
-        // Some elements will be moved to new positions
-        // For all the moved elements, subsequent calculations will be skipped.
-        let (cx, cy) = area.point_to_pixel(area.center_re, area.center_im);
-        now("1. move top left to center");
-        for y in 0..cy {
-            for x in 0..cx {
-                self.move_to_new_position(x, y, area);
-            }
-        }
-        now("2. move top right to center");
-        for y in 0..cy {
-            for x in (cx..self.width).rev() {
-                self.move_to_new_position(x, y, area);
-            }
-        }
-        now("3. move bottom left to center");
-        for y in (cy..self.height).rev() {
-            for x in 0..cx {
-                self.move_to_new_position(x, y, area);
-            }
-        }
-        now("4. move bottom right to center");
-        for y in (cy..self.height).rev() {
-            for x in (cx..self.width).rev() {
-                self.move_to_new_position(x, y, area);
-            }
-        }
-        // Create new elements on positions where no px moved to
-        now("fill empty places");
-        let mut c_moved = 0;
-        let mut c_created = 0;
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let mut mo_px = self.mo_px_at(x as usize, y as usize);
-                if mo_px.is_none() {
-                    c_created += 1;
-                    let re = area.screen_to_domain_re(x);
-                    let im = area.screen_to_domain_im(y);
-                    if self.all_neighbors_finished_bad(x, y, is_mandelbrot) {
-                        // Calculation for some positions should be skipped as they are too far away form any long successful divergent position
-                        mo_px.replace(hibernated_deep_black(re, im));
-                    } else {
-                        mo_px.replace(active_new(re, im));
-                    }
-                } else {
-                    c_moved += 1;
-                }
-            }
-        }
-        println!("moved:     {}", c_moved);
-        println!("created:   {}", c_created);
-        assert!(c_moved > 0);
-        assert!(c_created > 0);
-    }
-
-    fn move_to_new_position(&self, x: usize, y: usize, area: &Area) {
+    pub fn move_to_new_position(&self, x: usize, y: usize, area: &Area) {
         let mut mo_px = self.mo_px_at(x, y);
         let p = mo_px.as_mut().unwrap();
         // There was already zoom in, the new area is smaller
@@ -405,7 +288,7 @@ impl DataImage<'_> {
     // Verify if any neighbor px,py finished well, long or at least too short.
     // This method identifies deep black convergent elements of Mandelbrot set interior.
     // Don't do any calculation for those.
-    fn all_neighbors_finished_bad(&self, x: usize, y: usize, is_mandelbrot: bool) -> bool {
+    pub fn all_neighbors_finished_bad(&self, x: usize, y: usize, is_mandelbrot: bool) -> bool {
         let neigh = NEIGHBOURS as i32;
         for a in -neigh..(neigh + 1) {
             for b in -neigh..(neigh + 1) {
@@ -472,16 +355,6 @@ fn init_domain(area: &Area) -> Vec<Vec<Mutex<Option<DataPx>>>> {
         vx.push(vy);
     }
     vx
-}
-
-pub fn image_init(width: usize, height: usize) -> Vec<u8> {
-    let mut image = RgbImage::new(width as u32, height as u32);
-    for y in 0..height {
-        for x in 0..width {
-            image.put_pixel(x as u32, y as u32, colour_for_state(ActiveNew));
-        }
-    }
-    image.as_raw().clone()
 }
 
 pub fn state_from_path_length(iterator: u32, path_length: u32, min: u32, max: u32) -> DomainElementState {

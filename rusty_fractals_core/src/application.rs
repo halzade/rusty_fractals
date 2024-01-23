@@ -1,13 +1,15 @@
 use std::borrow::BorrowMut;
-use fltk::app;
-use fltk::app::{Receiver, Sender};
+use std::sync::{Arc, Mutex};
 use rusty_fractals_common::{area, data_image, palettes};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::data_image::DataType::Static;
+use rusty_fractals_common::data_px::{active_new, hibernated_deep_black};
 use rusty_fractals_common::fractal::{Conf, FractalConfig, MandelbrotConfig};
+use rusty_fractals_common::fractal_log::now;
 use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
+use crate::window;
 
 pub struct Application<'lt> {
     pub data: DataImage<'lt>,
@@ -23,14 +25,91 @@ pub struct Application<'lt> {
 }
 
 impl<'lt> Application<'lt> {
-    pub fn move_target_zoom_in_recalculate_pixel_positions(&mut self, x: usize, y: usize, is_mandelbrot: bool) {
-        self.area.move_target(x, y);
-        self.area.zoom_in();
-        self.data.borrow_mut().recalculate_pixels_positions_for_next_calculation(&self.area, is_mandelbrot);
+    pub fn move_target(&mut self, x: usize, y: usize) {
+        self.area.lock().unwrap().move_target(x, y);
+    }
+    pub fn zoom_in_recalculate_pixel_positions(&mut self, is_mandelbrot: bool) {
+        self.area.lock().unwrap().zoom_in();
+        let refresh_lock_1 = Arc::new(Mutex::new(true));
+        window::paint_image_calculation_progress(&self.data);
 
-        let image_rgb = self.data.image_temp(false, None);
-        let (sender, _): (Sender<Vec<u8>>, Receiver<Vec<u8>>) = app::channel();
-        sender.send(image_rgb);
+        self.recalculate_pixels_positions_for_next_calculation(is_mandelbrot);
+        let refresh_lock_2 = Arc::new(Mutex::new(true));
+        window::paint_image_calculation_progress(&self.data);
+    }
+
+    pub fn conf_add(&self, min: u32, max: u32) {
+        let lo = self.conf.lock();
+        match lo {
+            Ok(mut mu) => {
+                let c = mu.borrow_mut();
+                c.min += min;
+                c.max += max;
+            }
+            Err(_) => {}
+        }
+    }
+    pub fn zoom_in(&self) {
+        self.area.lock().unwrap().zoom_in();
+    }
+    // This is called after calculation finished, zoom was called and new area measures recalculated
+    pub fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {
+        println!("recalculate_pixels_positions_for_next_calculation()");
+        // Scan all elements : old positions from previous calculation
+        // Some elements will be moved to new positions
+        // For all the moved elements, subsequent calculations will be skipped.
+        let area = &self.area.lock().unwrap();
+        let (cx, cy) = area.point_to_pixel(area.center_re, area.center_im);
+        now("1. move top left to center");
+        for y in 0..cy {
+            for x in 0..cx {
+                self.data.move_to_new_position(x, y, area);
+            }
+        }
+        now("2. move top right to center");
+        for y in 0..cy {
+            for x in (cx..self.width).rev() {
+                self.data.move_to_new_position(x, y, area);
+            }
+        }
+        now("3. move bottom left to center");
+        for y in (cy..self.height).rev() {
+            for x in 0..cx {
+                self.data.move_to_new_position(x, y, area);
+            }
+        }
+        now("4. move bottom right to center");
+        for y in (cy..self.height).rev() {
+            for x in (cx..self.width).rev() {
+                self.data.move_to_new_position(x, y, area);
+            }
+        }
+        // Create new elements on positions where no px moved to
+        now("fill empty places");
+        let mut c_moved = 0;
+        let mut c_created = 0;
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let mut mo_px = self.data.mo_px_at(x as usize, y as usize);
+                if mo_px.is_none() {
+                    c_created += 1;
+                    let re = area.screen_to_domain_re(x);
+                    let im = area.screen_to_domain_im(y);
+                    if self.data.all_neighbors_finished_bad(x, y, is_mandelbrot) {
+                        // Calculation for some positions should be skipped as they are too far away form any long successful divergent position
+                        mo_px.replace(hibernated_deep_black(re, im));
+                    } else {
+                        mo_px.replace(active_new(re, im));
+                    }
+                } else {
+                    c_moved += 1;
+                }
+            }
+        }
+        println!("moved:     {}", c_moved);
+        println!("created:   {}", c_created);
+        assert!(c_moved > 0);
+        assert!(c_created > 0);
     }
 }
 

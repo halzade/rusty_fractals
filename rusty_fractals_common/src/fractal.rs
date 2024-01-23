@@ -42,16 +42,18 @@ pub trait MemType<T> {
 
 pub trait FractalCommon: Sync {
     fn name(&self) -> &'static str;
-    fn update(&mut self);
-    // remote actions
-    fn move_zoom_recalculate(&mut self, x: usize, y: usize);
-    fn move_target_zoom_in_recalculate(x: usize, y: usize);
+    fn update(&self);
+    fn zoom_in(&self);
+    fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool);
+    // application actions
+    fn move_target(x: usize, y: usize);
+    fn zoom_and_recalculate();
 }
 
 pub trait FractalNebulaCommon: Sync {
     fn rm(&self) -> ResolutionMultiplier;
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool;
-    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage, is_wrap: bool) -> (u32, u32);
+    fn calculate_path(&self, area: &Mutex<Area>, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage, is_wrap: bool) -> (u32, u32);
     fn calculate_fractal(&mut self);
     fn calculate_fractal_new_thread<M: FractalNebulaCommon + FractalCommon + Sync + Send>(&self, application_fractal: &'static Mutex<Option<M>>) {
         thread::spawn(move || {
@@ -100,10 +102,9 @@ pub trait FractalApplication: Sync {
     fn height(&self) -> usize;
     fn data(&self) -> &DataImage;
     fn palette(&self) -> &Palette;
+    fn min(&self) -> u32;
     fn max(&self) -> u32;
-    fn conf(&self) -> &Conf;
-    fn conf_mut(&mut self) -> &mut Conf;
-    fn area(&self) -> &Area;
+    fn area(&self) -> &Mutex<Area>;
 }
 
 pub fn finite_orbits(min: u32, max: u32, length: u32, iterator: u32) -> bool {
