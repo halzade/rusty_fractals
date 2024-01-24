@@ -1,4 +1,3 @@
-use std::sync::{Arc, Mutex};
 use rayon::prelude::*;
 use rusty_fractals_common::fractal::{FractalMandelbrotCommon, FractalCommon, FractalApplication};
 use rusty_fractals_common::data_image::state_from_path_length;
@@ -18,18 +17,17 @@ impl MachineMandelbrot {
         println!("calculate_mandelbrot()");
         let coordinates_xy: Vec<[u32; 2]> = machine::shuffled_calculation_coordinates();
         let data = fractal.data();
-        let refresh_lock = Arc::new(Mutex::new(true));
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
             self.chunk_calculation_mandelbrot(fractal, xy);
             // window refresh
-            window::paint_image_calculation_progress(data);
+            window::paint_image_calculation_progress(&data);
         });
         data.recalculate_pixels_states();
         let palette = fractal.palette();
         let palette_zero = fractal.palette_zero();
         perfectly_colour_mandelbrot_values(&data, &palette, &palette_zero);
-        window::paint_image_result(data);
+        window::paint_image_result(&data);
     }
 
     fn chunk_calculation_mandelbrot<M: FractalMandelbrotCommon + FractalCommon + FractalApplication>(

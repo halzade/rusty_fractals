@@ -1,12 +1,9 @@
-use std::sync::{Arc, Mutex};
-use fltk::app;
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
 use rusty_fractals_common::{pixel_states};
 use rusty_fractals_common::fractal::{FractalNebulaCommon, FractalCommon, FractalApplication};
-use rusty_fractals_common::data_image::{DataImage, state_from_path_length};
-use rusty_fractals_common::fractal_log::now;
+use rusty_fractals_common::data_image::{state_from_path_length};
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_nebula_values;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
 use crate::window;
@@ -18,12 +15,11 @@ pub fn init() -> Machine {
     Machine {}
 }
 
-impl Machine {
-    pub fn calculate<F: FractalNebulaCommon + FractalCommon + FractalApplication>(&self, fractal: &F) {
+impl Machine { //                                                                (&self, fractal: &M)
+    pub fn calculate<F: FractalNebulaCommon + FractalCommon + FractalApplication>(&self, fractal: &'static F) {
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
         let data = fractal.data();
-        let refresh_lock = Arc::new(Mutex::new(true));
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
             self.chunk_calculation(&xy, fractal);
@@ -41,12 +37,12 @@ impl Machine {
                 self.chunk_calculation_with_wrap(&xy, fractal);
                 // window refresh
                 // TODO window::paint_image_calculation_progress(&data);
-                window::paint_path(area, data);
+                window::paint_path(area, &data);
             });
         }
         let palette = fractal.palette();
         perfectly_colour_nebula_values(&data, palette);
-        window::paint_image_result(data);
+        window::paint_image_result(&data);
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
@@ -65,7 +61,7 @@ impl Machine {
 
     fn chunk_calculation_with_wrap<F: FractalNebulaCommon + FractalCommon + FractalApplication>(
         &self, xy: &[u32; 2],
-        fractal: &F,
+        fractal: &'static F,
     ) {
         if fractal.rm() == ResolutionMultiplier::Single {
             panic!()
@@ -73,7 +69,7 @@ impl Machine {
         let (x_from, x_to, y_from, y_to) = chunk_boundaries(xy, fractal.width(), fractal.height());
         let data = fractal.data();
         let area = fractal.area();
-        let plank = area.lock().unwrap().plank();
+        let plank = area.plank();
         for x in x_from..x_to {
             for y in y_from..y_to {
                 if data.is_on_mandelbrot_horizon(x, y) {
@@ -81,7 +77,7 @@ impl Machine {
                     let wrap = data.wrap(origin_re, origin_im, fractal.rm(), plank);
                     // within the same pixel
                     for [re, im] in wrap {
-                        fractal.calculate_path(area, fractal.min(), fractal.max(), re, im, data, true);
+                        fractal.calculate_path(area, fractal.min(), fractal.max(), re, im, &data, true);
                     }
                 }
             }
@@ -98,7 +94,7 @@ impl Machine {
         let area = fractal.area();
         let (state, origin_re, origin_im) = data.state_origin_at(x, y);
         if pixel_states::is_active_new(state) {
-            let (iterator, path_length) = fractal.calculate_path(area, fractal.min(), fractal.max(), origin_re, origin_im, data, false);
+            let (iterator, path_length) = fractal.calculate_path(area, fractal.min(), fractal.max(), origin_re, origin_im, &data, false);
             let state = state_from_path_length(iterator, path_length, fractal.min(), fractal.max());
             data.set_pixel_state(x, y, state);
         }

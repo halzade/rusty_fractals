@@ -1,5 +1,4 @@
 use std::borrow::BorrowMut;
-use std::sync::{Arc, Mutex};
 use rusty_fractals_common::{area, data_image, palettes};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
@@ -26,31 +25,23 @@ pub struct Application<'lt> {
 
 impl<'lt> Application<'lt> {
     pub fn move_target(&mut self, x: usize, y: usize) {
-        self.area.lock().unwrap().move_target(x, y);
+        self.area.move_target(x, y);
     }
     pub fn zoom_in_recalculate_pixel_positions(&mut self, is_mandelbrot: bool) {
-        self.area.lock().unwrap().zoom_in();
-        let refresh_lock_1 = Arc::new(Mutex::new(true));
+        self.area.zoom_in();
         window::paint_image_calculation_progress(&self.data);
 
         self.recalculate_pixels_positions_for_next_calculation(is_mandelbrot);
-        let refresh_lock_2 = Arc::new(Mutex::new(true));
         window::paint_image_calculation_progress(&self.data);
     }
 
-    pub fn conf_add(&self, min: u32, max: u32) {
-        let lo = self.conf.lock();
-        match lo {
-            Ok(mut mu) => {
-                let c = mu.borrow_mut();
-                c.min += min;
-                c.max += max;
-            }
-            Err(_) => {}
-        }
+    pub fn conf_add(&mut self, min: u32, max: u32) {
+        let conf_mu = self.conf.borrow_mut();
+        conf_mu.min += min;
+        conf_mu.max += max;
     }
-    pub fn zoom_in(&self) {
-        self.area.lock().unwrap().zoom_in();
+    pub fn zoom_in(&mut self) {
+        self.area.zoom_in();
     }
     // This is called after calculation finished, zoom was called and new area measures recalculated
     pub fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {
@@ -58,7 +49,7 @@ impl<'lt> Application<'lt> {
         // Scan all elements : old positions from previous calculation
         // Some elements will be moved to new positions
         // For all the moved elements, subsequent calculations will be skipped.
-        let area = &self.area.lock().unwrap();
+        let area = &self.area;
         let (cx, cy) = area.point_to_pixel(area.center_re, area.center_im);
         now("1. move top left to center");
         for y in 0..cy {

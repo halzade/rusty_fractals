@@ -6,17 +6,15 @@ use fltk::image::RgbImage;
 use fltk::surface::ImageSurface;
 use image::{Pixel, Rgb};
 use rusty_fractals_common::area::Area;
-use rusty_fractals_common::data_image;
 use rusty_fractals_common::data_image::{colour_for_state, DataImage};
 use rusty_fractals_common::fractal::{FractalApplication, FractalCommon};
-use rusty_fractals_common::pixel_states::DomainElementState::ActiveNew;
 use rusty_fractals_common::pixel_states::is_finished_any;
 
 pub const IMAGE: Option<&'static RgbImage> = None;
 pub const SURFACE: Option<ImageSurface> = None;
 static MAX_VALUE: Mutex<u32> = Mutex::new(0);
 
-pub fn show<F: FractalCommon + FractalApplication>(fractal: &'static F) -> App {
+pub fn show<F: FractalCommon + FractalApplication>(fractal: F) -> App {
     println!("show()");
     let width = fractal.width() as i32;
     let height = fractal.height() as i32;
@@ -29,7 +27,7 @@ pub fn show<F: FractalCommon + FractalApplication>(fractal: &'static F) -> App {
 
     let cycle = 0;
 
-    let data : &'static DataImage = fractal.data();
+    let data : &'static DataImage<'_> = fractal.data();
 
     window.draw(move |_| {
         println!("draw {}", cycle);
@@ -118,12 +116,11 @@ pub fn show<F: FractalCommon + FractalApplication>(fractal: &'static F) -> App {
     app
 }
 
-pub fn paint_path(area_mu: &Mutex<Area>, data: &DataImage) {
+pub fn paint_path(area: &Area, data: &DataImage) {
     let path = &data.show_path.lock().unwrap();
     let lr = app::lock();
     match lr {
         Ok(_) => {
-            let area = area_mu.lock().unwrap();
             app::unlock();
             for p in path.as_slice() {
                 let (x, y) = area.point_to_pixel(p[0], p[1]);
@@ -142,7 +139,7 @@ const DATA_COPY: Option<DataImage> = None;
 
 pub fn paint_image_calculation_progress(data: &DataImage) {
     // rendering must be done from main thread
-
+    // TODO
     // DATA_COPY.replace((*data).clone());
 
     app::awake();

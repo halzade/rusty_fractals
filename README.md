@@ -84,29 +84,3 @@ https://github.com/halzade/rusty_fractals.git
 ## Random ideas to do
 
 Make a fine fractal from Riemann Zeta function and zoom into -1/12
-
-## Java to Rust migration status (only unfinished migration)
-
-fractal_collatz_conjecture - **static image**    
-
-fractal_collatz_conjecture_orbits - **static image**
-
-fractal_euler -
-
-fractal_fat_star - missing coloring for infinite orbits 
-
-fractal_fat_star_magnific - partial image
-
-fractal_fat_star_tentacle - partial image
-
-fractal_head - **static image**     
-
-fractal_infinity - missing coloring for infinite orbits
-
-fractal_infinity_top - partial image
-
-fractal_lotus - **static image**   
-
-fractal_nebula_side - **static image**
-
-fractal_nebula_top - **static image**

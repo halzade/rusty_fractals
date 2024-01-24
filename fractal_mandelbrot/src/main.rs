@@ -5,6 +5,7 @@ use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::fractal;
 use rusty_fractals_common::fractal::{FractalApplication, FractalCommon, FractalMandelbrotCommon, FractalMath, MandelbrotConfig};
+use rusty_fractals_common::fractal_log::now;
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, palette_gray_to_black_circle_down};
@@ -36,8 +37,8 @@ impl FractalMandelbrotCommon for Mandelbrot<'_> {
 
 impl FractalCommon for Mandelbrot<'_> {
     fn name(&self) -> &'static str { "Mandelbrot" }
-    fn update(&self) { self.app.conf_add(0, 150); }
-    fn zoom_in(&self) { self.app.zoom_in(); }
+    fn update(&mut self) { self.app.conf_add(0, 150); }
+    fn zoom_in(&mut self) { self.app.zoom_in(); }
     fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {
         self.app.recalculate_pixels_positions_for_next_calculation(is_mandelbrot);
     }
@@ -69,21 +70,24 @@ fn main() {
         center_im: 0.0,
     };
     let application: Application<'static> = application::init(area_config, mandelbrot_config);
-    let mut mandelbrot: Mandelbrot<'static> = Mandelbrot { app: application };
-    let app = window::show(&mandelbrot);
-    thread::spawn(move || {
-        mandelbrot.calculate_mandelbrot();
-        FRACTAL.lock().unwrap().replace(mandelbrot);
-    });
+    let mandelbrot: Mandelbrot<'static> = Mandelbrot { app: application };
+    let app = window::show(mandelbrot);
+
+        let machine = machine_mandelbrot::init();
+        machine.calculate_mandelbrot(&mandelbrot);
+        // FRACTAL.lock().unwrap().replace(mandelbrot);
+
     app.run().unwrap();
+
+    now(mandelbrot.name())
 }
 
 impl<'lt> FractalApplication for Mandelbrot<'lt> {
     fn width(&self) -> usize { self.app.width }
     fn height(&self) -> usize { self.app.height }
-    fn data(&self) -> &DataImage { &self.app.data }
+    fn data(&self) -> &DataImage<'static> { & self.app.data }
     fn palette(&self) -> &Palette { &self.app.palette }
-    fn min(&self) -> u32 { self.app.conf.lock().unwrap().min }
-    fn max(&self) -> u32 { self.app.conf.lock().unwrap().max }
-    fn area(&self) -> &'lt Mutex<Area> { &self.app.area }
+    fn min(&self) -> u32 { self.app.conf.min }
+    fn max(&self) -> u32 { self.app.conf.max }
+    fn area(&self) -> &Area<'_> { &self.app.area }
 }
