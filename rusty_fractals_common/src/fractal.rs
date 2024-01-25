@@ -24,11 +24,6 @@ pub struct MandelbrotConfig<'lt> {
     pub phantom: PhantomData<&'lt bool>,
 }
 
-pub struct Conf {
-    pub min: u32,
-    pub max: u32,
-}
-
 pub trait FractalMath<T: MemType<T>>: Sync {
     fn math(&self, m: &mut T, origin_re: f64, origin_im: f64);
 }
@@ -42,19 +37,19 @@ pub trait MemType<T> {
 
 pub trait FractalCommon: Sync {
     fn name(&self) -> &'static str;
-    fn update(&mut self);
-    fn zoom_in(&mut self);
+    fn update(&self);
+    fn zoom_in(&self);
     fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool);
     // application actions
-    fn move_target(x: usize, y: usize);
-    fn zoom_and_recalculate();
+    fn move_target(&self, x: usize, y: usize);
+    fn zoom_and_recalculate(&self);
 }
 
 pub trait FractalNebulaCommon: Sync {
     fn rm(&self) -> ResolutionMultiplier;
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool;
     fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage, is_wrap: bool) -> (u32, u32);
-    fn calculate_fractal(&mut self);
+    fn calculate_fractal(&self);
     fn calculate_fractal_new_thread<M: FractalNebulaCommon + FractalCommon + Sync + Send>(&self, application_fractal: &'static Mutex<Option<M>>) {
         thread::spawn(move || {
             let lo = application_fractal.lock();
@@ -68,7 +63,9 @@ pub trait FractalNebulaCommon: Sync {
                         }
                     }
                 }
-                Err(_) => {}
+                Err(_) => {
+                    // TODO
+                }
             }
         });
     }
@@ -76,24 +73,18 @@ pub trait FractalNebulaCommon: Sync {
 
 pub trait FractalMandelbrotCommon: Sync {
     fn calculate_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64);
-    fn calculate_mandelbrot(&mut self);
-    fn calculate_mandelbrot_new_thread<M: FractalMandelbrotCommon + FractalCommon + Sync + Send>(&self, application_fractal: &'static Mutex<Option<M>>) {
-        thread::spawn(move || {
-            let lo = application_fractal.lock();
-            match lo {
-                Ok(mut unlock) => {
-                    let fractal_o = unlock.as_mut();
-                    match fractal_o {
-                        None => {}
-                        Some(fractal) => {
-                            fractal.calculate_mandelbrot();
-                        }
-                    }
-                }
-                Err(_) => {}
-            }
-        });
-    }
+    fn calculate_mandelbrot(&self);
+    // fn calculate_mandelbrot_new_thread<M: FractalMandelbrotCommon + FractalCommon + Sync + Send>(&self, application_fractal: &'static Option<&M>) {
+    //     thread::spawn(move || {
+    //                 let fractal_o = application_fractal.as_mut();
+    //                 match fractal_o {
+    //                     None => {}
+    //                     Some(fractal) => {
+    //                         fractal.calculate_mandelbrot();
+    //                     }
+    //                 }
+    //     });
+    // }
     fn palette_zero(&self) -> &Palette;
 }
 
@@ -106,6 +97,7 @@ pub trait FractalApplication: Sync {
     fn max(&self) -> u32;
     fn area(&self) -> &Area;
 }
+
 
 pub fn finite_orbits(min: u32, max: u32, length: u32, iterator: u32) -> bool {
     length > min && iterator < max

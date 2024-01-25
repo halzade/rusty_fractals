@@ -321,8 +321,8 @@ impl DataImage<'_> {
 
 pub fn init<'lt>(data_type: DataType, area: &Area) -> DataImage<'lt> {
     DataImage {
-        width: area.width_x,
-        height: area.height_y,
+        width: area.data.lock().unwrap().width_x,
+        height: area.data.lock().unwrap().height_y,
         data_type,
         pixels: init_domain(area),
         paths: Arc::new(Mutex::new(Vec::new())),
@@ -345,11 +345,18 @@ pub fn init_none<'lt>() -> DataImage<'lt> {
 
 fn init_domain(area: &Area) -> Vec<Vec<Mutex<Option<DataPx>>>> {
     let mut vx = Vec::new();
-    for x in 0..area.width_x {
+
+    let wx = area.data.lock().unwrap().width_x;
+    let hy = area.data.lock().unwrap().height_y;
+
+    let res = area.screen_to_domain_re_copy();
+    let ims = area.screen_to_domain_im_copy();
+
+    for x in 0..wx {
         let mut vy = Vec::new();
-        for y in 0..area.height_y {
-            let origin_re = area.screen_to_domain_re(x);
-            let origin_im = area.screen_to_domain_im(y);
+        for y in 0..hy {
+            let origin_re = res[x];
+            let origin_im = ims[y];
             vy.push(Mutex::new(Some(data_px::init(origin_re, origin_im))));
         }
         vx.push(vy);

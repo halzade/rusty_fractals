@@ -14,7 +14,7 @@ pub const IMAGE: Option<&'static RgbImage> = None;
 pub const SURFACE: Option<ImageSurface> = None;
 static MAX_VALUE: Mutex<u32> = Mutex::new(0);
 
-pub fn show<F: FractalCommon + FractalApplication>(fractal: F) -> App {
+pub fn show<F: FractalCommon + FractalApplication>(fractal: &'static F) -> App {
     println!("show()");
     let width = fractal.width() as i32;
     let height = fractal.height() as i32;
@@ -86,7 +86,7 @@ pub fn show<F: FractalCommon + FractalApplication>(fractal: F) -> App {
                 }
                 ' ' => {
                     println!("space bar");
-                    F::zoom_and_recalculate();
+                    fractal.zoom_and_recalculate();
                     true
                 }
                 _ => { false }
@@ -98,8 +98,8 @@ pub fn show<F: FractalCommon + FractalApplication>(fractal: F) -> App {
             if left {
                 let (x, y) = event_coords();
                 println!("c: {} {}", x, y);
-                F::move_target(x as usize, y as usize);
-                F::zoom_and_recalculate();
+                fractal.move_target( x as usize, y as usize);
+                fractal.zoom_and_recalculate();
             }
             false
         }

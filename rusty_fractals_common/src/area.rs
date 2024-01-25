@@ -1,6 +1,17 @@
 use std::marker::PhantomData;
+use std::sync::Mutex;
 use crate::constants::ZOOM;
 
+/**
+ * RxR Area on which the Fractal is calculated
+ */
+pub struct Area<'lt> {
+    pub data: Mutex<AreaData<'lt>>,
+}
+
+/**
+ * Initial Area configuration
+ */
 pub struct AreaConfig {
     pub width_x: usize,
     pub height_y: usize,
@@ -9,7 +20,10 @@ pub struct AreaConfig {
     pub center_im: f64,
 }
 
-pub struct Area<'lt> {
+/**
+ * Mutable Area data.
+ */
+pub struct AreaData<'lt> {
     pub width_x: usize,
     pub width_xf64: f64,
     pub height_y: usize,
@@ -33,80 +47,156 @@ pub struct Area<'lt> {
 }
 
 impl<'lt> Area<'_> {
+    // TODO faster
     pub fn contains(&self, re: f64, im: f64) -> bool {
-        re > self.border_low_re
-            && re < self.border_high_re
-            && im > self.border_low_im
-            && im < self.border_high_im
+        match self.data.lock() {
+            Ok(d) => {
+                re > d.border_low_re
+                    && re < d.border_high_re
+                    && im > d.border_low_im
+                    && im < d.border_high_im
+            }
+            Err(e) => {
+                println!("Area.contains(): {}", e);
+                panic!()
+            }
+        }
     }
 
-    pub fn screen_to_domain_re(&self, x: usize) -> f64 {
-        self.numbers_re[x]
+    /**
+     * Maps pixels [x, y] to their center [re, im]
+     */
+    pub fn screen_to_domain_re_copy(&self) -> Vec<f64> {
+        match self.data.lock() {
+            Ok(d) => {
+                d.numbers_re.clone()
+            }
+            Err(e) => {
+                println!("(): {}", e);
+                panic!()
+            }
+        }
     }
 
-    pub fn screen_to_domain_im(&self, y: usize) -> f64 {
-        self.numbers_im[y]
+    /**
+     * Maps pixels [x, y] to their center [re, im]
+     */
+    pub fn screen_to_domain_im_copy(&self) -> Vec<f64> {
+        match self.data.lock() {
+            Ok(d) => {
+                d.numbers_im.clone()
+            }
+            Err(e) => {
+                println!("(): {}", e);
+                panic!()
+            }
+        }
     }
 
-    // check first, if can convert
+    /**
+     * Check first, if can convert
+     * Only then call this method
+     */
     pub fn point_to_pixel(&self, re: f64, im: f64) -> (usize, usize) {
-        let px = (self.width_xf64 * (re - self.center_re) / self.width_re) + self.width_half_xf64;
-        let py = (self.height_yf64 * (im - self.center_im) / self.height_im) + self.height_half_yf64;
-        (px as usize, py as usize)
+        match self.data.lock() {
+            Ok(d) => {
+                let px = (d.width_xf64 * (re - d.center_re) / d.width_re) + d.width_half_xf64;
+                let py = (d.height_yf64 * (im - d.center_im) / d.height_im) + d.height_half_yf64;
+                (px as usize, py as usize)
+            }
+            Err(e) => {
+                println!("(): {}", e);
+                panic!()
+            }
+        }
     }
 
-    pub fn zoom_in(&mut self) {
+    pub fn zoom_in(&self) {
         println!("zoom_in()");
-        self.width_re = self.width_re * ZOOM;
-        self.height_im = self.width_re * ((self.height_y as f64) / (self.width_x as f64));
-        self.plank = self.width_re / self.width_x as f64;
-        self.border_low_re = self.center_re - self.width_re / 2.0;
-        self.border_high_re = self.center_re + self.width_re / 2.0 - self.plank;
-        self.border_low_im = self.center_im - self.height_im / 2.0;
-        self.border_high_im = self.center_im + self.height_im / 2.0 - self.plank;
-        self.numbers_re.clear();
-        self.numbers_im.clear();
-        // use re, im in the center of each pixel
-        let ph = self.plank / 2.0;
-        for x in 0..self.width_x {
-            self.numbers_re.push(self.border_low_re + (self.plank * x as f64) + ph);
-        }
-        for y in 0..self.height_y {
-            self.numbers_im.push(self.border_low_im + (self.plank * y as f64) + ph);
+        match self.data.lock() {
+            Ok(mut d) => {
+                d.width_re = d.width_re * ZOOM;
+                d.height_im = d.width_re * ((d.height_y as f64) / (d.width_x as f64));
+
+                d.plank = d.width_re / d.width_x as f64;
+
+                d.border_low_re = d.center_re - d.width_re / 2.0;
+                d.border_high_re = d.center_re + d.width_re / 2.0 - d.plank;
+                d.border_low_im = d.center_im - d.height_im / 2.0;
+                d.border_high_im = d.center_im + d.height_im / 2.0 - d.plank;
+
+                d.numbers_re.clear();
+                d.numbers_im.clear();
+
+                // use re, im in the center of each pixel
+                let ph = d.plank / 2.0;
+
+                // re
+                for x in 0..d.width_x {
+                    let v = d.border_low_re + (d.plank * x as f64) + ph;
+                    d.numbers_re.push(v);
+                }
+
+                // im
+                for y in 0..d.height_y {
+                    let v = d.border_low_im + (d.plank * y as f64) + ph;
+                    d.numbers_im.push(v);
+                }
+            }
+            Err(e) => {
+                println!("(): {}", e);
+            }
         }
     }
 
-    pub fn move_to_initial_coordinates(&mut self, init_target_re: f64, init_target_im: f64) {
+    pub fn move_to_initial_coordinates(&self, init_target_re: f64, init_target_im: f64) {
         println!("move_to_initial_coordinates()");
-        self.center_re = init_target_re;
-        self.center_im = init_target_im;
+        match self.data.lock() {
+            Ok(mut d) => {
+                d.center_re = init_target_re;
+                d.center_im = init_target_im;
+            }
+            Err(e) => {
+                println!("Area.move_to_initial_coordinates(): {}", e);
+            }
+        }
     }
 
     pub fn plank(&self) -> f64 {
-        self.plank
+        self.data.lock().unwrap().plank
     }
-    pub fn move_target(&mut self, x: usize, y: usize) {
-        println!("move_target({}, {})", x, y);
-        let re = self.screen_to_domain_re(x);
-        let im = self.screen_to_domain_im(y);
-        println!("move_target({}, {})", re, im);
-        self.center_re = re;
-        self.center_im = im;
-        self.border_low_re = self.center_re - self.width_re / 2.0;
-        self.border_high_re = self.center_re + self.width_re / 2.0 - self.plank;
-        self.border_low_im = self.center_im - self.height_im / 2.0;
-        self.border_high_im = self.center_im + self.height_im / 2.0 - self.plank;
-        self.numbers_re.clear();
-        self.numbers_im.clear();
-        // use re, im in the center of each pixel
-        let ph = self.plank / 2.0;
-        for x in 0..self.width_x {
-            self.numbers_re.push(self.border_low_re + (self.plank * x as f64) + ph);
+
+    pub fn move_target(&self, x: usize, y: usize) {
+        match self.data.lock() {
+            Ok(mut d) => {
+                println!("move_target({}, {})", x, y);
+                let re = d.numbers_re[x];
+                let im = d.numbers_im[y];
+                println!("move_target({}, {})", re, im);
+                d.center_re = re;
+                d.center_im = im;
+                d.border_low_re = d.center_re - d.width_re / 2.0;
+                d.border_high_re = d.center_re + d.width_re / 2.0 - d.plank;
+                d.border_low_im = d.center_im - d.height_im / 2.0;
+                d.border_high_im = d.center_im + d.height_im / 2.0 - d.plank;
+                d.numbers_re.clear();
+                d.numbers_im.clear();
+                // use re, im in the center of each pixel
+                let ph = d.plank / 2.0;
+                for x in 0..d.width_x {
+                    let v = d.border_low_re + (d.plank * x as f64) + ph;
+                    d.numbers_re.push(v);
+                }
+                for y in 0..d.height_y {
+                    let v = d.border_low_im + (d.plank * y as f64) + ph;
+                    d.numbers_im.push(v);
+                }
+                println!("recalculated");
+            }
+            Err(e) => {
+                println!("(): {}", e);
+            }
         }
-        for y in 0..self.height_y {
-            self.numbers_im.push(self.border_low_im + (self.plank * y as f64) + ph);
-        }
-        println!("recalculated");
     }
 }
 
@@ -145,7 +235,7 @@ pub fn init<'lt>(config: AreaConfig) -> Area<'lt> {
         numbers_im.push(border_low_im + (plank * y as f64));
     }
 
-    Area {
+    let area_data = AreaData {
         width_x,
         width_xf64: width_x as f64,
         height_y,
@@ -165,12 +255,15 @@ pub fn init<'lt>(config: AreaConfig) -> Area<'lt> {
         border_high_re,
         border_high_im,
         plank,
-        phantom: PhantomData::default(),
+        phantom: Default::default(),
+    };
+    Area {
+        data: Mutex::new(area_data),
     }
 }
 
 pub fn init_none<'lt>() -> Area<'lt> {
-    Area {
+    let area_data = AreaData {
         width_x: 1,
         width_xf64: 1.0,
         height_y: 1,
@@ -190,7 +283,10 @@ pub fn init_none<'lt>() -> Area<'lt> {
         border_high_re: 1.0,
         border_high_im: 1.0,
         plank: 0.1,
-        phantom: PhantomData::default(),
+        phantom: Default::default(),
+    };
+    Area {
+        data: Mutex::new(area_data),
     }
 }
 
@@ -203,10 +299,10 @@ mod tests {
     #[test]
     fn test_init() {
         let area = init(VANILLA_AREA_CONFIG);
-        assert_eq!(area.border_low_re, -0.5);
-        assert_eq!(area.border_high_re, 0.5);
-        assert_eq!(area.border_low_im, -0.25);
-        assert_eq!(area.border_high_im, 0.25);
+        assert_eq!(area.data.lock().unwrap().border_low_re, -0.5);
+        assert_eq!(area.data.lock().unwrap().border_high_re, 0.5);
+        assert_eq!(area.data.lock().unwrap().border_low_im, -0.25);
+        assert_eq!(area.data.lock().unwrap().border_high_im, 0.25);
     }
 
     #[test]
@@ -232,18 +328,20 @@ mod tests {
     #[test]
     fn test_screen_to_domain_re() {
         let area = init(VANILLA_AREA_CONFIG);
-        assert_eq!(area.screen_to_domain_re(0), -0.5);
-        assert_eq!(area.screen_to_domain_re(5), 0.0);
-        assert_eq!(area.screen_to_domain_re(9), 0.4);
+        let res = area.screen_to_domain_re_copy();
+        assert_eq!(res[0], -0.5);
+        assert_eq!(res[5], 0.0);
+        assert_eq!(res[9], 0.4);
     }
 
     #[test]
     fn test_screen_to_domain_im() {
         let area = init(VANILLA_AREA_CONFIG);
-        assert_eq!(area.screen_to_domain_im(0), -0.25);
-        assert_eq!(area.screen_to_domain_im(1), -0.15);
-        assert_eq!(area.screen_to_domain_im(2), -0.04999999999999999);
-        assert_eq!(area.screen_to_domain_im(3), 0.050000000000000044);
-        assert_eq!(area.screen_to_domain_im(4), 0.15000000000000002);
+        let ims = area.screen_to_domain_im_copy();
+        assert_eq!(ims[0], -0.25);
+        assert_eq!(ims[1], -0.15);
+        assert_eq!(ims[2], -0.04999999999999999);
+        assert_eq!(ims[3], 0.050000000000000044);
+        assert_eq!(ims[4], 0.15000000000000002);
     }
 }
