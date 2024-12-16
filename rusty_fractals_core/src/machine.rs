@@ -83,7 +83,7 @@ impl Machine {
         }
     }
 
-    fn calculate_path_xy<F: FractalNebulaCommon + FractalCommon + FractalApplication>(
+    fn calculate_path_xy<F: FractalNebulaCommon + FractalCommon>(
         &self,
         x: usize,
         y: usize,

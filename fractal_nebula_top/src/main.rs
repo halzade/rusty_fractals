@@ -5,7 +5,7 @@ use rusty_fractals_common::fractal;
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::fractal::{FractalConfig, FractalMath, FractalCommon, FractalApplication, Conf, FractalNebulaCommon};
+use rusty_fractals_common::fractal::{FractalConfig, FractalMath, FractalCommon, FractalNebulaCommon};
 use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::palettes::palette_purple_to_white;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
@@ -80,16 +80,6 @@ fn main() {
     app.run().unwrap();
 }
 
-impl FractalApplication for NebulaTop<'_> {
-    fn width(&self) -> usize { self.app.width }
-    fn height(&self) -> usize { self.app.height }
-    fn data(&self) -> &DataImage { &self.app.data }
-    fn palette(&self) -> &Palette { &self.app.palette }
-    fn max(&self) -> u32 { self.app.conf.max }
-    fn conf(&self) -> &Conf { &self.app.conf }
-    fn conf_mut(&mut self) -> &mut Conf { &mut self.app.conf }
-    fn area(&self) -> &Area { &self.app.area }
-}
 
 #[cfg(test)]
 mod tests {

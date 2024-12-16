@@ -4,9 +4,8 @@ use rusty_fractals_core::{application, machine, window};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::fractal::{Conf, FractalApplication, FractalCommon, FractalConfig, FractalMath, FractalNebulaCommon};
+use rusty_fractals_common::fractal::{FractalCommon, FractalConfig, FractalMath, FractalNebulaCommon};
 use rusty_fractals_common::fractal;
-use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::{Square11};
@@ -79,17 +78,6 @@ fn main() {
         FRACTAL.lock().unwrap().replace(fractal);
     });
     app.run().unwrap();
-}
-
-impl FractalApplication for Lotus<'_> {
-    fn width(&self) -> usize { self.app.width }
-    fn height(&self) -> usize { self.app.height }
-    fn data(&self) -> &DataImage { &self.app.data }
-    fn palette(&self) -> &Palette { &self.app.palette }
-    fn max(&self) -> u32 { self.app.conf.max }
-    fn conf(&self) -> &Conf { &self.app.conf }
-    fn conf_mut(&mut self) -> &mut Conf { &mut self.app.conf }
-    fn area(&self) -> &Area { &self.app.area }
 }
 
 #[cfg(test)]

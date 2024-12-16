@@ -4,7 +4,7 @@ use rusty_fractals_core::{application, machine, window};
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::fractal::{Conf, FractalApplication, FractalCommon, FractalConfig, FractalMath, FractalNebulaCommon};
+use rusty_fractals_common::fractal::{FractalCommon, FractalConfig, FractalMath, FractalNebulaCommon};
 use rusty_fractals_common::fractal;
 use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::palettes::{palette_black_to_white_circle_up};
