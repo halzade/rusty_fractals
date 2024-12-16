@@ -17,7 +17,7 @@ impl FractalData {
                 d.max += max;
             }
             Err(e) => {
-                println!("(): {}", e);
+                println!("FractalData.conf_add(): {}", e);
             }
         }
     }

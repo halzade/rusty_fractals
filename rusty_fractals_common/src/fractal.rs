@@ -5,6 +5,7 @@ use crate::area::Area;
 use crate::palette::Palette;
 use crate::data_image::DataImage;
 use crate::constants::CALCULATION_BOUNDARY;
+use crate::fractal_data::FractalData;
 use crate::resolution_multiplier::ResolutionMultiplier;
 
 pub struct FractalConfig<'lt> {
@@ -39,6 +40,16 @@ pub trait FractalCommon: Sync {
     fn name(&self) -> &'static str;
     fn update(&self);
     fn zoom_in(&self);
+    fn data(&self) -> &FractalData;
+
+    fn width(&self) -> usize;
+    fn height(&self) -> usize;
+    fn data_image(&self) -> &DataImage<'static>;
+    fn palette(&self) -> &Palette;
+    fn min(&self) -> u32;
+    fn max(&self) -> u32;
+    fn area(&self) -> &Area;
+
     fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool);
     // application actions
     fn move_target(&self, x: usize, y: usize);
@@ -74,6 +85,7 @@ pub trait FractalNebulaCommon: Sync {
 pub trait FractalMandelbrotCommon: Sync {
     fn calculate_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64);
     fn calculate_mandelbrot(&self);
+    // TODO
     // fn calculate_mandelbrot_new_thread<M: FractalMandelbrotCommon + FractalCommon + Sync + Send>(&self, application_fractal: &'static Option<&M>) {
     //     thread::spawn(move || {
     //                 let fractal_o = application_fractal.as_mut();
@@ -87,17 +99,6 @@ pub trait FractalMandelbrotCommon: Sync {
     // }
     fn palette_zero(&self) -> &Palette;
 }
-
-pub trait FractalApplication: Sync {
-    fn width(&self) -> usize;
-    fn height(&self) -> usize;
-    fn data(&self) -> &DataImage<'static>;
-    fn palette(&self) -> &Palette;
-    fn min(&self) -> u32;
-    fn max(&self) -> u32;
-    fn area(&self) -> &Area;
-}
-
 
 pub fn finite_orbits(min: u32, max: u32, length: u32, iterator: u32) -> bool {
     length > min && iterator < max

@@ -58,7 +58,7 @@ impl<'lt> Application<'lt> {
         let area = &self.area;
         let (cx, cy) = area.point_to_pixel(
             area.data.lock().unwrap().center_re,
-            area.data.lock().unwrap().center_im
+            area.data.lock().unwrap().center_im,
         );
         now("1. move top left to center");
         for y in 0..cy {
@@ -120,7 +120,7 @@ impl<'lt> Application<'lt> {
 }
 
 pub fn init(area_config: AreaConfig, config: MandelbrotConfig) -> Application {
-    let area : Area<'_> = area::init(area_config);
+    let area: Area<'_> = area::init(area_config);
     let wx = area.data.lock().unwrap().width_x;
     let hy = area.data.lock().unwrap().height_y;
     Application {
@@ -128,7 +128,7 @@ pub fn init(area_config: AreaConfig, config: MandelbrotConfig) -> Application {
         width: wx,
         height: hy,
         area,
-        fdata: FractalData { data: Mutex::new(Data {min: 0, max: config.iteration_max })},
+        fdata: FractalData { data: Mutex::new(Data { min: 0, max: config.iteration_max }) },
         palette: config.palette,
         palette_zero: config.palette_zero,
         resolution_multiplier: ResolutionMultiplier::Single,
@@ -144,7 +144,7 @@ pub fn init_nebula(area_config: AreaConfig, config: FractalConfig) -> Applicatio
         width: wx,
         height: hy,
         area,
-        fdata: FractalData { data: Mutex::new(Data { min: 0, max: config.iteration_max })},
+        fdata: FractalData { data: Mutex::new(Data { min: 0, max: config.iteration_max }) },
         palette: config.palette,
         palette_zero: palettes::init_none(),
         resolution_multiplier: config.resolution_multiplier,
@@ -157,9 +157,43 @@ pub fn init_none<'lt>() -> Application<'lt> {
         width: 0,
         height: 0,
         area: area::init_none(),
-        fdata: FractalData { data: Mutex::new(Data { min: 0, max: 10 })},
+        fdata: FractalData { data: Mutex::new(Data { min: 0, max: 10 }) },
         palette: palettes::init_none(),
         palette_zero: palettes::init_none(),
         resolution_multiplier: ResolutionMultiplier::Single,
     }
 }
+
+// fn calculate_mandelbrot(&self) {
+//     let fm = machine_mandelbrot::init();
+//     fm.calculate_mandelbrot(self);
+// }
+//
+// fn palette_zero(&self) -> &Palette {
+//     &self.app.palette_zero
+// }
+//
+//
+// fn update(&self) { self.app.conf_add(0, 150); }
+//
+// fn zoom_in(&self) { self.app.zoom_in(); }
+//
+//
+// fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {
+//     self.app.recalculate_pixels_positions_for_next_calculation(is_mandelbrot);
+// }
+//
+// fn move_target(&self, x: usize, y: usize) {
+//     println!("move_target()");
+//     self.app.move_target(x, y);
+// }
+//
+// fn zoom_and_recalculate(&self) {
+//     println!("zoom_and_recalculate()");
+//     self.app.zoom_in_recalculate_pixel_positions(true);
+//
+//     // TODO
+//     // FRACTAL.unwrap().calculate_mandelbrot_new_thread(FRACTAL);
+//     self.calculate_mandelbrot();
+// }
+

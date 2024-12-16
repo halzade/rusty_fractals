@@ -1,5 +1,5 @@
 use rayon::prelude::*;
-use rusty_fractals_common::fractal::{FractalMandelbrotCommon, FractalCommon, FractalApplication};
+use rusty_fractals_common::fractal::{FractalMandelbrotCommon, FractalCommon};
 use rusty_fractals_common::data_image::state_from_path_length;
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_mandelbrot_values;
 use rusty_fractals_common::pixel_states;
@@ -13,15 +13,18 @@ pub fn init() -> MachineMandelbrot {
 }
 
 impl MachineMandelbrot {
-    pub fn calculate_mandelbrot<M: FractalMandelbrotCommon + FractalCommon + FractalApplication>(&self, fractal: &M) {
+    pub fn calculate_mandelbrot<M: FractalMandelbrotCommon + FractalCommon>(&self, fractal: &M) {
         println!("calculate_mandelbrot()");
         let coordinates_xy: Vec<[u32; 2]> = machine::shuffled_calculation_coordinates();
+
+        // TODO ?
         let data = fractal.data();
+
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
             self.chunk_calculation_mandelbrot(fractal, xy);
             // window refresh
-            window::paint_image_calculation_progress(&data);
+            window::paint_image_calculation_progress(fractal.data());
         });
         data.recalculate_pixels_states();
         let palette = fractal.palette();
@@ -30,7 +33,7 @@ impl MachineMandelbrot {
         window::paint_image_result(&data);
     }
 
-    fn chunk_calculation_mandelbrot<M: FractalMandelbrotCommon + FractalCommon + FractalApplication>(
+    fn chunk_calculation_mandelbrot<M: FractalMandelbrotCommon + FractalCommon>(
         &self,
         fractal: &M,
         xy: &[u32; 2],

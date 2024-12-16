@@ -2,7 +2,7 @@ use rand::thread_rng;
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
 use rusty_fractals_common::{pixel_states};
-use rusty_fractals_common::fractal::{FractalNebulaCommon, FractalCommon, FractalApplication};
+use rusty_fractals_common::fractal::{FractalNebulaCommon, FractalCommon};
 use rusty_fractals_common::data_image::{state_from_path_length};
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_nebula_values;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
@@ -15,18 +15,17 @@ pub fn init() -> Machine {
     Machine {}
 }
 
-impl Machine { //                                                                (&self, fractal: &M)
-    pub fn calculate<F: FractalNebulaCommon + FractalCommon + FractalApplication>(&self, fractal: &'static F) {
+impl Machine {
+    pub fn calculate<F: FractalNebulaCommon + FractalCommon>(&self, fractal: &'static F) {
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
-        let data = fractal.data();
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
             self.chunk_calculation(&xy, fractal);
             // window refresh
-            window::paint_image_calculation_progress(&data);
+            window::paint_image_calculation_progress(fractal);
         });
-        data.recalculate_pixels_states();
+        fractal.recalculate_pixels_states();
 
         let area = fractal.area();
         if fractal.rm() != ResolutionMultiplier::Single {
@@ -37,16 +36,16 @@ impl Machine { //                                                               
                 self.chunk_calculation_with_wrap(&xy, fractal);
                 // window refresh
                 // TODO window::paint_image_calculation_progress(&data);
-                window::paint_path(area, &data);
+                window::paint_path(area, fractal.data_image());
             });
         }
         let palette = fractal.palette();
-        perfectly_colour_nebula_values(&data, palette);
-        window::paint_image_result(&data);
+        perfectly_colour_nebula_values(fractal.data_image(), palette);
+        window::paint_image_result(fractal.data_image());
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
-    fn chunk_calculation<F: FractalNebulaCommon + FractalCommon + FractalApplication>(
+    fn chunk_calculation<F: FractalNebulaCommon + FractalCommon>(
         &self,
         xy: &[u32; 2],
         fractal: &F,
@@ -59,7 +58,7 @@ impl Machine { //                                                               
         }
     }
 
-    fn chunk_calculation_with_wrap<F: FractalNebulaCommon + FractalCommon + FractalApplication>(
+    fn chunk_calculation_with_wrap<F: FractalNebulaCommon + FractalCommon>(
         &self, xy: &[u32; 2],
         fractal: &'static F,
     ) {

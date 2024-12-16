@@ -7,14 +7,14 @@ use fltk::surface::ImageSurface;
 use image::{Pixel, Rgb};
 use rusty_fractals_common::area::Area;
 use rusty_fractals_common::data_image::{colour_for_state, DataImage};
-use rusty_fractals_common::fractal::{FractalApplication, FractalCommon};
+use rusty_fractals_common::fractal::FractalCommon;
 use rusty_fractals_common::pixel_states::is_finished_any;
 
 pub const IMAGE: Option<&'static RgbImage> = None;
 pub const SURFACE: Option<ImageSurface> = None;
 static MAX_VALUE: Mutex<u32> = Mutex::new(0);
 
-pub fn show<F: FractalCommon + FractalApplication>(fractal: &'static F) -> App {
+pub fn show<F: FractalCommon>(fractal: &'static F) -> App {
     println!("show()");
     let width = fractal.width() as i32;
     let height = fractal.height() as i32;
