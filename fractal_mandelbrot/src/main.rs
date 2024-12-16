@@ -1,4 +1,3 @@
-use std::sync::Mutex;
 use std::thread;
 use rusty_fractals_core::{application, machine_mandelbrot, window};
 use rusty_fractals_common::area::{Area, AreaConfig};
@@ -58,4 +57,49 @@ fn main() {
     });
 
     app.run().unwrap();
+}
+
+impl FractalMandelbrotCommon for Mandelbrot {
+    fn calculate_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
+        fractal::calculate_mandelbrot_path(self, iteration_max, origin_re, origin_im)
+    }
+    fn calculate_mandelbrot(&self) {
+        let fm = machine_mandelbrot::init();
+        fm.calculate_mandelbrot(self);
+    }
+    fn palette_zero(&self) -> &Palette {
+        &self.app.palette_zero
+    }
+}
+
+impl FractalCommon for Mandelbrot<> {
+    fn name(&self) -> &'static str { "Mandelbrot" }
+    fn update(&self) { self.conf_add(0, 150); }
+    fn zoom_in(&self) { self.zoom_in(); }
+    fn data(&self) -> &DataImage<'static> { &self.data }
+    fn width(&self) -> usize { self.width }
+    fn height(&self) -> usize { self.height }
+    fn data_image(&self) -> &DataImage<'static> {
+        todo!()
+    }
+    fn palette(&self) -> &Palette { &self.app.palette_zero }
+    fn min(&self) -> u32 { self.conf.min }
+    fn max(&self) -> u32 { self.conf.max }
+    fn area(&self) -> &Area<'_> { &self.area }
+    fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {
+        self.recalculate_pixels_positions_for_next_calculation(is_mandelbrot);
+    }
+    fn move_target(&self, x: usize, y: usize) {
+        println!("move_target()");
+        self.move_target(x, y);
+    }
+
+    fn zoom_and_recalculate(&self) {
+        println!("zoom_and_recalculate()");
+        self.zoom_in_recalculate_pixel_positions(true);
+
+        // TODO
+        // FRACTAL.unwrap().calculate_mandelbrot_new_thread(FRACTAL);
+        self.calculate_mandelbrot();
+    }
 }

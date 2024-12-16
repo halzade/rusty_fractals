@@ -44,12 +44,42 @@ impl FractalCommon for NebulaSide<'_> {
         c.max += 150;
         println!("iteration_max = {}", c.max);
     }
-    fn move_zoom_recalculate(&mut self, x: usize, y: usize) {
-        self.app.move_target_zoom_in_recalculate_pixel_positions(x, y, true);
-        self.calculate_fractal_new_thread(&FRACTAL);
+    fn zoom_in(&self) {
+        todo!()
     }
-    fn move_target_zoom_in_recalculate(x: usize, y: usize) {
-        FRACTAL.lock().unwrap().as_mut().unwrap().move_zoom_recalculate(x, y);
+    fn data(&self) -> &DataImage { &self.app.data }
+    // fn move_zoom_recalculate(&mut self, x: usize, y: usize) {
+    //     self.app.move_target_zoom_in_recalculate_pixel_positions(x, y, true);
+    //     self.calculate_fractal_new_thread(&FRACTAL);
+    // }
+    // fn move_target_zoom_in_recalculate(x: usize, y: usize) {
+    //     FRACTAL.lock().unwrap().as_mut().unwrap().move_zoom_recalculate(x, y);
+    // }
+    fn width(&self) -> usize { self.app.width }
+    fn height(&self) -> usize { self.app.height }
+    fn data_image(&self) -> &DataImage<'static> {
+        todo!()
+    }
+    fn palette(&self) -> &Palette { &self.app.palette }
+
+    fn min(&self) -> u32 {
+        todo!()
+    }
+
+    fn max(&self) -> u32 { self.app.conf.max }
+
+    fn area(&self) -> &Area { &self.app.area }
+
+    fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {
+        todo!()
+    }
+
+    fn move_target(&self, x: usize, y: usize) {
+        todo!()
+    }
+
+    fn zoom_and_recalculate(&self) {
+        todo!()
     }
 }
 
@@ -78,17 +108,6 @@ fn main() {
         FRACTAL.lock().unwrap().replace(fractal);
     });
     app.run().unwrap();
-}
-
-impl FractalApplication for NebulaSide<'_> {
-    fn width(&self) -> usize { self.app.width }
-    fn height(&self) -> usize { self.app.height }
-    fn data(&self) -> &DataImage { &self.app.data }
-    fn palette(&self) -> &Palette { &self.app.palette }
-    fn max(&self) -> u32 { self.app.conf.max }
-    fn conf(&self) -> &Conf { &self.app.conf }
-    fn conf_mut(&mut self) -> &mut Conf { &mut self.app.conf }
-    fn area(&self) -> &Area { &self.app.area }
 }
 
 #[cfg(test)]

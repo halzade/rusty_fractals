@@ -6,6 +6,8 @@ use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::fractal::{FractalCommon, FractalConfig, FractalMath, FractalNebulaCommon};
 use rusty_fractals_common::fractal;
+use rusty_fractals_common::fractal_data::FractalData;
+use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up};
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::{Square11};
@@ -50,6 +52,54 @@ impl FractalCommon for Lotus<'_> {
     }
     fn move_target_zoom_in_recalculate(x: usize, y: usize) {
         FRACTAL.lock().unwrap().as_mut().unwrap().move_zoom_recalculate(x, y);
+    }
+
+    fn zoom_in(&self) {
+        todo!()
+    }
+
+    fn data(&self) -> &FractalData {
+        todo!()
+    }
+
+    fn width(&self) -> usize {
+        todo!()
+    }
+
+    fn height(&self) -> usize {
+        todo!()
+    }
+
+    fn data_image(&self) -> &DataImage<'static> {
+        todo!()
+    }
+
+    fn palette(&self) -> &Palette {
+        todo!()
+    }
+
+    fn min(&self) -> u32 {
+        todo!()
+    }
+
+    fn max(&self) -> u32 {
+        todo!()
+    }
+
+    fn area(&self) -> &Area {
+        todo!()
+    }
+
+    fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {
+        todo!()
+    }
+
+    fn move_target(&self, x: usize, y: usize) {
+        todo!()
+    }
+
+    fn zoom_and_recalculate(&self) {
+        todo!()
     }
 }
 

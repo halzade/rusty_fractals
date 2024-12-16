@@ -41,7 +41,8 @@ impl FractalCommon for CollatzConjecture<'_> {
         println!("iteration_max = {}", c.max);
     }
     fn move_zoom_recalculate(&mut self, x: usize, y: usize) {
-        self.app.move_target_zoom_in_recalculate_pixel_positions(x, y, true);
+        self.app.move_target(x, y);
+        self.app.zoom_in_recalculate_pixel_positions(true);
         self.calculate_mandelbrot_new_thread(&FRACTAL);
     }
     fn move_target_zoom_in_recalculate(x: usize, y: usize) {

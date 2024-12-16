@@ -15,12 +15,11 @@ use crate::window;
  * Application is used to manage repeated calculation during zoom
  */
 pub struct Application<'lt> {
-    pub data: DataImage<'lt>,
+    pub data_image: DataImage<'lt>,
     pub width: usize,
     pub height: usize,
     pub area: Area<'lt>,
-    // TODO put all mutable data here
-    pub fdata: FractalData,
+    pub data_fractal: FractalData,
     pub palette: Palette<'lt>,
     //  mandelbrot specific
     pub palette_zero: Palette<'lt>,
@@ -35,21 +34,21 @@ impl<'lt> Application<'lt> {
 
     pub fn zoom_in_recalculate_pixel_positions(&self, is_mandelbrot: bool) {
         self.area.zoom_in();
-        window::paint_image_calculation_progress(&self.data);
+        window::paint_image_calculation_progress(&self.data_image);
 
         self.recalculate_pixels_positions_for_next_calculation(is_mandelbrot);
-        window::paint_image_calculation_progress(&self.data);
+        window::paint_image_calculation_progress(&self.data_image);
     }
 
     pub fn conf_add(&self, min: u32, max: u32) {
-        self.fdata.conf_add(min, max);
+        self.data_fractal.conf_add(min, max);
     }
 
     pub fn zoom_in(&self) {
         self.area.zoom_in();
     }
 
-    // This is called after calculation finished, zoom was called and new area measures recalculated
+    // This is called after calculation finished, a zoom-in was called and new area measures recalculated
     pub fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {
         println!("recalculate_pixels_positions_for_next_calculation()");
         // Scan all elements : old positions from previous calculation
@@ -63,25 +62,25 @@ impl<'lt> Application<'lt> {
         now("1. move top left to center");
         for y in 0..cy {
             for x in 0..cx {
-                self.data.move_to_new_position(x, y, area);
+                self.data_image.move_to_new_position(x, y, area);
             }
         }
         now("2. move top right to center");
         for y in 0..cy {
             for x in (cx..self.width).rev() {
-                self.data.move_to_new_position(x, y, area);
+                self.data_image.move_to_new_position(x, y, area);
             }
         }
         now("3. move bottom left to center");
         for y in (cy..self.height).rev() {
             for x in 0..cx {
-                self.data.move_to_new_position(x, y, area);
+                self.data_image.move_to_new_position(x, y, area);
             }
         }
         now("4. move bottom right to center");
         for y in (cy..self.height).rev() {
             for x in (cx..self.width).rev() {
-                self.data.move_to_new_position(x, y, area);
+                self.data_image.move_to_new_position(x, y, area);
             }
         }
         // Create new elements on positions where no px moved to
@@ -94,14 +93,14 @@ impl<'lt> Application<'lt> {
 
         for y in 0..self.height {
             for x in 0..self.width {
-                let mut mo_px = self.data.mo_px_at(x as usize, y as usize);
+                let mut mo_px = self.data_image.mo_px_at(x, y);
                 if mo_px.is_none() {
                     c_created += 1;
 
                     let re = res[x];
                     let im = ims[y];
 
-                    if self.data.all_neighbors_finished_bad(x, y, is_mandelbrot) {
+                    if self.data_image.all_neighbors_finished_bad(x, y, is_mandelbrot) {
                         // Calculation for some positions should be skipped as they are too far away form any long successful divergent position
                         mo_px.replace(hibernated_deep_black(re, im));
                     } else {
@@ -124,11 +123,11 @@ pub fn init(area_config: AreaConfig, config: MandelbrotConfig) -> Application {
     let wx = area.data.lock().unwrap().width_x;
     let hy = area.data.lock().unwrap().height_y;
     Application {
-        data: data_image::init(Static, &area),
+        data_image: data_image::init(Static, &area),
         width: wx,
         height: hy,
         area,
-        fdata: FractalData { data: Mutex::new(Data { min: 0, max: config.iteration_max }) },
+        data_fractal: FractalData { data: Mutex::new(Data { min: 0, max: config.iteration_max }) },
         palette: config.palette,
         palette_zero: config.palette_zero,
         resolution_multiplier: ResolutionMultiplier::Single,
@@ -140,11 +139,11 @@ pub fn init_nebula(area_config: AreaConfig, config: FractalConfig) -> Applicatio
     let wx = area.data.lock().unwrap().width_x;
     let hy = area.data.lock().unwrap().height_y;
     Application {
-        data: data_image::init(Static, &area),
+        data_image: data_image::init(Static, &area),
         width: wx,
         height: hy,
         area,
-        fdata: FractalData { data: Mutex::new(Data { min: 0, max: config.iteration_max }) },
+        data_fractal: FractalData { data: Mutex::new(Data { min: 0, max: config.iteration_max }) },
         palette: config.palette,
         palette_zero: palettes::init_none(),
         resolution_multiplier: config.resolution_multiplier,
@@ -153,47 +152,15 @@ pub fn init_nebula(area_config: AreaConfig, config: FractalConfig) -> Applicatio
 
 pub fn init_none<'lt>() -> Application<'lt> {
     Application {
-        data: data_image::init_none(),
+        data_image: data_image::init_none(),
         width: 0,
         height: 0,
         area: area::init_none(),
-        fdata: FractalData { data: Mutex::new(Data { min: 0, max: 10 }) },
+        data_fractal: FractalData { data: Mutex::new(Data { min: 0, max: 10 }) },
         palette: palettes::init_none(),
         palette_zero: palettes::init_none(),
         resolution_multiplier: ResolutionMultiplier::Single,
     }
 }
 
-// fn calculate_mandelbrot(&self) {
-//     let fm = machine_mandelbrot::init();
-//     fm.calculate_mandelbrot(self);
-// }
-//
-// fn palette_zero(&self) -> &Palette {
-//     &self.app.palette_zero
-// }
-//
-//
-// fn update(&self) { self.app.conf_add(0, 150); }
-//
-// fn zoom_in(&self) { self.app.zoom_in(); }
-//
-//
-// fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {
-//     self.app.recalculate_pixels_positions_for_next_calculation(is_mandelbrot);
-// }
-//
-// fn move_target(&self, x: usize, y: usize) {
-//     println!("move_target()");
-//     self.app.move_target(x, y);
-// }
-//
-// fn zoom_and_recalculate(&self) {
-//     println!("zoom_and_recalculate()");
-//     self.app.zoom_in_recalculate_pixel_positions(true);
-//
-//     // TODO
-//     // FRACTAL.unwrap().calculate_mandelbrot_new_thread(FRACTAL);
-//     self.calculate_mandelbrot();
-// }
 

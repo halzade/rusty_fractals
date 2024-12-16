@@ -56,17 +56,6 @@ impl FractalCommon for MandelbrotOfMandelbrot<'_> {
 
 pub static FRACTAL: Mutex<Option<MandelbrotOfMandelbrot>> = Mutex::new(None);
 
-impl FractalApplication for MandelbrotOfMandelbrot<'_> {
-    fn width(&self) -> usize { self.app.width }
-    fn height(&self) -> usize { self.app.height }
-    fn data(&self) -> &DataImage { &self.app.data }
-    fn palette(&self) -> &Palette { &self.app.palette }
-    fn max(&self) -> u32 { self.app.conf.max }
-    fn conf(&self) -> &Conf { &self.app.conf }
-    fn conf_mut(&mut self) -> &mut Conf { &mut self.app.conf }
-    fn area(&self) -> &Area { &self.app.area }
-}
-
 fn main() {
     let mandelbrot_config: MandelbrotConfig<'static> = MandelbrotConfig {
         iteration_max: 2500,
