@@ -35,18 +35,18 @@ pub trait MemType<T> {
     fn im(&self) -> f64;
 }
 
-pub trait FractalCommon: Sync {
+pub trait FractalCommon<'lt>: Sync {
     fn name(&self) -> &'static str;
     fn update(&self);
     fn zoom_in(&self);
 
     fn width(&self) -> usize;
     fn height(&self) -> usize;
-    fn data_image(&self) -> &DataImage<'static>;
-    fn palette(&self) -> &Palette<'static>;
+    fn data_image(&self) -> &DataImage<'lt>;
+    fn palette(&self) -> &Palette<'lt>;
     fn min(&self) -> u32;
     fn max(&self) -> u32;
-    fn area(&self) -> &Area<'static>;
+    fn area(&self) -> &Area<'lt>;
 
     fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool);
     // application actions
@@ -54,7 +54,7 @@ pub trait FractalCommon: Sync {
     fn zoom_and_recalculate(&self);
 }
 
-pub trait FractalNebulaCommon: Sync {
+pub trait FractalNebulaCommon<'lt>: Sync {
     fn rm(&self) -> ResolutionMultiplier;
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool;
     fn calculate_path(
@@ -68,7 +68,7 @@ pub trait FractalNebulaCommon: Sync {
         is_wrap: bool,
     ) -> (u32, u32);
     fn calculate_fractal(&self);
-    fn calculate_fractal_new_thread<M: FractalNebulaCommon + FractalCommon + Sync + Send>(
+    fn calculate_fractal_new_thread<M: FractalNebulaCommon<'lt> + FractalCommon<'lt> + Sync + Send>(
         &self,
         application_fractal: &'static Mutex<Option<M>>,
     ) {
@@ -92,7 +92,7 @@ pub trait FractalNebulaCommon: Sync {
     }
 }
 
-pub trait FractalMandelbrotCommon: Sync {
+pub trait FractalMandelbrotCommon<'lt>: Sync {
     fn calculate_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64);
     fn calculate_mandelbrot(&self);
     // TODO
@@ -118,8 +118,8 @@ pub fn infinite_orbits(min: u32, max: u32, length: u32, iterator: u32) -> bool {
     length > min && iterator == max
 }
 
-pub fn calculate_path<T: MemType<T>>(
-    fractal: &impl FractalNebulaCommon,
+pub fn calculate_path<'lt, T: MemType<T>>(
+    fractal: &'lt impl FractalNebulaCommon<'lt>,
     fractal_math: &impl FractalMath<T>,
     area: &Area,
     iteration_min: u32,

@@ -16,7 +16,7 @@ use rusty_fractals_common::pixel_states::DomainElementState::{
     ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
     HibernatedDeepBlack,
 };
-use rusty_fractals_common::{fractal, palette};
+use rusty_fractals_common::{fractal};
 
 const INT: i32 = 100;
 
@@ -87,7 +87,7 @@ impl FractalMath<Mem> for FraTest<'_> {
     }
 }
 
-impl FractalMandelbrotCommon for FraTest<'_> {
+impl<'lt> FractalMandelbrotCommon<'lt> for FraTest<'lt> {
     fn calculate_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
         fractal::calculate_mandelbrot_path(self, iteration_max, origin_re, origin_im)
     }
@@ -100,9 +100,9 @@ impl FractalMandelbrotCommon for FraTest<'_> {
     }
 }
 
-impl FractalCommon for FraTest<'_> {
+impl<'lt> FractalCommon<'lt> for FraTest<'lt> {
     fn name(&self) -> &'static str {
-        "Mandelbrot Test Fractal"
+        "Test Fractal"
     }
     fn update(&self) {}
     fn zoom_in(&self) {}
@@ -112,10 +112,10 @@ impl FractalCommon for FraTest<'_> {
     fn height(&self) -> usize {
         10
     }
-    fn data_image(&self) -> &DataImage<'static> {
+    fn data_image(&self) -> &DataImage<'lt> {
         &self.app.data_image
     }
-    fn palette(&self) -> &Palette<'static> {
+    fn palette(&self) -> &Palette<'lt> {
         &self.app.palette
     }
     fn min(&self) -> u32 {
@@ -124,11 +124,16 @@ impl FractalCommon for FraTest<'_> {
     fn max(&self) -> u32 {
         10
     }
-    fn area(&self) -> &Area<'static> {
+    fn area(&self) -> &Area<'lt> {
         &self.app.area
     }
-    fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {}
-    fn move_target(&self, x: usize, y: usize) {}
+    fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {
+        println!("recalculate_pixels_positions_for_next_calculation is_mandelbrot: {}", is_mandelbrot);
+        // self.app.recalculate_pixels_positions_for_next_calculation(is_mandelbrot);;
+    }
+    fn move_target(&self, x: usize, y: usize) {
+        println!("move_target x: {}, y: {}", x, y);
+    }
     fn zoom_and_recalculate(&self) {}
 }
 

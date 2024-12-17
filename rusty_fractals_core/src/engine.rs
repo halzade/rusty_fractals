@@ -9,7 +9,7 @@ pub fn init() -> Engine {
     Engine {}
 }
 
-pub fn calculate_mandelbrot_zoom<F: FractalMandelbrotCommon + FractalCommon + Sync>(fractal: &'static F, fractal_mu: &mut F) {
+pub fn calculate_mandelbrot_zoom<'lt, F: FractalMandelbrotCommon<'lt> + FractalCommon<'lt> + Sync>(fractal: &'static F, fractal_mu: &mut F) {
     let machine = machine_mandelbrot::init();
     thread::spawn(move || {
         for it in 1.. {
@@ -23,7 +23,7 @@ pub fn calculate_mandelbrot_zoom<F: FractalMandelbrotCommon + FractalCommon + Sy
     fractal_mu.update();
 }
 
-pub fn calculate_nebula_zoom<F: FractalNebulaCommon + FractalCommon>(fractal: &'static F, fractal_mu: &mut F) {
+pub fn calculate_nebula_zoom<'lt, F: FractalNebulaCommon<'lt> + FractalCommon<'lt>>(fractal: &'static F, fractal_mu: &mut F) {
     let machine = machine::init();
     thread::spawn(move || {
         for it in 1.. {

@@ -16,7 +16,7 @@ pub fn init() -> Machine {
 }
 
 impl Machine {
-    pub fn calculate<F: FractalNebulaCommon + FractalCommon>(&self, fractal: &'static F) {
+    pub fn calculate<'lt, F: FractalNebulaCommon<'lt> + FractalCommon<'lt>>(&self, fractal: &'static F) {
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
         coordinates_xy.par_iter().for_each(|xy| {
@@ -45,7 +45,7 @@ impl Machine {
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
-    fn chunk_calculation<F: FractalNebulaCommon + FractalCommon>(
+    fn chunk_calculation<'lt, F: FractalNebulaCommon<'lt> + FractalCommon<'lt>>(
         &self,
         xy: &[u32; 2],
         fractal: &F,
@@ -58,7 +58,7 @@ impl Machine {
         }
     }
 
-    fn chunk_calculation_with_wrap<F: FractalNebulaCommon + FractalCommon>(
+    fn chunk_calculation_with_wrap<'lt, F: FractalNebulaCommon<'lt> + FractalCommon<'lt>>(
         &self, xy: &[u32; 2],
         fractal: &'static F,
     ) {
@@ -83,7 +83,7 @@ impl Machine {
         }
     }
 
-    fn calculate_path_xy<F: FractalNebulaCommon + FractalCommon>(
+    fn calculate_path_xy<'lt, F: FractalNebulaCommon<'lt> + FractalCommon<'lt>>(
         &self,
         x: usize,
         y: usize,

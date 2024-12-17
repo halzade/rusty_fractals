@@ -13,7 +13,7 @@ pub fn init() -> MachineMandelbrot {
 }
 
 impl MachineMandelbrot {
-    pub fn calculate_mandelbrot<M: FractalMandelbrotCommon + FractalCommon>(&self, fractal: &M) {
+    pub fn calculate_mandelbrot<'lt, M: FractalMandelbrotCommon<'lt> + FractalCommon<'lt>>(&self, fractal: &M) {
         println!("calculate_mandelbrot()");
         let coordinates_xy: Vec<[u32; 2]> = machine::shuffled_calculation_coordinates();
 
@@ -32,7 +32,7 @@ impl MachineMandelbrot {
         window::paint_image_result(&data);
     }
 
-    fn chunk_calculation_mandelbrot<M: FractalMandelbrotCommon + FractalCommon>(
+    fn chunk_calculation_mandelbrot<'lt, M: FractalMandelbrotCommon<'lt> + FractalCommon<'lt>>(
         &self,
         fractal: &M,
         xy: &[u32; 2],
@@ -60,12 +60,12 @@ impl MachineMandelbrot {
 mod tests {
     use crate::application::Application;
     use crate::rusty_tests::FraTest;
-    use crate::{application, machine_mandelbrot, rusty_tests};
+    use crate::{application, machine_mandelbrot};
 
     #[test]
-    fn test_chunk_calculation_mandelbrot() {
-        let application: Application<'static> = application::init_none();
-        let mut fractal: FraTest<'static> = FraTest { app: application };
+    fn test_chunk_calculation_mandelbrot<'lt>() {
+        let application: Application<'lt> = application::init_none();
+        let fractal: FraTest<'lt> = FraTest { app: application };
 
         let mm = machine_mandelbrot::init();
 
