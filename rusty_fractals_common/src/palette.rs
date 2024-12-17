@@ -33,7 +33,7 @@ impl Palette3 {
     }
 }
 
-pub fn init_default() -> Palette {
+pub fn init_default() -> Palette<'static> {
     Palette { spectrum: palette_utils::init_default(), phantom: Default::default() }
 }
 

@@ -58,16 +58,19 @@ impl MachineMandelbrot {
 
 #[cfg(test)]
 mod tests {
-    use crate::{machine_mandelbrot, rusty_tests};
+    use crate::{application, machine_mandelbrot, rusty_tests};
 
     #[test]
     fn test_chunk_calculation_mandelbrot() {
-        let fractal = rusty_tests::FraTest {};
+        let fractal = rusty_tests::FraTest {
+            app: application::init_none(),
+        };
 
         let mm = machine_mandelbrot::init();
 
-        mm.chunk_calculation_mandelbrot(&fractal, &[0, 0]);
+        let xy = [1, 1];
+        mm.chunk_calculation_mandelbrot(&fractal, &xy);
 
-        // TODO verification
+        // TODO
     }
 }
