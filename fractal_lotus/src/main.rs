@@ -55,7 +55,7 @@ impl<'lt> FractalNebulaCommon<'lt> for Lotus<'lt> {
             is_wrap,
         )
     }
-    fn calculate_fractal(&mut self) {
+    fn calculate_fractal(&self) {
         let fm = machine::init();
         fm.calculate(self);
     }
@@ -65,8 +65,8 @@ impl<'lt> FractalCommon<'lt> for Lotus<'lt> {
     fn name(&self) -> &'static str {
         "Lotus"
     }
-    fn update(&mut self) {
-        self.app.max += 150;
+    fn update(&self) {
+        // TODO self.app.max += 150;
         println!("iteration_max = {}", self.app.max);
     }
     fn zoom_in(&self) {
