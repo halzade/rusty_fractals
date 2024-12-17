@@ -9,7 +9,6 @@ use image::{ImageBuffer, Rgb};
 use rusty_fractals_common::area::Area;
 use rusty_fractals_common::data_image::{colour_for_state, DataImage};
 use rusty_fractals_common::fractal::{FractalCommon, FractalMandelbrotCommon, FractalMath};
-use rusty_fractals_common::fractal_data::FractalData;
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::pixel_states::DomainElementState;
@@ -107,9 +106,6 @@ impl FractalCommon for FraTest<'_> {
     }
     fn update(&self) {}
     fn zoom_in(&self) {}
-    fn data_fractal(&self) -> &FractalData {
-        &self.app.data_fractal
-    }
     fn width(&self) -> usize {
         10
     }
@@ -119,8 +115,8 @@ impl FractalCommon for FraTest<'_> {
     fn data_image(&self) -> &DataImage<'static> {
         &self.app.data_image
     }
-    fn palette(&self) -> &Palette {
-        &palette::init_default()
+    fn palette(&self) -> &Palette<'static> {
+        &self.app.palette
     }
     fn min(&self) -> u32 {
         0
@@ -128,7 +124,7 @@ impl FractalCommon for FraTest<'_> {
     fn max(&self) -> u32 {
         10
     }
-    fn area(&self) -> &Area {
+    fn area(&self) -> &Area<'static> {
         &self.app.area
     }
     fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {}

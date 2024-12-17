@@ -74,17 +74,19 @@ impl FractalMandelbrotCommon for Mandelbrot {
 
 impl FractalCommon for Mandelbrot<> {
     fn name(&self) -> &'static str { "Mandelbrot" }
-    fn update(&self) { self.conf_add(0, 150); }
+    fn update(&self) {
+        // min as is
+        &self.app.max += 150;
+    }
     fn zoom_in(&self) { self.zoom_in(); }
-    fn data_fractal(&self) -> &DataImage<'static> { &self.data_image() }
     fn width(&self) -> usize { self.width }
     fn height(&self) -> usize { self.height }
     fn data_image(&self) -> &DataImage<'static> {
         &self.data_image()
     }
     fn palette(&self) -> &Palette { &self.app.palette_zero }
-    fn min(&self) -> u32 { self.conf.min }
-    fn max(&self) -> u32 { self.conf.max }
+    fn min(&self) -> u32 { &self.app.min }
+    fn max(&self) -> u32 { &self.app.max }
     fn area(&self) -> &Area<'_> { &self.area }
     fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {
         self.recalculate_pixels_positions_for_next_calculation(is_mandelbrot);

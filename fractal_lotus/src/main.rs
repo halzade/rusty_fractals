@@ -4,7 +4,6 @@ use rusty_fractals_common::fractal;
 use rusty_fractals_common::fractal::{
     FractalCommon, FractalConfig, FractalMath, FractalNebulaCommon,
 };
-use rusty_fractals_common::fractal_data::FractalData;
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::palettes::palette_blue_to_white_circle_up;
@@ -75,10 +74,6 @@ impl FractalCommon for Lotus<'_> {
         self.app.zoom_in()
     }
 
-    fn data_fractal(&self) -> &FractalData {
-        &self.app.data_fractal
-    }
-
     fn width(&self) -> usize {
         self.app.width
     }
@@ -96,13 +91,11 @@ impl FractalCommon for Lotus<'_> {
     }
 
     fn min(&self) -> u32 {
-        // TODO
-        self.app.data_fractal.data.lock().unwrap().min
+        self.app.min
     }
 
     fn max(&self) -> u32 {
-        // TODO
-        self.app.data_fractal.data.lock().unwrap().max
+        self.app.max
     }
 
     fn area(&self) -> &Area {

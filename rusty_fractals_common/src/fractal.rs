@@ -1,7 +1,6 @@
 use crate::area::Area;
 use crate::constants::CALCULATION_BOUNDARY;
 use crate::data_image::DataImage;
-use crate::fractal_data::FractalData;
 use crate::palette::Palette;
 use crate::resolution_multiplier::ResolutionMultiplier;
 use std::marker::PhantomData;
@@ -40,15 +39,14 @@ pub trait FractalCommon: Sync {
     fn name(&self) -> &'static str;
     fn update(&self);
     fn zoom_in(&self);
-    fn data_fractal(&self) -> &FractalData;
 
     fn width(&self) -> usize;
     fn height(&self) -> usize;
     fn data_image(&self) -> &DataImage<'static>;
-    fn palette(&self) -> &Palette;
+    fn palette(&self) -> &Palette<'static>;
     fn min(&self) -> u32;
     fn max(&self) -> u32;
-    fn area(&self) -> &Area;
+    fn area(&self) -> &Area<'static>;
 
     fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool);
     // application actions

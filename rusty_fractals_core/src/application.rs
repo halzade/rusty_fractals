@@ -1,15 +1,13 @@
-use std::sync::Mutex;
-use rusty_fractals_common::{area, data_image, palettes};
+use crate::window;
 use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::data_image::DataImage;
 use rusty_fractals_common::data_image::DataType::Static;
 use rusty_fractals_common::data_px::{active_new, hibernated_deep_black};
 use rusty_fractals_common::fractal::{FractalConfig, MandelbrotConfig};
-use rusty_fractals_common::fractal_data::{Data, FractalData};
 use rusty_fractals_common::fractal_log::now;
 use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
-use crate::window;
+use rusty_fractals_common::{area, data_image, palettes};
 
 /**
  * Application is used to manage repeated calculation during zoom
@@ -19,7 +17,8 @@ pub struct Application<'lt> {
     pub width: usize,
     pub height: usize,
     pub area: Area<'lt>,
-    pub data_fractal: FractalData,
+    pub min: u32,
+    pub max: u32,
     pub palette: Palette<'lt>,
     //  mandelbrot specific
     pub palette_zero: Palette<'lt>,
@@ -38,10 +37,6 @@ impl<'lt> Application<'lt> {
 
         self.recalculate_pixels_positions_for_next_calculation(is_mandelbrot);
         window::paint_image_calculation_progress(&self.data_image);
-    }
-
-    pub fn conf_add(&self, min: u32, max: u32) {
-        self.data_fractal.conf_add(min, max);
     }
 
     pub fn zoom_in(&self) {
@@ -100,7 +95,10 @@ impl<'lt> Application<'lt> {
                     let re = res[x];
                     let im = ims[y];
 
-                    if self.data_image.all_neighbors_finished_bad(x, y, is_mandelbrot) {
+                    if self
+                        .data_image
+                        .all_neighbors_finished_bad(x, y, is_mandelbrot)
+                    {
                         // Calculation for some positions should be skipped as they are too far away form any long successful divergent position
                         mo_px.replace(hibernated_deep_black(re, im));
                     } else {
@@ -127,7 +125,8 @@ pub fn init(area_config: AreaConfig, config: MandelbrotConfig) -> Application {
         width: wx,
         height: hy,
         area,
-        data_fractal: FractalData { data: Mutex::new(Data { min: 0, max: config.iteration_max }) },
+        min: 0, // TODO config min?
+        max: config.iteration_max,
         palette: config.palette,
         palette_zero: config.palette_zero,
         resolution_multiplier: ResolutionMultiplier::Single,
@@ -143,7 +142,8 @@ pub fn init_nebula(area_config: AreaConfig, config: FractalConfig) -> Applicatio
         width: wx,
         height: hy,
         area,
-        data_fractal: FractalData { data: Mutex::new(Data { min: 0, max: config.iteration_max }) },
+        min: 0,
+        max: config.iteration_max,
         palette: config.palette,
         palette_zero: palettes::init_none(),
         resolution_multiplier: config.resolution_multiplier,
@@ -156,7 +156,8 @@ pub fn init_none<'lt>() -> Application<'lt> {
         width: 0,
         height: 0,
         area: area::init_none(),
-        data_fractal: FractalData { data: Mutex::new(Data { min: 0, max: 10 }) },
+        min: 0,
+        max: 100,
         palette: palettes::init_none(),
         palette_zero: palettes::init_none(),
         resolution_multiplier: ResolutionMultiplier::Single,
