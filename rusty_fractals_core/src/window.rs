@@ -133,8 +133,6 @@ pub fn paint_path(area: &Area, data: &DataImage) {
     }
 }
 
-const DATA_COPY: Option<DataImage> = None;
-
 pub fn paint_image_calculation_progress(data: &DataImage) {
     // rendering must be done from main thread
 

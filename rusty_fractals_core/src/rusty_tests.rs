@@ -76,18 +76,18 @@ fn color_interval(
 /**
  * A fractal for any test
  */
-pub struct FraTest<'lt> {
+pub struct FractalTest<'lt> {
     pub app: Application<'lt>,
 }
 
-impl FractalMath<Mem> for FraTest<'_> {
+impl FractalMath<Mem> for FractalTest<'_> {
     fn math(&self, mc: &mut Mem, origin_re: f64, origin_im: f64) {
         mc.square();
         mc.plus(origin_re, origin_im);
     }
 }
 
-impl<'lt> FractalMandelbrotCommon<'lt> for FraTest<'lt> {
+impl<'lt> FractalMandelbrotCommon<'lt> for FractalTest<'lt> {
     fn calculate_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
         fractal::calculate_mandelbrot_path(self, iteration_max, origin_re, origin_im)
     }
@@ -100,7 +100,7 @@ impl<'lt> FractalMandelbrotCommon<'lt> for FraTest<'lt> {
     }
 }
 
-impl<'lt> FractalCommon<'lt> for FraTest<'lt> {
+impl<'lt> FractalCommon<'lt> for FractalTest<'lt> {
     fn name(&self) -> &'static str {
         "Test Fractal"
     }

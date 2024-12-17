@@ -1,15 +1,21 @@
-use std::marker::PhantomData;
-use std::sync::{Arc, Mutex, MutexGuard};
-use image::{Rgb};
 use crate::area::Area;
 use crate::constants::{MINIMUM_PATH_LENGTH, NEIGHBOURS};
 use crate::data_image::DataType::{Dynamic, Static};
 use crate::data_px;
 use crate::data_px::DataPx;
-use crate::pixel_states::{ACTIVE_NEW, DomainElementState, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK, is_finished_success_past};
-use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort, HibernatedDeepBlack};
+use crate::pixel_states::DomainElementState::{
+    ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
+    HibernatedDeepBlack,
+};
+use crate::pixel_states::{
+    is_finished_success_past, DomainElementState, ACTIVE_NEW, FINISHED_SUCCESS,
+    FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK,
+};
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Square2;
+use image::Rgb;
+use std::marker::PhantomData;
+use std::sync::{Arc, Mutex, MutexGuard};
 
 pub struct DataImage<'lt> {
     pub width: usize,
@@ -83,7 +89,10 @@ impl DataImage<'_> {
         for mut path in all {
             path.retain(|&el| area.contains(el[0], el[1]));
         }
-        self.paths.lock().unwrap().retain(|path| path.len() as u32 > MINIMUM_PATH_LENGTH);
+        self.paths
+            .lock()
+            .unwrap()
+            .retain(|path| path.len() as u32 > MINIMUM_PATH_LENGTH);
     }
 
     fn add(&self, x: usize, y: usize) {
@@ -109,7 +118,11 @@ impl DataImage<'_> {
         }
     }
 
-    pub fn values_at(&self, x: usize, y: usize) -> (u32, DomainElementState, f64, f64, Option<Rgb<u8>>) {
+    pub fn values_at(
+        &self,
+        x: usize,
+        y: usize,
+    ) -> (u32, DomainElementState, f64, f64, Option<Rgb<u8>>) {
         let mut mo_px = self.mo_px_at(x, y);
         let p = mo_px.as_mut().unwrap();
         (p.value, p.state, p.quad, p.quid, p.colour)
@@ -145,7 +158,15 @@ impl DataImage<'_> {
         (p.origin_re, p.origin_im)
     }
 
-    pub fn set_pixel_mandelbrot(&self, x: usize, y: usize, iterator: u32, quad: f64, state: DomainElementState, max: u32) {
+    pub fn set_pixel_mandelbrot(
+        &self,
+        x: usize,
+        y: usize,
+        iterator: u32,
+        quad: f64,
+        state: DomainElementState,
+        max: u32,
+    ) {
         let mut mo_px = self.mo_px_at(x, y);
         let p = mo_px.as_mut().unwrap();
         p.quad = quad;
@@ -208,8 +229,10 @@ impl DataImage<'_> {
         for x in 0..20 {
             for y in 0..20 {
                 values.push(self.chunk_value(
-                    x * chunk_size_x, (x + 1) * chunk_size_x,
-                    y * chunk_size_y, (y + 1) * chunk_size_y,
+                    x * chunk_size_x,
+                    (x + 1) * chunk_size_x,
+                    y * chunk_size_y,
+                    (y + 1) * chunk_size_y,
                 ));
             }
         }
@@ -238,7 +261,13 @@ impl DataImage<'_> {
     }
 
     // Don't do any wrapping the first time because Mandelbrot elements are not optimized.
-    pub fn wrap(&self, origin_re: f64, origin_im: f64, rm: ResolutionMultiplier, plank: f64) -> Vec<[f64; 2]> {
+    pub fn wrap(
+        &self,
+        origin_re: f64,
+        origin_im: f64,
+        rm: ResolutionMultiplier,
+        plank: f64,
+    ) -> Vec<[f64; 2]> {
         let mut ret = Vec::new();
         if rm == Square2 {
             let d = plank / 3.0;
@@ -336,7 +365,8 @@ pub fn init_none<'lt>() -> DataImage<'lt> {
         width: 1,
         height: 1,
         data_type: Static,
-        pixels: Vec::new(),
+
+        pixels: init_pixels_none(),
         paths: Arc::new(Mutex::new(Vec::new())),
         show_path: Mutex::new(Vec::new()),
         phantom: PhantomData::default(),
@@ -364,7 +394,22 @@ fn init_domain(area: &Area) -> Vec<Vec<Mutex<Option<DataPx>>>> {
     vx
 }
 
-pub fn state_from_path_length(iterator: u32, path_length: u32, min: u32, max: u32) -> DomainElementState {
+fn init_pixels_none() -> Vec<Vec<Mutex<Option<DataPx>>>> {
+    let mut vx = Vec::new();
+    let mut vy = Vec::new();
+
+    vy.push(Mutex::new(Some(data_px::init(1f64, 1f64))));
+    vx.push(vy);
+
+    vx
+}
+
+pub fn state_from_path_length(
+    iterator: u32,
+    path_length: u32,
+    min: u32,
+    max: u32,
+) -> DomainElementState {
     if path_length < min {
         return FinishedTooShort;
     }
@@ -383,7 +428,7 @@ pub fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
         ResolutionMultiplier::Square11 => 11.0,
         ResolutionMultiplier::Square51 => 51.0,
         ResolutionMultiplier::Square101 => 101.0,
-        _ => 1.0
+        _ => 1.0,
     };
 }
 
@@ -407,17 +452,24 @@ fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
 mod tests {
     use crate::area;
     use crate::area::{Area, AreaConfig};
-    use crate::data_image::{DataImage, init};
     use crate::data_image::DataType::Static;
-    use crate::resolution_multiplier::ResolutionMultiplier::{Square101, Square11, Square3, Square5, Square51, Square9};
+    use crate::data_image::{init, DataImage};
+    use crate::resolution_multiplier::ResolutionMultiplier::{
+        Square101, Square11, Square3, Square5, Square51, Square9,
+    };
 
     fn init_test<'lt>() -> (Area<'lt>, DataImage<'lt>) {
-        let area_config = AreaConfig { width_re: 1.0, center_re: 0.0, center_im: 0.0, width_x: 10, height_y: 10 };
+        let area_config = AreaConfig {
+            width_re: 1.0,
+            center_re: 0.0,
+            center_im: 0.0,
+            width_x: 10,
+            height_y: 10,
+        };
         let area = area::init(area_config);
         let data = init(Static, &area);
         (area, data)
     }
-
 
     fn at(w: &Vec<[f64; 2]>, index: usize) -> (f64, f64) {
         let a = w.get(index).unwrap();
@@ -452,7 +504,6 @@ mod tests {
         let w = data.wrap(o_re, o_im, Square9, area.plank());
         assert_eq!(w.len(), 80);
     }
-
 
     #[test]
     fn test_wrap_11() {

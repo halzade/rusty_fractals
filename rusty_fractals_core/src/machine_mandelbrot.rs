@@ -13,7 +13,10 @@ pub fn init() -> MachineMandelbrot {
 }
 
 impl MachineMandelbrot {
-    pub fn calculate_mandelbrot<'lt, M: FractalMandelbrotCommon<'lt> + FractalCommon<'lt>>(&self, fractal: &M) {
+    pub fn calculate_mandelbrot<'lt, M: FractalMandelbrotCommon<'lt> + FractalCommon<'lt>>(
+        &self,
+        fractal: &M,
+    ) {
         println!("calculate_mandelbrot()");
         let coordinates_xy: Vec<[u32; 2]> = machine::shuffled_calculation_coordinates();
 
@@ -59,19 +62,26 @@ impl MachineMandelbrot {
 #[cfg(test)]
 mod tests {
     use crate::application::Application;
-    use crate::rusty_tests::FraTest;
+    use crate::rusty_tests::FractalTest;
     use crate::{application, machine_mandelbrot};
+    use rusty_fractals_common::fractal::FractalCommon;
 
     #[test]
     fn test_chunk_calculation_mandelbrot<'lt>() {
         let application: Application<'lt> = application::init_none();
-        let fractal: FraTest<'lt> = FraTest { app: application };
+        let fractal: FractalTest<'lt> = FractalTest { app: application };
 
         let mm = machine_mandelbrot::init();
 
-        let xy = [1, 1];
+        let x = 0;
+        let y = 0;
+        let xy = [x, y];
         mm.chunk_calculation_mandelbrot(&fractal, &xy);
 
+        let mo_px = fractal.data_image().mo_px_at(x as usize, y as usize);
+        let p = mo_px.unwrap();
+
         // TODO
+        assert_eq!(0, p.value);
     }
 }

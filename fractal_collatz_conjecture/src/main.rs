@@ -36,9 +36,8 @@ impl FractalMandelbrotCommon for CollatzConjecture<'_> {
 impl FractalCommon for CollatzConjecture<'_> {
     fn name(&self) -> &'static str { "Collatz Conjecture" }
     fn update(&mut self) {
-        let c = self.conf_mut();
-        c.max += 150;
-        println!("iteration_max = {}", c.max);
+        self.app.max += 150;
+        println!("iteration_max = {}", self.app.max);
     }
     fn move_zoom_recalculate(&mut self, x: usize, y: usize) {
         self.app.move_target(x, y);

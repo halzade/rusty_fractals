@@ -41,9 +41,8 @@ impl FractalNebulaCommon for FatStarTentacle<'_> {
 impl FractalCommon for FatStarTentacle<'_> {
     fn name(&self) -> &'static str { "Fat Star Tentacle" }
     fn update(&mut self) {
-        let c = self.conf_mut();
-        c.max += 150;
-        println!("iteration_max = {}", c.max);
+        self.app.max += 150;
+        println!("iteration_max = {}", self.app.max);
     }
     fn move_zoom_recalculate(&mut self, x: usize, y: usize) {
         self.app.move_target_zoom_in_recalculate_pixel_positions(x, y, true);

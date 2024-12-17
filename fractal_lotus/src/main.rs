@@ -26,7 +26,7 @@ impl FractalMath<Mem> for Lotus<'_> {
     }
 }
 
-impl FractalNebulaCommon for Lotus<'_> {
+impl<'lt> FractalNebulaCommon<'lt> for Lotus<'lt> {
     fn rm(&self) -> ResolutionMultiplier {
         self.app.resolution_multiplier
     }
@@ -61,14 +61,13 @@ impl FractalNebulaCommon for Lotus<'_> {
     }
 }
 
-impl FractalCommon for Lotus<'_> {
+impl<'lt> FractalCommon<'lt> for Lotus<'lt> {
     fn name(&self) -> &'static str {
         "Lotus"
     }
     fn update(&mut self) {
-        let c = self.conf_mut();
-        c.max += 150;
-        println!("iteration_max = {}", c.max);
+        self.app.max += 150;
+        println!("iteration_max = {}", self.app.max);
     }
     fn zoom_in(&self) {
         self.app.zoom_in()
@@ -82,11 +81,11 @@ impl FractalCommon for Lotus<'_> {
         self.app.height
     }
 
-    fn data_image(&self) -> &DataImage<'static> {
+    fn data_image(&self) -> &DataImage<'lt> {
         &self.app.data_image
     }
 
-    fn palette(&self) -> &Palette {
+    fn palette(&self) -> &Palette<'lt> {
         &self.app.palette
     }
 
@@ -98,7 +97,7 @@ impl FractalCommon for Lotus<'_> {
         self.app.max
     }
 
-    fn area(&self) -> &Area {
+    fn area(&self) -> &Area<'lt> {
         &self.app.area
     }
 
