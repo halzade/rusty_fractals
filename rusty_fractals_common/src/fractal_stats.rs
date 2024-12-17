@@ -160,3 +160,10 @@ pub fn init() -> Stats {
         average_path_length_measure: 0,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
+}
+

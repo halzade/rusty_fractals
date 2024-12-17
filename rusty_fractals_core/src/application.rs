@@ -163,4 +163,8 @@ pub fn init_none<'lt>() -> Application<'lt> {
     }
 }
 
-
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
+}

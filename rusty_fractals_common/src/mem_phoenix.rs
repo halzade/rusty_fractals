@@ -55,3 +55,10 @@ impl MemPhoenix {
         self.m.im
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
+}
+

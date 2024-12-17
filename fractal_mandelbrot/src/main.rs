@@ -76,11 +76,11 @@ impl FractalCommon for Mandelbrot<> {
     fn name(&self) -> &'static str { "Mandelbrot" }
     fn update(&self) { self.conf_add(0, 150); }
     fn zoom_in(&self) { self.zoom_in(); }
-    fn data(&self) -> &DataImage<'static> { &self.data }
+    fn data_fractal(&self) -> &DataImage<'static> { &self.data_image() }
     fn width(&self) -> usize { self.width }
     fn height(&self) -> usize { self.height }
     fn data_image(&self) -> &DataImage<'static> {
-        todo!()
+        &self.data_image()
     }
     fn palette(&self) -> &Palette { &self.app.palette_zero }
     fn min(&self) -> u32 { self.conf.min }
@@ -102,4 +102,10 @@ impl FractalCommon for Mandelbrot<> {
         // FRACTAL.unwrap().calculate_mandelbrot_new_thread(FRACTAL);
         self.calculate_mandelbrot();
     }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
 }

@@ -68,3 +68,10 @@ pub fn palette_3_rgb() -> Palette3 {
         spectrum_blue: make_spectrum(CircleUp, BLACK, BLUE),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
+}
+

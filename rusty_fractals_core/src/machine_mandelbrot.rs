@@ -1,9 +1,9 @@
+use crate::{machine, window};
 use rayon::prelude::*;
-use rusty_fractals_common::fractal::{FractalMandelbrotCommon, FractalCommon};
 use rusty_fractals_common::data_image::state_from_path_length;
+use rusty_fractals_common::fractal::{FractalCommon, FractalMandelbrotCommon};
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_mandelbrot_values;
 use rusty_fractals_common::pixel_states;
-use crate::{machine, window};
 
 // to calculate single image
 pub struct MachineMandelbrot {}
@@ -17,14 +17,13 @@ impl MachineMandelbrot {
         println!("calculate_mandelbrot()");
         let coordinates_xy: Vec<[u32; 2]> = machine::shuffled_calculation_coordinates();
 
-        // TODO ?
-        let data = fractal.data();
+        let data = fractal.data_image();
 
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
             self.chunk_calculation_mandelbrot(fractal, xy);
             // window refresh
-            window::paint_image_calculation_progress(fractal.data());
+            window::paint_image_calculation_progress(fractal.data_image());
         });
         data.recalculate_pixels_states();
         let palette = fractal.palette();
@@ -38,19 +37,37 @@ impl MachineMandelbrot {
         fractal: &M,
         xy: &[u32; 2],
     ) {
-        let (x_from, x_to, y_from, y_to) = machine::chunk_boundaries(xy, fractal.width(), fractal.height());
-        let data = fractal.data();
+        let (x_from, x_to, y_from, y_to) =
+            machine::chunk_boundaries(xy, fractal.width(), fractal.height());
+        let data = fractal.data_image();
         for x in x_from..x_to {
             for y in y_from..y_to {
                 let (state, origin_re, origin_im) = data.state_origin_at(x, y);
                 // TODO, calculate only ActiveNew elements, copy quad and quid
                 if !pixel_states::is_finished_any(state) {
                     // calculation
-                    let (iterator, quad) = fractal.calculate_path(fractal.max(), origin_re, origin_im);
+                    let (iterator, quad) =
+                        fractal.calculate_path(fractal.max(), origin_re, origin_im);
                     let state = state_from_path_length(iterator, iterator, 0, fractal.max());
                     data.set_pixel_mandelbrot(x, y, iterator, quad, state, fractal.max());
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{machine_mandelbrot, rusty_tests};
+
+    #[test]
+    fn test_chunk_calculation_mandelbrot() {
+        let fractal = rusty_tests::FraTest {};
+
+        let mm = machine_mandelbrot::init();
+
+        mm.chunk_calculation_mandelbrot(&fractal, &[0, 0]);
+
+        // TODO verification
     }
 }

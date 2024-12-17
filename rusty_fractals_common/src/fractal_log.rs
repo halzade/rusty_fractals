@@ -21,3 +21,8 @@ fn no() -> String {
     Utc::now().format(TIME_FORMAT).to_string()
 }
 
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
+}

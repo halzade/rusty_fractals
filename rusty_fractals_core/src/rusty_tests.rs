@@ -1,12 +1,20 @@
+use std::sync::Mutex;
 use fltk::{frame::Frame, prelude::*, window::Window};
 use fltk::app::{App, event_key};
 use fltk::enums::{Event, Key};
 use fltk::enums::ColorDepth::Rgb8;
 use fltk::image::RgbImage;
 use image::{ImageBuffer, Rgb};
-use rusty_fractals_common::data_image::colour_for_state;
+use rusty_fractals_common::area::Area;
+use rusty_fractals_common::data_image::{colour_for_state, DataImage};
+use rusty_fractals_common::{fractal, fractal_data, palette, palette_utils};
+use rusty_fractals_common::fractal::{FractalCommon, FractalMandelbrotCommon, FractalMath};
+use rusty_fractals_common::fractal_data::{Data, FractalData};
+use rusty_fractals_common::mem::Mem;
+use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::pixel_states::DomainElementState;
 use rusty_fractals_common::pixel_states::DomainElementState::{ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort, HibernatedDeepBlack};
+use crate::machine_mandelbrot;
 
 const INT: i32 = 100;
 
@@ -27,9 +35,9 @@ pub fn show_state_colours() {
 
 fn pop_app_window(width: i32, height: i32, image: ImageBuffer<Rgb<u8>, Vec<u8>>) {
     let app = App::default();
-    let image_rgb = RgbImage::new(image.as_raw(), width as i32, height as i32, Rgb8).unwrap();
-    let mut window = Window::default().with_label("test window").with_size(width as i32, height as i32).center_screen();
-    let mut frame = Frame::new(0, 0, width as i32, height as i32, "");
+    let image_rgb = RgbImage::new(image.as_raw(), width, height, Rgb8).unwrap();
+    let mut window = Window::default().with_label("test window").with_size(width, height).center_screen();
+    let mut frame = Frame::new(0, 0, width, height, "");
     frame.set_image(Some(image_rgb));
     window.add(&frame);
     window.handle(move |_, event| match event {
@@ -53,3 +61,80 @@ fn color_interval(image: &mut ImageBuffer<Rgb<u8>, Vec<u8>>, from: i32, to: i32,
         image.put_pixel(x as u32, y as u32, colour_for_state(state));
     }
 }
+
+
+
+/**
+ * A fractal for any test
+ */
+pub struct FraTest {
+    fractal_data: fractal_data::FractalData::init_default()
+}
+
+impl FractalMath<Mem> for FraTest<> {
+    fn math(&self, mc: &mut Mem, origin_re: f64, origin_im: f64) {
+        mc.square();
+        mc.plus(origin_re, origin_im);
+    }
+}
+
+impl FractalMandelbrotCommon for FraTest<> {
+    fn calculate_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
+        fractal::calculate_mandelbrot_path(self, iteration_max, origin_re, origin_im)
+    }
+    fn calculate_mandelbrot(&self) {
+        let fm = machine_mandelbrot::init();
+        fm.calculate_mandelbrot(self);
+    }
+    fn palette_zero(&self) -> &Palette {
+        &self.palette_zero()
+    }
+}
+
+impl FractalCommon for FraTest<> {
+    fn name(&self) -> &'static str { "Mandelbrot" }
+    fn update(&self) {
+
+    }
+    fn zoom_in(&self) {
+
+    }
+    fn data_fractal(&self) -> &FractalData {
+        let fd = fractal_data::init_default();
+        &fd
+    }
+    fn width(&self) -> usize {
+        10
+    }
+    fn height(&self) -> usize {
+        10
+    }
+    fn data_image(&self) -> &DataImage<'static> {
+
+    }
+    fn palette(&self) -> &Palette {
+        &palette::init_default()
+    }
+    fn min(&self) -> u32 {
+        0
+    }
+    fn max(&self) -> u32 {
+        10
+    }
+    fn area(&self) -> &Area {
+
+    }
+    fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {
+    }
+    fn move_target(&self, x: usize, y: usize) {
+    }
+    fn zoom_and_recalculate(&self) {
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
+}
+

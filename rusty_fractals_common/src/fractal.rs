@@ -1,12 +1,12 @@
+use crate::area::Area;
+use crate::constants::CALCULATION_BOUNDARY;
+use crate::data_image::DataImage;
+use crate::fractal_data::FractalData;
+use crate::palette::Palette;
+use crate::resolution_multiplier::ResolutionMultiplier;
 use std::marker::PhantomData;
 use std::sync::Mutex;
 use std::thread;
-use crate::area::Area;
-use crate::palette::Palette;
-use crate::data_image::DataImage;
-use crate::constants::CALCULATION_BOUNDARY;
-use crate::fractal_data::FractalData;
-use crate::resolution_multiplier::ResolutionMultiplier;
 
 pub struct FractalConfig<'lt> {
     pub iteration_min: u32,
@@ -40,7 +40,7 @@ pub trait FractalCommon: Sync {
     fn name(&self) -> &'static str;
     fn update(&self);
     fn zoom_in(&self);
-    fn data(&self) -> &FractalData;
+    fn data_fractal(&self) -> &FractalData;
 
     fn width(&self) -> usize;
     fn height(&self) -> usize;
@@ -59,9 +59,21 @@ pub trait FractalCommon: Sync {
 pub trait FractalNebulaCommon: Sync {
     fn rm(&self) -> ResolutionMultiplier;
     fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool;
-    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data_image: &DataImage, is_wrap: bool) -> (u32, u32);
+    fn calculate_path(
+        &self,
+        area: &Area,
+        iteration_min: u32,
+        iteration_max: u32,
+        origin_re: f64,
+        origin_im: f64,
+        data_image: &DataImage,
+        is_wrap: bool,
+    ) -> (u32, u32);
     fn calculate_fractal(&self);
-    fn calculate_fractal_new_thread<M: FractalNebulaCommon + FractalCommon + Sync + Send>(&self, application_fractal: &'static Mutex<Option<M>>) {
+    fn calculate_fractal_new_thread<M: FractalNebulaCommon + FractalCommon + Sync + Send>(
+        &self,
+        application_fractal: &'static Mutex<Option<M>>,
+    ) {
         thread::spawn(move || {
             let lo = application_fractal.lock();
             match lo {
@@ -161,7 +173,12 @@ pub fn calculate_path<T: MemType<T>>(
     (iterator, length)
 }
 
-pub fn calculate_mandelbrot_path<T: MemType<T>>(fractal_math: &impl FractalMath<T>, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
+pub fn calculate_mandelbrot_path<T: MemType<T>>(
+    fractal_math: &impl FractalMath<T>,
+    iteration_max: u32,
+    origin_re: f64,
+    origin_im: f64,
+) -> (u32, f64) {
     let cb = CALCULATION_BOUNDARY as f64;
     let mut m: T = T::new(origin_re, origin_im);
     let mut iterator = 0;
@@ -170,4 +187,10 @@ pub fn calculate_mandelbrot_path<T: MemType<T>>(fractal_math: &impl FractalMath<
         iterator += 1;
     }
     (iterator, m.quad())
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
 }

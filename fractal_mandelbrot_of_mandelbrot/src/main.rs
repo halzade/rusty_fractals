@@ -28,7 +28,9 @@ impl FractalMath<Mem> for MandelbrotOfMandelbrot<'_> {
 
 impl FractalMandelbrotCommon for MandelbrotOfMandelbrot<'_> {
     fn calculate_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
+
         fractal::calculate_mandelbrot_path(self, iteration_max, origin_re, origin_im)
+
     }
     fn calculate_mandelbrot(&mut self) {
         machine_mandelbrot::init().calculate_mandelbrot(self);
@@ -79,3 +81,10 @@ fn main() {
     });
     app.run().unwrap();
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
+}
+

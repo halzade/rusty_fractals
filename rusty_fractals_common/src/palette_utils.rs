@@ -142,6 +142,7 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
     let spec_r_to = spec_to.channels()[0] as u8;
     let spec_g_to = spec_to.channels()[1] as u8;
     let spec_b_to = spec_to.channels()[2] as u8;
+
     // assert spectrum so that the coloring can be perfect
     assert_eq!(r_from, spec_r_from);
     assert_eq!(g_from, spec_g_from);
@@ -168,3 +169,18 @@ fn function_result(d: f64, function: &Function) -> f64 {
         Function::CircleUp => 1.0 - (1.0 - (d * d)).sqrt(),
     }
 }
+
+pub fn init_default() -> Vec<Rgb<u8>> {
+    let mut spectrum: Vec<Rgb<u8>> = Vec::new();
+    spectrum.push(Rgb([255, 0, 0]));
+    spectrum.push(Rgb([0, 255, 0]));
+    spectrum.push(Rgb([0, 0, 255]));
+    spectrum
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
+}
+

@@ -1,5 +1,6 @@
 use std::marker::PhantomData;
 use image::Rgb;
+use crate::palette_utils;
 
 const ERROR_MESSAGE: &str = "error in color index";
 
@@ -30,4 +31,14 @@ impl Palette3 {
     pub fn spectrum_value_blue(&self, i: usize) -> &Rgb<u8> {
         self.spectrum_blue.get(i).expect(ERROR_MESSAGE)
     }
+}
+
+pub fn init_default() -> Palette {
+    Palette { spectrum: palette_utils::init_default(), phantom: Default::default() }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
 }

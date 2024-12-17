@@ -9,3 +9,9 @@ pub fn save_image(image: image::RgbImage) {
     let path = "fractal.jpg";
     save_buffer_with_format(Path::new(path), &*image.into_raw(), width, height, Rgb8, Jpeg).expect("could not safe image");
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
+}

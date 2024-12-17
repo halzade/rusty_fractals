@@ -47,7 +47,7 @@ impl FractalCommon for NebulaSide<'_> {
     fn zoom_in(&self) {
         todo!()
     }
-    fn data(&self) -> &DataImage { &self.app.data }
+    fn data_fractal(&self) -> &DataImage { &self.app.data_image }
     // fn move_zoom_recalculate(&mut self, x: usize, y: usize) {
     //     self.app.move_target_zoom_in_recalculate_pixel_positions(x, y, true);
     //     self.calculate_fractal_new_thread(&FRACTAL);

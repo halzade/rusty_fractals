@@ -36,3 +36,10 @@ pub fn calculate_nebula_zoom<F: FractalNebulaCommon + FractalCommon>(fractal: &'
     fractal.recalculate_pixels_positions_for_next_calculation(false);
     fractal_mu.update();
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
+}
+

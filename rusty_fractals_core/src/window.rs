@@ -27,7 +27,7 @@ pub fn show<F: FractalCommon>(fractal: &'static F) -> App {
 
     let cycle = 0;
 
-    let data : &'static DataImage<'_> = fractal.data();
+    let data : &'static DataImage<'_> = fractal.data_image();
 
     window.draw(move |_| {
         println!("draw {}", cycle);
@@ -172,4 +172,10 @@ pub fn paint_image_result(data: &DataImage) {
         }
         Err(_) => { println!("paint_image_result(): can't unlock app"); }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
 }

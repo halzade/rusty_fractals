@@ -1,6 +1,9 @@
-use image::Rgb;
 use crate::pixel_states::DomainElementState;
-use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort, HibernatedDeepBlack};
+use crate::pixel_states::DomainElementState::{
+    ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
+    HibernatedDeepBlack,
+};
+use image::Rgb;
 
 #[derive(Clone, Copy)]
 pub struct DataPx {
@@ -71,21 +74,59 @@ pub fn init(origin_re: f64, origin_im: f64) -> DataPx {
     }
 }
 
-#[test]
-fn test_set_average_with() {
-    let mut dp = DataPx { origin_re: 0.0, origin_im: 0.0, value: 10, state: FinishedSuccessPast, quad: 0.0, quid: 0.0, colour: None };
-    let other = DataPx { origin_re: 0.0, origin_im: 0.0, value: 3, state: FinishedSuccessPast, quad: 0.0, quid: 0.0, colour: None };
-
-    dp.set_average_with(other);
-    assert_eq!(dp.value, 55);
-}
-
 pub fn hibernated_deep_black(re: f64, im: f64) -> DataPx {
     // TODO copy quad and quid
-    DataPx { origin_re: re, origin_im: im, value: 0, state: HibernatedDeepBlack, quad: 1.0, quid: 1.0, colour: None }
+    DataPx {
+        origin_re: re,
+        origin_im: im,
+        value: 0,
+        state: HibernatedDeepBlack,
+        quad: 1.0,
+        quid: 1.0,
+        colour: None,
+    }
 }
 
 pub fn active_new(re: f64, im: f64) -> DataPx {
     // todo copy quad and quid
-    DataPx { origin_re: re, origin_im: im, value: 0, state: ActiveNew, quad: 1.0, quid: 1.0, colour: None }
+    DataPx {
+        origin_re: re,
+        origin_im: im,
+        value: 0,
+        state: ActiveNew,
+        quad: 1.0,
+        quid: 1.0,
+        colour: None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::data_px::DataPx;
+    use crate::pixel_states::DomainElementState::FinishedSuccessPast;
+
+    #[test]
+    fn test_set_average_with() {
+        let mut dp = DataPx {
+            origin_re: 0.0,
+            origin_im: 0.0,
+            value: 10,
+            state: FinishedSuccessPast,
+            quad: 0.0,
+            quid: 0.0,
+            colour: None,
+        };
+        let other = DataPx {
+            origin_re: 0.0,
+            origin_im: 0.0,
+            value: 3,
+            state: FinishedSuccessPast,
+            quad: 0.0,
+            quid: 0.0,
+            colour: None,
+        };
+
+        dp.set_average_with(other);
+        assert_eq!(dp.value, 55);
+    }
 }

@@ -386,3 +386,9 @@ fn ac_if_black_dot(mp: &Mix, data: &DataImage) -> i32 {
 fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
     x >= 0 && x < width as i32 && y >= 0 && y < height as i32
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
+}

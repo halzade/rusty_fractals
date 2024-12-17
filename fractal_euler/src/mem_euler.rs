@@ -60,3 +60,9 @@ impl MemEuler {
 
 // TODO
 pub enum Spectra { Red, Green, Blue }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
+}

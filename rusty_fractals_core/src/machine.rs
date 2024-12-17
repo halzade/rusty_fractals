@@ -23,9 +23,9 @@ impl Machine {
             // calculation
             self.chunk_calculation(&xy, fractal);
             // window refresh
-            window::paint_image_calculation_progress(fractal);
+            window::paint_image_calculation_progress(fractal.data_image());
         });
-        fractal.recalculate_pixels_states();
+        fractal.data_image().recalculate_pixels_states();
 
         let area = fractal.area();
         if fractal.rm() != ResolutionMultiplier::Single {
@@ -66,7 +66,7 @@ impl Machine {
             panic!()
         }
         let (x_from, x_to, y_from, y_to) = chunk_boundaries(xy, fractal.width(), fractal.height());
-        let data = fractal.data();
+        let data = fractal.data_image();
         let area = fractal.area();
         let plank = area.plank();
         for x in x_from..x_to {
@@ -76,7 +76,7 @@ impl Machine {
                     let wrap = data.wrap(origin_re, origin_im, fractal.rm(), plank);
                     // within the same pixel
                     for [re, im] in wrap {
-                        fractal.calculate_path(area, fractal.min(), fractal.max(), re, im, &data, true);
+                        fractal.calculate_path(area, fractal.min(), fractal.max(), re, im, fractal.data_image(), true);
                     }
                 }
             }
@@ -89,11 +89,11 @@ impl Machine {
         y: usize,
         fractal: &F,
     ) {
-        let data = fractal.data();
+        let data = fractal.data_image();
         let area = fractal.area();
         let (state, origin_re, origin_im) = data.state_origin_at(x, y);
         if pixel_states::is_active_new(state) {
-            let (iterator, path_length) = fractal.calculate_path(area, fractal.min(), fractal.max(), origin_re, origin_im, &data, false);
+            let (iterator, path_length) = fractal.calculate_path(area, fractal.min(), fractal.max(), origin_re, origin_im, fractal.data_image(), false);
             let state = state_from_path_length(iterator, path_length, fractal.min(), fractal.max());
             data.set_pixel_state(x, y, state);
         }
@@ -117,3 +117,10 @@ pub fn shuffled_calculation_coordinates() -> Vec<[u32; 2]> {
     coordinates_xy.shuffle(&mut thread_rng());
     coordinates_xy
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
+}
+

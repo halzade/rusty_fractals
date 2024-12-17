@@ -7,3 +7,4 @@ pub mod machine;
 pub mod machine_mandelbrot;
 pub mod mathematician;
 pub mod application;
+pub mod rusty_tests;

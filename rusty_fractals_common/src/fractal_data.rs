@@ -22,3 +22,23 @@ impl FractalData {
         }
     }
 }
+
+pub fn init_default() -> FractalData {
+    FractalData {
+        data: Mutex::new(Data { min: 1, max: 10 }),
+    }
+}
+#[cfg(test)]
+mod tests {
+    use crate::fractal_data::init_default;
+
+    #[test]
+    fn test_conf_add() {
+        let fd = init_default();
+
+        fd.conf_add(1, 2);
+
+        assert_eq!(fd.data.lock().unwrap().min, 2);
+        assert_eq!(fd.data.lock().unwrap().max, 12);
+    }
+}

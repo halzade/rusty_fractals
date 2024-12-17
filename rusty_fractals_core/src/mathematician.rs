@@ -212,3 +212,9 @@ pub fn init_squares(max: u32) {
         square.insert(sq);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_it() {}
+}
