@@ -54,7 +54,7 @@ pub fn palette_purple_to_white<'lt>() -> Palette<'lt> {
     new(CircleUp, Rgb([20, 3, 30]), WHITE)
 }
 
-pub fn init_none<'lt>() -> Palette<'lt> {
+pub fn init_trivial<'lt>() -> Palette<'lt> {
     Palette {
         spectrum: Vec::new(),
         phantom: Default::default(),

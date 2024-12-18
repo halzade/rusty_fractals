@@ -262,7 +262,7 @@ pub fn init<'lt>(config: AreaConfig) -> Area<'lt> {
     }
 }
 
-pub fn init_none<'lt>() -> Area<'lt> {
+pub fn init_trivial<'lt>() -> Area<'lt> {
     let area_data = AreaData {
         width_x: 1,
         width_xf64: 1.0,

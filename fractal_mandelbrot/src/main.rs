@@ -2,6 +2,7 @@ use std::thread;
 use rusty_fractals_core::{application, machine_mandelbrot, window};
 use rusty_fractals_common::area::{AreaConfig};
 use rusty_fractals_common::calc::CalculationConfig;
+use rusty_fractals_common::calc::CalculationType::InfiniteVideoZoom;
 use rusty_fractals_common::calc::OrbitType::Finite;
 use rusty_fractals_common::fractal::{FractalMath, MandelbrotConfig};
 use rusty_fractals_common::mem::Mem;
@@ -12,15 +13,13 @@ use rusty_fractals_core::application::Application;
  * The Mandelbrot Fractal
  */
 pub struct Mandelbrot {
-
-    name: &'static str,
 }
 
 /**
  * x := x^2 + y^2 + x0
  * y := 2xy + y0
  */
-impl FractalMath<Mem> for Mandelbrot {
+impl FractalMath<Mem> for Mandelbrot  {
     fn math(&self, mc: &mut Mem, origin_re: f64, origin_im: f64) {
         mc.square();
         mc.plus(origin_re, origin_im);
@@ -42,6 +41,7 @@ fn main() {
         center_im: 0.0,
     };
     let calculation_config = CalculationConfig {
+        calc_type: InfiniteVideoZoom,
         orbits : Finite,
         update_max : 150,
         update_min : 0,
@@ -49,12 +49,12 @@ fn main() {
     // TODO
     let application: Application<'static> = application::init(area_config, mandelbrot_config);
 
-    let mandelbrot: &Mandelbrot = &Mandelbrot { name: "Mandelbrot" };
-    let app = window::show(mandelbrot);
+    let mandelbrot: Mandelbrot = Mandelbrot {};
+    let app = window::show(&mandelbrot);
 
     thread::spawn(move || {
         let machine = machine_mandelbrot::init();
-        machine.calculate_mandelbrot(mandelbrot);
+        machine.calculate_mandelbrot(&mandelbrot);
 
 
         // TODO don't replace FRACTAl mandelbrot, cycle instead with waiting

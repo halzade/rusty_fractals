@@ -360,7 +360,7 @@ pub fn init<'lt>(data_type: DataType, area: &Area) -> DataImage<'lt> {
     }
 }
 
-pub fn init_none<'lt>() -> DataImage<'lt> {
+pub fn init_trivial<'lt>() -> DataImage<'lt> {
     DataImage {
         width: 1,
         height: 1,

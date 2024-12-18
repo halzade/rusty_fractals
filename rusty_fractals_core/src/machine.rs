@@ -1,8 +1,11 @@
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
-use rusty_fractals_common::{pixel_states};
+use rusty_fractals_common::{fractal, pixel_states};
+use rusty_fractals_common::area::AreaConfig;
+use rusty_fractals_common::calc::CalculationConfig;
 use rusty_fractals_common::data_image::{state_from_path_length};
+use rusty_fractals_common::fractal::{FractalConfig, FractalMath, MemType};
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_nebula_values;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
 use crate::window;
@@ -82,17 +85,20 @@ impl Machine {
         }
     }
 
-    fn calculate_path_xy<'lt, F: FractalNebulaCommon<'lt> + FractalCommon<'lt>>(
+    fn calculate_path_xy<'lt, M: MemType<M>>(
         &self,
         x: usize,
         y: usize,
-        fractal: &F,
+        fractal: &dyn FractalMath<M>,
+        fractal_config: FractalConfig,
+        area_config: AreaConfig,
+        calc_config: CalculationConfig,
     ) {
         let data = fractal.data_image();
         let area = fractal.area();
         let (state, origin_re, origin_im) = data.state_origin_at(x, y);
         if pixel_states::is_active_new(state) {
-            let (iterator, path_length) = fractal.calculate_path(area, fractal.min(), fractal.max(), origin_re, origin_im, fractal.data_image(), false);
+            let (iterator, path_length) = fractal::calculate_path(area, fractal.min(), fractal.max(), origin_re, origin_im, fractal.data_image(), false);
             let state = state_from_path_length(iterator, path_length, fractal.min(), fractal.max());
             data.set_pixel_state(x, y, state);
         }
@@ -106,6 +112,10 @@ pub fn chunk_boundaries(xy: &[u32; 2], width: usize, height: usize) -> (usize, u
      (xy[1] * chunk_size_y) as usize, ((xy[1] + 1) * chunk_size_y) as usize)
 }
 
+/**
+ * Creates x,y pairs for calculation.
+ * Then shuffles them, it looks better when rendering
+ */
 pub fn shuffled_calculation_coordinates() -> Vec<[u32; 2]> {
     let mut coordinates_xy: Vec<[u32; 2]> = Vec::new();
     for x in 0..20 {

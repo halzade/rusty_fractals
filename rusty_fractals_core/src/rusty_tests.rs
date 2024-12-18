@@ -1,4 +1,3 @@
-use crate::application::Application;
 use fltk::app::{event_key, App};
 use fltk::enums::ColorDepth::Rgb8;
 use fltk::enums::{Event, Key};
@@ -7,7 +6,6 @@ use fltk::{frame::Frame, prelude::*, window::Window};
 use image::{ImageBuffer, Rgb};
 use rusty_fractals_common::data_image::colour_for_state;
 use rusty_fractals_common::fractal::FractalMath;
-use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::pixel_states::DomainElementState;
 use rusty_fractals_common::pixel_states::DomainElementState::{
     ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
@@ -66,20 +64,6 @@ fn color_interval(
 ) {
     for x in (from * INT)..(to * INT) {
         image.put_pixel(x as u32, y as u32, colour_for_state(state));
-    }
-}
-
-/**
- * A fractal for any test
- */
-pub struct FractalTest<'lt> {
-    pub app: Application<'lt>,
-}
-
-impl FractalMath<Mem> for FractalTest<'_> {
-    fn math(&self, mc: &mut Mem, origin_re: f64, origin_im: f64) {
-        mc.square();
-        mc.plus(origin_re, origin_im);
     }
 }
 

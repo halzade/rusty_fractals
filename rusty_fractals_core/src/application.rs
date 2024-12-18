@@ -150,16 +150,16 @@ pub fn init_nebula(area_config: AreaConfig, config: FractalConfig) -> Applicatio
     }
 }
 
-pub fn init_none<'lt>() -> Application<'lt> {
+pub fn init_trivial<'lt>() -> Application<'lt> {
     Application {
-        data_image: data_image::init_none(),
+        data_image: data_image::init_trivial(),
         width: 0,
         height: 0,
-        area: area::init_none(),
+        area: area::init_trivial(),
         min: 0,
         max: 100,
-        palette: palettes::init_none(),
-        palette_zero: palettes::init_none(),
+        palette: palettes::init_trivial(),
+        palette_zero: palettes::init_trivial(),
         resolution_multiplier: ResolutionMultiplier::Single,
     }
 }

@@ -1,11 +1,15 @@
-use crate::area::Area;
+use crate::area::{Area, AreaConfig};
+use crate::calc::{CalculationConfig, OrbitType};
 use crate::constants::CALCULATION_BOUNDARY;
 use crate::data_image::DataImage;
+use crate::mem::Mem;
 use crate::palette::Palette;
 use crate::resolution_multiplier::ResolutionMultiplier;
+use std::cmp::PartialEq;
 use std::marker::PhantomData;
-use std::sync::Mutex;
 use std::thread;
+
+pub struct Fractal {}
 
 pub struct FractalConfig<'lt> {
     pub iteration_min: u32,
@@ -24,7 +28,7 @@ pub struct MandelbrotConfig<'lt> {
     pub phantom: PhantomData<&'lt bool>,
 }
 
-pub trait FractalMath<T: MemType<T>>: Sync {
+pub trait FractalMath<T: MemType<T>>: Sync + Send {
     fn math(&self, m: &mut T, origin_re: f64, origin_im: f64);
 }
 
@@ -35,61 +39,66 @@ pub trait MemType<T> {
     fn im(&self) -> f64;
 }
 
+pub struct TrivialFractal {}
 
-fn calculate_fractal_new_thread<M: FractalNebulaCommon<'lt> + FractalCommon<'lt> + Sync + Send>(
-    &self,
-    application_fractal: &'static Mutex<Option<M>>,
+impl FractalMath<Mem> for TrivialFractal {
+    fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
+        m.square();
+        m.plus(origin_re, origin_im);
+    }
+}
+
+pub fn init_trivial() -> TrivialFractal {
+    TrivialFractal {}
+}
+
+pub fn calculate_fractal_new_thread<'lt, M: MemType<M>>(
+    fractal: &dyn FractalMath<M>,
+    fractal_config: FractalConfig,
+    area_config: AreaConfig,
+    calc_config: CalculationConfig,
 ) {
-    thread::spawn(move || {
-        let lo = application_fractal.lock();
-        match lo {
-            Ok(mut unlock) => {
-                let fractal_o = unlock.as_mut();
-                match fractal_o {
-                    None => {}
-                    Some(fractal) => {
-                        fractal.calculate_fractal();
-                    }
-                }
-            }
-            Err(_) => {
-                // TODO
-            }
-        }
+    let engine = thread::spawn(move || {
+        // TODO calculate_fractal(fractal_config, area_config, calc_config);
     });
 }
 
-
-// fn calculate_mandelbrot_new_thread<M: FractalMandelbrotCommon + FractalCommon + Sync + Send>(&self, application_fractal: &'static Option<&M>) {
-//     thread::spawn(move || {
-//                 let fractal_o = application_fractal.as_mut();
-//                 match fractal_o {
-//                     None => {}
-//                     Some(fractal) => {
-//                         fractal.calculate_mandelbrot();
-//                     }
-//                 }
-//     });
-// }
-
-
-pub fn finite_orbits(min: u32, max: u32, length: u32, iterator: u32) -> bool {
-    length > min && iterator < max
+pub fn calculate_mandelbrot_new_thread<'lt, M: MemType<M>>(
+    fractal: &dyn FractalMath<M>,
+    fractal_config: FractalConfig,
+    area_config: AreaConfig,
+    calc_config: CalculationConfig,
+) {
+    thread::spawn(move || {
+        // TODO fractal.calculate_mandelbrot();
+    });
 }
 
-pub fn infinite_orbits(min: u32, max: u32, length: u32, iterator: u32) -> bool {
-    length > min && iterator == max
+pub fn path_test(
+    calculation_config: CalculationConfig,
+    min: u32,
+    max: u32,
+    length: u32,
+    iterator: u32,
+) -> bool {
+    if calculation_config.orbits == OrbitType::Finite {
+        // only the edges of mandelbrot set
+        length > min && iterator < max
+    } else {
+        // also contains the inside of mandelbrot set
+        length > min && iterator == max
+    }
 }
 
 pub fn calculate_path<'lt, T: MemType<T>>(
-    fractal: &'lt impl FractalNebulaCommon<'lt>,
-    fractal_math: &impl FractalMath<T>,
+    fractal: &impl FractalMath<T>,
     area: &Area,
     iteration_min: u32,
     iteration_max: u32,
     origin_re: f64,
     origin_im: f64,
     data_image: &DataImage,
+    calc_config: CalculationConfig,
     is_wrap: bool,
 ) -> (u32, u32) {
     let cb = CALCULATION_BOUNDARY as f64;
@@ -101,7 +110,7 @@ pub fn calculate_path<'lt, T: MemType<T>>(
         // Don't create path data yet. Too many origins don't produce good data
         // Most of the long and expensive calculations end up inside Mandelbrot set, useless
         // It is 1.68x faster to calculate path twice, and to record exclusively the good paths
-        fractal_math.math(&mut m, origin_re, origin_im);
+        fractal.math(&mut m, origin_re, origin_im);
         if area.contains(m.re(), m.im()) {
             // this becomes important for zoom, when only a small amount
             // of calculation path elements is contained withing tiny area
@@ -110,15 +119,13 @@ pub fn calculate_path<'lt, T: MemType<T>>(
         iterator += 1;
     }
 
-
-
-    if fractal.path_test(iteration_min, iteration_max, length, iterator) {
+    if path_test(calc_config, iteration_min, iteration_max, length, iterator) {
         // This origin produced good data
         // Record the calculation path
         let mut m: T = T::new(origin_re, origin_im);
         let mut path: Vec<[f64; 2]> = Vec::new();
         for _ in 0..iterator {
-            fractal_math.math(&mut m, origin_re, origin_im);
+            fractal.math(&mut m, origin_re, origin_im);
             if area.contains(m.re(), m.im()) {
                 path.push([m.re(), m.im()]);
             }
@@ -155,6 +162,28 @@ pub fn calculate_mandelbrot_path<T: MemType<T>>(
 
 #[cfg(test)]
 mod tests {
+    use crate::fractal::calculate_path;
+    use crate::{area, calc, data_image, fractal};
+
     #[test]
-    fn test_it() {}
+    fn test_calculate_path() {
+        // prepare test data
+        let area = area::init_trivial();
+        let data_image = data_image::init_trivial();
+        let fractal = fractal::init_trivial();
+        let calc_config = calc::init_trivial();
+
+        // execute test
+        calculate_path(
+            &fractal,
+            &area,
+            1,
+            5,
+            0.0,
+            0.0,
+            &data_image,
+            calc_config,
+            false,
+        );
+    }
 }

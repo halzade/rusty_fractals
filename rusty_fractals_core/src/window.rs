@@ -12,7 +12,7 @@ use rusty_fractals_common::pixel_states::is_finished_any;
 pub const IMAGE: Option<&'static RgbImage> = None;
 static MAX_VALUE: Mutex<u32> = Mutex::new(0);
 
-pub fn show<F: FractalCommon<'static>>(fractal: &'static F) -> App {
+pub fn show<F: FractalCommon<'static>>(: &'static F) -> App {
     println!("show()");
     let width = fractal.width() as i32;
     let height = fractal.height() as i32;
