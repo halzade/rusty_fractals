@@ -1,11 +1,10 @@
 use std::thread;
 use rusty_fractals_core::{application, machine_mandelbrot, window};
-use rusty_fractals_common::area::{Area, AreaConfig};
-use rusty_fractals_common::data_image::DataImage;
-use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{FractalCommon, FractalMandelbrotCommon, FractalMath, MandelbrotConfig};
+use rusty_fractals_common::area::{AreaConfig};
+use rusty_fractals_common::calc::CalculationConfig;
+use rusty_fractals_common::calc::OrbitType::Finite;
+use rusty_fractals_common::fractal::{FractalMath, MandelbrotConfig};
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, palette_gray_to_black_circle_down};
 use rusty_fractals_core::application::Application;
 
@@ -13,6 +12,7 @@ use rusty_fractals_core::application::Application;
  * The Mandelbrot Fractal
  */
 pub struct Mandelbrot {
+
     name: &'static str,
 }
 
@@ -41,7 +41,11 @@ fn main() {
         center_re: -0.5,
         center_im: 0.0,
     };
-
+    let calculation_config = CalculationConfig {
+        orbits : Finite,
+        update_max : 150,
+        update_min : 0,
+    };
     // TODO
     let application: Application<'static> = application::init(area_config, mandelbrot_config);
 
@@ -57,53 +61,6 @@ fn main() {
     });
 
     app.run().unwrap();
-}
-
-impl FractalMandelbrotCommon for Mandelbrot {
-    fn calculate_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
-        fractal::calculate_mandelbrot_path(self, iteration_max, origin_re, origin_im)
-    }
-    fn calculate_mandelbrot(&self) {
-        let fm = machine_mandelbrot::init();
-        fm.calculate_mandelbrot(self);
-    }
-    fn palette_zero(&self) -> &Palette {
-        &self.app.palette_zero
-    }
-}
-
-impl FractalCommon for Mandelbrot<> {
-    fn name(&self) -> &'static str { "Mandelbrot" }
-    fn update(&self) {
-        // min as is
-        &self.app.max += 150;
-    }
-    fn zoom_in(&self) { self.zoom_in(); }
-    fn width(&self) -> usize { self.width }
-    fn height(&self) -> usize { self.height }
-    fn data_image(&self) -> &DataImage<'static> {
-        &self.data_image()
-    }
-    fn palette(&self) -> &Palette { &self.app.palette_zero }
-    fn min(&self) -> u32 { &self.app.min }
-    fn max(&self) -> u32 { &self.app.max }
-    fn area(&self) -> &Area<'_> { &self.area }
-    fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {
-        self.recalculate_pixels_positions_for_next_calculation(is_mandelbrot);
-    }
-    fn move_target(&self, x: usize, y: usize) {
-        println!("move_target()");
-        self.move_target(x, y);
-    }
-
-    fn zoom_and_recalculate(&self) {
-        println!("zoom_and_recalculate()");
-        self.zoom_in_recalculate_pixel_positions(true);
-
-        // TODO
-        // FRACTAL.unwrap().calculate_mandelbrot_new_thread(FRACTAL);
-        self.calculate_mandelbrot();
-    }
 }
 
 #[cfg(test)]

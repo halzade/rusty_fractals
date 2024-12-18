@@ -1,5 +1,4 @@
 use std::thread;
-use rusty_fractals_common::fractal::{FractalCommon, FractalMandelbrotCommon, FractalNebulaCommon};
 use crate::{machine, machine_mandelbrot};
 
 // to calculate sequence of images for zoom video

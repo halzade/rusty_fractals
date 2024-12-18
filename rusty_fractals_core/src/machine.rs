@@ -2,7 +2,6 @@ use rand::thread_rng;
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
 use rusty_fractals_common::{pixel_states};
-use rusty_fractals_common::fractal::{FractalNebulaCommon, FractalCommon};
 use rusty_fractals_common::data_image::{state_from_path_length};
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_nebula_values;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;

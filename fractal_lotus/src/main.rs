@@ -1,17 +1,12 @@
-use rusty_fractals_common::area::{Area, AreaConfig};
-use rusty_fractals_common::data_image::DataImage;
-use rusty_fractals_common::fractal;
-use rusty_fractals_common::fractal::{
-    FractalCommon, FractalConfig, FractalMath, FractalNebulaCommon,
-};
+use rusty_fractals_common::area::{AreaConfig};
+use rusty_fractals_common::calc::CalculationConfig;
+use rusty_fractals_common::calc::OrbitType::Finite;
+use rusty_fractals_common::fractal::{FractalConfig, FractalMath};
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::palettes::palette_blue_to_white_circle_up;
-use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square11;
 use rusty_fractals_core::application::Application;
-use rusty_fractals_core::{application, machine, window};
-use std::sync::Mutex;
+use rusty_fractals_core::{application, window};
 use std::thread;
 
 pub struct Lotus<'lt> {
@@ -25,99 +20,6 @@ impl FractalMath<Mem> for Lotus<'_> {
         m.plus(origin_re, origin_im);
     }
 }
-
-impl<'lt> FractalNebulaCommon<'lt> for Lotus<'lt> {
-    fn rm(&self) -> ResolutionMultiplier {
-        self.app.resolution_multiplier
-    }
-    fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
-        fractal::finite_orbits(min, max, length, iterator)
-    }
-    fn calculate_path(
-        &self,
-        area: &Area,
-        iteration_min: u32,
-        iteration_max: u32,
-        origin_re: f64,
-        origin_im: f64,
-        data: &DataImage,
-        is_wrap: bool,
-    ) -> (u32, u32) {
-        fractal::calculate_path(
-            self,
-            self,
-            area,
-            iteration_min,
-            iteration_max,
-            origin_re,
-            origin_im,
-            data,
-            is_wrap,
-        )
-    }
-    fn calculate_fractal(&self) {
-        let fm = machine::init();
-        fm.calculate(self);
-    }
-}
-
-impl<'lt> FractalCommon<'lt> for Lotus<'lt> {
-    fn name(&self) -> &'static str {
-        "Lotus"
-    }
-    fn update(&self) {
-        // TODO self.app.max += 150;
-        println!("iteration_max = {}", self.app.max);
-    }
-    fn zoom_in(&self) {
-        self.app.zoom_in()
-    }
-
-    fn width(&self) -> usize {
-        self.app.width
-    }
-
-    fn height(&self) -> usize {
-        self.app.height
-    }
-
-    fn data_image(&self) -> &DataImage<'lt> {
-        &self.app.data_image
-    }
-
-    fn palette(&self) -> &Palette<'lt> {
-        &self.app.palette
-    }
-
-    fn min(&self) -> u32 {
-        self.app.min
-    }
-
-    fn max(&self) -> u32 {
-        self.app.max
-    }
-
-    fn area(&self) -> &Area<'lt> {
-        &self.app.area
-    }
-
-    fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {
-        &self
-            .app
-            .recalculate_pixels_positions_for_next_calculation(is_mandelbrot);
-    }
-
-    fn move_target(&self, x: usize, y: usize) {
-        &self.app.move_target(x, y);
-    }
-
-    fn zoom_and_recalculate(&self) {
-        &self.app.zoom_in();
-        &self.app.zoom_in_recalculate_pixel_positions(true);
-    }
-}
-
-pub static FRACTAL: Mutex<Option<Lotus>> = Mutex::new(None);
 
 fn main() {
     let fractal_config: FractalConfig<'static> = FractalConfig {
@@ -134,12 +36,16 @@ fn main() {
         center_re: 0.0, //  0.67748277351478,
         center_im: 0.0, // -1.18770078111202,
     };
+    let calculation_config = CalculationConfig {
+        orbits: Finite,
+        update_max: 150,
+        update_min: 0,
+    };
     let application: Application<'static> = application::init_nebula(area_config, fractal_config);
     let mut fractal: Lotus<'static> = Lotus { app: application };
     let app = window::show(&fractal);
     thread::spawn(move || {
-        fractal.calculate_fractal();
-        FRACTAL.lock().unwrap().replace(fractal);
+        // TODO fractal.calculate_fractal();
     });
     app.run().unwrap();
 }

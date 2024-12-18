@@ -1,19 +1,17 @@
-use std::sync::Mutex;
-use std::thread;
-use rusty_fractals_core::{application, machine, window};
 use rusty_fractals_common::area::{Area, AreaConfig};
+use rusty_fractals_common::calc::CalculationConfig;
+use rusty_fractals_common::calc::OrbitType::Finite;
 use rusty_fractals_common::constants::{PHOENIX_INIT_C, PHOENIX_INIT_P};
-use rusty_fractals_common::data_image::DataImage;
-use rusty_fractals_common::fractal::{FractalCommon, FractalConfig, FractalMath, FractalNebulaCommon};
-use rusty_fractals_common::fractal;
+use rusty_fractals_common::fractal::{FractalConfig, FractalMath};
 use rusty_fractals_common::mem_phoenix::MemPhoenix;
-use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::palettes::palette_blue_to_white_circle_up;
-use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square9;
 use rusty_fractals_core::application::Application;
+use rusty_fractals_core::{application, machine, window};
+use std::thread;
 
 pub struct Head<'lt> {
+    name: &'static str,
     app: Application<'lt>,
 }
 
@@ -23,7 +21,7 @@ impl FractalMath<MemPhoenix> for Head<'_> {
         mp.m.re += PHOENIX_INIT_C;
         mp.m.re += PHOENIX_INIT_P * mp.prev_prev_re;
         mp.m.im += PHOENIX_INIT_P * mp.prev_prev_im;
-        // previous iteration
+        // previous iteration values
         mp.prev_prev_re = mp.prev_re;
         mp.prev_prev_im = mp.prev_im;
         mp.prev_re = mp.m.re;
@@ -31,38 +29,6 @@ impl FractalMath<MemPhoenix> for Head<'_> {
         mp.plus(origin_re, origin_im);
     }
 }
-
-impl FractalNebulaCommon for Head<'_> {
-    fn rm(&self) -> ResolutionMultiplier { self.app.resolution_multiplier }
-    fn path_test(&self, min: u32, max: u32, length: u32, iterator: u32) -> bool {
-        fractal::finite_orbits(min, max, length, iterator)
-    }
-    fn calculate_path(&self, area: &Area, iteration_min: u32, iteration_max: u32, origin_re: f64, origin_im: f64, data: &DataImage, is_wrap: bool) -> (u32, u32) {
-        fractal::calculate_path(self, self, area, iteration_min, iteration_max, origin_re, origin_im, data, is_wrap)
-    }
-    fn calculate_fractal(&mut self) {
-        let fm = machine::init();
-        fm.calculate(self);
-    }
-}
-
-impl FractalCommon for Head<'_> {
-    fn name(&self) -> &'static str { "Head" }
-    fn update(&mut self) {
-        let c = self.conf_mut();
-        c.max += 150;
-        println!("iteration_max = {}", c.max);
-    }
-    fn move_zoom_recalculate(&mut self, x: usize, y: usize) {
-        self.app.move_target_zoom_in_recalculate_pixel_positions(x, y, true);
-        self.calculate_fractal_new_thread(&FRACTAL);
-    }
-    fn move_target_zoom_in_recalculate(x: usize, y: usize) {
-        FRACTAL.lock().unwrap().as_mut().unwrap().move_zoom_recalculate(x, y);
-    }
-}
-
-pub static FRACTAL: Mutex<Option<Head>> = Mutex::new(None);
 
 fn main() {
     let fractal_config = FractalConfig {
@@ -79,29 +45,46 @@ fn main() {
         center_re: -0.16884290496519,
         center_im: -0.37573460559804,
     };
+    let calculation_config = CalculationConfig {
+        orbits: Finite,
+        update_max: 150,
+        update_min: 0,
+    };
     let application: Application<'static> = application::init_nebula(area_config, fractal_config);
-    let mut head: Head<'static> = Head { app: application };
+    let mut head: Head<'static> = Head {
+        name: "Head",
+        app: application,
+    };
     let app = window::show(&head);
     thread::spawn(move || {
-        head.calculate_fractal();
-        FRACTAL.lock().unwrap().replace(head);
+
+        // TODO head.calculate_fractal();
     });
     app.run().unwrap();
 }
 
 #[cfg(test)]
 mod tests {
-    use rusty_fractals_core::application;
+    use crate::Head;
     use rusty_fractals_common::constants::PHOENIX_INITIALIZER;
     use rusty_fractals_common::fractal::FractalMath;
     use rusty_fractals_common::mem::Mem;
     use rusty_fractals_common::mem_phoenix::MemPhoenix;
-    use crate::Head;
+    use rusty_fractals_core::application;
 
     #[test]
     fn test_math() {
-        let head = Head { app: application::init_none() };
-        let mut mp = MemPhoenix { m: Mem { re: 0.0, im: 0.0 }, prev_prev_re: PHOENIX_INITIALIZER, prev_prev_im: PHOENIX_INITIALIZER, prev_re: PHOENIX_INITIALIZER, prev_im: PHOENIX_INITIALIZER };
+        let head = Head {
+            name: "Head",
+            app: application::init_none(),
+        };
+        let mut mp = MemPhoenix {
+            m: Mem { re: 0.0, im: 0.0 },
+            prev_prev_re: PHOENIX_INITIALIZER,
+            prev_prev_im: PHOENIX_INITIALIZER,
+            prev_re: PHOENIX_INITIALIZER,
+            prev_im: PHOENIX_INITIALIZER,
+        };
         head.math(&mut mp, 1.0, 0.1);
         assert_eq!(mp.re(), 1.1);
         assert_eq!(mp.im(), -0.15);

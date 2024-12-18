@@ -1,22 +1,18 @@
 use crate::application::Application;
-use crate::machine_mandelbrot;
 use fltk::app::{event_key, App};
 use fltk::enums::ColorDepth::Rgb8;
 use fltk::enums::{Event, Key};
 use fltk::image::RgbImage;
 use fltk::{frame::Frame, prelude::*, window::Window};
 use image::{ImageBuffer, Rgb};
-use rusty_fractals_common::area::Area;
-use rusty_fractals_common::data_image::{colour_for_state, DataImage};
-use rusty_fractals_common::fractal::{FractalCommon, FractalMandelbrotCommon, FractalMath};
+use rusty_fractals_common::data_image::colour_for_state;
+use rusty_fractals_common::fractal::FractalMath;
 use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::palette::Palette;
 use rusty_fractals_common::pixel_states::DomainElementState;
 use rusty_fractals_common::pixel_states::DomainElementState::{
     ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
     HibernatedDeepBlack,
 };
-use rusty_fractals_common::{fractal};
 
 const INT: i32 = 100;
 
@@ -85,56 +81,6 @@ impl FractalMath<Mem> for FractalTest<'_> {
         mc.square();
         mc.plus(origin_re, origin_im);
     }
-}
-
-impl<'lt> FractalMandelbrotCommon<'lt> for FractalTest<'lt> {
-    fn calculate_path(&self, iteration_max: u32, origin_re: f64, origin_im: f64) -> (u32, f64) {
-        fractal::calculate_mandelbrot_path(self, iteration_max, origin_re, origin_im)
-    }
-    fn calculate_mandelbrot(&self) {
-        let fm = machine_mandelbrot::init();
-        fm.calculate_mandelbrot(self);
-    }
-    fn palette_zero(&self) -> &Palette {
-        &self.palette_zero()
-    }
-}
-
-impl<'lt> FractalCommon<'lt> for FractalTest<'lt> {
-    fn name(&self) -> &'static str {
-        "Test Fractal"
-    }
-    fn update(&self) {}
-    fn zoom_in(&self) {}
-    fn width(&self) -> usize {
-        10
-    }
-    fn height(&self) -> usize {
-        10
-    }
-    fn data_image(&self) -> &DataImage<'lt> {
-        &self.app.data_image
-    }
-    fn palette(&self) -> &Palette<'lt> {
-        &self.app.palette
-    }
-    fn min(&self) -> u32 {
-        0
-    }
-    fn max(&self) -> u32 {
-        10
-    }
-    fn area(&self) -> &Area<'lt> {
-        &self.app.area
-    }
-    fn recalculate_pixels_positions_for_next_calculation(&self, is_mandelbrot: bool) {
-        println!("recalculate_pixels_positions_for_next_calculation is_mandelbrot: {}", is_mandelbrot);
-        // self.app.recalculate_pixels_positions_for_next_calculation(is_mandelbrot);;
-    }
-    fn move_target(&self, x: usize, y: usize) {
-        println!("move_target x: {}, y: {}", x, y);
-    }
-    fn zoom_and_recalculate(&self) {}
 }
 
 #[cfg(test)]

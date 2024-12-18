@@ -14,3 +14,4 @@ pub mod constants;
 pub mod pixel_states;
 pub mod resolution_multiplier;
 pub mod perfect_colour_distribution;
+pub mod calc;

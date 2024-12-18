@@ -1,7 +1,6 @@
 use crate::{machine, window};
 use rayon::prelude::*;
 use rusty_fractals_common::data_image::state_from_path_length;
-use rusty_fractals_common::fractal::{FractalCommon, FractalMandelbrotCommon};
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_mandelbrot_values;
 use rusty_fractals_common::pixel_states;
 
