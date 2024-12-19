@@ -432,7 +432,7 @@ fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::area;
-    use crate::area::{Area, AreaConfig};
+    use crate::area::Area;
     use crate::data_image::DataType::Static;
     use crate::data_image::{init, DataImage};
     use crate::resolution_multiplier::ResolutionMultiplier::{
