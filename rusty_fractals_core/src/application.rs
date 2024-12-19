@@ -1,13 +1,13 @@
 use crate::window;
-use rusty_fractals_common::area::{Area, AreaConfig};
-use rusty_fractals_common::data_image::DataImage;
-use rusty_fractals_common::data_image::DataType::Static;
-use rusty_fractals_common::data_px::{active_new, hibernated_deep_black};
-use rusty_fractals_common::fractal::{FractalConfig, MandelbrotConfig};
-use rusty_fractals_common::fractal_log::now;
-use rusty_fractals_common::palette::Palette;
-use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
-use rusty_fractals_common::{area, data_image, palettes};
+use crate::area::{Area, AreaConfig};
+use crate::data_image::DataImage;
+use crate::data_image::DataType::Static;
+use crate::data_px::{active_new, hibernated_deep_black};
+use crate::fractal::{FractalConfig, MandelbrotConfig};
+use crate::fractal_log::now;
+use crate::palette::Palette;
+use crate::resolution_multiplier::ResolutionMultiplier;
+use crate::{area, data_image, palettes};
 
 /**
  * Application is used to manage repeated calculation during zoom

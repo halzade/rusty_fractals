@@ -4,10 +4,10 @@ use fltk::app::{App, event_button, event_coords, event_key};
 use fltk::enums::{Color, Event, Key};
 use fltk::image::RgbImage;
 use image::{Pixel, Rgb};
-use rusty_fractals_common::area::Area;
-use rusty_fractals_common::data_image::{colour_for_state, DataImage};
-use rusty_fractals_common::fractal::FractalCommon;
-use rusty_fractals_common::pixel_states::is_finished_any;
+use crate::area::Area;
+use crate::data_image::{colour_for_state, DataImage};
+use crate::fractal::FractalCommon;
+use crate::pixel_states::is_finished_any;
 
 pub const IMAGE: Option<&'static RgbImage> = None;
 static MAX_VALUE: Mutex<u32> = Mutex::new(0);

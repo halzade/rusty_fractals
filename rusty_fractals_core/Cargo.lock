@@ -631,7 +631,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rusty_fractals_common"
+name = "crate"
 version = "0.1.0"
 dependencies = [
  "chrono",
@@ -647,7 +647,7 @@ dependencies = [
  "rand",
  "rayon",
  "rgb",
- "rusty_fractals_common",
+ "crate",
 ]
 
 [[package]]

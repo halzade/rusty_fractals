@@ -2,13 +2,13 @@ use crate::window;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rayon::prelude::*;
-use rusty_fractals_common::area::{Area, AreaConfig};
-use rusty_fractals_common::calc::CalculationConfig;
-use rusty_fractals_common::data_image::{state_from_path_length, DataImage};
-use rusty_fractals_common::fractal::{FractalConfig, FractalMath, MemType};
-use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_nebula_values;
-use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
-use rusty_fractals_common::{fractal, pixel_states};
+use crate::area::{Area, AreaConfig};
+use crate::calc::CalculationConfig;
+use crate::data_image::{state_from_path_length, DataImage};
+use crate::fractal::{FractalConfig, FractalMath, MemType};
+use crate::perfect_colour_distribution::perfectly_colour_nebula_values;
+use crate::resolution_multiplier::ResolutionMultiplier;
+use crate::{fractal, pixel_states};
 
 // to calculate single image
 pub struct Machine {}
@@ -161,7 +161,7 @@ pub fn shuffled_calculation_coordinates() -> Vec<[u32; 2]> {
 #[cfg(test)]
 mod tests {
     use crate::machine::Machine;
-    use rusty_fractals_common::{area, calc, data_image, fractal};
+    use crate::{area, calc, data_image, fractal};
 
     #[test]
     fn test_calculate_path_xy() {

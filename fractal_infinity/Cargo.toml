@@ -7,4 +7,3 @@ keywords = ["fractal"]
 
 [dependencies]
 rusty_fractals_core = { path = "../rusty_fractals_core" }
-rusty_fractals_common = { path = "../rusty_fractals_common" }

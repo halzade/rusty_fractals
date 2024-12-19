@@ -6,12 +6,13 @@ authors = ["lukas"]
 keywords = ["fractal"]
 
 [dependencies]
-rusty_fractals_common = { path = "../rusty_fractals_common" }
+crate = { path = "../crate" }
 rayon = "1.10.0"
 image = "0.25.5"
 rand = "0.8.5"
 fltk = "1.3.31"
 rgb = "0.8.36"
+chrono = "0.4.39"
 
 [badges]
 maintenance = { status = "actively-developed" }

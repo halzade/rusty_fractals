@@ -4,10 +4,10 @@ use fltk::enums::{Event, Key};
 use fltk::image::RgbImage;
 use fltk::{frame::Frame, prelude::*, window::Window};
 use image::{ImageBuffer, Rgb};
-use rusty_fractals_common::data_image::colour_for_state;
-use rusty_fractals_common::fractal::FractalMath;
-use rusty_fractals_common::pixel_states::DomainElementState;
-use rusty_fractals_common::pixel_states::DomainElementState::{
+use crate::data_image::colour_for_state;
+use crate::fractal::FractalMath;
+use crate::pixel_states::DomainElementState;
+use crate::pixel_states::DomainElementState::{
     ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
     HibernatedDeepBlack,
 };
