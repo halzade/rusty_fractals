@@ -1,11 +1,11 @@
-use rusty_fractals_common::area::AreaConfig;
-use rusty_fractals_common::fractal::{FractalMath, MandelbrotConfig};
-use rusty_fractals_common::mem_collatz::MemCollatz;
-use rusty_fractals_common::palettes::{
+use rusty_fractals::area::AreaConfig;
+use rusty_fractals::fractal::{FractalMath, MandelbrotConfig};
+use rusty_fractals::mem_collatz::MemCollatz;
+use rusty_fractals::palettes::{
     palette_blue_to_white_circle_up, palette_gray_to_black_circle_down,
 };
-use rusty_fractals_core::application::Application;
-use rusty_fractals_core::{application, window};
+use rusty_fractals::application::Application;
+use rusty_fractals::{application, window};
 use std::thread;
 
 pub struct CollatzConjecture<'lt> {
@@ -47,10 +47,10 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use crate::CollatzConjecture;
-    use rusty_fractals_common::fractal::FractalMath;
-    use rusty_fractals_common::mem::Mem;
-    use rusty_fractals_common::mem_collatz::MemCollatz;
-    use rusty_fractals_core::application;
+    use rusty_fractals::fractal::FractalMath;
+    use rusty_fractals::mem::Mem;
+    use rusty_fractals::mem_collatz::MemCollatz;
+    use rusty_fractals::application;
 
     #[test]
     fn test_math() {

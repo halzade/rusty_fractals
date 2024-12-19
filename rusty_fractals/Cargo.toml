@@ -1,12 +1,11 @@
 [package]
-name = "rusty_fractals_core"
+name = "rusty_fractals"
 version = "0.1.0"
 edition = "2021"
 authors = ["lukas"]
 keywords = ["fractal"]
 
 [dependencies]
-crate = { path = "../crate" }
 rayon = "1.10.0"
 image = "0.25.5"
 rand = "0.8.5"

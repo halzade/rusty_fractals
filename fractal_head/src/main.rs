@@ -1,13 +1,13 @@
-use rusty_fractals_common::area::{Area, AreaConfig};
-use rusty_fractals_common::calc::CalculationConfig;
-use rusty_fractals_common::calc::OrbitType::Finite;
-use rusty_fractals_common::constants::{PHOENIX_INIT_C, PHOENIX_INIT_P};
-use rusty_fractals_common::fractal::{FractalConfig, FractalMath};
-use rusty_fractals_common::mem_phoenix::MemPhoenix;
-use rusty_fractals_common::palettes::palette_blue_to_white_circle_up;
-use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Square9;
-use rusty_fractals_core::application::Application;
-use rusty_fractals_core::{application, machine, window};
+use rusty_fractals::area::{Area, AreaConfig};
+use rusty_fractals::calc::CalculationConfig;
+use rusty_fractals::calc::OrbitType::Finite;
+use rusty_fractals::constants::{PHOENIX_INIT_C, PHOENIX_INIT_P};
+use rusty_fractals::fractal::{FractalConfig, FractalMath};
+use rusty_fractals::mem_phoenix::MemPhoenix;
+use rusty_fractals::palettes::palette_blue_to_white_circle_up;
+use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square9;
+use rusty_fractals::application::Application;
+use rusty_fractals::{application, machine, window};
 use std::thread;
 
 pub struct Head<'lt> {
@@ -66,11 +66,11 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use crate::Head;
-    use rusty_fractals_common::constants::PHOENIX_INITIALIZER;
-    use rusty_fractals_common::fractal::FractalMath;
-    use rusty_fractals_common::mem::Mem;
-    use rusty_fractals_common::mem_phoenix::MemPhoenix;
-    use rusty_fractals_core::application;
+    use rusty_fractals::constants::PHOENIX_INITIALIZER;
+    use rusty_fractals::fractal::FractalMath;
+    use rusty_fractals::mem::Mem;
+    use rusty_fractals::mem_phoenix::MemPhoenix;
+    use rusty_fractals::application;
 
     #[test]
     fn test_math() {

@@ -6,7 +6,6 @@ use fltk::image::RgbImage;
 use image::{Pixel, Rgb};
 use crate::area::Area;
 use crate::data_image::{colour_for_state, DataImage};
-use crate::fractal::FractalCommon;
 use crate::pixel_states::is_finished_any;
 
 pub const IMAGE: Option<&'static RgbImage> = None;

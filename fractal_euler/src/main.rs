@@ -2,7 +2,7 @@ mod euler;
 mod pixel;
 mod mem_euler;
 
-use rusty_fractals_common::fractal::{FractalMath};
+use rusty_fractals::fractal::{FractalMath};
 use crate::mem_euler::MemEuler;
 
 /*

@@ -1,6 +1,6 @@
-use rusty_fractals_common::fractal::MemType;
-use rusty_fractals_common::mem::Mem;
-use rusty_fractals_core::mathematician::Mathematician;
+use rusty_fractals::fractal::MemType;
+use rusty_fractals::mem::Mem;
+use rusty_fractals::mathematician::Mathematician;
 
 /**
  * Memory object for Euler fractal

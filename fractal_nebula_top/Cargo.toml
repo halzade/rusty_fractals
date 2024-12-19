@@ -6,5 +6,5 @@ authors = ["lukas"]
 keywords = ["fractal"]
 
 [dependencies]
-rusty_fractals_core = { path = "../rusty_fractals_core" }
+rusty_fractals = { path = "../rusty_fractals" }
 

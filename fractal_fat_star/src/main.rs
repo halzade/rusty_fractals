@@ -1,13 +1,13 @@
-use rusty_fractals_common::area::AreaConfig;
-use rusty_fractals_common::calc::CalculationConfig;
-use rusty_fractals_common::calc::OrbitType::Infinite;
-use rusty_fractals_common::fractal::{FractalConfig, FractalMath};
-use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::palettes::palette_blue_to_white_circle_up;
-use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Single;
-use rusty_fractals_core::{window};
-use rusty_fractals_common::calc::CalculationType::StaticImage;
-use rusty_fractals_common::fractal;
+use rusty_fractals::area::AreaConfig;
+use rusty_fractals::calc::CalculationConfig;
+use rusty_fractals::calc::OrbitType::Infinite;
+use rusty_fractals::fractal::{FractalConfig, FractalMath};
+use rusty_fractals::mem::Mem;
+use rusty_fractals::palettes::palette_blue_to_white_circle_up;
+use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
+use rusty_fractals::{window};
+use rusty_fractals::calc::CalculationType::StaticImage;
+use rusty_fractals::fractal;
 
 pub struct FatStar<'lt> {}
 
@@ -52,9 +52,9 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use crate::FatStar;
-    use rusty_fractals_common::fractal::FractalMath;
-    use rusty_fractals_common::mem::Mem;
-    use rusty_fractals_core::application;
+    use rusty_fractals::fractal::FractalMath;
+    use rusty_fractals::mem::Mem;
+    use rusty_fractals::application;
 
     #[test]
     fn test_math() {

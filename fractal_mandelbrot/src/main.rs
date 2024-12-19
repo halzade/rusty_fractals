@@ -1,13 +1,13 @@
 use std::thread;
-use rusty_fractals_core::{application, machine_mandelbrot, window};
-use rusty_fractals_common::area::{AreaConfig};
-use rusty_fractals_common::calc::CalculationConfig;
-use rusty_fractals_common::calc::CalculationType::InfiniteVideoZoom;
-use rusty_fractals_common::calc::OrbitType::Finite;
-use rusty_fractals_common::fractal::{FractalMath, MandelbrotConfig};
-use rusty_fractals_common::mem::Mem;
-use rusty_fractals_common::palettes::{palette_blue_to_white_circle_up, palette_gray_to_black_circle_down};
-use rusty_fractals_core::application::Application;
+use rusty_fractals::{application, machine_mandelbrot, window};
+use rusty_fractals::area::{AreaConfig};
+use rusty_fractals::calc::CalculationConfig;
+use rusty_fractals::calc::CalculationType::InfiniteVideoZoom;
+use rusty_fractals::calc::OrbitType::Finite;
+use rusty_fractals::fractal::{FractalMath, MandelbrotConfig};
+use rusty_fractals::mem::Mem;
+use rusty_fractals::palettes::{palette_blue_to_white_circle_up, palette_gray_to_black_circle_down};
+use rusty_fractals::application::Application;
 
 /**
  * The Mandelbrot Fractal
