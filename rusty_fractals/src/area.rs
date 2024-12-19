@@ -1,19 +1,18 @@
 use crate::constants::ZOOM;
-use std::sync::Mutex;
 use crate::fractal::FractalConfig;
+use std::sync::Mutex;
 
 /**
  * RxR Area on which the Fractal is calculated
  */
-pub struct Area<'lt> {
-    pub data: Mutex<AreaData<'lt>>,
+pub struct Area {
+    pub data: Mutex<AreaData>,
 }
-
 
 /**
  * Mutable Area data.
  */
-pub struct AreaData<'lt> {
+pub struct AreaData {
     pub width_x: usize,
     pub width_xf64: f64,
     pub height_y: usize,
@@ -35,7 +34,7 @@ pub struct AreaData<'lt> {
     plank: f64,
 }
 
-impl<'lt> Area<'_> {
+impl<'lt> Area {
     // TODO faster
     pub fn contains(&self, re: f64, im: f64) -> bool {
         match self.data.lock() {
@@ -185,7 +184,7 @@ impl<'lt> Area<'_> {
     }
 }
 
-pub fn init<'lt>(config: &FractalConfig) -> Area<'lt> {
+pub fn init<'lt>(config: &FractalConfig) -> Area {
     println!("init()");
     let width_re = config.width_re;
     let center_re = config.center_re;
@@ -246,7 +245,7 @@ pub fn init<'lt>(config: &FractalConfig) -> Area<'lt> {
     }
 }
 
-pub fn init_trivial<'lt>() -> Area<'lt> {
+pub fn init_trivial<'lt>() -> Area {
     let area_data = AreaData {
         width_x: 1,
         width_xf64: 1.0,
@@ -275,19 +274,11 @@ pub fn init_trivial<'lt>() -> Area<'lt> {
 
 #[cfg(test)]
 mod tests {
-    use crate::area::{init};
-
-    const VANILLA_AREA_CONFIG: AreaConfig = AreaConfig {
-        width_re: 1.0,
-        center_re: 0.0,
-        center_im: 0.0,
-        width_x: 10,
-        height_y: 5,
-    };
+    use crate::area::{init, init_trivial};
 
     #[test]
     fn test_init() {
-        let area = init(VANILLA_AREA_CONFIG);
+        let area = init_trivial();
         assert_eq!(area.data.lock().unwrap().border_low_re, -0.5);
         assert_eq!(area.data.lock().unwrap().border_high_re, 0.5);
         assert_eq!(area.data.lock().unwrap().border_low_im, -0.25);
@@ -296,7 +287,7 @@ mod tests {
 
     #[test]
     fn test_contains() {
-        let area = init(VANILLA_AREA_CONFIG);
+        let area = init_trivial();
         assert_eq!(area.contains(0.4, 0.2), true);
         assert_eq!(area.contains(0.4, 0.3), false);
         assert_eq!(area.contains(0.6, 0.2), false);
@@ -316,7 +307,7 @@ mod tests {
 
     #[test]
     fn test_screen_to_domain_re() {
-        let area = init(VANILLA_AREA_CONFIG);
+        let area = init_trivial();
         let res = area.screen_to_domain_re_copy();
         assert_eq!(res[0], -0.5);
         assert_eq!(res[5], 0.0);
@@ -325,7 +316,7 @@ mod tests {
 
     #[test]
     fn test_screen_to_domain_im() {
-        let area = init(VANILLA_AREA_CONFIG);
+        let area = init_trivial();
         let ims = area.screen_to_domain_im_copy();
         assert_eq!(ims[0], -0.25);
         assert_eq!(ims[1], -0.15);

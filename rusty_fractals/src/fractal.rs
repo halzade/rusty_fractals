@@ -1,17 +1,9 @@
-use crate::data_image::DataImage;
 use crate::mem::Mem;
 use crate::palettes::PaletteName;
 use crate::resolution_multiplier::ResolutionMultiplier;
 use std::cmp::PartialEq;
 
-/**
- * Represents the actual mathematical object
- */
-pub struct Fractal<'lt> {
-    data_image: DataImage<'lt>,
-}
-
-pub struct FractalConfig<'lt> {
+pub struct FractalConfig {
     // fractal config
     pub iteration_min: u32,
     pub iteration_max: u32,
@@ -57,6 +49,7 @@ pub enum CalculationType {
     InfiniteVideoZoom,
 }
 
+// pub trait FractalMath<T: MemType<T>>: Sync + Send + Sized {
 pub trait FractalMath<T: MemType<T>>: Sync + Send {
     fn math(&self, m: &mut T, origin_re: f64, origin_im: f64);
 }

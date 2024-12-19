@@ -3,7 +3,7 @@ use image::Rgb;
 
 const ERROR_MESSAGE: &str = "error in color index";
 
-pub struct Palette<'lt> {
+pub struct Palette {
     pub spectrum: Vec<Rgb<u8>>,
 }
 
@@ -13,7 +13,7 @@ pub struct Palette3 {
     pub spectrum_blue: Vec<Rgb<u8>>,
 }
 
-impl<'lt> Palette<'_> {
+impl Palette {
     pub fn spectrum_value(&self, i: usize) -> Rgb<u8> {
         *self.spectrum.get(i).expect(ERROR_MESSAGE)
     }
@@ -31,7 +31,7 @@ impl Palette3 {
     }
 }
 
-pub fn init_default() -> Palette<'static> {
+pub fn init_default() -> Palette {
     Palette {
         spectrum: palette_utils::init_default(),
     }

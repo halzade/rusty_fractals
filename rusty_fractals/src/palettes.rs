@@ -32,13 +32,13 @@ pub enum PaletteName {
     PurpleToWhite,
 }
 
-pub fn new<'lt>(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Palette<'lt> {
+pub fn new<'lt>(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Palette {
     Palette {
         spectrum: make_spectrum(function, from, to),
     }
 }
 
-pub fn new_palette_by_name<'lt>(palette_name: &PaletteName) -> Palette<'lt> {
+pub fn new_palette_by_name<'lt>(palette_name: &PaletteName) -> Palette {
     match palette_name {
         PaletteName::BlackToWhiteExp2 => palette_black_to_white_exp2(),
         PaletteName::BlackToWhiteCircleUp => palette_black_to_white_circle_up(),
@@ -51,15 +51,15 @@ pub fn new_palette_by_name<'lt>(palette_name: &PaletteName) -> Palette<'lt> {
     }
 }
 
-pub fn palette_black_to_white_exp2<'lt>() -> Palette<'lt> {
+pub fn palette_black_to_white_exp2<'lt>() -> Palette {
     new(Exp2, BLACK, WHITE)
 }
 
-pub fn palette_black_to_white_circle_up<'lt>() -> Palette<'lt> {
+pub fn palette_black_to_white_circle_up<'lt>() -> Palette {
     new(CircleUp, BLACK, WHITE)
 }
 
-pub fn palette_black_white_black<'lt>() -> Palette<'lt> {
+pub fn palette_black_white_black<'lt>() -> Palette {
     let mut black_to_white_work = make_spectrum(Linear1, BLACK, WHITE);
     let mut white_to_black = make_spectrum(Linear1, WHITE, BLACK);
     black_to_white_work.append(&mut white_to_black);
@@ -68,23 +68,23 @@ pub fn palette_black_white_black<'lt>() -> Palette<'lt> {
     }
 }
 
-pub fn palette_blue_to_white_circle_up<'lt>() -> Palette<'lt> {
+pub fn palette_blue_to_white_circle_up<'lt>() -> Palette {
     new(CircleUp, Rgb([4, 13, 33]), WHITE)
 }
 
-pub fn palette_gray_to_blue<'lt>() -> Palette<'lt> {
+pub fn palette_gray_to_blue<'lt>() -> Palette {
     new(CircleDown, Rgb([104, 113, 133]), Rgb([4, 13, 33]))
 }
 
-pub fn palette_gray_to_black_circle_down<'lt>() -> Palette<'lt> {
+pub fn palette_gray_to_black_circle_down<'lt>() -> Palette {
     new(CircleDown, Rgb([100, 100, 100]), Rgb([0, 0, 0]))
 }
 
-pub fn palette_purple_to_white<'lt>() -> Palette<'lt> {
+pub fn palette_purple_to_white<'lt>() -> Palette {
     new(CircleUp, Rgb([20, 3, 30]), WHITE)
 }
 
-pub fn init_trivial<'lt>() -> Palette<'lt> {
+pub fn init_trivial<'lt>() -> Palette {
     Palette {
         spectrum: Vec::new(),
     }

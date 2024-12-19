@@ -5,7 +5,6 @@ use fltk::image::RgbImage;
 use fltk::{frame::Frame, prelude::*, window::Window};
 use image::{ImageBuffer, Rgb};
 use crate::data_image::colour_for_state;
-use crate::fractal::FractalMath;
 use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{
     ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,

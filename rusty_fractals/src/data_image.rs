@@ -16,7 +16,7 @@ use crate::resolution_multiplier::ResolutionMultiplier::Square2;
 use image::Rgb;
 use std::sync::{Arc, Mutex, MutexGuard};
 
-pub struct DataImage<'lt> {
+pub struct DataImage {
     pub width: usize,
     pub height: usize,
     pub data_type: DataType,
@@ -37,7 +37,7 @@ pub enum DataType {
     Static,
 }
 
-impl DataImage<'_> {
+impl DataImage {
     pub fn colour(&self, x: usize, y: usize, palette_colour: Rgb<u8>) {
         let mut mo_px = self.mo_px_at(x, y);
         let p = mo_px.as_mut().unwrap();
@@ -346,7 +346,7 @@ impl DataImage<'_> {
     }
 }
 
-pub fn init<'lt>(data_type: DataType, area: &Area) -> DataImage<'lt> {
+pub fn init(data_type: DataType, area: &Area) -> DataImage {
     DataImage {
         width: area.data.lock().unwrap().width_x,
         height: area.data.lock().unwrap().height_y,
@@ -357,7 +357,7 @@ pub fn init<'lt>(data_type: DataType, area: &Area) -> DataImage<'lt> {
     }
 }
 
-pub fn init_trivial<'lt>() -> DataImage<'lt> {
+pub fn init_trivial() -> DataImage {
     DataImage {
         width: 1,
         height: 1,
