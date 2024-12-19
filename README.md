@@ -1,3 +1,7 @@
+# WIP - nothing works (or compiles)
+
+
+
 # Rusty fractals
 
 ### Rust project to make fine fractal images & videos
