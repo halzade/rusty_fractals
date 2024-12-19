@@ -4,21 +4,20 @@ use fltk::app::{App, event_button, event_coords, event_key};
 use fltk::enums::{Color, Event, Key};
 use fltk::image::RgbImage;
 use image::{Pixel, Rgb};
-use crate::application::ApplicationConfig;
 use crate::area::Area;
 use crate::data_image::{colour_for_state, DataImage};
-use crate::fractal;
+use crate::machine::Machine;
 use crate::pixel_states::is_finished_any;
 
 pub const IMAGE: Option<&'static RgbImage> = None;
 static MAX_VALUE: Mutex<u32> = Mutex::new(0);
 
-pub fn show(app_config: ApplicationConfig, data_image: &'static DataImage<'static>) -> App {
+pub fn show(machine: &'static Machine<'static>) -> App {
     println!("show()");
-    let width = app_config.width as i32;
-    let height = app_config.height as i32;
+    let width = machine.width_x as i32;
+    let height = machine.height_y as i32;
     let app = App::default();
-    let mut window = Window::default().with_label(app_config.name.with_size(width, height).center_screen());
+    let mut window = Window::default().with_label(machine.fractal_name.with_size(width, height).center_screen());
 
     // initialize window color, filled rectangle
     draw::set_draw_color(Color::from_rgb(40, 180, 150));
@@ -29,9 +28,9 @@ pub fn show(app_config: ApplicationConfig, data_image: &'static DataImage<'stati
     window.draw(move |_| {
         println!("draw {}", cycle);
         // let data = data_image::data();
-        for y in 0..data_image.height {
-            for x in 0..data_image.width {
-                let (value, state, _, _, colour_index_o) = data_image.values_at(x, y);
+        for y in 0..machine.data_image.height {
+            for x in 0..machine.data_image.width {
+                let (value, state, _, _, colour_index_o) = machine.data_image.values_at(x, y);
                 let colour: Rgb<u8>;
                 if !is_finished_any(state) {
                     colour = colour_for_state(state);
@@ -83,7 +82,7 @@ pub fn show(app_config: ApplicationConfig, data_image: &'static DataImage<'stati
                 }
                 ' ' => {
                     println!("space bar");
-                    // TODO fractal::zoom_and_recalculate();
+                    machine.zoom_and_recalculate();
                     true
                 }
                 _ => { false }
@@ -95,8 +94,8 @@ pub fn show(app_config: ApplicationConfig, data_image: &'static DataImage<'stati
             if left {
                 let (x, y) = event_coords();
                 println!("c: {} {}", x, y);
-                // TODO fractal::move_target( x as usize, y as usize);
-                // TODO fractal::zoom_and_recalculate();
+                machine.move_target( x as usize, y as usize);
+                machine.zoom_and_recalculate();
             }
             false
         }
