@@ -67,10 +67,7 @@ pub fn init_trivial<'lt>() -> Machine<'lt> {
 }
 
 impl Machine {
-    pub fn calculate<'lt, M: MemType<M>>(
-        &self,
-        fractal: &dyn FractalMath<M>,
-    ) {
+    pub fn calculate<'lt, M: MemType<M>>(&self, fractal: &dyn FractalMath<M>) {
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
         coordinates_xy.par_iter().for_each(|xy| {
@@ -107,10 +104,7 @@ impl Machine {
         }
     }
 
-    fn chunk_calculation_with_wrap<'lt, M: MemType<M>>(
-        &self,
-        xy: &[u32; 2],
-    ) {
+    fn chunk_calculation_with_wrap<'lt, M: MemType<M>>(&self, xy: &[u32; 2]) {
         if self.resolution_multiplier == ResolutionMultiplier::Single {
             panic!()
         }
@@ -120,14 +114,12 @@ impl Machine {
             for y in y_from..y_to {
                 if self.data_image.is_on_mandelbrot_horizon(x, y) {
                     let (origin_re, origin_im) = self.data_image.origin_at(x, y);
-                    let wrap = self.data_image.wrap(origin_re, origin_im, fractal.rm(), plank);
+                    let wrap = self
+                        .data_image
+                        .wrap(origin_re, origin_im, fractal.rm(), plank);
                     // within the same pixel
                     for [re, im] in wrap {
-                        self.calculate_path(
-                            re,
-                            im,
-                            true,
-                        );
+                        self.calculate_path(re, im, true);
                     }
                 }
             }
@@ -250,9 +242,7 @@ impl Machine {
         assert!(c_created > 0);
     }
 
-    pub fn chunk_boundaries(&self,
-                            xy: &[u32; 2]
-    ) -> (usize, usize, usize, usize) {
+    pub fn chunk_boundaries(&self, xy: &[u32; 2]) -> (usize, usize, usize, usize) {
         let chunk_size_x = (self.width / 20) as u32;
         let chunk_size_y = (self.height / 20) as u32;
         (
@@ -263,8 +253,52 @@ impl Machine {
         )
     }
 
-}
+    /*
+     * Methods for Mandelbrot fractal calculation
+     */
 
+    pub fn calculate_mandelbrot<'lt, M: MemType<M>>(&self, fractal: &dyn FractalMath<M>) {
+        println!("calculate_mandelbrot()");
+        let coordinates_xy: Vec<[u32; 2]> = machine::shuffled_calculation_coordinates();
+
+        let data = fractal.data_image();
+
+        coordinates_xy.par_iter().for_each(|xy| {
+            // calculation
+            self.chunk_calculation_mandelbrot(fractal, xy);
+            // window refresh
+            window::paint_image_calculation_progress(fractal.data_image());
+        });
+        data.recalculate_pixels_states();
+        let palette = fractal.palette();
+        let palette_zero = fractal.palette_zero();
+        perfectly_colour_mandelbrot_values(&data, &palette, &palette_zero);
+        window::paint_image_result(&data);
+    }
+
+    fn chunk_calculation_mandelbrot<'lt, M: MemType<M>>(
+        &self,
+        fractal: &dyn FractalMath<M>,
+        xy: &[u32; 2],
+    ) {
+        let (x_from, x_to, y_from, y_to) =
+            machine::chunk_boundaries(xy, fractal.width(), fractal.height());
+        let data = fractal.data_image();
+        for x in x_from..x_to {
+            for y in y_from..y_to {
+                let (state, origin_re, origin_im) = data.state_origin_at(x, y);
+                // TODO, calculate only ActiveNew elements, copy quad and quid
+                if !pixel_states::is_finished_any(state) {
+                    // calculation
+                    let (iterator, quad) =
+                        fractal.calculate_path(fractal.max(), origin_re, origin_im);
+                    let state = state_from_path_length(iterator, iterator, 0, fractal.max());
+                    data.set_pixel_mandelbrot(x, y, iterator, quad, state, fractal.max());
+                }
+            }
+        }
+    }
+}
 
 /**
  * Creates x,y pairs for calculation.
@@ -285,24 +319,23 @@ pub fn shuffled_calculation_coordinates() -> Vec<[u32; 2]> {
 
 #[cfg(test)]
 mod tests {
+    use crate::fractal::calculate_path;
     use crate::machine::Machine;
-    use crate::{area, data_image, fractal};
+    use crate::{area, data_image, fractal, machine};
 
     #[test]
     fn test_calculate_path_xy() {
         let fractal = fractal::init_trivial();
         let area = area::init_trivial();
         let data_image = data_image::init_trivial();
-        let calc_config = calc::init_trivial();
-        Machine::calculate_path_xy(0, 0, 1, 5, &fractal, area, data_image, calc_config);
+        Machine::calculate_path_xy(0, 0, 1, 5, &fractal, area, data_image);
 
         // TODO
     }
 
     #[test]
     fn test_chunk_calculation_mandelbrot<'lt>() {
-
-        let mm = machine::init();
+        let mm = machine::init_trivial();
 
         let x = 0;
         let y = 0;
@@ -311,5 +344,20 @@ mod tests {
         mm.chunk_calculation_mandelbrot(&fractal, &xy);
 
         // TODO
+    }
+
+    #[test]
+    fn test_calculate_path() {
+        // prepare test data
+        let area = area::init_trivial();
+        let data_image = data_image::init_trivial();
+        let fractal = fractal::init_trivial();
+
+        // execute test
+        let (iterator, length) =
+            calculate_path(&fractal, &area, 1, 5, 0.0, 0.0, &data_image, false);
+
+        assert_eq!(iterator, 5);
+        assert_eq!(length, 0);
     }
 }

@@ -196,33 +196,3 @@ pub fn calculate_mandelbrot_path<T: MemType<T>>(
     }
     (iterator, m.quad())
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::fractal::{calculate_path, FractalConfig, FractalMath};
-    use crate::{area, data_image, fractal};
-
-    #[test]
-    fn test_calculate_path() {
-        // prepare test data
-        let area = area::init_trivial();
-        let data_image = data_image::init_trivial();
-        let fractal = fractal::init_trivial();
-
-        // execute test
-        let (iterator, length) = calculate_path(
-            &fractal,
-            &area,
-            1,
-            5,
-            0.0,
-            0.0,
-            &data_image,
-            calc_config,
-            false,
-        );
-
-        assert_eq!(iterator, 5);
-        assert_eq!(length, 0);
-    }
-}
