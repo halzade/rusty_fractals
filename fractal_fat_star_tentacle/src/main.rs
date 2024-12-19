@@ -9,9 +9,7 @@ use rusty_fractals::application::Application;
 use rusty_fractals::{application, window};
 use std::thread;
 
-pub struct FatStarTentacle<'lt> {
-    app: Application<'lt>,
-}
+pub struct FatStarTentacle<'lt> {}
 
 impl FractalMath<Mem> for FatStarTentacle<'_> {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
@@ -29,7 +27,6 @@ fn main() {
         iteration_max: 22000,
         resolution_multiplier: Single,
         palette: palette_blue_to_white_circle_up(),
-        phantom: Default::default(),
     };
     // TODO
     // const INIT_FINEBROT_AREA_SIZE : f64= 0.5;
@@ -65,9 +62,7 @@ mod tests {
 
     #[test]
     fn test_math() {
-        let fat_star: FatStarTentacle<'static> = FatStarTentacle {
-            app: application::init_none(),
-        };
+        let fat_star: FatStarTentacle<'static> = FatStarTentacle {};
         let mut m = Mem { re: 0.0, im: 0.0 };
         fat_star.math(&mut m, 1.0, 0.1);
         assert_eq!(m.re, 1.0);

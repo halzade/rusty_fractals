@@ -2,17 +2,20 @@ use crate::area::{Area, AreaConfig};
 use crate::calc::{CalculationConfig, OrbitType};
 use crate::constants::CALCULATION_BOUNDARY;
 use crate::data_image::DataImage;
-use crate::mem::Mem;
 use crate::machine::Machine;
+use crate::mem::Mem;
 use crate::palette::Palette;
 use crate::resolution_multiplier::ResolutionMultiplier;
 use std::cmp::PartialEq;
 use std::thread;
+use crate::machine;
 
 /**
  * Represents the actual mathematical object
  */
-pub struct Fractal {}
+pub struct Fractal<'lt> {
+    data_image: DataImage<'lt>
+}
 
 pub struct FractalConfig<'lt> {
     pub iteration_min: u32,
@@ -40,6 +43,10 @@ pub trait MemType<T> {
     fn im(&self) -> f64;
 }
 
+pub fn init(data_image: DataImage) -> Fractal {
+    Fractal { data_image }
+}
+
 /**
  * A fractal object for test purposes
  */
@@ -62,10 +69,9 @@ pub fn calculate_fractal_new_thread<'lt, M: MemType<M>>(
     area_config: AreaConfig,
     calc_config: CalculationConfig,
 ) {
-
-    let machine = machine::init();
     thread::spawn(move || {
-        macine.calculate(fractal, fractal_config, area_config, calc_config);
+        let mut ma : Machine = machine::init();
+        ma.calculate(fractal, fractal_config, area_config, calc_config);
     });
 }
 

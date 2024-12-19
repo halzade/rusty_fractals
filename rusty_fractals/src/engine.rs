@@ -1,5 +1,6 @@
 use std::thread;
 use crate::{machine, machine_mandelbrot};
+use crate::fractal::{FractalMath, MemType};
 
 // to calculate sequence of images for zoom video
 pub struct Engine {}
@@ -8,7 +9,7 @@ pub fn init() -> Engine {
     Engine {}
 }
 
-pub fn calculate_mandelbrot_zoom<'lt, F: FractalMandelbrotCommon<'lt> + FractalCommon<'lt> + Sync>(fractal: &'static F, fractal_mu: &mut F) {
+pub fn calculate_mandelbrot_zoom<'lt, M: MemType<M>>( fractal: &dyn FractalMath<M>) {
     let machine = machine_mandelbrot::init();
     thread::spawn(move || {
         for it in 1.. {
@@ -17,12 +18,12 @@ pub fn calculate_mandelbrot_zoom<'lt, F: FractalMandelbrotCommon<'lt> + FractalC
         };
     });
     // prepare next frame
-    fractal_mu.zoom_in();
+    fractal.zoom_in();
     fractal.recalculate_pixels_positions_for_next_calculation(true);
-    fractal_mu.update();
+    fractal.update();
 }
 
-pub fn calculate_nebula_zoom<'lt, F: FractalNebulaCommon<'lt> + FractalCommon<'lt>>(fractal: &'static F, fractal_mu: &mut F) {
+pub fn calculate_nebula_zoom<'lt, M: MemType<M>>( fractal: &dyn FractalMath<M>) {
     let machine = machine::init();
     thread::spawn(move || {
         for it in 1.. {
@@ -31,9 +32,9 @@ pub fn calculate_nebula_zoom<'lt, F: FractalNebulaCommon<'lt> + FractalCommon<'l
         };
     });
     // prepare next frame
-    fractal_mu.zoom_in();
+    fractal.zoom_in();
     fractal.recalculate_pixels_positions_for_next_calculation(false);
-    fractal_mu.update();
+    fractal.update();
 }
 
 #[cfg(test)]

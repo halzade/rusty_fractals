@@ -1,4 +1,3 @@
-use crate::window;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rayon::prelude::*;
@@ -19,6 +18,7 @@ pub fn init() -> Machine {
 
 impl Machine {
     pub fn calculate<'lt, M: MemType<M>>(
+        &self,
         fractal: &dyn FractalMath<M>,
         fractal_config: FractalConfig,
         area_config: AreaConfig,
@@ -52,10 +52,10 @@ impl Machine {
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
-    fn chunk_calculation<'lt, F: FractalNebulaCommon<'lt> + FractalCommon<'lt>>(
+    fn chunk_calculation<'lt, M: MemType<M>>(
         &self,
         xy: &[u32; 2],
-        fractal: &F,
+        fractal: &dyn FractalMath<M>,
     ) {
         let (x_from, x_to, y_from, y_to) = chunk_boundaries(xy, fractal.width(), fractal.height());
         for x in x_from..x_to {
@@ -65,10 +65,10 @@ impl Machine {
         }
     }
 
-    fn chunk_calculation_with_wrap<'lt, F: FractalNebulaCommon<'lt> + FractalCommon<'lt>>(
+    fn chunk_calculation_with_wrap<'lt, M: MemType<M>>(
         &self,
         xy: &[u32; 2],
-        fractal: &'static F,
+         fractal: &dyn FractalMath<M>,
     ) {
         if fractal.rm() == ResolutionMultiplier::Single {
             panic!()
@@ -149,6 +149,9 @@ pub fn chunk_boundaries(
  */
 pub fn shuffled_calculation_coordinates() -> Vec<[u32; 2]> {
     let mut coordinates_xy: Vec<[u32; 2]> = Vec::new();
+
+    // TODO why 400?
+
     for x in 0..20 {
         for y in 0..20 {
             coordinates_xy.push([x, y]);

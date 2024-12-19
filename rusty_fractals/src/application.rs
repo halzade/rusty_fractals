@@ -1,4 +1,3 @@
-use crate::window;
 use crate::area::{Area, AreaConfig};
 use crate::data_image::DataImage;
 use crate::data_image::DataType::Static;
@@ -7,10 +6,25 @@ use crate::fractal::{FractalConfig, MandelbrotConfig};
 use crate::fractal_log::now;
 use crate::palette::Palette;
 use crate::resolution_multiplier::ResolutionMultiplier;
+use crate::window;
 use crate::{area, data_image, palettes};
 
+pub struct ApplicationConfig<'lt> {
+    pub name: &'lt str,
+    pub width: i32,
+    pub height: i32,
+}
+
+pub fn init_config<'lt>(name: &'lt str, area_config: &AreaConfig) -> ApplicationConfig<'lt> {
+    ApplicationConfig {
+        name,
+        width: area_config.width_x as i32,
+        height: area_config.height_y as i32,
+    }
+}
+
 /**
- * Application is used to manage repeated calculation during zoom
+ * Handle interaction between the fractal and displayed window here
  */
 pub struct Application<'lt> {
     pub data_image: DataImage<'lt>,
@@ -145,7 +159,7 @@ pub fn init_nebula(area_config: AreaConfig, config: FractalConfig) -> Applicatio
         min: 0,
         max: config.iteration_max,
         palette: config.palette,
-        palette_zero: palettes::init_none(),
+        palette_zero: palettes::init_trivial(),
         resolution_multiplier: config.resolution_multiplier,
     }
 }

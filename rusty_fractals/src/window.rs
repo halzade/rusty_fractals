@@ -4,19 +4,21 @@ use fltk::app::{App, event_button, event_coords, event_key};
 use fltk::enums::{Color, Event, Key};
 use fltk::image::RgbImage;
 use image::{Pixel, Rgb};
+use crate::application::ApplicationConfig;
 use crate::area::Area;
 use crate::data_image::{colour_for_state, DataImage};
+use crate::fractal;
 use crate::pixel_states::is_finished_any;
 
 pub const IMAGE: Option<&'static RgbImage> = None;
 static MAX_VALUE: Mutex<u32> = Mutex::new(0);
 
-pub fn show<F: FractalCommon<'static>>(: &'static F) -> App {
+pub fn show(app_config: ApplicationConfig, data_image: &'static DataImage<'static>) -> App {
     println!("show()");
-    let width = fractal.width() as i32;
-    let height = fractal.height() as i32;
+    let width = app_config.width as i32;
+    let height = app_config.height as i32;
     let app = App::default();
-    let mut window = Window::default().with_label(fractal.name()).with_size(width, height).center_screen();
+    let mut window = Window::default().with_label(app_config.name.with_size(width, height).center_screen());
 
     // initialize window color, filled rectangle
     draw::set_draw_color(Color::from_rgb(40, 180, 150));
@@ -24,14 +26,12 @@ pub fn show<F: FractalCommon<'static>>(: &'static F) -> App {
 
     let cycle = 0;
 
-    let data : &'static DataImage<'static> = fractal.data_image();
-
     window.draw(move |_| {
         println!("draw {}", cycle);
         // let data = data_image::data();
-        for y in 0..data.height {
-            for x in 0..data.width {
-                let (value, state, _, _, colour_index_o) = data.values_at(x, y);
+        for y in 0..data_image.height {
+            for x in 0..data_image.width {
+                let (value, state, _, _, colour_index_o) = data_image.values_at(x, y);
                 let colour: Rgb<u8>;
                 if !is_finished_any(state) {
                     colour = colour_for_state(state);
@@ -83,7 +83,7 @@ pub fn show<F: FractalCommon<'static>>(: &'static F) -> App {
                 }
                 ' ' => {
                     println!("space bar");
-                    fractal.zoom_and_recalculate();
+                    // TODO fractal::zoom_and_recalculate();
                     true
                 }
                 _ => { false }
@@ -95,8 +95,8 @@ pub fn show<F: FractalCommon<'static>>(: &'static F) -> App {
             if left {
                 let (x, y) = event_coords();
                 println!("c: {} {}", x, y);
-                fractal.move_target( x as usize, y as usize);
-                fractal.zoom_and_recalculate();
+                // TODO fractal::move_target( x as usize, y as usize);
+                // TODO fractal::zoom_and_recalculate();
             }
             false
         }

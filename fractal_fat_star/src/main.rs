@@ -1,13 +1,13 @@
 use rusty_fractals::area::AreaConfig;
 use rusty_fractals::calc::CalculationConfig;
+use rusty_fractals::calc::CalculationType::StaticImage;
 use rusty_fractals::calc::OrbitType::Infinite;
+use rusty_fractals::fractal;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
-use rusty_fractals::{window};
-use rusty_fractals::calc::CalculationType::StaticImage;
-use rusty_fractals::fractal;
+use rusty_fractals::{application, window};
 
 pub struct FatStar<'lt> {}
 
@@ -40,11 +40,19 @@ fn main() {
         update_max: 150,
         update_min: 0,
     };
+    let app_config = application::init_config("FatStar", &area_config);
+
+    let fractal = fractal::init();
 
     let fat_star: FatStar<'static> = FatStar {};
-    let app = window::show("fat_star");
+    let app = window::show(app_config);
 
-    fractal::calculate_fractal_new_thread(&fat_star, fractal_config, area_config, calculation_config);
+    fractal::calculate_fractal_new_thread(
+        &fat_star,
+        fractal_config,
+        area_config,
+        calculation_config,
+    );
 
     app.run().unwrap();
 }
@@ -54,13 +62,10 @@ mod tests {
     use crate::FatStar;
     use rusty_fractals::fractal::FractalMath;
     use rusty_fractals::mem::Mem;
-    use rusty_fractals::application;
 
     #[test]
     fn test_math() {
-        let fat_star: FatStar<'static> = FatStar {
-            app: application::init_trivial(),
-        };
+        let fat_star: FatStar<'static> = FatStar {};
         let mut m = Mem { re: 0.0, im: 0.0 };
         fat_star.math(&mut m, 1.0, 0.1);
         assert_eq!(m.re, 1.0);

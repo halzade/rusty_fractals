@@ -366,7 +366,7 @@ pub fn init_trivial<'lt>() -> DataImage<'lt> {
         height: 1,
         data_type: Static,
 
-        pixels: init_pixels_none(),
+        pixels: init_pixels_trivial(),
         paths: Arc::new(Mutex::new(Vec::new())),
         show_path: Mutex::new(Vec::new()),
         phantom: PhantomData::default(),
@@ -394,7 +394,7 @@ fn init_domain(area: &Area) -> Vec<Vec<Mutex<Option<DataPx>>>> {
     vx
 }
 
-fn init_pixels_none() -> Vec<Vec<Mutex<Option<DataPx>>>> {
+fn init_pixels_trivial() -> Vec<Vec<Mutex<Option<DataPx>>>> {
     let mut vx = Vec::new();
     let mut vy = Vec::new();
 
