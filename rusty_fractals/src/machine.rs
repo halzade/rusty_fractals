@@ -8,13 +8,16 @@ use crate::fractal::{
     CalculationType, FractalConfig, FractalMath, FractalType, MemType, OrbitType,
 };
 use crate::fractal_log::now;
+use crate::fractal_stats::Stats;
 use crate::palette::Palette;
 use crate::palettes::new_palette_by_name;
 use crate::perfect_colour_distribution::perfectly_colour_nebula_values;
 use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong, FinishedTooShort};
 use crate::resolution_multiplier::ResolutionMultiplier;
-use crate::{area, data_image, palettes, perfect_colour_distribution, pixel_states, window};
+use crate::{
+    area, data_image, fractal_stats, palettes, perfect_colour_distribution, pixel_states, window,
+};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rayon::prelude::*;
@@ -46,7 +49,8 @@ pub struct Machine<'lt> {
     pub iteration_max: u32,
     pub update_max: u32,
     pub update_min: u32,
-
+    // calculation statistics for video zoom
+    pub stats: Stats,
     //  nebula specific - use multiple numbers for each screen pixel
     pub resolution_multiplier: ResolutionMultiplier,
 }
@@ -74,6 +78,7 @@ pub fn init<'lt>(name: &'lt str, config: &FractalConfig) -> Machine<'lt> {
         orbits: OrbitType::Finite,
         update_max: config.update_max,
         update_min: config.update_min,
+        stats: fractal_stats::init(),
     }
 }
 
@@ -97,10 +102,11 @@ pub fn init_trivial<'lt>() -> Machine<'lt> {
         update_min: 1,
         resolution_multiplier: ResolutionMultiplier::Single,
         fractal_type: FractalType::Mandelbrot,
+        stats: fractal_stats::init(),
     }
 }
 
-impl Machine {
+impl<'lt> Machine<'lt> {
     /**
      * Calculate the whole Nebula fractal
      */
@@ -361,12 +367,43 @@ impl Machine {
         FinishedSuccess
     }
 
+    /* --------------------------------------------
+     * Methods for infinite zoom video calculations
+     * ------------------------------------------ */
+
+    pub fn calculate_nebula_zoom<'lt, M: MemType<M>>(&self, fractal: &dyn FractalMath<M>) {
+        thread::spawn(move || {
+            for it in 1.. {
+                println!("{}:", it);
+                self.calculate(fractal);
+
+                // prepare next frame
+                self.zoom_in();
+                self.recalculate_pixels_positions_for_next_calculation(false);
+                // TODO self.stats.update(&self.data_image, it);
+            }
+        });
+    }
+
+    pub fn calculate_mandelbrot_zoom<'lt, M: MemType<M>>(&self, fractal: &dyn FractalMath<M>) {
+        thread::spawn(move || {
+            for it in 1.. {
+                println!("{}:", it);
+                self.calculate_mandelbrot(fractal);
+
+                // prepare next frame
+                self.zoom_in();
+                self.recalculate_pixels_positions_for_next_calculation(true);
+                // TODO self.stats.update(&self.data_image, it);
+            }
+        });
+    }
+
     /* ------------------------------------------
      * Methods for Mandelbrot fractal calculation
-     * ------------------------------------------
-     */
+     * --------------------------------------- */
 
-    /*
+    /**
      * Whole Mandelbrot calculation
      */
     pub fn calculate_mandelbrot<'lt, M: MemType<M>>(&self, fractal: &dyn FractalMath<M>) {
@@ -377,7 +414,7 @@ impl Machine {
             // calculation
             self.chunk_calculation_mandelbrot(fractal, xy);
             // window refresh
-            window::paint_image_calculation_progress(fractal.data_image());
+            window::paint_image_calculation_progress(&self.data_image);
         });
         self.data_image.recalculate_pixels_states();
         perfect_colour_distribution::perfectly_colour_mandelbrot_values(
@@ -452,7 +489,6 @@ pub fn shuffled_calculation_coordinates() -> Vec<[u32; 2]> {
 
 #[cfg(test)]
 mod tests {
-    use crate::machine;
     use crate::{fractal, machine};
 
     #[test]

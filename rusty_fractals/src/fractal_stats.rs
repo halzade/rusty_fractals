@@ -17,6 +17,7 @@ pub struct Stats {
     not_enough_pixels_total_value: bool,
     less_pixels_total_value: bool,
     too_many_pixels_total_value: bool,
+
     pub not_enough_pixels_best_value: bool,
     pub less_pixels_best_value: bool,
     pub too_many_paths_total: bool,
@@ -51,11 +52,13 @@ impl Stats {
         self.paths_total_amount_tolerance = (self.paths_total_amount_measure as f64 * 0.5) as u32;
         self.pixels_value_best_tolerance = (self.pixels_value_best_measure as f64 * 0.5) as u32;
 
+        // @formatter:off
         println!("elementsLong_measure        {} ", self.new_elements_long_measure);
         println!("pixels_value_total_measure  {} ", self.pixels_value_total_measure);
         println!("pixels_value_best_measure   {} ", self.pixels_value_best_measure);
         println!("paths_total_amount_measure  {} ", self.paths_total_amount_measure);
         println!("average_path_length_measure {} ", self.average_path_length_measure);
+        // @formatter:on
     }
 
     pub fn update(&mut self, data: &DataImage, it: u32) {
@@ -108,12 +111,14 @@ impl Stats {
                     > self.new_elements_long_tolerance;
             }
 
+            // @formatter:off
             println!("not_enough_pixels_total_value {}", self.not_enough_pixels_total_value);
             println!("less_pixels_total_value       {}", self.less_pixels_total_value);
             println!("less_pixels_best_value        {} ({} < {})", self.less_pixels_best_value, self.pixels_value_best, self.pixels_value_best_measure);
             println!("too_many_pixels_total_value   {}", self.too_many_pixels_total_value);
             println!("too_many_paths_total          {}", self.too_many_paths_total);
             println!("not_enough_long_elements      {}", self.not_enough_long_elements);
+            // @formatter:on
 
             let average_path_length =
                 self.pixels_value_total as f64 / self.paths_total_amount as f64;
@@ -122,8 +127,10 @@ impl Stats {
             let domain_elements_to_new_calculation_path_points =
                 self.paths_new_points_amount as f64 / new_elements_all as f64;
 
+            // @formatter:off
             println!("average_path_length                             {} ({})", average_path_length, self.average_path_length_measure);
             println!("domain_elements_to_new_calculation_path_points: {}", domain_elements_to_new_calculation_path_points);
+            // @formatter:on
         }
     }
 
