@@ -23,8 +23,8 @@ pub struct DataImage<'lt> {
     // static data for image
     pub pixels: Vec<Vec<Mutex<Option<DataPx>>>>,
     // dynamic data for zoom video
-    // As zoom progress, points [re,im] are projected to new pixels [px,py] until they migrate out of the the tiny area.
-    // Elements outside of tiny result_area are removed. Very short (calculation) paths are also removed.
+    // As zoom progress, points [re,im] are projected to new pixels [px,py] until they migrate out of the tiny area.
+    // Elements outside the tiny result_area are removed. Very short (calculation) paths are also removed.
     // All elements on paths are already inside result_area because they are filtered like that during the calculation.
     pub paths: Arc<Mutex<Vec<Vec<[f64; 2]>>>>,
     // show one patch during calculation with pixel wrap
@@ -362,7 +362,6 @@ pub fn init_trivial<'lt>() -> DataImage<'lt> {
         width: 1,
         height: 1,
         data_type: Static,
-
         pixels: init_pixels_trivial(),
         paths: Arc::new(Mutex::new(Vec::new())),
         show_path: Mutex::new(Vec::new()),
@@ -401,7 +400,7 @@ fn init_pixels_trivial() -> Vec<Vec<Mutex<Option<DataPx>>>> {
 }
 
 pub fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
-    return match rm {
+    match rm {
         ResolutionMultiplier::Single => 1.0,
         ResolutionMultiplier::Square3 => 3.0,
         ResolutionMultiplier::Square5 => 5.0,
@@ -410,11 +409,11 @@ pub fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
         ResolutionMultiplier::Square51 => 51.0,
         ResolutionMultiplier::Square101 => 101.0,
         _ => 1.0,
-    };
+    }
 }
 
 pub fn colour_for_state(state: DomainElementState) -> Rgb<u8> {
-    return match state {
+    match state {
         // most of the elements are going to be FinishedSuccessPast
         FinishedSuccessPast => FINISHED_SUCCESS_PAST,
         HibernatedDeepBlack => HIBERNATED_DEEP_BLACK,
@@ -422,7 +421,7 @@ pub fn colour_for_state(state: DomainElementState) -> Rgb<u8> {
         FinishedSuccess => FINISHED_SUCCESS,
         FinishedTooShort => FINISHED_TOO_SHORT,
         FinishedTooLong => FINISHED_TOO_LONG,
-    };
+    }
 }
 
 fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
@@ -431,39 +430,27 @@ fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use crate::area;
-    use crate::area::Area;
-    use crate::data_image::DataType::Static;
-    use crate::data_image::{init, DataImage};
+    use crate::data_image::init_trivial;
     use crate::resolution_multiplier::ResolutionMultiplier::{
         Square101, Square11, Square3, Square5, Square51, Square9,
     };
 
-    fn init_test<'lt>() -> (Area<'lt>, DataImage<'lt>) {
-        let area_config = AreaConfig {
-            width_re: 1.0,
-            center_re: 0.0,
-            center_im: 0.0,
-            width_x: 10,
-            height_y: 10,
-        };
-        let area = area::init(area_config);
-        let data = init(Static, &area);
-        (area, data)
-    }
-
-    fn at(w: &Vec<[f64; 2]>, index: usize) -> (f64, f64) {
+    fn element_at(w: &Vec<[f64; 2]>, index: usize) -> (f64, f64) {
         let a = w.get(index).unwrap();
         (a[0], a[1])
     }
 
     #[test]
     fn test_wrap_3() {
-        let (area, data) = init_test();
+        // prepare test
+        let data = init_trivial();
+        let area_plank = 0.1;
+
+        // execute test
         let (o_re, o_im) = data.origin_at(2, 3);
-        let w = data.wrap(o_re, o_im, Square3, area.plank());
+        let w = data.wrap(o_re, o_im, Square3, area_plank);
         assert_eq!(w.len(), 8);
-        let (re, im) = at(&w, 0);
+        let (re, im) = element_at(&w, 0);
         assert_eq!(re, -0.3333333333333333);
         assert_eq!(im, -0.23333333333333328);
         assert_eq!(o_re - re, 0.033333333333333326);
@@ -472,41 +459,51 @@ mod tests {
 
     #[test]
     fn test_wrap_5() {
-        let (area, data) = init_test();
+        let data = init_trivial();
+        let area_plank = 0.1;
+
         let (o_re, o_im) = data.origin_at(2, 3);
-        let w = data.wrap(o_re, o_im, Square5, area.plank());
+        let w = data.wrap(o_re, o_im, Square5, area_plank);
         assert_eq!(w.len(), 24);
     }
 
     #[test]
     fn test_wrap_9() {
-        let (area, data) = init_test();
+        let data = init_trivial();
+        let area_plank = 0.1;
+
         let (o_re, o_im) = data.origin_at(2, 3);
-        let w = data.wrap(o_re, o_im, Square9, area.plank());
+        let w = data.wrap(o_re, o_im, Square9, area_plank);
         assert_eq!(w.len(), 80);
     }
 
     #[test]
     fn test_wrap_11() {
-        let (area, data) = init_test();
+        let data = init_trivial();
+        let area_plank = 0.1;
+
         let (o_re, o_im) = data.origin_at(7, 8);
-        let w = data.wrap(o_re, o_im, Square11, area.plank());
+        let w = data.wrap(o_re, o_im, Square11, area_plank);
         assert_eq!(w.len(), 120);
     }
 
     #[test]
     fn test_wrap_51() {
-        let (area, data) = init_test();
+        let data = init_trivial();
+        let area_plank = 0.1;
+
         let (o_re, o_im) = data.origin_at(2, 3);
-        let w = data.wrap(o_re, o_im, Square51, area.plank());
+        let w = data.wrap(o_re, o_im, Square51, area_plank);
         assert_eq!(w.len(), 2600);
     }
 
     #[test]
     fn test_wrap_101() {
-        let (area, data) = init_test();
+        let data = init_trivial();
+        let area_plank = 0.1;
+
         let (o_re, o_im) = data.origin_at(2, 3);
-        let w = data.wrap(o_re, o_im, Square101, area.plank());
+        let w = data.wrap(o_re, o_im, Square101, area_plank);
         assert_eq!(w.len(), 10_200);
     }
 }
