@@ -4,7 +4,7 @@ use crate::data_image::DataImage;
 use crate::data_image::DataType::Static;
 use crate::data_px::{active_new, hibernated_deep_black};
 use crate::fractal::CalculationType::StaticImage;
-use crate::fractal::FractalType::Mandelbrot;
+use crate::fractal::FractalType::MandelbrotType;
 use crate::fractal::{
     CalculationType, FractalConfig, FractalMath, FractalType, MemType, OrbitType,
 };
@@ -103,7 +103,7 @@ pub fn init_trivial<'lt>() -> Machine<'lt> {
         update_max: 3,
         update_min: 1,
         resolution_multiplier: ResolutionMultiplier::Single,
-        fractal_type: FractalType::Mandelbrot,
+        fractal_type: FractalType::MandelbrotType,
         stats: fractal_stats::init(),
     }
 }
@@ -265,7 +265,7 @@ impl<'lt> Machine<'lt> {
                     if self.data_image.all_neighbors_finished_bad(
                         x,
                         y,
-                        self.fractal_type == Mandelbrot,
+                        self.fractal_type == MandelbrotType,
                     ) {
                         // Calculation for some positions should be skipped as they are too far away form any long successful divergent position
                         mo_px.replace(hibernated_deep_black(re, im));

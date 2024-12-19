@@ -1,10 +1,11 @@
+use rusty_fractals::application;
+use rusty_fractals::fractal::CalculationType::InfiniteVideoZoom;
+use rusty_fractals::fractal::FractalType::MandelbrotType;
+use rusty_fractals::fractal::OrbitType::Ignore;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem_collatz::MemCollatz;
-use rusty_fractals::palettes::{
-    palette_blue_to_white_circle_up, palette_gray_to_black_circle_down,
-};
-use std::thread;
-use rusty_fractals::application;
+use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, GrayToBlackCircleDown};
+use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
 
 pub struct CollatzConjecture {}
 
@@ -17,16 +18,25 @@ impl FractalMath<MemCollatz> for CollatzConjecture {
 }
 
 fn main() {
-    let mandelbrot_config = FractalConfig {
+    let fractal_config = FractalConfig {
         name: "Collatz Conjecture",
+        iteration_min: 0,
         iteration_max: 1348,
-        palette: palette_blue_to_white_circle_up(),
-        palette_zero: palette_gray_to_black_circle_down(),
+        fractal_type: MandelbrotType,
+        resolution_multiplier: Single,
+        palette: BlueToWhiteCircleUp,
+        palette_zero: GrayToBlackCircleDown,
+
         width_x: 1280,
         height_y: 720,
         width_re: 3.5,
         center_re: -0.088485445553580480,
         center_im: -0.200679435068532800,
+
+        calc_type: InfiniteVideoZoom,
+        orbits: Ignore,
+        update_max: 0,
+        update_min: 0,
     };
 
     let collatz = CollatzConjecture {};

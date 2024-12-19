@@ -28,9 +28,9 @@ pub struct FractalConfig {
 #[derive(PartialEq, Clone, Copy)]
 pub enum FractalType {
     // for each domain element, count the calculation
-    Mandelbrot,
+    MandelbrotType,
     // for each calculation, count domain elements matching the intermediate-calculation results
-    Nebula,
+    NebulaType,
 }
 
 /**
@@ -38,6 +38,8 @@ pub enum FractalType {
 */
 #[derive(PartialEq, Clone, Copy)]
 pub enum OrbitType {
+    // Ignore orbits for Mandelbrot like calculations
+    Ignore,
     // Only edges/surface of the set
     Finite,
     // include set volume

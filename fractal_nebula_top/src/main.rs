@@ -1,8 +1,10 @@
 use rusty_fractals::application;
+use rusty_fractals::fractal::CalculationType::InfiniteVideoZoom;
+use rusty_fractals::fractal::FractalType::NebulaType;
 use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
-use rusty_fractals::palettes::palette_purple_to_white;
+use rusty_fractals::palettes::PaletteName::{Nothing, PurpleToWhite};
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square2;
 
 pub struct NebulaTop {}
@@ -16,10 +18,14 @@ impl FractalMath<Mem> for NebulaTop {
 
 fn main() {
     let fractal_config = FractalConfig {
+        name: "Nebula Top",
+        fractal_type: NebulaType,
         iteration_min: 42,
         iteration_max: 14800,
         resolution_multiplier: Square2,
-        palette: palette_purple_to_white(),
+
+        palette: PurpleToWhite,
+        palette_zero: Nothing,
 
         width_x: 1280,
         height_y: 720,
@@ -27,6 +33,7 @@ fn main() {
         center_re: -1.40115859004747,
         center_im: -0.00000000709356,
 
+        calc_type: InfiniteVideoZoom,
         orbits: Finite,
         update_max: 150,
         update_min: 0,

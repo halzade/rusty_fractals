@@ -1,8 +1,10 @@
 use rusty_fractals::application;
+use rusty_fractals::fractal::CalculationType::StaticImage;
+use rusty_fractals::fractal::FractalType::NebulaType;
 use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
-use rusty_fractals::palettes::palette_blue_to_white_circle_up;
+use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square11;
 
 pub struct Lotus {}
@@ -16,12 +18,15 @@ impl FractalMath<Mem> for Lotus {
 }
 
 fn main() {
-    let fractal_config: FractalConfig = FractalConfig {
+    let fractal_config = FractalConfig {
         name: "Lotus",
+        fractal_type: NebulaType,
         iteration_min: 42,
         iteration_max: 8000,
         resolution_multiplier: Square11,
-        palette: palette_blue_to_white_circle_up(),
+
+        palette: BlueToWhiteCircleUp,
+        palette_zero: Nothing,
 
         width_x: 1280,
         height_y: 1000,
@@ -29,6 +34,7 @@ fn main() {
         center_re: 0.0, //  0.67748277351478,
         center_im: 0.0, // -1.18770078111202,
 
+        calc_type: StaticImage,
         orbits: Finite,
         update_max: 150,
         update_min: 0,

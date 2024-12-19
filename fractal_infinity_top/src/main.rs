@@ -1,8 +1,10 @@
 use rusty_fractals::application;
+use rusty_fractals::fractal::CalculationType::StaticImage;
+use rusty_fractals::fractal::FractalType::NebulaType;
 use rusty_fractals::fractal::OrbitType::Infinite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
-use rusty_fractals::palettes::palette_blue_to_white_circle_up;
+use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
 
 pub struct InfinityTop {}
@@ -15,22 +17,28 @@ impl FractalMath<Mem> for InfinityTop {
 }
 
 fn main() {
-    let fractal_config: FractalConfig = FractalConfig {
+    // TODO
+    // INIT_FINEBROT_AREA_SIZE = 1.8;
+    // INIT_FINEBROT_TARGET_re = -1.0;
+    // INIT_FINEBROT_TARGET_im = 0.0;
+
+    let fractal_config = FractalConfig {
         name: "Infinity Top",
+        fractal_type: NebulaType,
         iteration_min: 3000,
         iteration_max: 30_000, // 180_000
         resolution_multiplier: Single,
-        palette: palette_blue_to_white_circle_up(),
-        // TODO
-        // INIT_FINEBROT_AREA_SIZE = 1.8;
-        // INIT_FINEBROT_TARGET_re = -1.0;
-        // INIT_FINEBROT_TARGET_im = 0.0;
+
+        palette: BlueToWhiteCircleUp,
+        palette_zero: Nothing,
+
         width_x: 600,
         height_y: 600,
         width_re: 2.5,
         center_re: -0.5,
         center_im: 0.0,
 
+        calc_type: StaticImage,
         orbits: Infinite,
         update_max: 150,
         update_min: 0,

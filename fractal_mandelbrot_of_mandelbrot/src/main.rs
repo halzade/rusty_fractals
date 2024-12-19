@@ -1,10 +1,11 @@
 use rusty_fractals::application;
+use rusty_fractals::fractal::CalculationType::StaticImage;
+use rusty_fractals::fractal::FractalType::MandelbrotType;
 use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
-use rusty_fractals::palettes::{
-    palette_blue_to_white_circle_up, palette_gray_to_black_circle_down,
-};
+use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, GrayToBlackCircleDown};
+use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
 
 pub struct MandelbrotOfMandelbrot {}
 
@@ -31,11 +32,15 @@ impl FractalMath<Mem> for MandelbrotOfMandelbrot {
 }
 
 fn main() {
-    let fractal_config: FractalConfig = FractalConfig {
+    let fractal_config = FractalConfig {
         name: "Mandelbrot of Mandelbrot",
+        fractal_type: MandelbrotType,
+        iteration_min: 0,
         iteration_max: 2500,
-        palette: palette_blue_to_white_circle_up(),
-        palette_zero: palette_gray_to_black_circle_down(),
+        resolution_multiplier: Single,
+
+        palette: BlueToWhiteCircleUp,
+        palette_zero: GrayToBlackCircleDown,
 
         width_x: 1280,
         height_y: 720,
@@ -43,6 +48,7 @@ fn main() {
         center_re: -0.5,
         center_im: 0.0,
 
+        calc_type: StaticImage,
         orbits: Finite,
         update_max: 150,
         update_min: 0,

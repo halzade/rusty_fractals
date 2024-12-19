@@ -1,9 +1,11 @@
 use rusty_fractals::application;
 use rusty_fractals::constants::{PHOENIX_INIT_C, PHOENIX_INIT_P};
+use rusty_fractals::fractal::CalculationType::StaticImage;
+use rusty_fractals::fractal::FractalType::NebulaType;
 use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem_phoenix::MemPhoenix;
-use rusty_fractals::palettes::palette_blue_to_white_circle_up;
+use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square9;
 
 pub struct Head {}
@@ -24,19 +26,22 @@ impl FractalMath<MemPhoenix> for Head {
 }
 
 fn main() {
-    let fractal_config: FractalConfig = FractalConfig {
+    let fractal_config = FractalConfig {
         name: "Head",
         iteration_min: 8,
         iteration_max: 25000,
+        fractal_type: NebulaType,
         resolution_multiplier: Square9,
-        palette: palette_blue_to_white_circle_up(),
+        palette: BlueToWhiteCircleUp,
 
+        palette_zero: Nothing,
         width_x: 1280,
         height_y: 720,
         width_re: 5.0,
         center_re: -0.16884290496519,
         center_im: -0.37573460559804,
 
+        calc_type: StaticImage,
         orbits: Finite,
         update_max: 150,
         update_min: 0,
