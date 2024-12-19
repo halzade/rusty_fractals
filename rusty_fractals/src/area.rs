@@ -1,7 +1,6 @@
 use crate::constants::ZOOM;
-// TODO remove all phantom data?
-use std::marker::PhantomData;
 use std::sync::Mutex;
+use crate::fractal::FractalConfig;
 
 /**
  * RxR Area on which the Fractal is calculated
@@ -10,16 +9,6 @@ pub struct Area<'lt> {
     pub data: Mutex<AreaData<'lt>>,
 }
 
-/**
- * Initial Area configuration
- */
-pub struct AreaConfig {
-    pub width_x: usize,
-    pub height_y: usize,
-    pub width_re: f64,
-    pub center_re: f64,
-    pub center_im: f64,
-}
 
 /**
  * Mutable Area data.
@@ -44,7 +33,6 @@ pub struct AreaData<'lt> {
     border_high_re: f64,
     border_high_im: f64,
     plank: f64,
-    phantom: PhantomData<&'lt bool>,
 }
 
 impl<'lt> Area<'_> {
@@ -197,7 +185,7 @@ impl<'lt> Area<'_> {
     }
 }
 
-pub fn init<'lt>(config: AreaConfig) -> Area<'lt> {
+pub fn init<'lt>(config: &FractalConfig) -> Area<'lt> {
     println!("init()");
     let width_re = config.width_re;
     let center_re = config.center_re;
@@ -287,7 +275,7 @@ pub fn init_trivial<'lt>() -> Area<'lt> {
 
 #[cfg(test)]
 mod tests {
-    use crate::area::{init, AreaConfig};
+    use crate::area::{init};
 
     const VANILLA_AREA_CONFIG: AreaConfig = AreaConfig {
         width_re: 1.0,

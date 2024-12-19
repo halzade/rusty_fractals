@@ -14,7 +14,6 @@ use crate::pixel_states::{
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Square2;
 use image::Rgb;
-use std::marker::PhantomData;
 use std::sync::{Arc, Mutex, MutexGuard};
 
 pub struct DataImage<'lt> {
@@ -30,7 +29,6 @@ pub struct DataImage<'lt> {
     pub paths: Arc<Mutex<Vec<Vec<[f64; 2]>>>>,
     // show one patch during calculation with pixel wrap
     pub show_path: Mutex<Vec<[f64; 2]>>,
-    phantom: PhantomData<&'lt bool>,
 }
 
 #[derive(PartialOrd, Ord, PartialEq, Eq, Clone, Copy)]
@@ -356,7 +354,6 @@ pub fn init<'lt>(data_type: DataType, area: &Area) -> DataImage<'lt> {
         pixels: init_domain(area),
         paths: Arc::new(Mutex::new(Vec::new())),
         show_path: Mutex::new(Vec::new()),
-        phantom: PhantomData::default(),
     }
 }
 
@@ -369,7 +366,6 @@ pub fn init_trivial<'lt>() -> DataImage<'lt> {
         pixels: init_pixels_trivial(),
         paths: Arc::new(Mutex::new(Vec::new())),
         show_path: Mutex::new(Vec::new()),
-        phantom: PhantomData::default(),
     }
 }
 

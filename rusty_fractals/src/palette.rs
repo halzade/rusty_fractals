@@ -1,6 +1,5 @@
 use crate::palette_utils;
 use image::Rgb;
-use std::marker::PhantomData;
 
 const ERROR_MESSAGE: &str = "error in color index";
 

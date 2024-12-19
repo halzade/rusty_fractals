@@ -1,9 +1,5 @@
 use std::thread;
 use rusty_fractals::{machine_mandelbrot, window};
-use rusty_fractals::area::{AreaConfig};
-use rusty_fractals::calc::CalculationConfig;
-use rusty_fractals::calc::CalculationType::InfiniteVideoZoom;
-use rusty_fractals::calc::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalMath, MandelbrotConfig};
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::{palette_blue_to_white_circle_up, palette_gray_to_black_circle_down};

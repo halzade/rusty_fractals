@@ -1,14 +1,13 @@
-use crate::area::{Area, AreaConfig};
-use crate::calc::{CalculationConfig, OrbitType};
+use crate::area::Area;
 use crate::constants::CALCULATION_BOUNDARY;
 use crate::data_image::DataImage;
 use crate::machine::Machine;
 use crate::mem::Mem;
-use crate::palette::Palette;
 use crate::resolution_multiplier::ResolutionMultiplier;
 use std::cmp::PartialEq;
 use std::thread;
 use crate::machine;
+use crate::palettes::PaletteName;
 
 /**
  * Represents the actual mathematical object
@@ -18,18 +17,49 @@ pub struct Fractal<'lt> {
 }
 
 pub struct FractalConfig<'lt> {
+    // fractal config
     pub iteration_min: u32,
     pub iteration_max: u32,
+    pub fractal_type: FractalType,
     pub resolution_multiplier: ResolutionMultiplier,
-    pub palette: Palette<'lt>,
+    pub palette: PaletteName,
+    pub palette_zero: PaletteName,
+    // area config
+    pub width_x: usize,
+    pub height_y: usize,
+    pub width_re: f64,
+    pub center_re: f64,
+    pub center_im: f64,
+    // calculation config
+    pub calc_type: CalculationType,
+    pub orbits: OrbitType, // fractal::finite_orbits / infinite_orbits
+    pub update_max: u32,
+    pub update_min: u32,
 }
 
-pub struct MandelbrotConfig<'lt> {
-    pub iteration_max: u32,
-    // color classic mandelbrot values
-    pub palette: Palette<'lt>,
-    // color insides of mandelbrot set
-    pub palette_zero: Palette<'lt>,
+#[derive(PartialEq)]
+pub enum FractalType {
+    // for each domain element, count the calculation
+    Mandelbrot,
+    // for each calculation, count domain elements matching the intermediate-calculation results
+    Nebula,
+}
+
+/**
+ - Orbit types for nebula fractals
+ */
+#[derive(PartialEq)]
+pub enum OrbitType {
+    // Only edges/surface of the set
+    Finite,
+    // include set volume
+    Infinite,
+}
+
+#[derive(PartialEq)]
+pub enum CalculationType {
+    StaticImage,
+    InfiniteVideoZoom,
 }
 
 pub trait FractalMath<T: MemType<T>>: Sync + Send {
@@ -66,20 +96,16 @@ pub fn init_trivial() -> TrivialFractal {
 pub fn calculate_fractal_new_thread<'lt, M: MemType<M>>(
     fractal: &dyn FractalMath<M>,
     fractal_config: FractalConfig,
-    area_config: AreaConfig,
-    calc_config: CalculationConfig,
 ) {
     thread::spawn(move || {
         let mut ma : Machine = machine::init();
-        ma.calculate(fractal, fractal_config, area_config, calc_config);
+        ma.calculate(fractal, fractal_config);
     });
 }
 
 pub fn calculate_mandelbrot_new_thread<'lt, M: MemType<M>>(
     fractal: &dyn FractalMath<M>,
     fractal_config: FractalConfig,
-    area_config: AreaConfig,
-    calc_config: CalculationConfig,
 ) {
     thread::spawn(move || {
         // TODO calculate_mandelbrot();
@@ -110,7 +136,6 @@ pub fn calculate_path<'lt, T: MemType<T>>(
     origin_re: f64,
     origin_im: f64,
     data_image: &DataImage,
-    calc_config: CalculationConfig,
     is_wrap: bool,
 ) -> (u32, u32) {
     let cb = CALCULATION_BOUNDARY as f64;
@@ -175,7 +200,7 @@ pub fn calculate_mandelbrot_path<T: MemType<T>>(
 #[cfg(test)]
 mod tests {
     use crate::fractal::{calculate_path, FractalConfig, FractalMath};
-    use crate::{area, calc, data_image, fractal};
+    use crate::{area, data_image, fractal};
 
     #[test]
     fn test_calculate_path() {
@@ -183,7 +208,6 @@ mod tests {
         let area = area::init_trivial();
         let data_image = data_image::init_trivial();
         let fractal = fractal::init_trivial();
-        let calc_config = calc::init_trivial();
 
         // execute test
         let (iterator, length) = calculate_path(

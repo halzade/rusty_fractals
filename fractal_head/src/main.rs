@@ -1,6 +1,3 @@
-use rusty_fractals::area::{Area, AreaConfig};
-use rusty_fractals::calc::CalculationConfig;
-use rusty_fractals::calc::OrbitType::Finite;
 use rusty_fractals::constants::{PHOENIX_INIT_C, PHOENIX_INIT_P};
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem_phoenix::MemPhoenix;

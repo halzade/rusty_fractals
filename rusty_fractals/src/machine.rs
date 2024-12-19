@@ -1,11 +1,11 @@
-use crate::area::{Area, AreaConfig};
-use crate::calc::CalculationConfig;
+use crate::area::Area;
 use crate::data_image::DataType::Static;
 use crate::data_image::{state_from_path_length, DataImage};
 use crate::data_px::{active_new, hibernated_deep_black};
-use crate::fractal::{FractalConfig, FractalMath, MandelbrotConfig, MemType};
+use crate::fractal::{FractalConfig, FractalMath, FractalType, MemType};
 use crate::fractal_log::now;
 use crate::palette::Palette;
+use crate::palettes::new_palette_by_name;
 use crate::perfect_colour_distribution::perfectly_colour_nebula_values;
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::{area, data_image, fractal, palettes, pixel_states, window};
@@ -13,7 +13,9 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rayon::prelude::*;
 
-// to calculate single image
+/**
+ * Machine owns all data
+ */
 pub struct Machine<'lt> {
     pub fractal_name: &'lt str,
     pub area: Area<'lt>,
@@ -29,47 +31,29 @@ pub struct Machine<'lt> {
     pub resolution_multiplier: ResolutionMultiplier,
 }
 
-pub fn init<'lt>(name: &'lt str, fractal_config: FractalConfig, area_config: &AreaConfig, calculation_config: CalculationConfig) -> Machine<'lt> {
-
-}
-
-pub fn init_mandelbrot<'lt>(name: &'lt str, fractal_config: FractalConfig, area_config: &AreaConfig, calculation_config: CalculationConfig) -> Machine<'lt> {
-    let area: Area<'_> = area::init(area_config);
+pub fn init<'lt>(name: &'lt str, fractal_config: &FractalConfig) -> Machine<'lt> {
+    let area: Area<'_> = area::init(fractal_config);
     let wx = area.data.lock().unwrap().width_x as i32;
     let hy = area.data.lock().unwrap().height_y as i32;
     Machine {
-        fractal_name: "",
-        data_image: data_image::init(Static, &area),
+        fractal_name: name,
+        data_image: data_image::init(Static, &area), // TODO
         width: wx,
         height: hy,
         area,
-        min: 0, // mandelbrot fractals calucalte from 0
-        max: calculation_config.iteration_max,
-        palette: config.palette,
-        palette_zero: config.palette_zero,
-        resolution_multiplier: ResolutionMultiplier::Single,
-    }
-}
-
-pub fn init_nebula<'lt>(name: &'lt str, fractal_config: FractalConfig, area_config: &AreaConfig, calculation_config: CalculationConfig) -> Machine<'lt> {
-    let area = area::init(area_config);
-    let wx = area.data.lock().unwrap().width_x;
-    let hy = area.data.lock().unwrap().height_y;
-    Machine {
-        data_image: data_image::init(Static, &area),
-        width: wx,
-        height: hy,
-        area,
-        min: 0,
-        max: config.iteration_max,
-        palette: config.palette,
-        palette_zero: palettes::init_trivial(),
-        resolution_multiplier: config.resolution_multiplier,
+        // mandelbrot fractals calculate from 0
+        // nebula fractals include only calculations longer then min
+        min: fractal_config.iteration_min,
+        max: fractal_config.iteration_max,
+        palette: new_palette_by_name(&fractal_config.palette),
+        palette_zero: new_palette_by_name(&fractal_config.palette_zero),
+        resolution_multiplier: fractal_config.resolution_multiplier,
     }
 }
 
 pub fn init_trivial<'lt>() -> Machine<'lt> {
     Machine {
+        fractal_name: "Trivial Fractal",
         data_image: data_image::init_trivial(),
         width: 0,
         height: 0,
@@ -86,9 +70,6 @@ impl Machine {
     pub fn calculate<'lt, M: MemType<M>>(
         &self,
         fractal: &dyn FractalMath<M>,
-        fractal_config: FractalConfig,
-        area_config: AreaConfig,
-        calc_config: CalculationConfig,
     ) {
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
@@ -98,18 +79,17 @@ impl Machine {
             // window refresh
             window::paint_image_calculation_progress(fractal.data_image());
         });
-        fractal.data_image().recalculate_pixels_states();
+        self.data_image.recalculate_pixels_states();
 
-        let area = fractal.area();
-        if fractal.rm() != ResolutionMultiplier::Single {
+        if self.resolution_multiplier != ResolutionMultiplier::Single {
             println!("calculate() with wrap");
             // previous calculation completed, calculate more elements
             coordinates_xy.par_iter().for_each(|xy| {
                 // calculation
-                self.chunk_calculation_with_wrap(&xy, fractal);
+                self.chunk_calculation_with_wrap(&xy);
                 // window refresh
                 // TODO window::paint_image_calculation_progress(&data);
-                window::paint_path(area, fractal.data_image());
+                window::paint_path(&self.area, &self.data_image);
             });
         }
         let palette = fractal.palette();
@@ -122,7 +102,7 @@ impl Machine {
         let (x_from, x_to, y_from, y_to) = chunk_boundaries(xy, fractal.width(), fractal.height());
         for x in x_from..x_to {
             for y in y_from..y_to {
-                self.calculate_path_xy(x, y, fractal);
+                Self::calculate_path_xy(x, y, fractal);
             }
         }
     }
@@ -130,29 +110,22 @@ impl Machine {
     fn chunk_calculation_with_wrap<'lt, M: MemType<M>>(
         &self,
         xy: &[u32; 2],
-        fractal: &dyn FractalMath<M>,
     ) {
-        if fractal.rm() == ResolutionMultiplier::Single {
+        if self.resolution_multiplier == ResolutionMultiplier::Single {
             panic!()
         }
-        let (x_from, x_to, y_from, y_to) = chunk_boundaries(xy, fractal.width(), fractal.height());
-        let data = fractal.data_image();
-        let area = fractal.area();
-        let plank = area.plank();
+        let (x_from, x_to, y_from, y_to) = chunk_boundaries(xy);
+        let plank = self.area.plank();
         for x in x_from..x_to {
             for y in y_from..y_to {
-                if data.is_on_mandelbrot_horizon(x, y) {
-                    let (origin_re, origin_im) = data.origin_at(x, y);
-                    let wrap = data.wrap(origin_re, origin_im, fractal.rm(), plank);
+                if self.data_image.is_on_mandelbrot_horizon(x, y) {
+                    let (origin_re, origin_im) = self.data_image.origin_at(x, y);
+                    let wrap = self.data_image.wrap(origin_re, origin_im, fractal.rm(), plank);
                     // within the same pixel
                     for [re, im] in wrap {
-                        fractal.calculate_path(
-                            area,
-                            fractal.min(),
-                            fractal.max(),
+                        self.calculate_path(
                             re,
                             im,
-                            fractal.data_image(),
                             true,
                         );
                     }
@@ -276,22 +249,22 @@ impl Machine {
         assert!(c_moved > 0);
         assert!(c_created > 0);
     }
+
+    pub fn chunk_boundaries(&self,
+                            xy: &[u32; 2]
+    ) -> (usize, usize, usize, usize) {
+        let chunk_size_x = (self.width / 20) as u32;
+        let chunk_size_y = (self.height / 20) as u32;
+        (
+            (xy[0] * chunk_size_x) as usize,
+            ((xy[0] + 1) * chunk_size_x) as usize,
+            (xy[1] * chunk_size_y) as usize,
+            ((xy[1] + 1) * chunk_size_y) as usize,
+        )
+    }
+
 }
 
-pub fn chunk_boundaries(
-    xy: &[u32; 2],
-    width: usize,
-    height: usize,
-) -> (usize, usize, usize, usize) {
-    let chunk_size_x = (width / 20) as u32;
-    let chunk_size_y = (height / 20) as u32;
-    (
-        (xy[0] * chunk_size_x) as usize,
-        ((xy[0] + 1) * chunk_size_x) as usize,
-        (xy[1] * chunk_size_y) as usize,
-        ((xy[1] + 1) * chunk_size_y) as usize,
-    )
-}
 
 /**
  * Creates x,y pairs for calculation.
@@ -300,8 +273,7 @@ pub fn chunk_boundaries(
 pub fn shuffled_calculation_coordinates() -> Vec<[u32; 2]> {
     let mut coordinates_xy: Vec<[u32; 2]> = Vec::new();
 
-    // TODO why 400?
-
+    // 400 little subdivisions of the screen
     for x in 0..20 {
         for y in 0..20 {
             coordinates_xy.push([x, y]);
@@ -314,7 +286,7 @@ pub fn shuffled_calculation_coordinates() -> Vec<[u32; 2]> {
 #[cfg(test)]
 mod tests {
     use crate::machine::Machine;
-    use crate::{area, calc, data_image, fractal};
+    use crate::{area, data_image, fractal};
 
     #[test]
     fn test_calculate_path_xy() {
@@ -323,6 +295,20 @@ mod tests {
         let data_image = data_image::init_trivial();
         let calc_config = calc::init_trivial();
         Machine::calculate_path_xy(0, 0, 1, 5, &fractal, area, data_image, calc_config);
+
+        // TODO
+    }
+
+    #[test]
+    fn test_chunk_calculation_mandelbrot<'lt>() {
+
+        let mm = machine::init();
+
+        let x = 0;
+        let y = 0;
+        let xy = [x, y];
+        let fractal = fractal::init_trivial();
+        mm.chunk_calculation_mandelbrot(&fractal, &xy);
 
         // TODO
     }

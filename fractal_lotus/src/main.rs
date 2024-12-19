@@ -1,6 +1,3 @@
-use rusty_fractals::area::{AreaConfig};
-use rusty_fractals::calc::CalculationConfig;
-use rusty_fractals::calc::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::palette_blue_to_white_circle_up;

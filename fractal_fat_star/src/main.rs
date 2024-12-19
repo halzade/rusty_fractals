@@ -1,10 +1,9 @@
-use rusty_fractals::area::AreaConfig;
-use rusty_fractals::calc::CalculationConfig;
-use rusty_fractals::calc::CalculationType::StaticImage;
-use rusty_fractals::calc::OrbitType::Infinite;
+use rusty_fractals::fractal::CalculationType::StaticImage;
+use rusty_fractals::fractal::FractalType::Nebula;
+use rusty_fractals::fractal::OrbitType::Infinite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
-use rusty_fractals::palettes::palette_blue_to_white_circle_up;
+use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
 use rusty_fractals::{fractal, machine};
 
@@ -23,32 +22,30 @@ fn main() {
     let fractal_config: FractalConfig<'static> = FractalConfig {
         iteration_min: 42,
         iteration_max: 22000,
+        fractal_type: Nebula,
         resolution_multiplier: Single,
-        palette: palette_blue_to_white_circle_up(),
-    };
-    let area_config = AreaConfig {
+        palette: BlueToWhiteCircleUp,
+        palette_zero: Nothing,
+        // area
         width_x: 800,
         height_y: 800,
         width_re: 3.5,
         center_re: 0.0,
         center_im: 0.0,
-    };
-    let calculation_config = CalculationConfig {
+        // calculation config
         calc_type: StaticImage,
         orbits: Infinite,
         update_max: 150,
         update_min: 0,
     };
-    let fractal_machine = machine::init("FatStar", &fractal_config, &area_config, &calculation_config);
+
+    let fractal_machine = machine::init("FatStar", &fractal_config);
 
     let fat_star: FatStar<'static> = FatStar {};
     let app = window::show(app_config);
 
-    fractal::calculate_fractal_new_thread(
-        &fat_star,
-        fractal_config,
-        area_config,
-        calculation_config,
+    machine::calculate_fractal_new_thread(
+        &fat_star
     );
 
     app.run().unwrap();

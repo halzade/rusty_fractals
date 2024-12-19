@@ -1,4 +1,3 @@
-use rusty_fractals::area::AreaConfig;
 use rusty_fractals::fractal::{FractalMath, MandelbrotConfig};
 use rusty_fractals::mem_collatz::MemCollatz;
 use rusty_fractals::palettes::{

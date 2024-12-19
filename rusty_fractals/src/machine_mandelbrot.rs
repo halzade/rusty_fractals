@@ -1,7 +1,5 @@
 use crate::{machine, window};
 use rayon::prelude::*;
-use crate::area::AreaConfig;
-use crate::calc::CalculationConfig;
 use crate::data_image::state_from_path_length;
 use crate::fractal::{FractalConfig, FractalMath, MemType};
 use crate::perfect_colour_distribution::perfectly_colour_mandelbrot_values;
@@ -18,9 +16,6 @@ impl MachineMandelbrot {
     pub fn calculate_mandelbrot<'lt, M: MemType<M>>(
         &self,
         fractal: &dyn FractalMath<M>,
-        fractal_config: FractalConfig,
-        area_config: AreaConfig,
-        calc_config: CalculationConfig,
     ) {
         println!("calculate_mandelbrot()");
         let coordinates_xy: Vec<[u32; 2]> = machine::shuffled_calculation_coordinates();
@@ -61,26 +56,5 @@ impl MachineMandelbrot {
                 }
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::application::Application;
-    use crate::{application, fractal, machine_mandelbrot};
-
-    #[test]
-    fn test_chunk_calculation_mandelbrot<'lt>() {
-        let application: Application<'lt> = application::init_trivial();
-
-        let mm = machine_mandelbrot::init();
-
-        let x = 0;
-        let y = 0;
-        let xy = [x, y];
-        let fractal = fractal::init_trivial();
-        mm.chunk_calculation_mandelbrot(&fractal, &xy);
-
-        // TODO
     }
 }

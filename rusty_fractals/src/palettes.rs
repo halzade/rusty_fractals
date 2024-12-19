@@ -21,9 +21,33 @@ pub enum Function {
     CircleUp,
 }
 
+pub enum PaletteName {
+    Nothing,
+    BlackToWhiteExp2,
+    BlackToWhiteCircleUp,
+    BlackWhiteBlack,
+    BlueToWhiteCircleUp,
+    GrayToBlue,
+    GrayToBlackCircleDown,
+    PurpleToWhite,
+}
+
 pub fn new<'lt>(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Palette<'lt> {
     Palette {
         spectrum: make_spectrum(function, from, to),
+    }
+}
+
+pub fn new_palette_by_name<'lt>(palette_name: &PaletteName) -> Palette<'lt> {
+    match palette_name {
+        PaletteName::BlackToWhiteExp2 => palette_black_to_white_exp2(),
+        PaletteName::BlackToWhiteCircleUp => palette_black_to_white_circle_up(),
+        PaletteName::BlackWhiteBlack => palette_black_white_black(),
+        PaletteName::BlueToWhiteCircleUp => palette_blue_to_white_circle_up(),
+        PaletteName::GrayToBlue => palette_gray_to_blue(),
+        PaletteName::GrayToBlackCircleDown => palette_gray_to_black_circle_down(),
+        PaletteName::PurpleToWhite => palette_purple_to_white(),
+        PaletteName::Nothing => init_trivial(),
     }
 }
 
@@ -35,7 +59,7 @@ pub fn palette_black_to_white_circle_up<'lt>() -> Palette<'lt> {
     new(CircleUp, BLACK, WHITE)
 }
 
-pub fn palette_bwb<'lt>() -> Palette<'lt> {
+pub fn palette_black_white_black<'lt>() -> Palette<'lt> {
     let mut black_to_white_work = make_spectrum(Linear1, BLACK, WHITE);
     let mut white_to_black = make_spectrum(Linear1, WHITE, BLACK);
     black_to_white_work.append(&mut white_to_black);
