@@ -39,6 +39,7 @@ pub fn new<'lt>(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Palette {
 }
 
 pub fn new_palette_by_name<'lt>(palette_name: &PaletteName) -> Palette {
+    println!("new_palette_by_name()");
     match palette_name {
         PaletteName::BlackToWhiteExp2 => palette_black_to_white_exp2(),
         PaletteName::BlackToWhiteCircleUp => palette_black_to_white_circle_up(),

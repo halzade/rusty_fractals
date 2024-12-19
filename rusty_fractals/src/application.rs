@@ -26,9 +26,10 @@ pub fn init(config: FractalConfig) -> Application {
 
 impl Application {
     pub fn calculate<M: MemType<M>>(&self, fractal: &impl FractalMath<M>) {
+        println!("calculate()");
         self.machine.calculate(fractal);
 
-        // TODO ?
+        println!("run().unwrap()");
         self.app.run().unwrap();
     }
 

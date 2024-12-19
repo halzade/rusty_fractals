@@ -5,7 +5,7 @@ use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square11;
+use rusty_fractals::resolution_multiplier::ResolutionMultiplier::{Single, Square11};
 
 pub struct Lotus {}
 
@@ -59,7 +59,9 @@ mod tests {
     fn test_math() {
         let lotus = Lotus {};
         let mut m = Mem { re: 0.0, im: 0.0 };
+
         lotus.math(&mut m, 1.0, 0.1);
+
         assert_eq!(m.re, 1.0);
         assert_eq!(m.im, 0.1);
     }

@@ -55,6 +55,7 @@ impl<'lt> Area {
      * Maps pixels [x, y] to their center [re, im]
      */
     pub fn screen_to_domain_re_copy(&self) -> Vec<f64> {
+        println!("screen_to_domain_re_copy()");
         match self.data.lock() {
             Ok(d) => d.numbers_re.clone(),
             Err(e) => {

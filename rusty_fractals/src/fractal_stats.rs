@@ -156,6 +156,10 @@ impl Stats {
 }
 
 pub fn init() -> Stats {
+
+    // TODO
+    // data: Mutex::new(area_data),
+
     Stats {
         new_elements_too_long: 0,
         new_elements_too_short: 0,

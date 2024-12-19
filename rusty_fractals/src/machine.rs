@@ -114,12 +114,11 @@ impl<'lt> Machine<'lt> {
      */
     pub fn calculate<M: MemType<M>>(&self, fractal: &impl FractalMath<M>) {
         // TODO
-        thread::spawn(move || {
-
+        // thread::spawn(move || {
             // TODO self.calculate(fractal);
             // TODO or
             // TODO calculate_mandelbrot();
-        });
+        //});
 
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
