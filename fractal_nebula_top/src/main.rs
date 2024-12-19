@@ -5,12 +5,11 @@ use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::palette_purple_to_white;
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square2;
-use rusty_fractals::application::Application;
-use rusty_fractals::{application, window};
+use rusty_fractals::{machine, window};
 use std::thread;
 
 pub struct NebulaTop<'lt> {
-    app: Application<'lt>,
+
 }
 
 impl FractalMath<Mem> for NebulaTop<'_> {
@@ -26,7 +25,6 @@ fn main() {
         iteration_max: 14800,
         resolution_multiplier: Square2,
         palette: palette_purple_to_white(),
-        phantom: Default::default(),
     };
     let area_config = AreaConfig {
         width_x: 1280,

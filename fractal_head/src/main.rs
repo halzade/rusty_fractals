@@ -6,7 +6,6 @@ use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem_phoenix::MemPhoenix;
 use rusty_fractals::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square9;
-use rusty_fractals::application::Application;
 use rusty_fractals::{application, machine, window};
 use std::thread;
 
@@ -36,7 +35,6 @@ fn main() {
         iteration_max: 25000,
         resolution_multiplier: Square9,
         palette: palette_blue_to_white_circle_up(),
-        phantom: Default::default(),
     };
     let area_config = AreaConfig {
         width_x: 1280,

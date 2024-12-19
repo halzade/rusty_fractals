@@ -4,12 +4,11 @@ use rusty_fractals::calc::OrbitType::Infinite;
 use rusty_fractals::fractal::{FractalMath, MandelbrotConfig};
 use rusty_fractals::mem_collatz::MemCollatz;
 use rusty_fractals::palettes::{palette_blue_to_white_circle_up, palette_gray_to_blue};
-use rusty_fractals::application::Application;
-use rusty_fractals::{application, window};
+use rusty_fractals::{machine, window};
 use std::thread;
 
 pub struct CollatzConjectureMandelbrot<'lt> {
-    app: Application<'lt>,
+
 }
 
 impl FractalMath<MemCollatz> for CollatzConjectureMandelbrot<'_> {
@@ -25,7 +24,6 @@ fn main() {
         iteration_max: 14800,
         palette: palette_blue_to_white_circle_up(),
         palette_zero: palette_gray_to_blue(),
-        phantom: Default::default(),
     };
     let area_config = AreaConfig {
         width_x: 1280,

@@ -24,7 +24,6 @@ pub enum Function {
 pub fn new<'lt>(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Palette<'lt> {
     Palette {
         spectrum: make_spectrum(function, from, to),
-        phantom: Default::default(),
     }
 }
 
@@ -42,7 +41,6 @@ pub fn palette_bwb<'lt>() -> Palette<'lt> {
     black_to_white_work.append(&mut white_to_black);
     Palette {
         spectrum: black_to_white_work,
-        phantom: Default::default(),
     }
 }
 
@@ -65,7 +63,6 @@ pub fn palette_purple_to_white<'lt>() -> Palette<'lt> {
 pub fn init_trivial<'lt>() -> Palette<'lt> {
     Palette {
         spectrum: Vec::new(),
-        phantom: Default::default(),
     }
 }
 

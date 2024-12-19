@@ -5,8 +5,7 @@ use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square11;
-use rusty_fractals::application::Application;
-use rusty_fractals::{application, window};
+use rusty_fractals::{machine, window};
 use std::thread;
 
 pub struct Lotus<'lt> {
@@ -27,7 +26,6 @@ fn main() {
         iteration_max: 8000,
         resolution_multiplier: Square11,
         palette: palette_blue_to_white_circle_up(),
-        phantom: Default::default(),
     };
     let area_config = AreaConfig {
         width_x: 1280,

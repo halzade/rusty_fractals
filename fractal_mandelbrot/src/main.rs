@@ -1,5 +1,5 @@
 use std::thread;
-use rusty_fractals::{application, machine_mandelbrot, window};
+use rusty_fractals::{machine_mandelbrot, window};
 use rusty_fractals::area::{AreaConfig};
 use rusty_fractals::calc::CalculationConfig;
 use rusty_fractals::calc::CalculationType::InfiniteVideoZoom;
@@ -7,7 +7,6 @@ use rusty_fractals::calc::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalMath, MandelbrotConfig};
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::{palette_blue_to_white_circle_up, palette_gray_to_black_circle_down};
-use rusty_fractals::application::Application;
 
 /**
  * The Mandelbrot Fractal
@@ -31,7 +30,6 @@ fn main() {
         iteration_max: 2500,
         palette: palette_blue_to_white_circle_up(),
         palette_zero: palette_gray_to_black_circle_down(),
-        phantom: Default::default(),
     };
     let area_config = AreaConfig {
         width_x: 1280,
@@ -47,7 +45,7 @@ fn main() {
         update_min : 0,
     };
     // TODO
-    let application: Application<'static> = application::init(area_config, mandelbrot_config);
+
 
     let mandelbrot: Mandelbrot = Mandelbrot {};
     let app = window::show(&mandelbrot);

@@ -5,8 +5,7 @@ use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
-use rusty_fractals::application::Application;
-use rusty_fractals::{application, window};
+use rusty_fractals::{machine, window};
 use std::thread;
 
 pub struct Infinity<'lt> {
@@ -27,7 +26,6 @@ fn main() {
         iteration_max: 30_000,
         resolution_multiplier: Single,
         palette: palette_blue_to_white_circle_up(),
-        phantom: Default::default(),
     };
     let area_config = AreaConfig {
         width_x: 600,

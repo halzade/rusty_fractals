@@ -6,8 +6,7 @@ use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::{
     palette_blue_to_white_circle_up, palette_gray_to_black_circle_down,
 };
-use rusty_fractals::application::Application;
-use rusty_fractals::{application, window};
+use rusty_fractals::{machine, window};
 use std::thread;
 
 pub struct MandelbrotOfMandelbrot<'lt> {
@@ -42,7 +41,6 @@ fn main() {
         iteration_max: 2500,
         palette: palette_blue_to_white_circle_up(),
         palette_zero: palette_gray_to_black_circle_down(),
-        phantom: Default::default(),
     };
     let area_config = AreaConfig {
         width_x: 1280,

@@ -252,7 +252,6 @@ pub fn init<'lt>(config: AreaConfig) -> Area<'lt> {
         border_high_re,
         border_high_im,
         plank,
-        phantom: Default::default(),
     };
     Area {
         data: Mutex::new(area_data),
@@ -280,7 +279,6 @@ pub fn init_trivial<'lt>() -> Area<'lt> {
         border_high_re: 1.0,
         border_high_im: 1.0,
         plank: 0.1,
-        phantom: Default::default(),
     };
     Area {
         data: Mutex::new(area_data),
