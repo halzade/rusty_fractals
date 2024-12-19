@@ -400,21 +400,6 @@ fn init_pixels_trivial() -> Vec<Vec<Mutex<Option<DataPx>>>> {
     vx
 }
 
-pub fn state_from_path_length(
-    iterator: u32,
-    path_length: u32,
-    min: u32,
-    max: u32,
-) -> DomainElementState {
-    if path_length < min {
-        return FinishedTooShort;
-    }
-    if iterator == max {
-        return FinishedTooLong;
-    }
-    FinishedSuccess
-}
-
 pub fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
     return match rm {
         ResolutionMultiplier::Single => 1.0,

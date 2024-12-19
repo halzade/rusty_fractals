@@ -5,7 +5,7 @@ use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
-use rusty_fractals::{fractal, machine};
+use rusty_fractals::{machine};
 
 pub struct FatStar<'lt> {}
 
@@ -39,12 +39,12 @@ fn main() {
         update_min: 0,
     };
 
-    let fractal_machine = machine::init("FatStar", &fractal_config);
+    let machine = machine::init("FatStar", &fractal_config);
 
     let fat_star: FatStar<'static> = FatStar {};
     let app = window::show(app_config);
 
-    machine::calculate_fractal_new_thread(
+    machine.calculate_fractal_new_thread(
         &fat_star
     );
 
