@@ -1,23 +1,36 @@
-use std::sync::{Mutex};
-use fltk::{app, draw, prelude::*, window::Window};
-use fltk::app::{App, event_button, event_coords, event_key};
-use fltk::enums::{Color, Event, Key};
-use fltk::image::RgbImage;
-use image::{Pixel, Rgb};
 use crate::area::Area;
 use crate::data_image::{colour_for_state, DataImage};
+use crate::fractal::FractalConfig;
+use crate::machine;
 use crate::machine::Machine;
 use crate::pixel_states::is_finished_any;
+use fltk::app::{event_button, event_coords, event_key, App};
+use fltk::enums::{Color, Event, Key};
+use fltk::image::RgbImage;
+use fltk::{app, draw, prelude::*, window::Window};
+use image::{Pixel, Rgb};
+use std::sync::Mutex;
+
+struct Application {
+    machine: Machine<'static>,
+}
+
+pub fn init(config: FractalConfig) -> Application {
+    Application {
+        machine: machine::init(&config),
+    }
+}
 
 pub const IMAGE: Option<&'static RgbImage> = None;
 static MAX_VALUE: Mutex<u32> = Mutex::new(0);
 
-pub fn show(machine: &'static Machine<'static>) -> App {
+pub fn show() -> App {
     println!("show()");
-    let width = machine.width_x as i32;
-    let height = machine.height_y as i32;
     let app = App::default();
-    let mut window = Window::default().with_label(machine.fractal_name.with_size(width, height).center_screen());
+    let mut window = Window::default()
+        .with_label("TEST NAME") // TODO
+        .with_size(width, height)
+        .center_screen();
 
     // initialize window color, filled rectangle
     draw::set_draw_color(Color::from_rgb(40, 180, 150));
@@ -28,15 +41,17 @@ pub fn show(machine: &'static Machine<'static>) -> App {
     window.draw(move |_| {
         println!("draw {}", cycle);
         // let data = data_image::data();
-        for y in 0..machine.data_image.height {
-            for x in 0..machine.data_image.width {
-                let (value, state, _, _, colour_index_o) = machine.data_image.values_at(x, y);
+        for y in 0..height {
+            for x in 0..width {
+                let (value, state, _, _, colour_index_o) = machine.data_image_values_at(x, y);
                 let colour: Rgb<u8>;
                 if !is_finished_any(state) {
                     colour = colour_for_state(state);
                 } else {
                     match colour_index_o {
-                        Some(pixel_colour) => { colour = pixel_colour; }
+                        Some(pixel_colour) => {
+                            colour = pixel_colour;
+                        }
                         None => {
                             let mut mv = MAX_VALUE.lock().unwrap();
                             if value > *mv {
@@ -82,10 +97,11 @@ pub fn show(machine: &'static Machine<'static>) -> App {
                 }
                 ' ' => {
                     println!("space bar");
-                    machine.zoom_and_recalculate();
+                    // TODO probably not the right method
+                    // TODO machine.zoom_in_recalculate_pixel_positions();
                     true
                 }
-                _ => { false }
+                _ => false,
             }
         }
         Event::Released => {
@@ -94,12 +110,12 @@ pub fn show(machine: &'static Machine<'static>) -> App {
             if left {
                 let (x, y) = event_coords();
                 println!("c: {} {}", x, y);
-                machine.move_target( x as usize, y as usize);
-                machine.zoom_and_recalculate();
+                // TODO machine.move_target(x as usize, y as usize);
+                // TODO machine.zoom_in_recalculate_pixel_positions();
             }
             false
         }
-        _ => { false }
+        _ => false,
     });
     window.end();
     window.show();
@@ -127,7 +143,9 @@ pub fn paint_path(area: &Area, data: &DataImage) {
             app::awake();
             app::redraw();
         }
-        Err(_) => { println!("paint_path(): can't unlock app"); }
+        Err(_) => {
+            println!("paint_path(): can't unlock app");
+        }
     }
 }
 
@@ -146,7 +164,9 @@ pub fn paint_image_result(data: &DataImage) {
                 for x in 0..data.width {
                     let colour_index_o = data.colour_at(x, y);
                     match colour_index_o {
-                        None => { panic!(); }
+                        None => {
+                            panic!();
+                        }
                         Some(ci) => {
                             let r = ci.channels().get(0).unwrap();
                             let g = ci.channels().get(1).unwrap();
@@ -162,7 +182,9 @@ pub fn paint_image_result(data: &DataImage) {
             app::awake();
             app::redraw();
         }
-        Err(_) => { println!("paint_image_result(): can't unlock app"); }
+        Err(_) => {
+            println!("paint_image_result(): can't unlock app");
+        }
     }
 }
 

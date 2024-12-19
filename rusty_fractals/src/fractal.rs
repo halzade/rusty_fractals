@@ -4,6 +4,7 @@ use crate::resolution_multiplier::ResolutionMultiplier;
 use std::cmp::PartialEq;
 
 pub struct FractalConfig {
+    pub name: &'static str,
     // fractal config
     pub iteration_min: u32,
     pub iteration_max: u32,

@@ -20,4 +20,4 @@ pub mod perfect_colour_distribution;
 pub mod pixel_states;
 pub mod resolution_multiplier;
 pub mod rusty_tests;
-pub mod window;
+pub mod application;
