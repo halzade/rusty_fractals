@@ -50,8 +50,6 @@ fn main() {
 
     // execute calculation
     application.calculate(&fat_star);
-
-    app.run().unwrap();
 }
 
 #[cfg(test)]

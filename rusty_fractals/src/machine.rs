@@ -524,7 +524,3 @@ mod tests {
         assert_eq!(length, 0);
     }
 }
-
-pub(crate) fn data_image_values_at(p0: i32, p1: i32) -> _ {
-    todo!()
-}
