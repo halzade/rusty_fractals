@@ -1,12 +1,10 @@
-use rusty_fractals::fractal::{FractalMath, MandelbrotConfig};
+use rusty_fractals::application;
+use rusty_fractals::fractal::FractalMath;
+use rusty_fractals::fractal::OrbitType::Infinite;
 use rusty_fractals::mem_collatz::MemCollatz;
 use rusty_fractals::palettes::{palette_blue_to_white_circle_up, palette_gray_to_blue};
-use rusty_fractals::{machine, window};
-use std::thread;
 
-pub struct CollatzConjectureMandelbrot<'lt> {
-
-}
+pub struct CollatzConjectureMandelbrot<'lt> {}
 
 impl FractalMath<MemCollatz> for CollatzConjectureMandelbrot<'_> {
     fn math(&self, mc: &mut MemCollatz, origin_re: f64, origin_im: f64) {
@@ -21,47 +19,44 @@ fn main() {
         iteration_max: 14800,
         palette: palette_blue_to_white_circle_up(),
         palette_zero: palette_gray_to_blue(),
-    };
-    let area_config = AreaConfig {
+
         width_x: 1280,
         height_y: 720,
         width_re: 3.0,
         center_re: -0.882952991714172300,
         center_im: -0.214699221335319460,
-    };
-    let calculation_config = CalculationConfig {
+
         orbits: Infinite,
         update_max: 150,
         update_min: 0,
     };
-    let application: Application<'static> = application::init(area_config, mandelbrot_config);
-    let mut mandelbrot: CollatzConjectureMandelbrot<'static> =
-        CollatzConjectureMandelbrot { app: application };
-    let app = window::show(&mandelbrot);
-    thread::spawn(move || {
-        // TODO mandelbrot.calculate_mandelbrot();
-    });
-    app.run().unwrap();
+    let mandelbrot = CollatzConjectureMandelbrot {};
+
+    // start program window
+    let application = application::init(fractal_config);
+
+    // execute calculation
+    application.calculate(&mandelbrot);
 }
 
 #[cfg(test)]
 mod tests {
     use crate::CollatzConjectureMandelbrot;
+    use rusty_fractals::application;
     use rusty_fractals::fractal::FractalMath;
     use rusty_fractals::mem::Mem;
     use rusty_fractals::mem_collatz::MemCollatz;
-    use rusty_fractals::application;
 
     #[test]
     fn test_math() {
-        let collatz = CollatzConjectureMandelbrot {
-            app: application::init_none(),
-        };
+        let collatz = CollatzConjectureMandelbrot {};
         let mut mc = MemCollatz {
             m: Mem { re: 0.0, im: 0.0 },
             num: 0,
         };
+
         collatz.math(&mut mc, 1.0, 0.1);
+
         assert_eq!(mc.re(), 2.0);
         assert_eq!(mc.im(), 0.65);
     }

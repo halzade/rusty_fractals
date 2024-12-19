@@ -43,7 +43,7 @@ fn main() {
     };
 
     // instantiate fractal
-    let fat_star: FatStar = FatStar {};
+    let fat_star = FatStar {};
 
     // start program window
     let application = application::init(fractal_config);
