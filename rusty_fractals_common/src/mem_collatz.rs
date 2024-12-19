@@ -9,7 +9,10 @@ pub struct MemCollatz {
 impl MemType<MemCollatz> for MemCollatz {
     fn new(re: f64, im: f64) -> MemCollatz {
         // it has 1348 steps
-        MemCollatz { m: Mem { re, im }, num: 989_345_275_647 }
+        MemCollatz {
+            m: Mem { re, im },
+            num: 989_345_275_647,
+        }
     }
 
     fn quad(&self) -> f64 {
@@ -68,7 +71,10 @@ mod tests {
 
     #[test]
     fn test_collatz_conjecture() {
-        let mut c = MemCollatz { m: Mem { re: 0.0, im: 1.0 }, num: 1 };
+        let mut c = MemCollatz {
+            m: Mem { re: 0.0, im: 1.0 },
+            num: 1,
+        };
         c.collatz_conjecture();
         assert_eq!(c.m.re, 1.0);
         assert_eq!(c.m.im, 4.0);
@@ -79,7 +85,10 @@ mod tests {
 
     #[test]
     fn test_plus_collatz() {
-        let mut c = MemCollatz { m: Mem { re: 0.0, im: 1.0 }, num: 1 };
+        let mut c = MemCollatz {
+            m: Mem { re: 0.0, im: 1.0 },
+            num: 1,
+        };
         c.plus_collatz(0.0, 0.0);
         assert_eq!(c.m.re, 0.5);
         assert_eq!(c.m.im, 1.5);

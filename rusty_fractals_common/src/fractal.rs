@@ -3,12 +3,15 @@ use crate::calc::{CalculationConfig, OrbitType};
 use crate::constants::CALCULATION_BOUNDARY;
 use crate::data_image::DataImage;
 use crate::mem::Mem;
+use crate::machine::Machine;
 use crate::palette::Palette;
 use crate::resolution_multiplier::ResolutionMultiplier;
 use std::cmp::PartialEq;
-use std::marker::PhantomData;
 use std::thread;
 
+/**
+ * Represents the actual mathematical object
+ */
 pub struct Fractal {}
 
 pub struct FractalConfig<'lt> {
@@ -16,7 +19,6 @@ pub struct FractalConfig<'lt> {
     pub iteration_max: u32,
     pub resolution_multiplier: ResolutionMultiplier,
     pub palette: Palette<'lt>,
-    pub phantom: PhantomData<&'lt bool>,
 }
 
 pub struct MandelbrotConfig<'lt> {
@@ -25,7 +27,6 @@ pub struct MandelbrotConfig<'lt> {
     pub palette: Palette<'lt>,
     // color insides of mandelbrot set
     pub palette_zero: Palette<'lt>,
-    pub phantom: PhantomData<&'lt bool>,
 }
 
 pub trait FractalMath<T: MemType<T>>: Sync + Send {
@@ -39,6 +40,9 @@ pub trait MemType<T> {
     fn im(&self) -> f64;
 }
 
+/**
+ * A fractal object for test purposes
+ */
 pub struct TrivialFractal {}
 
 impl FractalMath<Mem> for TrivialFractal {
@@ -58,8 +62,10 @@ pub fn calculate_fractal_new_thread<'lt, M: MemType<M>>(
     area_config: AreaConfig,
     calc_config: CalculationConfig,
 ) {
-    let engine = thread::spawn(move || {
-        // TODO calculate_fractal(fractal_config, area_config, calc_config);
+
+    let machine = machine::init();
+    thread::spawn(move || {
+        macine.calculate(fractal, fractal_config, area_config, calc_config);
     });
 }
 
@@ -70,7 +76,7 @@ pub fn calculate_mandelbrot_new_thread<'lt, M: MemType<M>>(
     calc_config: CalculationConfig,
 ) {
     thread::spawn(move || {
-        // TODO fractal.calculate_mandelbrot();
+        // TODO calculate_mandelbrot();
     });
 }
 
@@ -162,7 +168,7 @@ pub fn calculate_mandelbrot_path<T: MemType<T>>(
 
 #[cfg(test)]
 mod tests {
-    use crate::fractal::calculate_path;
+    use crate::fractal::{calculate_path, FractalConfig, FractalMath};
     use crate::{area, calc, data_image, fractal};
 
     #[test]
@@ -174,7 +180,7 @@ mod tests {
         let calc_config = calc::init_trivial();
 
         // execute test
-        calculate_path(
+        let (iterator, length) = calculate_path(
             &fractal,
             &area,
             1,
@@ -185,5 +191,8 @@ mod tests {
             calc_config,
             false,
         );
+
+        assert_eq!(iterator, 5);
+        assert_eq!(length, 0);
     }
 }

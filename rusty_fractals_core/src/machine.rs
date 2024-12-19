@@ -1,14 +1,14 @@
-use rand::thread_rng;
+use crate::window;
 use rand::seq::SliceRandom;
+use rand::thread_rng;
 use rayon::prelude::*;
-use rusty_fractals_common::{fractal, pixel_states};
-use rusty_fractals_common::area::AreaConfig;
+use rusty_fractals_common::area::{Area, AreaConfig};
 use rusty_fractals_common::calc::CalculationConfig;
-use rusty_fractals_common::data_image::{state_from_path_length};
+use rusty_fractals_common::data_image::{state_from_path_length, DataImage};
 use rusty_fractals_common::fractal::{FractalConfig, FractalMath, MemType};
 use rusty_fractals_common::perfect_colour_distribution::perfectly_colour_nebula_values;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier;
-use crate::window;
+use rusty_fractals_common::{fractal, pixel_states};
 
 // to calculate single image
 pub struct Machine {}
@@ -18,7 +18,12 @@ pub fn init() -> Machine {
 }
 
 impl Machine {
-    pub fn calculate<'lt, F: FractalNebulaCommon<'lt> + FractalCommon<'lt>>(&self, fractal: &'static F) {
+    pub fn calculate<'lt, M: MemType<M>>(
+        fractal: &dyn FractalMath<M>,
+        fractal_config: FractalConfig,
+        area_config: AreaConfig,
+        calc_config: CalculationConfig,
+    ) {
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
         coordinates_xy.par_iter().for_each(|xy| {
@@ -61,7 +66,8 @@ impl Machine {
     }
 
     fn chunk_calculation_with_wrap<'lt, F: FractalNebulaCommon<'lt> + FractalCommon<'lt>>(
-        &self, xy: &[u32; 2],
+        &self,
+        xy: &[u32; 2],
         fractal: &'static F,
     ) {
         if fractal.rm() == ResolutionMultiplier::Single {
@@ -78,7 +84,15 @@ impl Machine {
                     let wrap = data.wrap(origin_re, origin_im, fractal.rm(), plank);
                     // within the same pixel
                     for [re, im] in wrap {
-                        fractal.calculate_path(area, fractal.min(), fractal.max(), re, im, fractal.data_image(), true);
+                        fractal.calculate_path(
+                            area,
+                            fractal.min(),
+                            fractal.max(),
+                            re,
+                            im,
+                            fractal.data_image(),
+                            true,
+                        );
                     }
                 }
             }
@@ -86,30 +100,47 @@ impl Machine {
     }
 
     fn calculate_path_xy<'lt, M: MemType<M>>(
-        &self,
         x: usize,
         y: usize,
+        min: u32,
+        max: u32,
         fractal: &dyn FractalMath<M>,
-        fractal_config: FractalConfig,
-        area_config: AreaConfig,
+        area: Area,
+        data_image: DataImage,
         calc_config: CalculationConfig,
     ) {
-        let data = fractal.data_image();
-        let area = fractal.area();
-        let (state, origin_re, origin_im) = data.state_origin_at(x, y);
+        let (state, origin_re, origin_im) = data_image.state_origin_at(x, y);
         if pixel_states::is_active_new(state) {
-            let (iterator, path_length) = fractal::calculate_path(area, fractal.min(), fractal.max(), origin_re, origin_im, fractal.data_image(), false);
+            let (iterator, path_length) = fractal::calculate_path(
+                fractal,
+                &area,
+                min,
+                max,
+                origin_re,
+                origin_im,
+                &data_image,
+                calc_config,
+                false,
+            );
             let state = state_from_path_length(iterator, path_length, fractal.min(), fractal.max());
-            data.set_pixel_state(x, y, state);
+            data_image.set_pixel_state(x, y, state);
         }
     }
 }
 
-pub fn chunk_boundaries(xy: &[u32; 2], width: usize, height: usize) -> (usize, usize, usize, usize) {
+pub fn chunk_boundaries(
+    xy: &[u32; 2],
+    width: usize,
+    height: usize,
+) -> (usize, usize, usize, usize) {
     let chunk_size_x = (width / 20) as u32;
     let chunk_size_y = (height / 20) as u32;
-    ((xy[0] * chunk_size_x) as usize, ((xy[0] + 1) * chunk_size_x) as usize,
-     (xy[1] * chunk_size_y) as usize, ((xy[1] + 1) * chunk_size_y) as usize)
+    (
+        (xy[0] * chunk_size_x) as usize,
+        ((xy[0] + 1) * chunk_size_x) as usize,
+        (xy[1] * chunk_size_y) as usize,
+        ((xy[1] + 1) * chunk_size_y) as usize,
+    )
 }
 
 /**
@@ -129,7 +160,17 @@ pub fn shuffled_calculation_coordinates() -> Vec<[u32; 2]> {
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn test_it() {}
-}
+    use crate::machine::Machine;
+    use rusty_fractals_common::{area, calc, data_image, fractal};
 
+    #[test]
+    fn test_calculate_path_xy() {
+        let fractal = fractal::init_trivial();
+        let area = area::init_trivial();
+        let data_image = data_image::init_trivial();
+        let calc_config = calc::init_trivial();
+        Machine::calculate_path_xy(0, 0, 1, 5, &fractal, area, data_image, calc_config);
+
+        // TODO
+    }
+}

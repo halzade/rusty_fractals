@@ -24,7 +24,6 @@ impl MemType<Mem> for Mem {
     }
 }
 
-
 impl Mem {
     pub fn plus(&mut self, r: f64, i: f64) {
         self.re += r;

@@ -4,10 +4,10 @@
 // - Zero elements and noise colour by the lowest colour
 // - colour all significant pixels ordered by value
 
-use std::cmp::Ordering::Equal;
 use crate::constants::COLOURING_THRESHOLD;
 use crate::data_image::DataImage;
 use crate::palette::Palette;
+use std::cmp::Ordering::Equal;
 
 // for Nebula like fractals
 struct Pix {
@@ -55,7 +55,10 @@ pub fn perfectly_colour_nebula_values(data: &DataImage, palette: &Palette) {
 
     println!("------------------------------------");
     println!("All pixels to paint:         {}", all_pixels_total);
-    println!("---------------------------> {}", (zero_value_elements + left + (single_colour_use * palette_colour_count)));
+    println!(
+        "---------------------------> {}",
+        (zero_value_elements + left + (single_colour_use * palette_colour_count))
+    );
     println!("Zero value pixels to paint:  {}", zero_value_elements);
     println!("Non zero pixels to paint:    {}", all_pixels_non_zero);
     println!("Spectrum, available colours: {}", palette_colour_count);
@@ -82,7 +85,11 @@ pub fn perfectly_colour_nebula_values(data: &DataImage, palette: &Palette) {
                 data.colour(sp.x, sp.y, palette.spectrum_value(0));
             } else {
                 // perfect-colour all significant pixels
-                data.colour(sp.x, sp.y, palette.spectrum_value(palette_colour_index as usize));
+                data.colour(
+                    sp.x,
+                    sp.y,
+                    palette.spectrum_value(palette_colour_index as usize),
+                );
             }
         }
     }
@@ -238,9 +245,22 @@ fn perfectly_colour_euler_values(data: &DataImage, palette3: &Palette3) {
 }
 */
 
-const NEIGHBOR_COORDINATES: [[i32; 2]; 8] = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]];
+const NEIGHBOR_COORDINATES: [[i32; 2]; 8] = [
+    [-1, -1],
+    [0, -1],
+    [1, -1],
+    [-1, 0],
+    [1, 0],
+    [-1, 1],
+    [0, 1],
+    [1, 1],
+];
 
-pub fn perfectly_colour_mandelbrot_values(data: &DataImage, palette: &Palette, palette_zero: &Palette) {
+pub fn perfectly_colour_mandelbrot_values(
+    data: &DataImage,
+    palette: &Palette,
+    palette_zero: &Palette,
+) {
     println!("perfectly_colour_mandelbrot_values()");
 
     let width = data.width;
@@ -257,9 +277,21 @@ pub fn perfectly_colour_mandelbrot_values(data: &DataImage, palette: &Palette, p
             let (value, _, quad, quid, _) = data.values_at(x, y);
             if value == 0 {
                 zero_value_elements += 1;
-                pixels_zero.push(Mix { x, y, value, quad, quid });
+                pixels_zero.push(Mix {
+                    x,
+                    y,
+                    value,
+                    quad,
+                    quid,
+                });
             } else {
-                pixels.push(Mix { x, y, value, quad, quid });
+                pixels.push(Mix {
+                    x,
+                    y,
+                    value,
+                    quad,
+                    quid,
+                });
             }
         }
     }
@@ -283,7 +315,10 @@ pub fn perfectly_colour_mandelbrot_values(data: &DataImage, palette: &Palette, p
 
     println!("------------------------------------");
     println!("All pixels to paint:         {}", all_pixels_total);
-    println!("---------------------------> {}", (zero_value_elements + left + (single_colour_use * palette_colour_count)));
+    println!(
+        "---------------------------> {}",
+        (zero_value_elements + left + (single_colour_use * palette_colour_count))
+    );
     println!("Zero value pixels to paint:  {}", zero_value_elements);
     println!("Non zero pixels to paint:    {}", all_pixels_non_zero);
     println!("Spectrum, available colours: {}", palette_colour_count);
@@ -305,7 +340,11 @@ pub fn perfectly_colour_mandelbrot_values(data: &DataImage, palette: &Palette, p
             let mp = pixels.get(pi).expect("pixels error");
             pi += 1;
             // perfect-colour all significant pixels
-            data.colour(mp.x, mp.y, palette.spectrum_value(palette_colour_index as usize));
+            data.colour(
+                mp.x,
+                mp.y,
+                palette.spectrum_value(palette_colour_index as usize),
+            );
         }
     }
     let pixels_length = pixels.len();
@@ -317,13 +356,18 @@ pub fn perfectly_colour_mandelbrot_values(data: &DataImage, palette: &Palette, p
         let average_colour_index = ac_if_black_dot(&mpp, data);
         if average_colour_index != -1 {
             // let mpp.colourValue(average_colour_index);
-            data.colour(mpp.x, mpp.y, palette.spectrum_value(average_colour_index as usize));
+            data.colour(
+                mpp.x,
+                mpp.y,
+                palette.spectrum_value(average_colour_index as usize),
+            );
         }
     }
 
     // Paint insides of Mandelbrot set
     let zero_palette_colour_count = palette_zero.spectrum.len() as u32;
-    let zero_single_colour_use = (zero_value_elements as f64 / zero_palette_colour_count as f64) as u32;
+    let zero_single_colour_use =
+        (zero_value_elements as f64 / zero_palette_colour_count as f64) as u32;
     let zero_left = zero_value_elements - (zero_palette_colour_count * zero_single_colour_use);
 
     println!("zero_palette_colour_count:   {}", zero_palette_colour_count);
@@ -340,7 +384,11 @@ pub fn perfectly_colour_mandelbrot_values(data: &DataImage, palette: &Palette, p
             // colour all these pixels with same colour
             let mp = pixels_zero.get(piz).expect("pixel error");
             piz += 1;
-            data.colour(mp.x, mp.y, palette_zero.spectrum_value(zero_palette_colour_index as usize));
+            data.colour(
+                mp.x,
+                mp.y,
+                palette_zero.spectrum_value(zero_palette_colour_index as usize),
+            );
         }
     }
     assert_eq!(pixels_zero.len(), piz);
@@ -369,7 +417,7 @@ fn ac_if_black_dot(mp: &Mix, data: &DataImage) -> i32 {
             sum += neighbor_value;
             neighbours += 1;
         } else {
-            // don't fix elements of edges 
+            // don't fix elements of edges
             return -1;
         }
     }
@@ -377,7 +425,7 @@ fn ac_if_black_dot(mp: &Mix, data: &DataImage) -> i32 {
     let average_value = (sum as f64 / neighbours as f64) as i32;
 
     if cv < average_value - 5 {
-        // darker 
+        // darker
         return average_value as i32;
     }
     -1

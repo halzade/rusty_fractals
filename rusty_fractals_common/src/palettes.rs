@@ -1,8 +1,8 @@
 use crate::palette::Palette;
 use crate::palette::Palette3;
 use crate::palette_utils::make_spectrum;
-use image::Rgb;
 use crate::palettes::Function::{CircleDown, CircleUp, Exp2, Linear1};
+use image::Rgb;
 
 const WHITE: Rgb<u8> = Rgb([255, 255, 255]);
 const BLACK: Rgb<u8> = Rgb([0, 0, 0]);
@@ -10,8 +10,16 @@ const RED: Rgb<u8> = Rgb([255, 0, 0]);
 const GREEN: Rgb<u8> = Rgb([0, 255, 0]);
 const BLUE: Rgb<u8> = Rgb([0, 0, 255]);
 
-pub enum Function { Linear1, Linear3, Linear7, Quadratic, Exp, Exp2, CircleDown, CircleUp }
-
+pub enum Function {
+    Linear1,
+    Linear3,
+    Linear7,
+    Quadratic,
+    Exp,
+    Exp2,
+    CircleDown,
+    CircleUp,
+}
 
 pub fn new<'lt>(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Palette<'lt> {
     Palette {
@@ -74,4 +82,3 @@ mod tests {
     #[test]
     fn test_it() {}
 }
-

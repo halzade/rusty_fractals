@@ -5,7 +5,7 @@ use rusty_fractals_common::fractal::{FractalConfig, FractalMath};
 use rusty_fractals_common::mem::Mem;
 use rusty_fractals_common::palettes::palette_blue_to_white_circle_up;
 use rusty_fractals_common::resolution_multiplier::ResolutionMultiplier::Single;
-use rusty_fractals_core::{application, window};
+use rusty_fractals_core::{window};
 use rusty_fractals_common::calc::CalculationType::StaticImage;
 use rusty_fractals_common::fractal;
 
@@ -26,7 +26,6 @@ fn main() {
         iteration_max: 22000,
         resolution_multiplier: Single,
         palette: palette_blue_to_white_circle_up(),
-        phantom: Default::default(),
     };
     let area_config = AreaConfig {
         width_x: 800,
@@ -45,7 +44,7 @@ fn main() {
     let fat_star: FatStar<'static> = FatStar {};
     let app = window::show("fat_star");
 
-    fractal::calculate_fractal_new_thread(fat_star, fractal_config, area_config, calculation_config);
+    fractal::calculate_fractal_new_thread(&fat_star, fractal_config, area_config, calculation_config);
 
     app.run().unwrap();
 }

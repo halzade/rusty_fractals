@@ -1,5 +1,8 @@
+use crate::pixel_states::DomainElementState::{
+    ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
+    HibernatedDeepBlack,
+};
 use image::Rgb;
-use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort, HibernatedDeepBlack};
 
 pub const FINISHED_SUCCESS_PAST: Rgb<u8> = Rgb([130, 100, 130]);
 pub const FINISHED_SUCCESS: Rgb<u8> = Rgb([255, 0, 0]);
@@ -50,7 +53,10 @@ pub fn is_finished_success_past(state: DomainElementState) -> bool {
 }
 
 pub fn is_finished_any(state: DomainElementState) -> bool {
-    state == FinishedSuccessPast || state == FinishedSuccess || state == FinishedTooShort || state == FinishedTooLong
+    state == FinishedSuccessPast
+        || state == FinishedSuccess
+        || state == FinishedTooShort
+        || state == FinishedTooLong
 }
 
 pub fn is_hibernated(state: DomainElementState) -> bool {
@@ -59,8 +65,8 @@ pub fn is_hibernated(state: DomainElementState) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use crate::pixel_states::DomainElementState::{FinishedSuccessPast, FinishedTooShort};
     use std::cmp::Ordering::Less;
-    use crate::pixel_states::DomainElementState::{FinishedTooShort, FinishedSuccessPast};
 
     #[test]
     fn test_pixel_state() {

@@ -101,9 +101,21 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
             stop = true;
         }
 
-        let r_stop = if r_dif > 0 { (r_to as f64) < r_new } else { (r_to as f64) > r_new };
-        let g_stop = if g_dif > 0 { (g_to as f64) < g_new } else { (g_to as f64) > g_new };
-        let b_stop = if b_dif > 0 { (b_to as f64) < b_new } else { (b_to as f64) > b_new };
+        let r_stop = if r_dif > 0 {
+            (r_to as f64) < r_new
+        } else {
+            (r_to as f64) > r_new
+        };
+        let g_stop = if g_dif > 0 {
+            (g_to as f64) < g_new
+        } else {
+            (g_to as f64) > g_new
+        };
+        let b_stop = if b_dif > 0 {
+            (b_to as f64) < b_new
+        } else {
+            (b_to as f64) > b_new
+        };
 
         if r_stop {
             r_new = r_to as f64;
@@ -183,4 +195,3 @@ mod tests {
     #[test]
     fn test_it() {}
 }
-

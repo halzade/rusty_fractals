@@ -42,7 +42,8 @@ impl Stats {
         self.new_elements_long_measure = self.new_elements_long;
         self.pixels_value_total_measure = self.pixels_value_total;
         self.paths_total_amount_measure = self.paths_total_amount;
-        self.average_path_length_measure = (self.pixels_value_total as f64 / self.paths_total_amount as f64) as u32;
+        self.average_path_length_measure =
+            (self.pixels_value_total as f64 / self.paths_total_amount as f64) as u32;
         self.pixels_value_best_measure = data.best_four_chunks_value();
 
         self.new_elements_long_tolerance = (self.new_elements_long_measure as f64 * 0.5) as u32;
@@ -68,32 +69,43 @@ impl Stats {
             // Total value
             self.not_enough_pixels_total_value = false;
             if self.pixels_value_total < self.pixels_value_total_measure {
-                self.not_enough_pixels_total_value = self.pixels_value_total_measure - self.pixels_value_total > self.pixels_value_total_tolerance;
+                self.not_enough_pixels_total_value = self.pixels_value_total_measure
+                    - self.pixels_value_total
+                    > self.pixels_value_total_tolerance;
             }
             self.too_many_pixels_total_value = false;
             if self.pixels_value_total > self.pixels_value_total_measure {
-                self.too_many_pixels_total_value = self.pixels_value_total - self.pixels_value_total_measure > self.pixels_value_total_tolerance;
+                self.too_many_pixels_total_value = self.pixels_value_total
+                    - self.pixels_value_total_measure
+                    > self.pixels_value_total_tolerance;
             }
-            self.less_pixels_total_value = self.pixels_value_total < self.pixels_value_total_measure;
+            self.less_pixels_total_value =
+                self.pixels_value_total < self.pixels_value_total_measure;
 
             // Best domain chunks, chunks with most image points
             self.not_enough_pixels_best_value = false;
             self.pixels_value_best = data.best_four_chunks_value();
             if self.pixels_value_best < self.pixels_value_best_measure {
-                self.not_enough_pixels_best_value = self.pixels_value_best_measure - self.pixels_value_best > self.pixels_value_best_tolerance;
+                self.not_enough_pixels_best_value = self.pixels_value_best_measure
+                    - self.pixels_value_best
+                    > self.pixels_value_best_tolerance;
             }
             self.less_pixels_best_value = self.pixels_value_best < self.pixels_value_best_measure;
 
             // Paths
             self.too_many_paths_total = false;
             if self.paths_total_amount > self.paths_total_amount_measure {
-                self.too_many_paths_total = self.paths_total_amount - self.paths_total_amount_measure > self.paths_total_amount_tolerance;
+                self.too_many_paths_total = self.paths_total_amount
+                    - self.paths_total_amount_measure
+                    > self.paths_total_amount_tolerance;
             }
 
             // Mandelbrot long successful elements
             self.not_enough_long_elements = false;
             if self.new_elements_long < self.new_elements_long_measure {
-                self.not_enough_long_elements = self.new_elements_long_measure - self.new_elements_long > self.new_elements_long_tolerance;
+                self.not_enough_long_elements = self.new_elements_long_measure
+                    - self.new_elements_long
+                    > self.new_elements_long_tolerance;
             }
 
             println!("not_enough_pixels_total_value {}", self.not_enough_pixels_total_value);
@@ -103,9 +115,12 @@ impl Stats {
             println!("too_many_paths_total          {}", self.too_many_paths_total);
             println!("not_enough_long_elements      {}", self.not_enough_long_elements);
 
-            let average_path_length = self.pixels_value_total as f64 / self.paths_total_amount as f64;
-            let new_elements_all = self.new_elements_long + self.new_elements_too_short + self.new_elements_too_long;
-            let domain_elements_to_new_calculation_path_points = self.paths_new_points_amount as f64 / new_elements_all as f64;
+            let average_path_length =
+                self.pixels_value_total as f64 / self.paths_total_amount as f64;
+            let new_elements_all =
+                self.new_elements_long + self.new_elements_too_short + self.new_elements_too_long;
+            let domain_elements_to_new_calculation_path_points =
+                self.paths_new_points_amount as f64 / new_elements_all as f64;
 
             println!("average_path_length                             {} ({})", average_path_length, self.average_path_length_measure);
             println!("domain_elements_to_new_calculation_path_points: {}", domain_elements_to_new_calculation_path_points);
@@ -166,4 +181,3 @@ mod tests {
     #[test]
     fn test_it() {}
 }
-

@@ -1,6 +1,7 @@
+use crate::constants::ZOOM;
+// TODO remove all phantom data?
 use std::marker::PhantomData;
 use std::sync::Mutex;
-use crate::constants::ZOOM;
 
 /**
  * RxR Area on which the Fractal is calculated
@@ -68,9 +69,7 @@ impl<'lt> Area<'_> {
      */
     pub fn screen_to_domain_re_copy(&self) -> Vec<f64> {
         match self.data.lock() {
-            Ok(d) => {
-                d.numbers_re.clone()
-            }
+            Ok(d) => d.numbers_re.clone(),
             Err(e) => {
                 println!("(): {}", e);
                 panic!()
@@ -83,9 +82,7 @@ impl<'lt> Area<'_> {
      */
     pub fn screen_to_domain_im_copy(&self) -> Vec<f64> {
         match self.data.lock() {
-            Ok(d) => {
-                d.numbers_im.clone()
-            }
+            Ok(d) => d.numbers_im.clone(),
             Err(e) => {
                 println!("(): {}", e);
                 panic!()
@@ -270,10 +267,10 @@ pub fn init_trivial<'lt>() -> Area<'lt> {
         height_yf64: 1.0,
         width_re: 1.0,
         height_im: 1.0,
-        width_half_x: 1,
-        width_half_xf64: 1.0,
-        height_half_y: 1,
-        height_half_yf64: 1.0,
+        width_half_x: 0.5 as usize,
+        width_half_xf64: 0.5,
+        height_half_y: 0.5 as usize,
+        height_half_yf64: 0.5,
         numbers_re: Vec::new(),
         numbers_im: Vec::new(),
         center_re: 0.5,
@@ -292,9 +289,15 @@ pub fn init_trivial<'lt>() -> Area<'lt> {
 
 #[cfg(test)]
 mod tests {
-    use crate::area::{AreaConfig, init};
+    use crate::area::{init, AreaConfig};
 
-    const VANILLA_AREA_CONFIG: AreaConfig = AreaConfig { width_re: 1.0, center_re: 0.0, center_im: 0.0, width_x: 10, height_y: 5 };
+    const VANILLA_AREA_CONFIG: AreaConfig = AreaConfig {
+        width_re: 1.0,
+        center_re: 0.0,
+        center_im: 0.0,
+        width_x: 10,
+        height_y: 5,
+    };
 
     #[test]
     fn test_init() {
