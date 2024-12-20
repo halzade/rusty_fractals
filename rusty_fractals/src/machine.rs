@@ -109,7 +109,7 @@ pub fn init_trivial() -> Machine<'static, TrivialFractal> {
         update_max: 3,
         update_min: 1,
         resolution_multiplier: ResolutionMultiplier::Single,
-        fractal_type: FractalType::MandelbrotType,
+        fractal_type: MandelbrotType,
         stats: fractal_stats::init(),
     }
 }
@@ -125,7 +125,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // calculation
             self.chunk_calculation(&xy);
             // window refresh
-            application::paint_image_calculation_progress(&self.data_image);
+            // application::paint_image_calculation_progress(xy, &self.data_image);
         });
         self.data_image.recalculate_pixels_states();
 
@@ -136,8 +136,8 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
                 // calculation
                 self.chunk_calculation_with_wrap(&xy);
                 // window refresh
-                application::paint_image_calculation_progress(&self.data_image);
-                application::paint_path(&self.area, &self.data_image);
+                // application::paint_image_calculation_progress(xy, &self.data_image);
+                // application::paint_path(&self.area, &self.data_image);
             });
         }
         perfectly_colour_nebula_values(&self.data_image, &self.palette);
@@ -194,10 +194,10 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
 
     pub fn zoom_in_recalculate_pixel_positions(&self) {
         self.area.zoom_in();
-        application::paint_image_calculation_progress(&self.data_image);
+        application::paint_image_result(&self.data_image);
 
         self.recalculate_pixels_positions_for_next_calculation();
-        application::paint_image_calculation_progress(&self.data_image);
+        application::paint_image_result(&self.data_image);
     }
 
     pub fn zoom_in(&self) {
@@ -403,7 +403,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // calculation
             self.chunk_calculation_mandelbrot(xy);
             // window refresh
-            application::paint_image_calculation_progress(&self.data_image);
+            // application::paint_image_calculation_progress(xy, &self.data_image);
         });
         self.data_image.recalculate_pixels_states();
         perfect_colour_distribution::perfectly_colour_mandelbrot_values(

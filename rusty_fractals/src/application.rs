@@ -28,6 +28,7 @@ impl<F: FractalMath + 'static> Application<'static, F> {
     pub fn execute(self) {
         println!("application.execute()");
 
+        println!("calculation");
         let is_mandelbrot = *&self.machine.lock().unwrap().fractal_type == MandelbrotType;
         let is_image = *&self.machine.lock().unwrap().calc_type == StaticImage;
 
@@ -42,7 +43,9 @@ impl<F: FractalMath + 'static> Application<'static, F> {
         } else {
             if is_image {
                 // Hard fractal image
+                println!("a");
                 &self.machine.lock().unwrap().calculate_nebula();
+                println!("b");
             } else {
                 // Hard fractal video
                 &self.machine.lock().unwrap().calculate_nebula_zoom();
@@ -105,7 +108,7 @@ impl<F: FractalMath + 'static> Application<'static, F> {
                                     *mv = value;
                                 }
                                 // make color (3x) brighter
-                                let mut cv = ((value * 3) as f64 / *mv as f64) as f64 * 255.0;
+                                let mut cv = ((value * 3) as f64 / *mv as f64) * 255.0;
                                 if cv > 255.0 {
                                     cv = 255.0;
                                 }
@@ -118,7 +121,7 @@ impl<F: FractalMath + 'static> Application<'static, F> {
                     let g = colour.channels().get(1).unwrap();
                     let b = colour.channels().get(2).unwrap();
                     draw::set_draw_color(Color::from_rgb(*r, *g, *b));
-                    draw::draw_point(x as i32, y as i32);
+                    draw::draw_point(x, y);
                 }
             }
         });
@@ -204,9 +207,47 @@ pub fn paint_path(area: &Area, data: &DataImage) {
 /**
  * rendering must be done from main thread
  */
-pub fn paint_image_calculation_progress(data: &DataImage) {
-    app::awake();
-    app::redraw();
+pub fn paint_image_calculation_progress(xy: &[u32; 2], data: &DataImage) {
+    let chunk_size_x = data.width / 20;
+    let chunk_size_y = data.height / 20;
+
+    let xx = xy[0] as usize;
+    let yy = xy[1] as usize;
+
+    let x_from = chunk_size_x * xx;
+    let x_to = chunk_size_x * (xx + 1);
+    let y_from = chunk_size_y * yy;
+    let y_to = chunk_size_y * (yy + 1);
+
+    let lr = app::lock();
+    match lr {
+        Ok(_) => {
+            for y in y_from..y_to {
+                for x in x_from..x_to {
+                    let colour_index_o = data.colour_at(x, y);
+                    match colour_index_o {
+                        None => {
+                            panic!();
+                        }
+                        Some(ci) => {
+                            let r = ci.channels().get(0).unwrap();
+                            let g = ci.channels().get(1).unwrap();
+                            let b = ci.channels().get(2).unwrap();
+                            draw::set_draw_color(Color::from_rgb(*r, *g, *b));
+                            draw::draw_point(x as i32, y as i32);
+                        }
+                    }
+                }
+            }
+            app::unlock();
+            // rendering must be done from main thread
+            app::awake();
+            app::redraw();
+        }
+        Err(_) => {
+            println!("paint_image_result(): can't unlock app");
+        }
+    }
 }
 
 pub fn paint_image_result(data: &DataImage) {
@@ -236,7 +277,7 @@ pub fn paint_image_result(data: &DataImage) {
             app::redraw();
         }
         Err(_) => {
-            println!("paint_image_result(): can't unlock app");
+            println!("paint_image_calculation_progress(): can't unlock app");
         }
     }
 }
