@@ -24,15 +24,15 @@ impl MemPhoenix {
         }
     }
 
-    fn re(&self) -> f64 {
+    pub fn re(&self) -> f64 {
         self.re()
     }
 
-    fn im(&self) -> f64 {
+    pub fn im(&self) -> f64 {
         self.im()
     }
 
-    fn quad(&self) -> f64 {
+    pub fn quad(&self) -> f64 {
         self.m.quad()
     }
 

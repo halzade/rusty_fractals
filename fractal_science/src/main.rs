@@ -1,5 +1,4 @@
 use rusty_fractals::application;
-use rusty_fractals::application::Application;
 use rusty_fractals::fractal::CalculationType::StaticImage;
 use rusty_fractals::fractal::FractalType::NebulaType;
 use rusty_fractals::fractal::OrbitType::Finite;
@@ -28,10 +27,10 @@ fn main() {
         palette: BlueToWhiteCircleUp,
         palette_zero: Nothing,
 
-        width_x: 400,
-        height_y: 400,
+        width_x: 200,
+        height_y: 200,
         width_re: 3.5,
-        center_re: 0.0,
+        center_re: -0.5,
         center_im: 0.0,
 
         calc_type: StaticImage,
@@ -40,7 +39,7 @@ fn main() {
         update_min: 0,
     };
 
-    let application: Application<'static, Science> = application::init(fractal_config, Science {});
+    let application = application::init(fractal_config, Science {});
 
     application.execute();
 }

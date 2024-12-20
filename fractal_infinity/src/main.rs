@@ -38,12 +38,11 @@ fn main() {
         update_min: 0,
     };
 
-    let infinity = Infinity {};
     // start program window
-    let application = application::init(fractal_config);
+    let application = application::init(fractal_config, Infinity {});
 
     // execute calculation
-    application.calculate(&infinity);
+    application.execute();
 }
 
 #[cfg(test)]

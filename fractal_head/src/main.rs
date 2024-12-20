@@ -10,7 +10,7 @@ use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square9;
 
 pub struct Head {}
 
-impl FractalMath<MemPhoenix> for Head {
+impl FractalMath for Head {
     fn math(&self, mp: &mut MemPhoenix, origin_re: f64, origin_im: f64) {
         mp.square();
         mp.m.re += PHOENIX_INIT_C;
@@ -46,13 +46,12 @@ fn main() {
         update_max: 150,
         update_min: 0,
     };
-    let head = Head {};
 
     // start program window
-    let application = application::init(fractal_config);
+    let application = application::init(fractal_config, Head{});
 
     // execute calculation
-    application.calculate(&head);
+    application.execute();
 }
 
 #[cfg(test)]

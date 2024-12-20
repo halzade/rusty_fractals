@@ -248,23 +248,28 @@ pub fn init<'lt>(config: &FractalConfig) -> Area {
 
 pub fn init_trivial<'lt>() -> Area {
     let area_data = AreaData {
-        width_x: 1,
-        width_xf64: 1.0,
-        height_y: 1,
-        height_yf64: 1.0,
+        width_x: 10,
         width_re: 1.0,
-        height_im: 1.0,
+        width_xf64: 1.0,
         width_half_x: 0.5 as usize,
         width_half_xf64: 0.5,
+
+        height_y: 5,
+        height_yf64: 1.0,
+        height_im: 1.0,
         height_half_y: 0.5 as usize,
         height_half_yf64: 0.5,
+
         numbers_re: Vec::new(),
         numbers_im: Vec::new(),
-        center_re: 0.5,
-        center_im: 0.5,
-        border_low_re: 0.0,
+
+        center_re: 0.0,
+        center_im: 0.0,
+
+        border_low_re: -0.5,
+        border_high_re: 0.5,
+
         border_low_im: 0.0,
-        border_high_re: 1.0,
         border_high_im: 1.0,
         plank: 0.1,
     };
