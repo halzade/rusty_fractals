@@ -13,14 +13,14 @@ use std::sync::{Arc, Mutex};
 pub struct Application<'lt, F: FractalMath> {
     machine: Arc<Mutex<Machine<'lt, F>>>,
     app: App,
-    max_value: Mutex<u32>,
+    max_value: Arc<Mutex<u32>>, // Wrap in Arc
 }
 
 pub fn init<F: FractalMath>(config: FractalConfig, fractal: F) -> Application<'static, F> {
     Application {
         machine: Arc::new(Mutex::new(machine::init(&config, fractal))),
         app: App::default(),
-        max_value: Mutex::new(0),
+        max_value: Arc::new(Mutex::new(0)), // Wrap in Arc
     }
 }
 
@@ -29,12 +29,13 @@ impl<F: FractalMath + 'static> Application<'static, F> {
         println!("machine.calculate()");
         &self.machine.lock().unwrap().calculate();
 
-        println!("run().unwrap()");
-        &self.app.run().unwrap();
-
-        println!("show() end.");
+        println!("show()");
         // move
-        self.show();
+        &self.show();
+
+        println!("run().unwrap()");
+        self.app.run().unwrap();
+
 
         println!("show() end.");
     }
@@ -44,7 +45,7 @@ impl<F: FractalMath + 'static> Application<'static, F> {
         self.machine.lock().unwrap().calculate();
     }
 
-    pub fn show(self) {
+    pub fn show(&self) {
         println!("show()");
 
         let width = self.machine.lock().unwrap().width_x as i32;
@@ -55,18 +56,22 @@ impl<F: FractalMath + 'static> Application<'static, F> {
             .with_size(width, height)
             .center_screen();
 
-        // initialize window color, filled rectangle
-        draw::set_draw_color(Color::from_rgb(40, 180, 150));
-        draw::draw_rectf(0, 0, width, height);
+        // Clone `Arc<Mutex<>>` for use in the closure
+        let machine = Arc::clone(&self.machine);
+        let max_value = Arc::clone(&self.max_value); // Now `max_value` is correctly wrapped in Arc
 
         let cycle = 0;
 
         window.draw(move |_| {
+
+            /*
+             * Never use self in here
+             */
+
             println!("draw {}", cycle);
 
-            let machine = self.machine.lock().unwrap();
+            let machine = machine.lock().unwrap(); // Access `machine` via the cloned Arc
 
-            // let data = data_image::data();
             for y in 0..height {
                 for x in 0..width {
                     let (value, state, _, _, colour_index_o) =
@@ -80,7 +85,7 @@ impl<F: FractalMath + 'static> Application<'static, F> {
                                 colour = pixel_colour;
                             }
                             None => {
-                                let mut mv = self.max_value.lock().unwrap();
+                                let mut mv = max_value.lock().unwrap(); // Access `max_value` via the cloned Arc
                                 if value > *mv {
                                     *mv = value;
                                 }
@@ -109,7 +114,7 @@ impl<F: FractalMath + 'static> Application<'static, F> {
                 match ek {
                     Key::Escape => {
                         println!("exit");
-                        self.app.quit();
+                        // TODO self.app.quit(); // `self` is still directly referenced here
                     }
                     _ => {}
                 }
@@ -125,7 +130,7 @@ impl<F: FractalMath + 'static> Application<'static, F> {
                     ' ' => {
                         println!("space bar");
                         // TODO probably not the right method
-                        // self.machine.lock().unwrap().zoom_in_recalculate_pixel_positions();
+                        // TODO self.machine.lock().unwrap().zoom_in_recalculate_pixel_positions();
                         true
                     }
                     _ => false,
@@ -144,6 +149,7 @@ impl<F: FractalMath + 'static> Application<'static, F> {
             }
             _ => false,
         });
+
         window.end();
         window.show();
 

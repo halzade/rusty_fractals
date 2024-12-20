@@ -94,7 +94,7 @@ pub fn perfectly_colour_nebula_values(data: &DataImage, palette: &Palette) {
         }
     }
     assert_eq!(pixels.len(), pi);
-    println!("painted:                   {}", pi);
+    println!("painted:                     {}", pi);
     // Behold, the colouring is perfect
 }
 
