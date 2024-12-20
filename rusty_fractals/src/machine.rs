@@ -6,10 +6,11 @@ use crate::data_px::{active_new, hibernated_deep_black};
 use crate::fractal::CalculationType::StaticImage;
 use crate::fractal::FractalType::MandelbrotType;
 use crate::fractal::{
-    CalculationType, FractalConfig, FractalMath, FractalType, MemType, OrbitType,
+    CalculationType, FractalConfig, FractalMath, FractalType, OrbitType, TrivialFractal,
 };
 use crate::fractal_log::now;
 use crate::fractal_stats::Stats;
+use crate::mem::Mem;
 use crate::palette::Palette;
 use crate::palettes::new_palette_by_name;
 use crate::perfect_colour_distribution::perfectly_colour_nebula_values;
@@ -17,7 +18,7 @@ use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong, FinishedTooShort};
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::{
-    application, area, data_image, fractal_stats, palettes, perfect_colour_distribution,
+    application, area, data_image, fractal, fractal_stats, palettes, perfect_colour_distribution,
     pixel_states,
 };
 use rand::seq::SliceRandom;
@@ -28,8 +29,12 @@ use std::thread;
 /**
  * Machine owns all data
  */
-pub struct Machine<'lt> {
+pub struct Machine<'lt, F>
+where
+    F: FractalMath,
+{
     pub name: &'lt str,
+    pub fractal: F,
     pub fractal_type: FractalType,
     // area config
     pub area: Area,
@@ -57,9 +62,10 @@ pub struct Machine<'lt> {
     pub resolution_multiplier: ResolutionMultiplier,
 }
 
-pub fn init(config: &FractalConfig) -> Machine<'static> {
+pub fn init<F: FractalMath>(config: &FractalConfig, fractal: F) -> Machine<'static, F> {
     let area: Area = area::init(config);
     Machine {
+        fractal,
         name: config.name,
         data_image: data_image::init(Static, &area), // TODO Dynamic
         area,
@@ -84,8 +90,9 @@ pub fn init(config: &FractalConfig) -> Machine<'static> {
     }
 }
 
-pub fn init_trivial<'lt>() -> Machine<'lt> {
+pub fn init_trivial() -> Machine<'static, TrivialFractal> {
     Machine {
+        fractal: fractal::init_trivial(),
         name: "Trivial Fractal",
         data_image: data_image::init_trivial(),
         area: area::init_trivial(),
@@ -108,23 +115,23 @@ pub fn init_trivial<'lt>() -> Machine<'lt> {
     }
 }
 
-impl<'lt> Machine<'lt> {
+impl<'lt, F: FractalMath> Machine<'lt, F> {
     /**
      * Calculate the whole Nebula fractal
      */
-    pub fn calculate<M: MemType<M>>(&self, fractal: &impl FractalMath<M>) {
+    pub fn calculate(&self) {
         // TODO
         // thread::spawn(move || {
-            // TODO self.calculate(fractal);
-            // TODO or
-            // TODO calculate_mandelbrot();
+        // TODO self.calculate(fractal);
+        // TODO or
+        // TODO calculate_mandelbrot();
         //});
 
         println!("calculate()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
-            self.chunk_calculation(&xy, fractal);
+            self.chunk_calculation(&xy);
             // window refresh
             application::paint_image_calculation_progress(&self.data_image);
         });
@@ -135,7 +142,7 @@ impl<'lt> Machine<'lt> {
             // previous calculation completed, calculate more elements
             coordinates_xy.par_iter().for_each(|xy| {
                 // calculation
-                self.chunk_calculation_with_wrap(fractal, &xy);
+                self.chunk_calculation_with_wrap(&xy);
                 // window refresh
                 // TODO window::paint_image_calculation_progress(&data);
                 application::paint_path(&self.area, &self.data_image);
@@ -146,20 +153,16 @@ impl<'lt> Machine<'lt> {
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
-    fn chunk_calculation<M: MemType<M>>(&self, xy: &[u32; 2], fractal: &impl FractalMath<M>) {
+    fn chunk_calculation(&self, xy: &[u32; 2]) {
         let (x_from, x_to, y_from, y_to) = self.chunk_boundaries(xy);
         for x in x_from..x_to {
             for y in y_from..y_to {
-                self.calculate_path_xy(fractal, x, y);
+                self.calculate_path_xy(x, y);
             }
         }
     }
 
-    fn chunk_calculation_with_wrap<M: MemType<M>>(
-        &self,
-        fractal: &impl FractalMath<M>,
-        xy: &[u32; 2],
-    ) {
+    fn chunk_calculation_with_wrap(&self, xy: &[u32; 2]) {
         if self.resolution_multiplier == ResolutionMultiplier::Single {
             panic!()
         }
@@ -177,17 +180,17 @@ impl<'lt> Machine<'lt> {
                     );
                     // within the same pixel
                     for [re, im] in wrap {
-                        self.calculate_path(fractal, re, im, true);
+                        self.calculate_path(re, im, true);
                     }
                 }
             }
         }
     }
 
-    fn calculate_path_xy<M: MemType<M>>(&self, fractal: &impl FractalMath<M>, x: usize, y: usize) {
+    fn calculate_path_xy(&self, x: usize, y: usize) {
         let (state, origin_re, origin_im) = self.data_image.state_origin_at(x, y);
         if pixel_states::is_active_new(state) {
-            let (iterator, path_length) = self.calculate_path(fractal, origin_re, origin_im, false);
+            let (iterator, path_length) = self.calculate_path(origin_re, origin_im, false);
             let state = self.state_from_path_length(iterator, path_length);
             self.data_image.set_pixel_state(x, y, state);
         }
@@ -303,15 +306,11 @@ impl<'lt> Machine<'lt> {
         }
     }
 
-    pub fn calculate_path<T: MemType<T>>(
-        &self,
-        fractal: &impl FractalMath<T>,
-        origin_re: f64,
-        origin_im: f64,
-        is_wrap: bool,
-    ) -> (u32, u32) {
+    pub fn calculate_path(&self, origin_re: f64, origin_im: f64, is_wrap: bool) -> (u32, u32) {
         let cb = CALCULATION_BOUNDARY as f64;
-        let mut m: T = T::new(origin_re, origin_im);
+
+        let mut m = Mem::new(origin_re, origin_im);
+
         let mut iterator = 0;
         let mut length = 0;
         while m.quad() < cb && iterator < self.iteration_max {
@@ -319,7 +318,7 @@ impl<'lt> Machine<'lt> {
             // Don't create path data yet. Too many origins don't produce good data
             // Most of the long and expensive calculations end up inside Mandelbrot set, useless
             // It is 1.68x faster to calculate path twice, and to record exclusively the good paths
-            fractal.math(&mut m, origin_re, origin_im);
+            self.fractal.math(&mut m, origin_re, origin_im);
             if self.area.contains(m.re(), m.im()) {
                 // this becomes important for zoom, when only a small amount
                 // of calculation path elements is contained withing tiny area
@@ -331,10 +330,12 @@ impl<'lt> Machine<'lt> {
         if self.path_test(length, iterator) {
             // This origin produced good data
             // Record the calculation path
-            let mut m: T = T::new(origin_re, origin_im);
+
+            let mut m = Mem::new(origin_re, origin_im);
+
             let mut path: Vec<[f64; 2]> = Vec::new();
             for _ in 0..iterator {
-                fractal.math(&mut m, origin_re, origin_im);
+                self.fractal.math(&mut m, origin_re, origin_im);
                 if self.area.contains(m.re(), m.im()) {
                     path.push([m.re(), m.im()]);
                 }
@@ -368,7 +369,7 @@ impl<'lt> Machine<'lt> {
      * Methods for infinite zoom video calculations
      * ------------------------------------------ */
 
-    pub fn calculate_nebula_zoom<M: MemType<M>>(&self, fractal: &'lt impl FractalMath<M>) {
+    pub fn calculate_nebula_zoom(&self) {
         thread::spawn(move || {
             for it in 1.. {
                 // println!("{}:", it);
@@ -382,7 +383,7 @@ impl<'lt> Machine<'lt> {
         });
     }
 
-    pub fn calculate_mandelbrot_zoom<M: MemType<M>>(&self, fractal: &impl FractalMath<M>) {
+    pub fn calculate_mandelbrot_zoom(&self) {
         thread::spawn(move || {
             for it in 1.. {
                 println!("{}:", it);
@@ -403,13 +404,13 @@ impl<'lt> Machine<'lt> {
     /**
      * Whole Mandelbrot calculation
      */
-    pub fn calculate_mandelbrot<M: MemType<M>>(&self, fractal: &impl FractalMath<M>) {
+    pub fn calculate_mandelbrot(&self) {
         println!("calculate_mandelbrot()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
 
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
-            self.chunk_calculation_mandelbrot(fractal, xy);
+            self.chunk_calculation_mandelbrot(xy);
             // window refresh
             application::paint_image_calculation_progress(&self.data_image);
         });
@@ -422,11 +423,7 @@ impl<'lt> Machine<'lt> {
         application::paint_image_result(&self.data_image);
     }
 
-    fn chunk_calculation_mandelbrot<M: MemType<M>>(
-        &self,
-        fractal: &impl FractalMath<M>,
-        xy: &[u32; 2],
-    ) {
+    fn chunk_calculation_mandelbrot(&self, xy: &[u32; 2]) {
         let (x_from, x_to, y_from, y_to) = self.chunk_boundaries(xy);
         for x in x_from..x_to {
             for y in y_from..y_to {
@@ -434,8 +431,7 @@ impl<'lt> Machine<'lt> {
                 // TODO, calculate only ActiveNew elements, copy quad and quid
                 if !pixel_states::is_finished_any(state) {
                     // calculation
-                    let (iterator, quad) =
-                        self.calculate_mandelbrot_path(fractal, origin_re, origin_im);
+                    let (iterator, quad) = self.calculate_mandelbrot_path(origin_re, origin_im);
                     let state = self.state_from_path_length(iterator, iterator);
                     self.data_image.set_pixel_mandelbrot(
                         x,
@@ -450,17 +446,14 @@ impl<'lt> Machine<'lt> {
         }
     }
 
-    pub fn calculate_mandelbrot_path<T: MemType<T>>(
-        &self,
-        fractal: &impl FractalMath<T>,
-        origin_re: f64,
-        origin_im: f64,
-    ) -> (u32, f64) {
+    pub fn calculate_mandelbrot_path(&self, origin_re: f64, origin_im: f64) -> (u32, f64) {
         let cb = CALCULATION_BOUNDARY as f64;
-        let mut m: T = T::new(origin_re, origin_im);
+
+        let mut m = Mem::new(origin_re, origin_im);
+
         let mut iterator = 0;
         while m.quad() < cb && iterator < self.iteration_max {
-            fractal.math(&mut m, origin_re, origin_im);
+            self.fractal.math(&mut m, origin_re, origin_im);
             iterator += 1;
         }
         (iterator, m.quad())
@@ -492,7 +485,7 @@ mod tests {
     fn test_calculate_path_xy() {
         let fractal = fractal::init_trivial();
         let machine = machine::init_trivial();
-        machine.calculate_path_xy(&fractal, 0, 0);
+        machine.calculate_path_xy(0, 0);
 
         // TODO
     }
@@ -504,8 +497,8 @@ mod tests {
         let x = 0;
         let y = 0;
         let xy = [x, y];
-        let fractal = fractal::init_trivial();
-        mm.chunk_calculation_mandelbrot(&fractal, &xy);
+
+        mm.chunk_calculation_mandelbrot(&xy);
 
         // TODO
     }
@@ -517,7 +510,7 @@ mod tests {
         let machine = machine::init_trivial();
 
         // execute test
-        let (iterator, length) = machine.calculate_path(&fractal, 0.0, 0.0, false);
+        let (iterator, length) = machine.calculate_path(0.0, 0.0, false);
 
         assert_eq!(iterator, 5);
         assert_eq!(length, 0);

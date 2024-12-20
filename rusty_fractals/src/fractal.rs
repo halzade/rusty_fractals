@@ -52,24 +52,24 @@ pub enum CalculationType {
     InfiniteVideoZoom,
 }
 
-// pub trait FractalMath<T: MemType<T>>: Sync + Send + Sized {
-pub trait FractalMath<T: MemType<T>>: Sync + Send {
-    fn math(&self, m: &mut T, origin_re: f64, origin_im: f64);
+pub trait FractalMath: Sync + Send {
+    fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64);
 }
 
-pub trait MemType<T> {
-    fn new(re: f64, im: f64) -> T;
-    fn quad(&self) -> f64;
-    fn re(&self) -> f64;
-    fn im(&self) -> f64;
-}
+// pub trait MemType<T> {
+//     fn new(re: f64, im: f64) -> T;
+//     fn quad(&self) -> f64;
+//     fn re(&self) -> f64;
+//     fn im(&self) -> f64;
+// }
 
 /**
  * A fractal object for test purposes
+ * Can't add generic because it is trivial
  */
-pub struct TrivialFractal {}
+pub struct TrivialFractal;
 
-impl FractalMath<Mem> for TrivialFractal {
+impl FractalMath for TrivialFractal {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         m.square();
         m.plus(origin_re, origin_im);

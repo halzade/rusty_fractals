@@ -1,4 +1,5 @@
 use rusty_fractals::application;
+use rusty_fractals::application::Application;
 use rusty_fractals::fractal::CalculationType::StaticImage;
 use rusty_fractals::fractal::FractalType::NebulaType;
 use rusty_fractals::fractal::OrbitType::Finite;
@@ -9,7 +10,7 @@ use rusty_fractals::resolution_multiplier::ResolutionMultiplier::{Single, Square
 
 pub struct Lotus {}
 
-impl FractalMath<Mem> for Lotus {
+impl FractalMath for Lotus {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         m.conjugation();
         m.square();
@@ -40,13 +41,9 @@ fn main() {
         update_min: 0,
     };
 
-    let fractal = Lotus {};
+    let application: Application<'static, Lotus> = application::init(fractal_config, Lotus {});
 
-    // start program window
-    let application = application::init(fractal_config);
-
-    // execute calculation
-    application.calculate(&fractal);
+    application.execute();
 }
 
 #[cfg(test)]

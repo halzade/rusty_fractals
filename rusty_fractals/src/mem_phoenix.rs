@@ -1,5 +1,4 @@
 use crate::constants::PHOENIX_INITIALIZER;
-use crate::fractal::MemType;
 use crate::mem::Mem;
 
 /**
@@ -14,8 +13,8 @@ pub struct MemPhoenix {
     pub prev_im: f64,
 }
 
-impl MemType<MemPhoenix> for MemPhoenix {
-    fn new(re: f64, im: f64) -> MemPhoenix {
+impl MemPhoenix {
+    pub fn new(re: f64, im: f64) -> MemPhoenix {
         MemPhoenix {
             m: Mem { re, im },
             prev_prev_re: PHOENIX_INITIALIZER,
@@ -25,10 +24,6 @@ impl MemType<MemPhoenix> for MemPhoenix {
         }
     }
 
-    fn quad(&self) -> f64 {
-        self.m.quad()
-    }
-
     fn re(&self) -> f64 {
         self.re()
     }
@@ -36,23 +31,17 @@ impl MemType<MemPhoenix> for MemPhoenix {
     fn im(&self) -> f64 {
         self.im()
     }
-}
 
-impl MemPhoenix {
+    fn quad(&self) -> f64 {
+        self.m.quad()
+    }
+
     pub fn plus(&mut self, r: f64, i: f64) {
         self.m.plus(r, i);
     }
 
     pub fn square(&mut self) {
         self.m.square();
-    }
-
-    pub fn re(&self) -> f64 {
-        self.m.re
-    }
-
-    pub fn im(&self) -> f64 {
-        self.m.im
     }
 }
 
