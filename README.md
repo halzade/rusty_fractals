@@ -85,6 +85,11 @@ Path elements `re im` which move out of the image boundary are removed.
 https://github.com/halzade/rusty_fractals.git
 ```
 
+## How to use
+
+Try first **fractal_science** and play with some parameters.
+
+
 ## Random ideas to do
 
 Make a fine fractal from Riemann Zeta function and zoom into -1/12
