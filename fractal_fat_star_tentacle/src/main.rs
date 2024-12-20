@@ -44,13 +44,7 @@ fn main() {
         update_min: 0,
     };
 
-    let fat_star_tentacle = FatStarTentacle {};
-
-    // start program window
-    let application = application::init(fractal_config);
-
-    // execute calculation
-    application.calculate(&fat_star_tentacle);
+    application::init(fractal_config, FatStarTentacle {}).execute();
 }
 
 #[cfg(test)]

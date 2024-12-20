@@ -1,12 +1,11 @@
 use rusty_fractals::application;
-use rusty_fractals::application::Application;
 use rusty_fractals::fractal::CalculationType::StaticImage;
 use rusty_fractals::fractal::FractalType::NebulaType;
 use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::{Single, Square11};
+use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square11;
 
 pub struct Lotus {}
 
@@ -41,9 +40,7 @@ fn main() {
         update_min: 0,
     };
 
-    let application: Application<'static, Lotus> = application::init(fractal_config, Lotus {});
-
-    application.execute();
+    application::init(fractal_config, Lotus {}).execute();
 }
 
 #[cfg(test)]

@@ -37,13 +37,8 @@ fn main() {
         update_max: 150,
         update_min: 0,
     };
-    let mandelbrot = CollatzConjectureMandelbrot {};
 
-    // start program window
-    let application = application::init(fractal_config);
-
-    // execute calculation
-    application.calculate(&mandelbrot);
+    application::init(fractal_config, CollatzConjectureMandelbrot {}).execute();
 }
 
 #[cfg(test)]

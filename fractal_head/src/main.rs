@@ -47,11 +47,7 @@ fn main() {
         update_min: 0,
     };
 
-    // start program window
-    let application = application::init(fractal_config, Head{});
-
-    // execute calculation
-    application.execute();
+    application::init(fractal_config, Head {}).execute();
 }
 
 #[cfg(test)]

@@ -1,23 +1,16 @@
 mod euler;
-mod pixel;
 mod mem_euler;
+mod pixel;
 
-use rusty_fractals::fractal::{FractalMath};
 use crate::mem_euler::MemEuler;
+use rusty_fractals::application;
+use rusty_fractals::fractal::CalculationType::StaticImage;
+use rusty_fractals::fractal::FractalType::{NebulaEulerType, NebulaType};
+use rusty_fractals::fractal::OrbitType::Infinite;
+use rusty_fractals::fractal::{FractalConfig, FractalMath};
+use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
+use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
 
-/*
-const ITERATION_MAX: u32 = 80000;
-const ITERATION_MIN: u32 = 42;
-const AREA_SIZE: f64 = 4.0;
-const TARGET_RE: f64 = 0.0;
-const TARGET_IM: f64 = 0.0;
-const RESOLUTION_WIDTH: u32 = 1920;
-const RESOLUTION_HEIGHT: u32 = 1080;
-const RESOLUTION_MULTIPLIER: ResolutionMultiplier = None;
-const REPEAT: bool = false;
-const SAVE_IMAGES: bool = false;
-const PALETTE: Palette = PALETTE_3_RGB;
-*/
 struct Euler {}
 
 impl FractalMath<MemEuler> for Euler {
@@ -31,7 +24,30 @@ impl FractalMath<MemEuler> for Euler {
 }
 
 fn main() {
-    // TODO
+    let fractal_config = FractalConfig {
+        name: "Euler",
+        iteration_min: 42,
+        iteration_max: 80000,
+        fractal_type: NebulaEulerType,
+        resolution_multiplier: Single,
+        palette: BlueToWhiteCircleUp, // TODO PALETTE_3_RGB
+        palette_zero: Nothing,
+
+        // area
+        width_x: 1920,
+        height_y: 1080,
+        width_re: 4.0,
+        center_re: 0.0,
+        center_im: 0.0,
+
+        // calculation config
+        calc_type: StaticImage,
+        orbits: Infinite, // ?
+        update_max: 150,
+        update_min: 0,
+    };
+
+    application::init(fractal_config, Euler {}).execute();
 }
 
 #[cfg(test)]

@@ -39,13 +39,7 @@ fn main() {
         update_min: 0,
     };
 
-    let nebula = NebulaSide {};
-
-    // start program window
-    let application = application::init(fractal_config);
-
-    // execute calculation
-    application.calculate(&nebula);
+    application::init(fractal_config, NebulaSide {}).execute();
 }
 
 #[cfg(test)]

@@ -46,13 +46,7 @@ fn main() {
         update_min: 0,
     };
 
-    let mandelbrot = Mandelbrot {};
-
-    // start program window
-    let application = application::init(fractal_config);
-
-    // execute calculation
-    application.calculate(&mandelbrot);
+    application::init(fractal_config, Mandelbrot {}).execute();
 }
 
 #[cfg(test)]

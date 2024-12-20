@@ -39,13 +39,7 @@ fn main() {
         update_min: 0,
     };
 
-    let collatz = CollatzConjecture {};
-
-    // start program window
-    let application = application::init(fractal_config);
-
-    // execute calculation
-    application.calculate(&collatz);
+    application::init(fractal_config, CollatzConjecture {}).execute();
 }
 
 #[cfg(test)]

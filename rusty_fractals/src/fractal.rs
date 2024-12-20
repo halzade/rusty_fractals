@@ -31,6 +31,9 @@ pub enum FractalType {
     MandelbrotType,
     // for each calculation, count domain elements matching the intermediate-calculation results
     NebulaType,
+    // split primes, Fibonacci's and other to RGB spectra
+    NebulaEulerType
+
 }
 
 /**

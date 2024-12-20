@@ -54,13 +54,7 @@ fn main() {
         update_min: 0,
     };
 
-    let mandelbrot_mandelbrot = MandelbrotOfMandelbrot {};
-
-    // start program window
-    let application = application::init(fractal_config);
-
-    // execute calculation
-    application.calculate(&mandelbrot_mandelbrot);
+    application::init(fractal_config, MandelbrotOfMandelbrot {}).execute();
 }
 
 #[cfg(test)]

@@ -1,5 +1,5 @@
 use rusty_fractals::application;
-use rusty_fractals::fractal::CalculationType::{InfiniteVideoZoom, StaticImage};
+use rusty_fractals::fractal::CalculationType::StaticImage;
 use rusty_fractals::fractal::FractalType::NebulaType;
 use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
@@ -33,15 +33,13 @@ fn main() {
         center_re: -0.5,
         center_im: 0.0,
 
-        calc_type: InfiniteVideoZoom,
+        calc_type: StaticImage,
         orbits: Finite,
         update_max: 150,
         update_min: 0,
     };
 
-    let application = application::init(fractal_config, Science {});
-
-    application.execute();
+    application::init(fractal_config, Science {}).execute();
 }
 
 #[cfg(test)]
