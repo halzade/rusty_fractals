@@ -27,9 +27,9 @@ fn main() {
         palette: BlueToWhiteCircleUp,
         palette_zero: Nothing,
 
-        width_x: 200,
-        height_y: 200,
-        width_re: 3.5,
+        width_x: 400,
+        height_y: 400,
+        width_re: 3.0,
         center_re: -0.5,
         center_im: 0.0,
 

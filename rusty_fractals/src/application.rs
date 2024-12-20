@@ -11,18 +11,15 @@ use fltk::enums::{Color, Event, Key};
 use fltk::{app, draw, prelude::*, window::Window};
 use image::{Pixel, Rgb};
 use std::sync::{Arc, Mutex};
-use std::thread;
 
 pub struct Application<'lt, F: FractalMath> {
     machine: Arc<Mutex<Machine<'lt, F>>>,
-    app: App,
     max_value: Arc<Mutex<u32>>, // Wrap in Arc
 }
 
 pub fn init<F: FractalMath>(config: FractalConfig, fractal: F) -> Application<'static, F> {
     Application {
         machine: Arc::new(Mutex::new(machine::init(&config, fractal))),
-        app: App::default(),
         max_value: Arc::new(Mutex::new(0)), // Wrap in Arc
     }
 }
@@ -56,7 +53,7 @@ impl<F: FractalMath + 'static> Application<'static, F> {
         &self.show();
 
         println!("run().unwrap()");
-        self.app.run().unwrap();
+        App::default().run().unwrap();
 
         println!("execute() end.");
     }
