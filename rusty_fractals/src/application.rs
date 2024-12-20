@@ -31,37 +31,28 @@ impl<F: FractalMath + 'static> Application<'static, F> {
     pub fn execute(self) {
         println!("application.execute()");
 
-        let machine = Arc::clone(&self.machine);
+        let is_mandelbrot = *&self.machine.lock().unwrap().fractal_type == MandelbrotType;
+        let is_image = *&self.machine.lock().unwrap().calc_type == StaticImage;
 
-        let is_mandelbrot = machine.lock().unwrap().fractal_type == MandelbrotType;
-        let is_image = machine.lock().unwrap().calc_type == StaticImage;
-
-        &self.machine.lock().unwrap().calculate_nebula();
-
-        // thread::spawn(move || {
-        //     let machine = machine.lock().unwrap(); // Access `machine` via the cloned Arc
-        //
-        //     if is_mandelbrot {
-        //         if is_image {
-        //             // Fine fractal image
-        //             machine.calculate_mandelbrot();
-        //         } else {
-        //             // Fine fractal video
-        //             machine.calculate_mandelbrot_zoom();
-        //         }
-        //     } else {
-        //         if is_image {
-        //             // Hard fractal image
-        //             machine.calculate_nebula();
-        //         } else {
-        //             // Hard fractal video
-        //             machine.calculate_nebula_zoom();
-        //         }
-        //     }
-        // });
+        if is_mandelbrot {
+            if is_image {
+                // Fine fractal image
+                &self.machine.lock().unwrap().calculate_mandelbrot();
+            } else {
+                // Fine fractal video
+                &self.machine.lock().unwrap().calculate_mandelbrot_zoom();
+            }
+        } else {
+            if is_image {
+                // Hard fractal image
+                &self.machine.lock().unwrap().calculate_nebula();
+            } else {
+                // Hard fractal video
+                &self.machine.lock().unwrap().calculate_nebula_zoom();
+            }
+        }
 
         println!("show()");
-        // move
         &self.show();
 
         println!("run().unwrap()");

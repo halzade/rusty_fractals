@@ -211,10 +211,11 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
         // Some elements will be moved to new positions
         // For all the moved elements, subsequent calculations will be skipped.
         let area = &self.area;
-        let (cx, cy) = area.point_to_pixel(
-            area.data.lock().unwrap().center_re,
-            area.data.lock().unwrap().center_im,
-        );
+        let cre = area.data.lock().unwrap().center_re;
+        let cim = area.data.lock().unwrap().center_im;
+
+        let (cx, cy) = area.point_to_pixel(cre, cim);
+
         now("1. move top left to center");
         for y in 0..cy {
             for x in 0..cx {
@@ -363,32 +364,28 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
 
     pub fn calculate_nebula_zoom(&self) {
         println!("calculate_nebula_zoom()");
-        // thread::spawn(move || {
-        //     for it in 1.. {
-        // println!("{}:", it);
-        // self.calculate(fractal);
-        //
-        // // prepare next frame
-        // self.zoom_in();
-        // self.recalculate_pixels_positions_for_next_calculation(false);
-        // TODO self.stats.update(&self.data_image, it);
-        //     }
-        // });
+        for it in 1.. {
+            println!("{}:", it);
+            self.calculate_nebula();
+
+            // prepare next frame
+            self.zoom_in();
+            self.recalculate_pixels_positions_for_next_calculation();
+            // TODO self.stats.update(&self.data_image, it);
+        }
     }
 
     pub fn calculate_mandelbrot_zoom(&self) {
         println!("calculate_mandelbrot_zoom()");
-        // thread::spawn(move || {
-        //     for it in 1.. {
-        //         println!("{}:", it);
-        // self.calculate_mandelbrot(fractal);
-        //
-        // // prepare next frame
-        // self.zoom_in();
-        // self.recalculate_pixels_positions_for_next_calculation(true);
-        // TODO self.stats.update(&self.data_image, it);
-        //     }
-        // });
+        for it in 1.. {
+            println!("{}:", it);
+            self.calculate_mandelbrot();
+
+            // prepare next frame
+            self.zoom_in();
+            self.recalculate_pixels_positions_for_next_calculation();
+            // TODO self.stats.update(&self.data_image, it);
+        }
     }
 
     /* ------------------------------------------
