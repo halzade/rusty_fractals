@@ -24,7 +24,6 @@ use crate::{
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rayon::prelude::*;
-use std::thread;
 
 /**
  * Machine owns all data
@@ -119,15 +118,8 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
     /**
      * Calculate the whole Nebula fractal
      */
-    pub fn calculate(&self) {
-        // TODO
-        // thread::spawn(move || {
-        // TODO self.calculate(fractal);
-        // TODO or
-        // TODO calculate_mandelbrot();
-        //});
-
-        println!("calculate()");
+    pub fn calculate_nebula(&self) {
+        println!("calculate_nebula()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
@@ -144,7 +136,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
                 // calculation
                 self.chunk_calculation_with_wrap(&xy);
                 // window refresh
-                // TODO window::paint_image_calculation_progress(&data);
+                application::paint_image_calculation_progress(&self.data_image);
                 application::paint_path(&self.area, &self.data_image);
             });
         }
@@ -370,31 +362,33 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
      * ------------------------------------------ */
 
     pub fn calculate_nebula_zoom(&self) {
-        thread::spawn(move || {
-            for it in 1.. {
-                // println!("{}:", it);
-                // self.calculate(fractal);
-                //
-                // // prepare next frame
-                // self.zoom_in();
-                // self.recalculate_pixels_positions_for_next_calculation(false);
-                // TODO self.stats.update(&self.data_image, it);
-            }
-        });
+        println!("calculate_nebula_zoom()");
+        // thread::spawn(move || {
+        //     for it in 1.. {
+        // println!("{}:", it);
+        // self.calculate(fractal);
+        //
+        // // prepare next frame
+        // self.zoom_in();
+        // self.recalculate_pixels_positions_for_next_calculation(false);
+        // TODO self.stats.update(&self.data_image, it);
+        //     }
+        // });
     }
 
     pub fn calculate_mandelbrot_zoom(&self) {
-        thread::spawn(move || {
-            for it in 1.. {
-                println!("{}:", it);
-                // self.calculate_mandelbrot(fractal);
-                //
-                // // prepare next frame
-                // self.zoom_in();
-                // self.recalculate_pixels_positions_for_next_calculation(true);
-                // TODO self.stats.update(&self.data_image, it);
-            }
-        });
+        println!("calculate_mandelbrot_zoom()");
+        // thread::spawn(move || {
+        //     for it in 1.. {
+        //         println!("{}:", it);
+        // self.calculate_mandelbrot(fractal);
+        //
+        // // prepare next frame
+        // self.zoom_in();
+        // self.recalculate_pixels_positions_for_next_calculation(true);
+        // TODO self.stats.update(&self.data_image, it);
+        //     }
+        // });
     }
 
     /* ------------------------------------------

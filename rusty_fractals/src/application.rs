@@ -1,5 +1,7 @@
 use crate::area::Area;
 use crate::data_image::{colour_for_state, DataImage};
+use crate::fractal::CalculationType::StaticImage;
+use crate::fractal::FractalType::MandelbrotType;
 use crate::fractal::{FractalConfig, FractalMath};
 use crate::machine;
 use crate::machine::Machine;
@@ -9,6 +11,7 @@ use fltk::enums::{Color, Event, Key};
 use fltk::{app, draw, prelude::*, window::Window};
 use image::{Pixel, Rgb};
 use std::sync::{Arc, Mutex};
+use std::thread;
 
 pub struct Application<'lt, F: FractalMath> {
     machine: Arc<Mutex<Machine<'lt, F>>>,
@@ -26,8 +29,36 @@ pub fn init<F: FractalMath>(config: FractalConfig, fractal: F) -> Application<'s
 
 impl<F: FractalMath + 'static> Application<'static, F> {
     pub fn execute(self) {
-        println!("machine.calculate()");
-        &self.machine.lock().unwrap().calculate();
+        println!("application.execute()");
+
+        let machine = Arc::clone(&self.machine);
+
+        let is_mandelbrot = machine.lock().unwrap().fractal_type == MandelbrotType;
+        let is_image = machine.lock().unwrap().calc_type == StaticImage;
+
+        &self.machine.lock().unwrap().calculate_nebula();
+
+        // thread::spawn(move || {
+        //     let machine = machine.lock().unwrap(); // Access `machine` via the cloned Arc
+        //
+        //     if is_mandelbrot {
+        //         if is_image {
+        //             // Fine fractal image
+        //             machine.calculate_mandelbrot();
+        //         } else {
+        //             // Fine fractal video
+        //             machine.calculate_mandelbrot_zoom();
+        //         }
+        //     } else {
+        //         if is_image {
+        //             // Hard fractal image
+        //             machine.calculate_nebula();
+        //         } else {
+        //             // Hard fractal video
+        //             machine.calculate_nebula_zoom();
+        //         }
+        //     }
+        // });
 
         println!("show()");
         // move
@@ -36,13 +67,7 @@ impl<F: FractalMath + 'static> Application<'static, F> {
         println!("run().unwrap()");
         self.app.run().unwrap();
 
-
-        println!("show() end.");
-    }
-
-    pub fn calculate(self) {
-        println!("machine.calculate()");
-        self.machine.lock().unwrap().calculate();
+        println!("execute() end.");
     }
 
     pub fn show(&self) {
@@ -50,25 +75,27 @@ impl<F: FractalMath + 'static> Application<'static, F> {
 
         let width = self.machine.lock().unwrap().width_x as i32;
         let height = self.machine.lock().unwrap().height_y as i32;
+        let name = self.machine.lock().unwrap().name;
 
         let mut window = Window::default()
-            .with_label("TEST NAME") // TODO
+            .with_label(name)
             .with_size(width, height)
             .center_screen();
+
+        // initialize window color, filled rectangle
+        // draw::set_draw_color(Color::from_rgb(40, 180, 150));
+        // draw::draw_rectf(0, 0, width, height);
 
         // Clone `Arc<Mutex<>>` for use in the closure
         let machine = Arc::clone(&self.machine);
         let max_value = Arc::clone(&self.max_value); // Now `max_value` is correctly wrapped in Arc
 
-        let cycle = 0;
-
         window.draw(move |_| {
-
             /*
              * Never use self in here
              */
 
-            println!("draw {}", cycle);
+            // TODO println!("draw {}", cycle);
 
             let machine = machine.lock().unwrap(); // Access `machine` via the cloned Arc
 
@@ -153,8 +180,8 @@ impl<F: FractalMath + 'static> Application<'static, F> {
         window.end();
         window.show();
 
+        println!("initiate redraw loop 0.2 s");
         app::add_idle3(move |_| {
-            println!("redraw loop");
             window.redraw();
             app::sleep(0.2);
         });
@@ -186,9 +213,10 @@ pub fn paint_path(area: &Area, data: &DataImage) {
     }
 }
 
+/**
+ * rendering must be done from main thread
+ */
 pub fn paint_image_calculation_progress(data: &DataImage) {
-    // rendering must be done from main thread
-
     app::awake();
     app::redraw();
 }
