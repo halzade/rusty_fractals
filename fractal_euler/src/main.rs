@@ -47,7 +47,7 @@ fn main() {
         update_min: 0,
     };
 
-    application::init(fractal_config, Euler {}).execute();
+    application::execute(fractal_config, Euler {});
 }
 
 #[cfg(test)]

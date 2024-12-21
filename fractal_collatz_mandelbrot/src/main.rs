@@ -38,7 +38,7 @@ fn main() {
         update_min: 0,
     };
 
-    application::init(fractal_config, CollatzConjectureMandelbrot {}).execute();
+    application::execute(fractal_config, CollatzConjectureMandelbrot {});
 }
 
 #[cfg(test)]

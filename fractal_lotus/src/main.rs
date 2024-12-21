@@ -40,7 +40,7 @@ fn main() {
         update_min: 0,
     };
 
-    application::init(fractal_config, Lotus {}).execute();
+    application::execute(fractal_config, Lotus {});
 }
 
 #[cfg(test)]

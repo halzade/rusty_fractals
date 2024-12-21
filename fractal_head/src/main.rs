@@ -47,7 +47,7 @@ fn main() {
         update_min: 0,
     };
 
-    application::init(fractal_config, Head {}).execute();
+    application::execute(fractal_config, Head {});
 }
 
 #[cfg(test)]

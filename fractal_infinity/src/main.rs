@@ -38,7 +38,7 @@ fn main() {
         update_min: 0,
     };
 
-    application::init(fractal_config, Infinity {}).execute();
+    application::execute(fractal_config, Infinity {});
 }
 
 #[cfg(test)]

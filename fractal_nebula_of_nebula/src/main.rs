@@ -54,7 +54,7 @@ fn main() {
         update_min: 0,
     };
 
-    application::init(fractal_config, NebulaOfNebula {}).execute();
+    application::execute(fractal_config, NebulaOfNebula {});
 }
 
 #[cfg(test)]
