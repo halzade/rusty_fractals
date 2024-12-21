@@ -14,13 +14,13 @@ use image::{Pixel, Rgb};
 use std::sync::{Arc, Mutex};
 
 pub struct Application<'lt, F: FractalMath> {
-    machine: Machine<'lt, F>,
+    machine: Arc<Machine<'lt, F>>,
     window: DoubleWindow,
 }
 
 pub fn init<F: FractalMath>(config: FractalConfig, fractal: F) -> Application<'static, F> {
     Application {
-        machine: machine::init(&config, fractal),
+        machine: Arc::new(machine::init(&config, fractal)),
         window: Window::default(),
     }
 }
@@ -54,11 +54,14 @@ impl<F: FractalMath + 'static> Application<'static, F> {
         self.window.end();
         self.window.show();
 
+        // Clone the Arc, increasing its reference count
+        let ma = Arc::clone(&self.machine);
+
         println!("calculation - new thread ");
-        let task = || {
+        let task = move || {
             println!("Execute in parallel");
 
-            // self.execute_calculation();
+            execute_calculation(&ma);
         };
         rayon::spawn_fifo(task);
 
@@ -67,33 +70,6 @@ impl<F: FractalMath + 'static> Application<'static, F> {
         App::default().run().unwrap();
 
         println!("execute() end.");
-    }
-
-    pub fn execute_calculation(&self) {
-        println!("application.execute_calculation()");
-
-        let is_mandelbrot = self.machine.fractal_type == MandelbrotType;
-        let is_image = self.machine.calc_type == StaticImage;
-
-        if is_mandelbrot {
-            if is_image {
-                // Fine fractal image
-                self.machine.calculate_mandelbrot();
-            } else {
-                // Fine fractal video
-                self.machine.calculate_mandelbrot_zoom();
-            }
-        } else {
-            if is_image {
-                // Hard fractal image
-                println!("a");
-                self.machine.calculate_nebula();
-                println!("b");
-            } else {
-                // Hard fractal video
-                self.machine.calculate_nebula_zoom();
-            }
-        }
     }
 
     pub fn init_window_actions(&mut self) {
@@ -202,6 +178,34 @@ impl<F: FractalMath + 'static> Application<'static, F> {
 /* --------------
  * static methods
  * ----------- */
+
+pub fn execute_calculation<F>(machine: &Machine<F>) 
+where 
+    F: FractalMath, 
+{
+    println!("application.execute_calculation()");
+
+    let is_mandelbrot = machine.fractal_type == MandelbrotType;
+    let is_image = machine.calc_type == StaticImage;
+
+    if is_mandelbrot {
+        if is_image {
+            // Fine fractal image
+            machine.calculate_mandelbrot();
+        } else {
+            // Fine fractal video
+            machine.calculate_mandelbrot_zoom();
+        }
+    } else {
+        if is_image {
+            // Hard fractal image
+            machine.calculate_nebula();
+        } else {
+            // Hard fractal video
+            machine.calculate_nebula_zoom();
+        }
+    }
+}
 
 pub fn paint_path(area: &Area, data: &DataImage) {
     let path = &data.show_path.lock().unwrap();
