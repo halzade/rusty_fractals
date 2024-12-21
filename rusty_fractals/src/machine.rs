@@ -61,6 +61,20 @@ where
     pub resolution_multiplier: ResolutionMultiplier,
 }
 
+/**
+* Engine for parallel calculations
+*/
+// pub struct Engine<'lt, F>
+// where
+//     F: FractalMath,
+// {
+//
+//
+//
+//
+// }
+
+
 pub fn init<F: FractalMath>(config: &FractalConfig, fractal: F) -> Machine<'static, F> {
     let area: Area = area::init(config);
     Machine {
@@ -450,6 +464,8 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
         (iterator, m.quad())
     }
 }
+
+
 
 /**
  * Creates x,y pairs for calculation.

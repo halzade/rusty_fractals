@@ -8,125 +8,117 @@ use crate::machine::Machine;
 use crate::pixel_states::is_finished_any;
 use fltk::app::{event_button, event_coords, event_key, App};
 use fltk::enums::{Color, Event, Key};
+use fltk::window::DoubleWindow;
 use fltk::{app, draw, prelude::*, window::Window};
 use image::{Pixel, Rgb};
 use std::sync::{Arc, Mutex};
 
 pub struct Application<'lt, F: FractalMath> {
-    machine: Arc<Mutex<Machine<'lt, F>>>,
-    max_value: Arc<Mutex<u32>>, // Wrap in Arc
+    machine: Machine<'lt, F>,
+    window: DoubleWindow,
 }
 
 pub fn init<F: FractalMath>(config: FractalConfig, fractal: F) -> Application<'static, F> {
     Application {
-        machine: Arc::new(Mutex::new(machine::init(&config, fractal))),
-        max_value: Arc::new(Mutex::new(0)), // Wrap in Arc
+        machine: machine::init(&config, fractal),
+        window: Window::default(),
     }
 }
 
+/**
+ * Use static calls to communicate between app and Machine
+ */
 impl<F: FractalMath + 'static> Application<'static, F> {
-    pub fn execute(self) {
+    pub fn execute(&mut self) {
         println!("application.execute()");
 
-        println!("calculation");
-        let is_mandelbrot = *&self.machine.lock().unwrap().fractal_type == MandelbrotType;
-        let is_image = *&self.machine.lock().unwrap().calc_type == StaticImage;
+        let width = self.machine.width_x as i32;
+        let height = self.machine.height_y as i32;
+        let name = *&self.machine.name.clone();
 
-        if is_mandelbrot {
-            if is_image {
-                // Fine fractal image
-                &self.machine.lock().unwrap().calculate_mandelbrot();
-            } else {
-                // Fine fractal video
-                &self.machine.lock().unwrap().calculate_mandelbrot_zoom();
-            }
-        } else {
-            if is_image {
-                // Hard fractal image
-                println!("a");
-                &self.machine.lock().unwrap().calculate_nebula();
-                println!("b");
-            } else {
-                // Hard fractal video
-                &self.machine.lock().unwrap().calculate_nebula_zoom();
-            }
-        }
+        self.window.set_label(name);
+        self.window.set_size(width, height);
+        // self.window.center_screen();
 
         println!("show()");
-        &self.show();
+        self.init_window_actions();
 
+        self.window_draw();
+
+        println!("initiate redraw loop 0.2 s");
+        app::add_idle3(move |_| {
+            app::sleep(1.2);
+            // app::sleep(0.2);
+        });
+
+        // println!("calculation");
+        // let is_mandelbrot = *&self.machine.fractal_type == MandelbrotType;
+        // let is_image = *&self.machine.calc_type == StaticImage;
+        //
+        // if is_mandelbrot {
+        //     if is_image {
+        //         // Fine fractal image
+        //         &self.machine.calculate_mandelbrot();
+        //     } else {
+        //         // Fine fractal video
+        //         &self.machine.calculate_mandelbrot_zoom();
+        //     }
+        // } else {
+        //     if is_image {
+        //         // Hard fractal image
+        //         println!("a");
+        //         &self.machine.calculate_nebula();
+        //         println!("b");
+        //     } else {
+        //         // Hard fractal video
+        //         &self.machine.calculate_nebula_zoom();
+        //     }
+        // }
+
+        self.window.end();
+        self.window.show();
+
+        
+        
+        //   if is_mandelbrot {
+        //             if is_image {
+        //                 // Fine fractal image
+        //                 &self.machine.lock().unwrap().calculate_mandelbrot();
+        //             } else {
+        //                 // Fine fractal video
+        //                 &self.machine.lock().unwrap().calculate_mandelbrot_zoom();
+        //             }
+        //         } else {
+        //             if is_image {
+        //                 // Hard fractal image
+        //                 println!("a");
+        //                 &self.machine.lock().unwrap().calculate_nebula();
+        //                 println!("b");
+        //             } else {
+        //                 // Hard fractal video
+        //                 &self.machine.lock().unwrap().calculate_nebula_zoom();
+        //             }
+        //         }
+        
         println!("run().unwrap()");
+        // The last line of the program
         App::default().run().unwrap();
 
         println!("execute() end.");
     }
 
-    pub fn show(&self) {
+    pub fn init_window_actions(&mut self) {
         println!("show()");
-
-        let width = self.machine.lock().unwrap().width_x as i32;
-        let height = self.machine.lock().unwrap().height_y as i32;
-        let name = self.machine.lock().unwrap().name;
-
-        let mut window = Window::default()
-            .with_label(name)
-            .with_size(width, height)
-            .center_screen();
 
         // initialize window color, filled rectangle
         // draw::set_draw_color(Color::from_rgb(40, 180, 150));
         // draw::draw_rectf(0, 0, width, height);
 
         // Clone `Arc<Mutex<>>` for use in the closure
-        let machine = Arc::clone(&self.machine);
-        let max_value = Arc::clone(&self.max_value); // Now `max_value` is correctly wrapped in Arc
+        // let machine = Arc::clone(&self.machine);
+        // let max_value = Arc::clone(&self.max_value); // Now `max_value` is correctly wrapped in Arc
 
-        window.draw(move |_| {
-            /*
-             * Never use self in here
-             */
-
-            // TODO println!("draw {}", cycle);
-
-            let machine = machine.lock().unwrap(); // Access `machine` via the cloned Arc
-
-            for y in 0..height {
-                for x in 0..width {
-                    let (value, state, _, _, colour_index_o) =
-                        machine.data_image.values_at(x as usize, y as usize);
-                    let colour: Rgb<u8>;
-                    if !is_finished_any(state) {
-                        colour = colour_for_state(state);
-                    } else {
-                        match colour_index_o {
-                            Some(pixel_colour) => {
-                                colour = pixel_colour;
-                            }
-                            None => {
-                                let mut mv = max_value.lock().unwrap(); // Access `max_value` via the cloned Arc
-                                if value > *mv {
-                                    *mv = value;
-                                }
-                                // make color (3x) brighter
-                                let mut cv = ((value * 3) as f64 / *mv as f64) * 255.0;
-                                if cv > 255.0 {
-                                    cv = 255.0;
-                                }
-                                let c = cv as u8;
-                                colour = Rgb([c, c, c]);
-                            }
-                        }
-                    }
-                    let r = colour.channels().get(0).unwrap();
-                    let g = colour.channels().get(1).unwrap();
-                    let b = colour.channels().get(2).unwrap();
-                    draw::set_draw_color(Color::from_rgb(*r, *g, *b));
-                    draw::draw_point(x, y);
-                }
-            }
-        });
-
-        window.handle(move |_, event| match event {
+        self.window.handle(move |_, event| match event {
             Event::KeyDown => {
                 let ek = event_key();
                 match ek {
@@ -167,15 +159,55 @@ impl<F: FractalMath + 'static> Application<'static, F> {
             }
             _ => false,
         });
+    }
 
-        window.end();
-        window.show();
+    pub fn window_draw(&mut self) {
+        println!("window_draw()");
+        self.window.draw(move |_| {
+            println!("draw");
+            // never use self in here
+            // locking / unlocking app for draw is not necessary
+            // redraw() can't be called from draw().
 
-        println!("initiate redraw loop 0.2 s");
-        app::add_idle3(move |_| {
-            window.redraw();
-            app::sleep(0.2);
+            draw::draw_rect_fill(0, 0, 200, 250, Color::from_rgb(40, 180, 150));
         });
+        println!("window_draw() end.");
+        
+        
+        // for y in 0..height {
+        //                 for x in 0..width {
+        //                     let (value, state, _, _, colour_index_o) =
+        //                         machine.data_image.values_at(x as usize, y as usize);
+        //                     let colour: Rgb<u8>;
+        //                     if !is_finished_any(state) {
+        //                         colour = colour_for_state(state);
+        //                     } else {
+        //                         match colour_index_o {
+        //                             Some(pixel_colour) => {
+        //                                 colour = pixel_colour;
+        //                             }
+        //                             None => {
+        //                                 let mut mv = max_value.lock().unwrap(); // Access `max_value` via the cloned Arc
+        //                                 if value > *mv {
+        //                                     *mv = value;
+        //                                 }
+        //                                 // make color (3x) brighter
+        //                                 let mut cv = ((value * 3) as f64 / *mv as f64) * 255.0;
+        //                                 if cv > 255.0 {
+        //                                     cv = 255.0;
+        //                                 }
+        //                                 let c = cv as u8;
+        //                                 colour = Rgb([c, c, c]);
+        //                             }
+        //                         }
+        //                     }
+        //                     let r = colour.channels().get(0).unwrap();
+        //                     let g = colour.channels().get(1).unwrap();
+        //                     let b = colour.channels().get(2).unwrap();
+        //                     draw::set_draw_color(Color::from_rgb(*r, *g, *b));
+        //                     draw::draw_point(x, y);
+        //                 }
+        //             }
     }
 }
 
@@ -186,22 +218,15 @@ impl<F: FractalMath + 'static> Application<'static, F> {
 pub fn paint_path(area: &Area, data: &DataImage) {
     let path = &data.show_path.lock().unwrap();
     let lr = app::lock();
-    match lr {
-        Ok(_) => {
-            app::unlock();
-            for p in path.as_slice() {
-                let (x, y) = area.point_to_pixel(p[0], p[1]);
-                draw::set_draw_color(Color::from_rgb(255, 215, 0));
-                draw::draw_point(x as i32, y as i32);
-            }
-            // rendering must be done from main thread
-            app::awake();
-            app::redraw();
-        }
-        Err(_) => {
-            println!("paint_path(): can't unlock app");
-        }
+
+    for p in path.as_slice() {
+        let (x, y) = area.point_to_pixel(p[0], p[1]);
+        draw::set_draw_color(Color::from_rgb(255, 215, 0));
+        draw::draw_point(x as i32, y as i32);
     }
+    // rendering must be done from main thread
+    app::awake();
+    app::redraw();
 }
 
 /**
