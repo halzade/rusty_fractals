@@ -51,60 +51,49 @@ impl<F: FractalMath + 'static> Application<'static, F> {
             // app::sleep(0.2);
         });
 
-        // println!("calculation");
-        // let is_mandelbrot = *&self.machine.fractal_type == MandelbrotType;
-        // let is_image = *&self.machine.calc_type == StaticImage;
-        //
-        // if is_mandelbrot {
-        //     if is_image {
-        //         // Fine fractal image
-        //         &self.machine.calculate_mandelbrot();
-        //     } else {
-        //         // Fine fractal video
-        //         &self.machine.calculate_mandelbrot_zoom();
-        //     }
-        // } else {
-        //     if is_image {
-        //         // Hard fractal image
-        //         println!("a");
-        //         &self.machine.calculate_nebula();
-        //         println!("b");
-        //     } else {
-        //         // Hard fractal video
-        //         &self.machine.calculate_nebula_zoom();
-        //     }
-        // }
-
         self.window.end();
         self.window.show();
 
-        
-        
-        //   if is_mandelbrot {
-        //             if is_image {
-        //                 // Fine fractal image
-        //                 &self.machine.lock().unwrap().calculate_mandelbrot();
-        //             } else {
-        //                 // Fine fractal video
-        //                 &self.machine.lock().unwrap().calculate_mandelbrot_zoom();
-        //             }
-        //         } else {
-        //             if is_image {
-        //                 // Hard fractal image
-        //                 println!("a");
-        //                 &self.machine.lock().unwrap().calculate_nebula();
-        //                 println!("b");
-        //             } else {
-        //                 // Hard fractal video
-        //                 &self.machine.lock().unwrap().calculate_nebula_zoom();
-        //             }
-        //         }
-        
+        println!("calculation - new thread ");
+        let task = || {
+            println!("Execute in parallel");
+
+            // self.execute_calculation();
+        };
+        rayon::spawn_fifo(task);
+
         println!("run().unwrap()");
         // The last line of the program
         App::default().run().unwrap();
 
         println!("execute() end.");
+    }
+
+    pub fn execute_calculation(&self) {
+        println!("application.execute_calculation()");
+
+        let is_mandelbrot = self.machine.fractal_type == MandelbrotType;
+        let is_image = self.machine.calc_type == StaticImage;
+
+        if is_mandelbrot {
+            if is_image {
+                // Fine fractal image
+                self.machine.calculate_mandelbrot();
+            } else {
+                // Fine fractal video
+                self.machine.calculate_mandelbrot_zoom();
+            }
+        } else {
+            if is_image {
+                // Hard fractal image
+                println!("a");
+                self.machine.calculate_nebula();
+                println!("b");
+            } else {
+                // Hard fractal video
+                self.machine.calculate_nebula_zoom();
+            }
+        }
     }
 
     pub fn init_window_actions(&mut self) {
@@ -140,7 +129,7 @@ impl<F: FractalMath + 'static> Application<'static, F> {
                     ' ' => {
                         println!("space bar");
                         // TODO probably not the right method
-                        // TODO self.machine.lock().unwrap().zoom_in_recalculate_pixel_positions();
+                        // TODO self.machine.zoom_in_recalculate_pixel_positions();
                         true
                     }
                     _ => false,
@@ -152,8 +141,8 @@ impl<F: FractalMath + 'static> Application<'static, F> {
                 if left {
                     let (x, y) = event_coords();
                     println!("c: {} {}", x, y);
-                    //self.machine.lock().unwrap().move_target(x as usize, y as usize);
-                    //self.machine.lock().unwrap().zoom_in_recalculate_pixel_positions();
+                    //self.machine.move_target(x as usize, y as usize);
+                    //self.machine.zoom_in_recalculate_pixel_positions();
                 }
                 false
             }
@@ -172,8 +161,7 @@ impl<F: FractalMath + 'static> Application<'static, F> {
             draw::draw_rect_fill(0, 0, 200, 250, Color::from_rgb(40, 180, 150));
         });
         println!("window_draw() end.");
-        
-        
+
         // for y in 0..height {
         //                 for x in 0..width {
         //                     let (value, state, _, _, colour_index_o) =
