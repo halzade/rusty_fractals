@@ -26,6 +26,7 @@ struct Mix {
 }
 
 pub fn perfectly_colour_nebula_values(data: &DataImage, palette: &Palette) {
+    println!("perfectly_colour_nebula_values()");
     let width = data.width;
     let height = data.height;
 
@@ -48,7 +49,7 @@ pub fn perfectly_colour_nebula_values(data: &DataImage, palette: &Palette) {
     pixels.sort_by(|first, second| first.value.cmp(&second.value));
 
     let all_pixels_total: u32 = (width * height) as u32;
-    let all_pixels_non_zero: u32 = (all_pixels_total - zero_value_elements) as u32;
+    let all_pixels_non_zero: u32 = all_pixels_total - zero_value_elements;
     let palette_colour_count: u32 = palette.spectrum.len() as u32;
     let single_colour_use: u32 = (all_pixels_non_zero as f64 / palette_colour_count as f64) as u32;
     let left: u32 = all_pixels_non_zero - (palette_colour_count * single_colour_use);
@@ -57,7 +58,7 @@ pub fn perfectly_colour_nebula_values(data: &DataImage, palette: &Palette) {
     println!("All pixels to paint:         {}", all_pixels_total);
     println!(
         "---------------------------> {}",
-        (zero_value_elements + left + (single_colour_use * palette_colour_count))
+        zero_value_elements + left + (single_colour_use * palette_colour_count)
     );
     println!("Zero value pixels to paint:  {}", zero_value_elements);
     println!("Non zero pixels to paint:    {}", all_pixels_non_zero);
@@ -317,7 +318,7 @@ pub fn perfectly_colour_mandelbrot_values(
     println!("All pixels to paint:         {}", all_pixels_total);
     println!(
         "---------------------------> {}",
-        (zero_value_elements + left + (single_colour_use * palette_colour_count))
+        zero_value_elements + left + (single_colour_use * palette_colour_count)
     );
     println!("Zero value pixels to paint:  {}", zero_value_elements);
     println!("Non zero pixels to paint:    {}", all_pixels_non_zero);
@@ -375,9 +376,9 @@ pub fn perfectly_colour_mandelbrot_values(
     println!("zero_left:                   {}", zero_left);
     let mut piz = 0;
     for _ in 0..zero_left {
-        let mp = pixels_zero.get(piz as usize).expect("pixel error");
+        let mp = pixels_zero.get(piz).expect("pixel error");
         piz += 1;
-        data.colour(mp.x, mp.y, palette_zero.spectrum_value(0 as usize));
+        data.colour(mp.x, mp.y, palette_zero.spectrum_value(0usize));
     }
     for zero_palette_colour_index in 0..zero_palette_colour_count {
         for _ in 0..zero_single_colour_use {
@@ -394,7 +395,7 @@ pub fn perfectly_colour_mandelbrot_values(
     assert_eq!(pixels_zero.len(), piz);
     assert_eq!(pixels_zero.len() + pixels_length, all_pixels_total as usize);
     assert_eq!(all_pixels_total as usize, pi + piz);
-    println!("painted:                     {}", (pi + piz));
+    println!("painted:                     {}", pi + piz);
     // Behold, the colouring is perfect
 }
 
@@ -426,7 +427,7 @@ fn ac_if_black_dot(mp: &Mix, data: &DataImage) -> i32 {
 
     if cv < average_value - 5 {
         // darker
-        return average_value as i32;
+        return average_value;
     }
     -1
 }
