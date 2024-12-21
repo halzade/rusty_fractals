@@ -1,3 +1,4 @@
+use crate::application::Application;
 use crate::area::Area;
 use crate::constants::CALCULATION_BOUNDARY;
 use crate::data_image::DataImage;
@@ -21,9 +22,11 @@ use crate::{
     application, area, data_image, fractal, fractal_stats, palettes, perfect_colour_distribution,
     pixel_states,
 };
+use fltk::enums::Color;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rayon::prelude::*;
+use std::sync::{Arc, Mutex};
 
 /**
  * Machine owns all data
@@ -59,21 +62,8 @@ where
     pub stats: Stats,
     //  nebula specific - use multiple numbers for each screen pixel
     pub resolution_multiplier: ResolutionMultiplier,
+    pub app_ref: Option<Arc<Mutex<Application>>>,
 }
-
-/**
-* Engine for parallel calculations
-*/
-// pub struct Engine<'lt, F>
-// where
-//     F: FractalMath,
-// {
-//
-//
-//
-//
-// }
-
 
 pub fn init<F: FractalMath>(config: &FractalConfig, fractal: F) -> Machine<'static, F> {
     let area: Area = area::init(config);
@@ -100,6 +90,8 @@ pub fn init<F: FractalMath>(config: &FractalConfig, fractal: F) -> Machine<'stat
         update_max: config.update_max,
         update_min: config.update_min,
         stats: fractal_stats::init(),
+        // application reference
+        app_ref: None,
     }
 }
 
@@ -125,10 +117,39 @@ pub fn init_trivial() -> Machine<'static, TrivialFractal> {
         resolution_multiplier: ResolutionMultiplier::Single,
         fractal_type: MandelbrotType,
         stats: fractal_stats::init(),
+        app_ref: None,
     }
 }
 
 impl<'lt, F: FractalMath> Machine<'lt, F> {
+    pub fn execute_calculation(&mut self, app_ref: Arc<Mutex<Application>>) {
+        println!("trigger_calculation()");
+
+        let is_mandelbrot = self.fractal_type == MandelbrotType;
+        let is_image = self.calc_type == StaticImage;
+
+        if is_mandelbrot {
+            if is_image {
+                // Fine fractal image
+                self.calculate_mandelbrot();
+            } else {
+                // Fine fractal video
+                self.calculate_mandelbrot_zoom();
+            }
+        } else {
+            if is_image {
+                // Hard fractal image
+                self.calculate_nebula();
+            } else {
+                // Hard fractal video
+                self.calculate_nebula_zoom();
+            }
+        }
+
+        let app = app_ref.lock().unwrap();
+        app.window_repaint(Color::Green);
+    }
+
     /**
      * Calculate the whole Nebula fractal
      */
@@ -155,7 +176,10 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             });
         }
         perfectly_colour_nebula_values(&self.data_image, &self.palette);
-        application::paint_image_result(&self.data_image);
+        // TODO application::paint_image_result(&self.data_image);
+
+        // let app = self.app_ref.as_ref().unwrap().lock().unwrap();
+        // app.window_repaint(Color::Green);
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
@@ -464,8 +488,6 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
         (iterator, m.quad())
     }
 }
-
-
 
 /**
  * Creates x,y pairs for calculation.
