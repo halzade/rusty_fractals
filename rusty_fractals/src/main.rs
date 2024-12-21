@@ -5,94 +5,73 @@ use std::{
     time::Duration,
 };
 
-// The Application struct that manages the Window and interacts with Machine
+// The Application struct manages the Window and coordinates with the Machine
 pub struct Application {
-    pub window: Arc<Mutex<Window>>, // Shared ownership of the window via Mutex
-    pub machine: Arc<Mutex<Machine>>, // Mutex to manage shared access to the Machine
+    pub window: Arc<Mutex<Window>>, // Shared ownership of the GUI Window
 }
 
 impl Application {
-    // Create a new application with a 200x200 window
-    pub fn new() -> Self {
-        // Create an FLTK window (200x200) and set its initial background color to red
+    // Create a new application with an initial red window
+    pub fn new() -> Arc<Mutex<Self>> {
         let mut window = Window::new(100, 100, 200, 200, "Window Example");
         window.set_color(Color::Red);
         window.show();
 
-        let window = Arc::new(Mutex::new(window));
-        let machine = Arc::new(Mutex::new(Machine::new()));
-
-        // Create the Application
-        let app = Application {
-            window: Arc::clone(&window),
-            machine: Arc::clone(&machine),
-        };
-
-        // Set the Machine's reference to the Application's Window
-        machine.lock().unwrap().set_application_window(Arc::clone(&window));
-
-        app
+        Arc::new(Mutex::new(Self {
+            window: Arc::new(Mutex::new(window)),
+        }))
     }
 
-    // Triggers the calculation on the Machine
-    pub fn trigger_calculation(&self) {
-        let machine = Arc::clone(&self.machine);
+    // Repaint the window with a new color
+    pub fn repaint(&self, color: Color) {
+        let mut window = self.window.lock().unwrap();
+        window.set_color(color);
+        window.redraw();
+        app::awake(); // Ensure the event loop processes the change immediately
+    }
 
+    // Trigger a long-running machine calculation
+    pub fn trigger_calculation(app_ref: Arc<Mutex<Self>>) {
         println!("Triggering calculation on the Machine...");
 
-        // Spawn a new thread to avoid blocking the GUI
         thread::spawn(move || {
-            machine.lock().unwrap().perform_calculation();
+            let machine = Machine::new();
+            machine.perform_calculation(app_ref); // Pass the application reference directly
         });
     }
 }
 
-// The Machine struct that performs calculations
-pub struct Machine {
-    pub app_window: Option<Arc<Mutex<Window>>>, // Reference to Application's Window
-}
+// The Machine struct, which executes background calculations
+pub struct Machine;
 
 impl Machine {
     pub fn new() -> Self {
-        Machine { app_window: None }
-    }
-
-    pub fn set_application_window(&mut self, window: Arc<Mutex<Window>>) {
-        self.app_window = Some(window);
+        Self {}
     }
 
     // Simulated long-running calculation
-    pub fn perform_calculation(&self) {
+    pub fn perform_calculation(&self, app_ref: Arc<Mutex<Application>>) {
         println!("Machine is performing calculations...");
 
-        // Simulate a long calculation
+        // Simulate time-consuming computation
         thread::sleep(Duration::from_secs(2));
 
         println!("Machine has completed calculations.");
 
-        // Update the window color to green after the calculation
-        if let Some(window) = &self.app_window {
-            // Lock the window and change its background color
-            let mut window = window.lock().unwrap();
-            window.set_color(Color::Green);
-            window.redraw(); // Trigger the redraw immediately
-
-            // Ensure that the FLTK event loop wakes up to process the redraw
-            app::awake();
-        }
+        // Notify the application to repaint the window
+        let app = app_ref.lock().unwrap();
+        app.repaint(Color::Green);
     }
 }
 
+// Application entry point
 fn main() {
-    // Create an FLTK app instance
     let app = app::App::default();
-
-    // Create the Application
     let application = Application::new();
 
-    // Trigger the Machine's calculation
-    application.trigger_calculation();
+    // Trigger the calculation on the Machine
+    Application::trigger_calculation(application.clone());
 
-    // Keep the application in the event loop to remain responsive
+    // Keep the main event loop running for the GUI
     app.run().unwrap();
 }
