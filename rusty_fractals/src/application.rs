@@ -122,10 +122,17 @@ impl Application {
                 _ => false,
             });
     }
-    pub fn paint_final_calculation_result(&self, color: Color, data_image: &DataImage) {
+    pub fn paint_final_calculation_result(&self, data_image: &DataImage) {
         println!("paint_final_calculation_result()");
 
         let mut window = self.window.lock().unwrap();
+
+        let width = data_image.width;
+        let height = data_image.height;
+
+        let pixel_colors: Vec<Option<Rgb<u8>>> = (0..height)
+            .flat_map(|y| (0..width).map(move |x| data_image.colour_at(x, y)))
+            .collect();
 
         println!("window_draw()");
         window.draw(move |_| {
@@ -134,92 +141,54 @@ impl Application {
             // locking / unlocking app for draw is not necessary
             // redraw() can't be called from draw().
 
-            draw::draw_rect_fill(0, 0, 200, 250, Color::from_rgb(40, 80, 50));
+            for y in 0..height {
+                for x in 0..width {
+                    let color_index = pixel_colors[y * width + x]; // Safe indexing
+                    if let Some(color) = color_index {
+                        draw_colored_point(x, y, &color);
+                    }
+                }
+            }
         });
 
+        // Trigger redraw events from the main thread
         window.redraw();
         app::awake();
     }
 
-    pub fn paint_final_calculation_result_errors(&self, data: &DataImage) {
-        // let mut window = self.window.lock().unwrap();
-
-        println!("paint_image_result()");
-        for y in 0..data.height {
-            for x in 0..data.width {
-                let colour_index_o = data.colour_at(x, y);
-                match colour_index_o {
-                    None => {
-                        println!("paint_image_result(): colour_index_o is None");
-                    }
-                    Some(color) => {
-                        let r = *color.channels().get(0).unwrap();
-                        let g = *color.channels().get(1).unwrap();
-                        let b = *color.channels().get(2).unwrap();
-
-                        // draw::set_draw_color(Color::from_rgb(r, g, b));
-                        // draw::set_draw_color(Color::Red);
-                        // draw::draw_point(x as i32, y as i32);
-                    }
-                }
-            }
-        }
-
-        // window.redraw();
-
-        // rendering must be done from main thread
-        // app::awake();
-        // app::redraw();
-        //
-        // self.window.lock().unwrap().redraw();
-
-        println!("paint_image_result() end.");
-    }
-
-    //     pub fn window_repaint(&self, data_image: &DataImage) {
-    //         println!("window_repaint()");
-    //
-    //         let mut window = self.window.lock().unwrap();
-    //
-    //         let width = data_image.width as i32;
-    //         let height = data_image.height as i32;
-    //
-    //         for y in 0..height {
-    //             for x in 0..width {
-    //                 let (value, state, _, _, colour_index_o) =
-    //                     data_image.values_at(x as usize, y as usize);
-    //                 let colour: Rgb<u8>;
-    //                 if !pixel_states::is_finished_any(state) {
-    //                     colour = data_image::colour_for_state(state);
-    //                 } else {
-    //                     match colour_index_o {
-    //                         Some(pixel_colour) => {
-    //                             colour = pixel_colour;
+    // pub fn paint_final_calculation_result_errors(&self, data: &DataImage) {
+    //     for y in 0..height {
+    //         for x in 0..width {
+    //             let (value, state, _, _, colour_index_o) =
+    //                 data_image.values_at(x as usize, y as usize);
+    //             let colour: Rgb<u8>;
+    //             if !pixel_states::is_finished_any(state) {
+    //                 colour = data_image::colour_for_state(state);
+    //             } else {
+    //                 match colour_index_o {
+    //                     Some(pixel_colour) => {
+    //                         colour = pixel_colour;
+    //                     }
+    //                     None => {
+    //                         let mut mv = max_value.lock().unwrap();
+    //                         if value > *mv {
+    //                             *mv = value;
     //                         }
-    //                         None => {
-    //                             let mut mv = max_value.lock().unwrap();
-    //                             if value > *mv {
-    //                                 *mv = value;
-    //                             }
-    //                             // make color (3x) brighter
-    //                             let mut cv = ((value * 3) as f64 / *mv as f64) * 255.0;
-    //                             if cv > 255.0 {
-    //                                 cv = 255.0;
-    //                             }
-    //                             let c = cv as u8;
-    //                             colour = Rgb([c, c, c]);
+    //                         // make color (3x) brighter
+    //                         let mut cv = ((value * 3) as f64 / *mv as f64) * 255.0;
+    //                         if cv > 255.0 {
+    //                             cv = 255.0;
     //                         }
+    //                         let c = cv as u8;
+    //                         colour = Rgb([c, c, c]);
     //                     }
     //                 }
-    //                 draw::set_draw_color(Color::from_rgb(*r, *g, *b));
-    //                 draw::draw_point(x, y);
     //             }
+    //             draw::set_draw_color(Color::from_rgb(*r, *g, *b));
+    //             draw::draw_point(x, y);
     //         }
-    //
-    //         window.redraw();
-    //         app::awake();
-    //
     //     }
+    // }
 }
 
 /* --------------

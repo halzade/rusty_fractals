@@ -184,7 +184,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             .unwrap()
             .lock()
             .expect("Failed to lock application reference");
-        app.paint_final_calculation_result(Color::Green, &self.data_image);
+        app.paint_final_calculation_result(&self.data_image);
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
