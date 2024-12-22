@@ -156,13 +156,16 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
      */
     pub fn calculate_nebula(&self) {
         println!("calculate_nebula()");
+        
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
+        
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
             self.chunk_calculation(&xy);
             // window refresh
             // application::paint_image_calculation_progress(xy, &self.data_image);
         });
+        
         self.data_image.recalculate_pixels_states();
 
         if self.resolution_multiplier != ResolutionMultiplier::Single {
@@ -184,6 +187,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             .unwrap()
             .lock()
             .expect("Failed to lock application reference");
+        
         app.paint_final_calculation_result(&self.data_image);
     }
 
@@ -414,7 +418,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // prepare next frame
             self.zoom_in();
             self.recalculate_pixels_positions_for_next_calculation();
-            // TODO self.stats.update(&self.data_image, it);
+            self.stats.update(&self.data_image, it);
         }
     }
 
@@ -427,7 +431,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // prepare next frame
             self.zoom_in();
             self.recalculate_pixels_positions_for_next_calculation();
-            // TODO self.stats.update(&self.data_image, it);
+            self.stats.update(&self.data_image, it);
         }
     }
 

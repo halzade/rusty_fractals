@@ -1,7 +1,12 @@
 use crate::constants::TAKE_MEASURES_AT_FRAME;
 use crate::data_image::DataImage;
+use std::sync::Mutex;
 
 pub struct Stats {
+    data: Mutex<StatsData>,
+}
+
+pub struct StatsData {
     new_elements_too_long: u32,
     new_elements_too_short: u32,
     new_elements_long: u32,
@@ -35,155 +40,204 @@ pub struct Stats {
 }
 
 impl Stats {
-    fn remember_this(&mut self, data: &DataImage) {
-        println!("new_elements_long  {}", self.new_elements_long);
-        println!("pixels_value_total {}", self.pixels_value_total);
-        println!("paths_total_amount {}", self.paths_total_amount);
+    fn remember_this(&self, data_image: &DataImage) {
+        let data = &mut self.data.lock().unwrap();
 
-        self.new_elements_long_measure = self.new_elements_long;
-        self.pixels_value_total_measure = self.pixels_value_total;
-        self.paths_total_amount_measure = self.paths_total_amount;
-        self.average_path_length_measure =
-            (self.pixels_value_total as f64 / self.paths_total_amount as f64) as u32;
-        self.pixels_value_best_measure = data.best_four_chunks_value();
+        println!("new_elements_long  {}", data.new_elements_long);
+        println!("pixels_value_total {}", data.pixels_value_total);
+        println!("paths_total_amount {}", data.paths_total_amount);
 
-        self.new_elements_long_tolerance = (self.new_elements_long_measure as f64 * 0.5) as u32;
-        self.pixels_value_total_tolerance = (self.pixels_value_total_measure as f64 * 0.5) as u32;
-        self.paths_total_amount_tolerance = (self.paths_total_amount_measure as f64 * 0.5) as u32;
-        self.pixels_value_best_tolerance = (self.pixels_value_best_measure as f64 * 0.5) as u32;
+        data.new_elements_long_measure = data.new_elements_long;
+        data.pixels_value_total_measure = data.pixels_value_total;
+        data.paths_total_amount_measure = data.paths_total_amount;
+        data.average_path_length_measure =
+            (data.pixels_value_total as f64 / data.paths_total_amount as f64) as u32;
+
+        // from data image
+        data.pixels_value_best_measure = data_image.best_four_chunks_value();
+
+        data.new_elements_long_tolerance = (data.new_elements_long_measure as f64 * 0.5) as u32;
+        data.pixels_value_total_tolerance = (data.pixels_value_total_measure as f64 * 0.5) as u32;
+        data.paths_total_amount_tolerance = (data.paths_total_amount_measure as f64 * 0.5) as u32;
+        data.pixels_value_best_tolerance = (data.pixels_value_best_measure as f64 * 0.5) as u32;
 
         // @formatter:off
-        println!("elementsLong_measure        {} ", self.new_elements_long_measure);
-        println!("pixels_value_total_measure  {} ", self.pixels_value_total_measure);
-        println!("pixels_value_best_measure   {} ", self.pixels_value_best_measure);
-        println!("paths_total_amount_measure  {} ", self.paths_total_amount_measure);
-        println!("average_path_length_measure {} ", self.average_path_length_measure);
+        println!(
+            "elementsLong_measure        {} ",
+            data.new_elements_long_measure
+        );
+        println!(
+            "pixels_value_total_measure  {} ",
+            data.pixels_value_total_measure
+        );
+        println!(
+            "pixels_value_best_measure   {} ",
+            data.pixels_value_best_measure
+        );
+        println!(
+            "paths_total_amount_measure  {} ",
+            data.paths_total_amount_measure
+        );
+        println!(
+            "average_path_length_measure {} ",
+            data.average_path_length_measure
+        );
         // @formatter:on
     }
 
-    pub fn update(&mut self, data: &DataImage, it: u32) {
+    pub fn update(&self, data_image: &DataImage, it: u32) {
         // Check if Stats should remember this iteration data for subsequent comparison
         if it == TAKE_MEASURES_AT_FRAME {
-            self.remember_this(data);
+            self.remember_this(data_image);
         }
 
         /* Subsequent comparison */
         if it > TAKE_MEASURES_AT_FRAME {
+            let data = &mut self.data.lock().unwrap();
+
             // Total value
-            self.not_enough_pixels_total_value = false;
-            if self.pixels_value_total < self.pixels_value_total_measure {
-                self.not_enough_pixels_total_value = self.pixels_value_total_measure
-                    - self.pixels_value_total
-                    > self.pixels_value_total_tolerance;
+            data.not_enough_pixels_total_value = false;
+            if data.pixels_value_total < data.pixels_value_total_measure {
+                data.not_enough_pixels_total_value = data.pixels_value_total_measure
+                    - data.pixels_value_total
+                    > data.pixels_value_total_tolerance;
             }
-            self.too_many_pixels_total_value = false;
-            if self.pixels_value_total > self.pixels_value_total_measure {
-                self.too_many_pixels_total_value = self.pixels_value_total
-                    - self.pixels_value_total_measure
-                    > self.pixels_value_total_tolerance;
+            data.too_many_pixels_total_value = false;
+            if data.pixels_value_total > data.pixels_value_total_measure {
+                data.too_many_pixels_total_value = data.pixels_value_total
+                    - data.pixels_value_total_measure
+                    > data.pixels_value_total_tolerance;
             }
-            self.less_pixels_total_value =
-                self.pixels_value_total < self.pixels_value_total_measure;
+            data.less_pixels_total_value =
+                data.pixels_value_total < data.pixels_value_total_measure;
 
             // Best domain chunks, chunks with most image points
-            self.not_enough_pixels_best_value = false;
-            self.pixels_value_best = data.best_four_chunks_value();
-            if self.pixels_value_best < self.pixels_value_best_measure {
-                self.not_enough_pixels_best_value = self.pixels_value_best_measure
-                    - self.pixels_value_best
-                    > self.pixels_value_best_tolerance;
+            data.not_enough_pixels_best_value = false;
+            data.pixels_value_best = data_image.best_four_chunks_value();
+            if data.pixels_value_best < data.pixels_value_best_measure {
+                data.not_enough_pixels_best_value = data.pixels_value_best_measure
+                    - data.pixels_value_best
+                    > data.pixels_value_best_tolerance;
             }
-            self.less_pixels_best_value = self.pixels_value_best < self.pixels_value_best_measure;
+            data.less_pixels_best_value = data.pixels_value_best < data.pixels_value_best_measure;
 
             // Paths
-            self.too_many_paths_total = false;
-            if self.paths_total_amount > self.paths_total_amount_measure {
-                self.too_many_paths_total = self.paths_total_amount
-                    - self.paths_total_amount_measure
-                    > self.paths_total_amount_tolerance;
+            data.too_many_paths_total = false;
+            if data.paths_total_amount > data.paths_total_amount_measure {
+                data.too_many_paths_total = data.paths_total_amount
+                    - data.paths_total_amount_measure
+                    > data.paths_total_amount_tolerance;
             }
 
             // Mandelbrot long successful elements
-            self.not_enough_long_elements = false;
-            if self.new_elements_long < self.new_elements_long_measure {
-                self.not_enough_long_elements = self.new_elements_long_measure
-                    - self.new_elements_long
-                    > self.new_elements_long_tolerance;
+            data.not_enough_long_elements = false;
+            if data.new_elements_long < data.new_elements_long_measure {
+                data.not_enough_long_elements = data.new_elements_long_measure
+                    - data.new_elements_long
+                    > data.new_elements_long_tolerance;
             }
 
             // @formatter:off
-            println!("not_enough_pixels_total_value {}", self.not_enough_pixels_total_value);
-            println!("less_pixels_total_value       {}", self.less_pixels_total_value);
-            println!("less_pixels_best_value        {} ({} < {})", self.less_pixels_best_value, self.pixels_value_best, self.pixels_value_best_measure);
-            println!("too_many_pixels_total_value   {}", self.too_many_pixels_total_value);
-            println!("too_many_paths_total          {}", self.too_many_paths_total);
-            println!("not_enough_long_elements      {}", self.not_enough_long_elements);
+            println!(
+                "not_enough_pixels_total_value {}",
+                data.not_enough_pixels_total_value
+            );
+            println!(
+                "less_pixels_total_value       {}",
+                data.less_pixels_total_value
+            );
+            println!(
+                "less_pixels_best_value        {} ({} < {})",
+                data.less_pixels_best_value, data.pixels_value_best, data.pixels_value_best_measure
+            );
+            println!(
+                "too_many_pixels_total_value   {}",
+                data.too_many_pixels_total_value
+            );
+            println!(
+                "too_many_paths_total          {}",
+                data.too_many_paths_total
+            );
+            println!(
+                "not_enough_long_elements      {}",
+                data.not_enough_long_elements
+            );
             // @formatter:on
 
             let average_path_length =
-                self.pixels_value_total as f64 / self.paths_total_amount as f64;
+                data.pixels_value_total as f64 / data.paths_total_amount as f64;
             let new_elements_all =
-                self.new_elements_long + self.new_elements_too_short + self.new_elements_too_long;
+                data.new_elements_long + data.new_elements_too_short + data.new_elements_too_long;
             let domain_elements_to_new_calculation_path_points =
-                self.paths_new_points_amount as f64 / new_elements_all as f64;
+                data.paths_new_points_amount as f64 / new_elements_all as f64;
 
             // @formatter:off
-            println!("average_path_length                             {} ({})", average_path_length, self.average_path_length_measure);
-            println!("domain_elements_to_new_calculation_path_points: {}", domain_elements_to_new_calculation_path_points);
+            println!(
+                "average_path_length                             {} ({})",
+                average_path_length, data.average_path_length_measure
+            );
+            println!(
+                "domain_elements_to_new_calculation_path_points: {}",
+                domain_elements_to_new_calculation_path_points
+            );
             // @formatter:on
         }
     }
 
     pub fn clean(&mut self) {
-        self.new_elements_too_long = 0;
-        self.new_elements_too_short = 0;
-        self.new_elements_long = 0;
-        self.paths_total_amount = 0;
-        self.pixels_value_total = 0;
-        self.pixels_value_best = 0;
-        self.paths_new_points_amount = 0;
+        let data = &mut self.data.lock().unwrap();
+
+        data.new_elements_too_long = 0;
+        data.new_elements_too_short = 0;
+        data.new_elements_long = 0;
+        data.paths_total_amount = 0;
+        data.pixels_value_total = 0;
+        data.pixels_value_best = 0;
+        data.paths_new_points_amount = 0;
     }
 
     pub fn print(&self) {
-        println!("new_elements_too_long   {}", self.new_elements_too_long);
-        println!("new_elements_too_short  {}", self.new_elements_too_short);
-        println!("new_elements_long       {}", self.new_elements_long);
-        println!("paths_total_amount      {}", self.paths_total_amount);
-        println!("pixels_value_total      {}", self.pixels_value_total);
-        println!("pixels_value_best       {}", self.pixels_value_best);
-        println!("paths_new_points_amount {}", self.paths_new_points_amount);
+        let data = &mut self.data.lock().unwrap();
+
+        println!("new_elements_too_long   {}", data.new_elements_too_long);
+        println!("new_elements_too_short  {}", data.new_elements_too_short);
+        println!("new_elements_long       {}", data.new_elements_long);
+        println!("paths_total_amount      {}", data.paths_total_amount);
+        println!("pixels_value_total      {}", data.pixels_value_total);
+        println!("pixels_value_best       {}", data.pixels_value_best);
+        println!("paths_new_points_amount {}", data.paths_new_points_amount);
     }
 }
 
 pub fn init() -> Stats {
-
     // TODO
     // data: Mutex::new(area_data),
-
     Stats {
-        new_elements_too_long: 0,
-        new_elements_too_short: 0,
-        new_elements_long: 0,
-        paths_total_amount: 0,
-        paths_new_points_amount: 0,
-        pixels_value_total: 0,
-        pixels_value_best: 0,
-        not_enough_pixels_total_value: false,
-        less_pixels_total_value: false,
-        too_many_pixels_total_value: false,
-        not_enough_pixels_best_value: false,
-        less_pixels_best_value: false,
-        too_many_paths_total: false,
-        not_enough_long_elements: false,
-        new_elements_long_measure: 0,
-        new_elements_long_tolerance: 0,
-        paths_total_amount_measure: 0,
-        paths_total_amount_tolerance: 0,
-        pixels_value_total_measure: 0,
-        pixels_value_total_tolerance: 0,
-        pixels_value_best_measure: 0,
-        pixels_value_best_tolerance: 0,
-        average_path_length_measure: 0,
+        data: Mutex::new(StatsData {
+            new_elements_too_long: 0,
+            new_elements_too_short: 0,
+            new_elements_long: 0,
+            paths_total_amount: 0,
+            paths_new_points_amount: 0,
+            pixels_value_total: 0,
+            pixels_value_best: 0,
+            not_enough_pixels_total_value: false,
+            less_pixels_total_value: false,
+            too_many_pixels_total_value: false,
+            not_enough_pixels_best_value: false,
+            less_pixels_best_value: false,
+            too_many_paths_total: false,
+            not_enough_long_elements: false,
+            new_elements_long_measure: 0,
+            new_elements_long_tolerance: 0,
+            paths_total_amount_measure: 0,
+            paths_total_amount_tolerance: 0,
+            pixels_value_total_measure: 0,
+            pixels_value_total_tolerance: 0,
+            pixels_value_best_measure: 0,
+            pixels_value_best_tolerance: 0,
+            average_path_length_measure: 0,
+        }),
     }
 }
 
