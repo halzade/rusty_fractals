@@ -4,7 +4,7 @@ use crate::constants::CALCULATION_BOUNDARY;
 use crate::data_image::DataImage;
 use crate::data_px::{active_new, hibernated_deep_black};
 use crate::fractal::CalculationType::StaticImage;
-use crate::fractal::FractalType::MandelbrotType;
+use crate::fractal::FractalType::{MandelbrotType, NebulaType};
 use crate::fractal::{
     init_trivial_config, CalculationType, FractalConfig, FractalMath, FractalType, OrbitType,
     TrivialFractal,
@@ -25,6 +25,7 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 /**
  * Machine owns all data
@@ -33,6 +34,9 @@ pub struct Machine<'lt, F>
 where
     F: FractalMath,
 {
+    /*
+     * Fractal related values
+     */
     pub name: &'lt str,
     pub fractal: F,
     pub fractal_type: FractalType,
@@ -60,7 +64,14 @@ where
     pub stats: Stats,
     //  nebula specific - use multiple numbers for each screen pixel
     pub resolution_multiplier: ResolutionMultiplier,
+    /*
+     * Application related values
+     */
     pub app_ref: Option<Arc<Mutex<Application>>>,
+    /*
+     * Machine (Self) related values
+     */
+    last_partial_refresh: Arc<Mutex<Option<Instant>>>,
 }
 
 pub fn init<F: FractalMath>(config: &FractalConfig, fractal: F) -> Machine<'static, F> {
@@ -90,6 +101,8 @@ pub fn init<F: FractalMath>(config: &FractalConfig, fractal: F) -> Machine<'stat
         stats: fractal_stats::init(),
         // application reference
         app_ref: None,
+        // machine values
+        last_partial_refresh: Arc::new(Mutex::new(None)),
     }
 }
 
@@ -112,22 +125,26 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
 
         if is_mandelbrot {
             if is_image {
-                // Fine fractal image
+                // Hard fractal image
                 self.calculate_mandelbrot();
             } else {
-                // Fine fractal video
+                // Hard fractal video
                 self.calculate_mandelbrot_zoom();
             }
         } else {
             if is_image {
-                // Hard fractal image
+                // Fine fractal image
                 self.calculate_nebula();
             } else {
-                // Hard fractal video
+                // Fine fractal video
                 self.calculate_nebula_zoom();
             }
         }
     }
+
+    /* --------------------------------------
+     * Methods for Nebula fractal calculation
+     * ----------------------------------- */
 
     /**
      * Calculate the whole Nebula fractal
@@ -143,7 +160,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             self.chunk_calculation(&xy);
             // window refresh
             // need to paint full image to show progress from other unfinished chunks
-            self.paint_partial_calculation_results_full_image_with_calculation_path();
+            self.paint_partial_calculation_results_states();
         });
 
         self.data_image.recalculate_pixels_states();
@@ -157,12 +174,12 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
                 self.chunk_calculation_with_wrap(&xy);
                 // window refresh
                 // need to paint full image to show progress from other unfinished chunks
-                self.paint_partial_calculation_results_full_image_with_calculation_path();
+                self.paint_partial_calculation_results_states();
             });
         }
         perfectly_colour_nebula_values(&self.data_image, &self.palette);
 
-        self.paint_final_calculation_result();
+        self.paint_final_calculation_result_colors();
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
@@ -360,7 +377,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             }
 
             // if iteration_max increased, ignore possible extension of previous calculation paths
-            // path elements are going to migrate out of the screen shortly
+            // path elements are going to migrate out of the screen very soon
             // removed last_iteration, last_visited_re, last_visited_im
 
             self.stats.paths_new_points_amount_add(*&path.len());
@@ -376,12 +393,17 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
     }
 
     pub fn state_from_path_length(&self, iterator: u32, path_length: u32) -> DomainElementState {
-        if path_length < self.update_min {
+        // path length considered only within Area
+        if path_length < self.iteration_min {
+            // 0 to min-1
             return FinishedTooShort;
         }
-        if iterator == self.update_max {
+        if iterator == self.iteration_max {
+            // divergent calculation
+            // some of the path elements may be outside of Area
             return FinishedTooLong;
         }
+        // min to max-1
         FinishedSuccess
     }
 
@@ -398,7 +420,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // prepare next frame
             self.zoom_in();
             self.recalculate_pixels_positions_for_next_calculation();
-            self.paint_partial_calculation_results_full_image();
+            self.paint_partial_calculation_results_states();
             self.stats.update(&self.data_image, it);
         }
     }
@@ -412,7 +434,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // prepare next frame
             self.zoom_in();
             self.recalculate_pixels_positions_for_next_calculation();
-            self.paint_partial_calculation_results_full_image();
+            self.paint_partial_calculation_results_states();
             self.stats.update(&self.data_image, it);
         }
     }
@@ -432,11 +454,11 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // calculation
             self.chunk_calculation_mandelbrot(xy);
             // window refresh
-            self.paint_partial_calculation_results_full_image();
+            self.paint_partial_calculation_results_states();
         });
         self.data_image.recalculate_pixels_states();
         perfectly_colour_mandelbrot_values(&self.data_image, &self.palette, &self.palette_zero);
-        self.paint_final_calculation_result();
+        self.paint_final_calculation_result_colors();
     }
 
     fn chunk_calculation_mandelbrot(&self, xy: &[u32; 2]) {
@@ -482,7 +504,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
     /**
      * This method will paint only final image colors, no pixel states
      */
-    pub fn paint_final_calculation_result(&self) {
+    pub fn paint_final_calculation_result_colors(&self) {
         let app = self
             .app_ref
             .as_ref()
@@ -490,37 +512,42 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             .lock()
             .expect("Failed to lock application reference");
 
-        app.paint_final_calculation_result(&self.data_image);
+        app.paint_final_calculation_result_colors(&self.data_image);
     }
 
     /**
-     * Paint partial results for Nebula fine fractals
+     * Paint partial results to show pixel states
+     * The pixel states, which are finished show color instead
      */
-    pub fn paint_partial_calculation_results_full_image_with_calculation_path(&self) {
-        let app = self
-            .app_ref
-            .as_ref()
-            .unwrap()
+    pub fn paint_partial_calculation_results_states(&self) {
+        let ms_min = 10;
+        let now = Instant::now();
+
+        let mut last_called = self
+            .last_partial_refresh
             .lock()
-            .expect("Failed to lock application reference");
+            .expect("Failed to lock last_called");
 
-        app.paint_final_calculation_result(&self.data_image);
+        let called_in_past_enough = last_called.map_or(true, |last| {
+            now.duration_since(last) >= Duration::from_millis(ms_min)
+        });
 
-        // TODO application::paint_path(&self.area, &self.data_image);
-    }
+        if called_in_past_enough {
+            let app = self
+                .app_ref
+                .as_ref()
+                .unwrap()
+                .lock()
+                .expect("Failed to lock application reference");
 
-    /**
-     * Paint partial results for Mandelbrot hard fractals
-     */
-    pub fn paint_partial_calculation_results_full_image(&self) {
-        let app = self
-            .app_ref
-            .as_ref()
-            .unwrap()
-            .lock()
-            .expect("Failed to lock application reference");
+            app.paint_partial_calculation_result_states(&self.data_image);
 
-        app.paint_final_calculation_result(&self.data_image);
+            if self.fractal_type == NebulaType {
+                // TODO application::paint_path(&self.area, &self.data_image);
+            }
+        }
+
+        *last_called = Some(now);
     }
 }
 
@@ -547,7 +574,38 @@ pub fn shuffled_calculation_coordinates() -> Vec<[u32; 2]> {
 
 #[cfg(test)]
 mod tests {
+    use crate::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong};
     use crate::{machine, pixel_states};
+    use pixel_states::DomainElementState::FinishedTooShort;
+
+    #[test]
+    fn test_state_from_path_length() {
+        let machine = machine::init_trivial();
+
+        let zero = machine.state_from_path_length(0, 0);
+        let short_out = machine.state_from_path_length(1, 0);
+        let short_in = machine.state_from_path_length(1, 1);
+        let convergent_out = machine.state_from_path_length(2, 0);
+        let convergent_in1 = machine.state_from_path_length(2, 1);
+        let convergent_in2 = machine.state_from_path_length(2, 2);
+        let divergent_out = machine.state_from_path_length(3, 0);
+        let divergent_in1 = machine.state_from_path_length(3, 1);
+        let divergent_in2 = machine.state_from_path_length(3, 2);
+        let divergent_in3 = machine.state_from_path_length(3, 3);
+
+        assert_eq!(zero, FinishedTooShort);
+        assert_eq!(short_out, FinishedTooShort);
+        assert_eq!(short_in, FinishedSuccess);
+
+        assert_eq!(convergent_out, FinishedTooShort);
+        assert_eq!(convergent_in1, FinishedSuccess);
+        assert_eq!(convergent_in2, FinishedSuccess);
+
+        assert_eq!(divergent_out, FinishedTooShort);
+        assert_eq!(divergent_in1, FinishedTooLong);
+        assert_eq!(divergent_in2, FinishedTooLong);
+        assert_eq!(divergent_in3, FinishedTooLong);
+    }
 
     #[test]
     fn test_chunk_boundaries() {
@@ -601,7 +659,7 @@ mod tests {
         // execute test
         let (iterator, length) = machine.calculate_path(0.7, 0.7, false);
 
-        assert_eq!(iterator, 1); // trivial iteration_max = 1
+        assert_eq!(iterator, 2); // trivial iteration_max = 3
         assert_eq!(length, 0);
     }
 }

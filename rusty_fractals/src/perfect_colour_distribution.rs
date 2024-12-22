@@ -21,6 +21,7 @@ struct Mix {
     x: usize,
     y: usize,
     value: u32,
+    // the black interior of set
     quad: f64,
     quid: f64,
 }
@@ -242,7 +243,7 @@ fn perfectly_colour_euler_values(data: &DataImage, palette3: &Palette3) {
             result_image.setRGB(x, y, Rgb([r, g, b]));
         }
     }
-    // Behold, the colouring is perfect
+    // Behold, the colouring is perfect!
 }
 */
 
@@ -275,7 +276,7 @@ pub fn perfectly_colour_mandelbrot_values(
 
     for y in 0..height {
         for x in 0..width {
-            let (value, _, quad, quid, _) = data.values_at(x, y);
+            let (value, _, quad, quid, _) = data.values5_at(x, y);
             if value == 0 {
                 zero_value_elements += 1;
                 pixels_zero.push(Mix {
@@ -396,7 +397,7 @@ pub fn perfectly_colour_mandelbrot_values(
     assert_eq!(pixels_zero.len() + pixels_length, all_pixels_total as usize);
     assert_eq!(all_pixels_total as usize, pi + piz);
     println!("painted:                     {}", pi + piz);
-    // Behold, the colouring is perfect
+    // Behold, the colouring is perfect!
 }
 
 // Return average colour of neighbour elements

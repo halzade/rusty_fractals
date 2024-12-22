@@ -116,7 +116,7 @@ impl DataImage {
         }
     }
 
-    pub fn values_at(
+    pub fn values5_at(
         &self,
         x: usize,
         y: usize,
@@ -124,6 +124,12 @@ impl DataImage {
         let mut mo_px = self.mo_px_at(x, y);
         let p = mo_px.as_mut().unwrap();
         (p.value, p.state, p.quad, p.quid, p.colour)
+    }
+
+    pub fn values3_at(&self, x: usize, y: usize) -> (u32, DomainElementState, Option<Rgb<u8>>) {
+        let mut mo_px = self.mo_px_at(x, y);
+        let p = mo_px.as_mut().unwrap();
+        (p.value, p.state, p.colour)
     }
 
     pub fn colour_at(&self, x: usize, y: usize) -> Option<Rgb<u8>> {

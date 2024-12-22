@@ -1,6 +1,7 @@
 use crate::area::Area;
 use crate::data_image::{colour_for_state, DataImage};
 use crate::fractal::{FractalConfig, FractalMath};
+use crate::pixel_states::DomainElementState;
 use crate::{machine, pixel_states};
 use fltk::app::{event_button, event_coords, event_key};
 use fltk::enums::{Color, Event, Key};
@@ -23,7 +24,7 @@ fn init(config: &FractalConfig) -> Arc<Mutex<Application>> {
 
     let width = config.width_x as i32;
     let height = config.height_y as i32;
-    let name = config.name.clone();
+    let name = config.name;
 
     window.set_label(name);
     window.set_size(width, height);
@@ -51,9 +52,9 @@ pub fn execute<F: FractalMath + 'static>(config: FractalConfig, fractal: F) {
     println!("calculation - new thread ");
     let task = move || {
         // clone arc, not application
-        let mut ma = machine::init(&config, fractal);
-        ma.set_application_ref(application_arc.clone());
-        ma.execute_calculation();
+        let mut machine = machine::init(&config, fractal);
+        machine.set_application_ref(application_arc.clone());
+        machine.execute_calculation();
     };
     rayon::spawn_fifo(task);
 
@@ -118,79 +119,124 @@ impl Application {
     }
 
     /**
-     * This method considers on colors on data_image.
+     * This method paints only colors from data_image.
      * Use other painting methods to display the element states before and during calculation.
+     *
+     * ------
+     * Colors
+     * ------
      */
-    pub fn paint_final_calculation_result(&self, data_image: &DataImage) {
-        let mut window = self.window.lock().unwrap();
+    pub fn paint_final_calculation_result_colors(&self, data_image: &DataImage) {
+        match app::lock() {
+            Ok(_) => {
+                let width = data_image.width_x;
+                let height = data_image.height_y;
 
-        let width = data_image.width_x;
-        let height = data_image.height_y;
+                let pixel_colors: Vec<Option<Rgb<u8>>> = (0..height)
+                    .flat_map(|y| (0..width).map(move |x| data_image.colour_at(x, y)))
+                    .collect();
 
-        let pixel_colors: Vec<Option<Rgb<u8>>> = (0..height)
-            .flat_map(|y| (0..width).map(move |x| data_image.colour_at(x, y)))
-            .collect();
+                let mut window = self.window.lock().unwrap();
+                window.draw(move |_| {
+                    // never use self in here
+                    // locking / unlocking app for draw is not necessary, says so AI
+                    // redraw() can't be called from draw()
 
-        window.draw(move |_| {
-            // never use self in here
-            // locking / unlocking app for draw is not necessary
-            // redraw() can't be called from draw().
-
-            for y in 0..height {
-                for x in 0..width {
-                    let color_index = pixel_colors[y * width + x]; // Safe indexing
-                    if let Some(color) = color_index {
-                        draw_colored_point(x, y, &color);
+                    for y in 0..height {
+                        for x in 0..width {
+                            let color_index = pixel_colors[y * width + x];
+                            if let Some(color) = color_index {
+                                draw_colored_point(x, y, &color);
+                            }
+                        }
                     }
-                }
+                });
+
+                // Trigger redraw events from the main thread
+                window.redraw();
+                app::awake();
             }
-        });
-
-        // Trigger redraw events from the main thread
-        window.redraw();
-        app::awake();
-    }
-
-    pub fn paint_partial_calculation_result(&self, data_image: &DataImage) {
-        let mut window = self.window.lock().unwrap();
-
-        let width = data_image.width_x;
-        let height = data_image.height_y;
-        let max_value = Arc::new(Mutex::new(0));
-
-        for y in 0..height {
-            for x in 0..width {
-                let (value, state, _, _, colour_index_o) = data_image.values_at(x, y);
-                let color: Rgb<u8>;
-                if !pixel_states::is_finished_any(state) {
-                    color = colour_for_state(state);
-                } else {
-                    match colour_index_o {
-                        Some(pixel_colour) => {
-                            color = pixel_colour;
-                        }
-                        None => {
-                            let mut mv = max_value.lock().unwrap();
-                            if value > *mv {
-                                *mv = value;
-                            }
-                            // make color (3x) brighter
-                            let mut cv = ((value * 3) as f64 / *mv as f64) * 255.0;
-                            if cv > 255.0 {
-                                cv = 255.0;
-                            }
-                            let c = cv as u8;
-                            color = Rgb([c, c, c]);
-                        }
-                    }
-                }
-                draw_colored_point(x, y, &color);
+            Err(_) => {
+                println!("paint_final_calculation_result_colors(): app::lock() failed");
             }
         }
+        app::unlock();
+    }
 
-        // Trigger redraw events from the main thread
-        window.redraw();
-        app::awake();
+    /**
+     * This method paints states from data_image.
+     * For finished states it uses color instead
+     *
+     * ------
+     * STATES
+     * ------
+     */
+    pub fn paint_partial_calculation_result_states(&self, data_image: &DataImage) {
+        match app::lock() {
+            Ok(_) => {
+                let width = data_image.width_x;
+                let height = data_image.height_y;
+
+                let pixel_states: Vec<(u32, DomainElementState, Option<Rgb<u8>>)> = (0..height)
+                    .flat_map(|y| {
+                        (0..width).map(move |x| {
+                            let (value, state, color_opt) = data_image.values3_at(x, y);
+                            let rgb_color = color_opt.map(|c| Rgb(c.0));
+                            (value, state, rgb_color)
+                        })
+                    })
+                    .collect();
+
+                let max_value = Arc::new(Mutex::new(0));
+
+                let mut window = self.window.lock().unwrap();
+
+                window.draw(move |_| {
+                    /* --------------------------------------------------------------------------------
+                     * All painting must be done within draw() method. Otherwise it doesn't do anything
+                     * ----------------------------------------------------------------------------- */
+
+                    for y in 0..height {
+                        for x in 0..width {
+                            let (value, state, colour_index_o) = pixel_states[y * width + x];
+                            let color: Rgb<u8>;
+                            if !pixel_states::is_finished_any(state) {
+                                // paint state
+                                color = colour_for_state(state);
+                            } else {
+                                // finished, use color
+                                match colour_index_o {
+                                    Some(ci) => {
+                                        color = ci;
+                                    }
+                                    None => {
+                                        let mut mv = max_value.lock().unwrap();
+                                        if value > *mv {
+                                            *mv = value;
+                                        }
+                                        // make color (3x) brighter
+                                        let mut cv = ((value * 3) as f64 / *mv as f64) * 255.0;
+                                        if cv > 255.0 {
+                                            cv = 255.0;
+                                        }
+                                        let c = cv as u8;
+                                        color = Rgb([c, c, c]);
+                                    }
+                                }
+                            }
+                            draw_colored_point(x, y, &color);
+                        }
+                    }
+                });
+                // Trigger redraw events from the main thread
+                window.redraw();
+                app::awake();
+            }
+            Err(_) => {
+                println!("paint_partial_calculation_result_states(): app::lock() failed");
+            }
+        }
+        app::unlock();
     }
 }
 
@@ -201,64 +247,12 @@ impl Application {
 pub fn paint_path(area: &Area, data: &DataImage) {
     let path = &data.show_path.lock().unwrap();
 
+    // this won't work because it isn't within window.show() method
+
     for p in path.as_slice() {
         let (x, y) = area.point_to_pixel(p[0], p[1]);
         draw::set_draw_color(Color::from_rgb(255, 215, 0));
         draw::draw_point(x as i32, y as i32);
-    }
-    // rendering must be done from main thread
-    app::awake();
-    app::redraw();
-}
-
-/**
- * rendering must be done from main thread
- */
-pub fn paint_image_calculation_progress(xy: &[u32; 2], data: &DataImage) {
-    let chunk_size_x = data.width_x / 20;
-    let chunk_size_y = data.height_y / 20;
-
-    let xx = xy[0] as usize;
-    let yy = xy[1] as usize;
-
-    let x_from = chunk_size_x * xx;
-    let x_to = chunk_size_x * (xx + 1);
-    let y_from = chunk_size_y * yy;
-    let y_to = chunk_size_y * (yy + 1);
-
-    for y in y_from..y_to {
-        for x in x_from..x_to {
-            let colour_index_o = data.colour_at(x, y);
-            match colour_index_o {
-                None => {
-                    println!("paint_image_calculation_progress(): colour_index_o is None");
-                }
-                Some(ci) => {
-                    draw_colored_point(x, y, &ci);
-                }
-            }
-        }
-    }
-
-    // rendering must be done from main thread
-    app::awake();
-    app::redraw();
-}
-
-pub fn paint_image_result(data: &DataImage) {
-    println!("paint_image_result()");
-    for y in 0..data.height_y {
-        for x in 0..data.width_x {
-            let colour_index_o = data.colour_at(x, y);
-            match colour_index_o {
-                None => {
-                    println!("paint_image_result(): colour_index_o is None");
-                }
-                Some(ci) => {
-                    draw_colored_point(x, y, &ci);
-                }
-            }
-        }
     }
     // rendering must be done from main thread
     app::awake();

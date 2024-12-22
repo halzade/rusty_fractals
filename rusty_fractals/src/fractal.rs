@@ -97,8 +97,8 @@ pub fn init_trivial_config() -> FractalConfig {
     FractalConfig {
         name: "Trivial",
         fractal_type: NebulaType,
-        iteration_min: 0,
-        iteration_max: 1,
+        iteration_min: 1,
+        iteration_max: 3, // path length too short = 0,1, convergent = 2, divergent = 3
         resolution_multiplier: Single,
 
         palette: Nothing,

@@ -37,6 +37,9 @@ fn main() {
         calc_type: StaticImage,
         data_image_type: Static,
 
+        // calc_type: InfiniteVideoZoom,
+        // data_image_type: Dynamic,
+
         orbits: Finite,
         update_max: 150,
         update_min: 0,
