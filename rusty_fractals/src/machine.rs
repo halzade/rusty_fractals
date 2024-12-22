@@ -160,11 +160,12 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             self.chunk_calculation(&xy);
             // window refresh
             // need to paint full image to show progress from other unfinished chunks
-            self.paint_partial_calculation_results_states();
+            self.paint_partial_calculation_results_states(false);
         });
 
         self.data_image.recalculate_pixels_states();
 
+        // wrap
         // calculate for many other elements within the pixels
         if self.resolution_multiplier != ResolutionMultiplier::Single {
             println!("calculate() with wrap");
@@ -174,7 +175,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
                 self.chunk_calculation_with_wrap(&xy);
                 // window refresh
                 // need to paint full image to show progress from other unfinished chunks
-                self.paint_partial_calculation_results_states();
+                self.paint_partial_calculation_results_states(true); // only every 100+ ms
             });
         }
         perfectly_colour_nebula_values(&self.data_image, &self.palette);
@@ -420,7 +421,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // prepare next frame
             self.zoom_in();
             self.recalculate_pixels_positions_for_next_calculation();
-            self.paint_partial_calculation_results_states();
+            self.paint_partial_calculation_results_states(false);
             self.stats.update(&self.data_image, it);
         }
     }
@@ -434,7 +435,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // prepare next frame
             self.zoom_in();
             self.recalculate_pixels_positions_for_next_calculation();
-            self.paint_partial_calculation_results_states();
+            self.paint_partial_calculation_results_states(false);
             self.stats.update(&self.data_image, it);
         }
     }
@@ -454,7 +455,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // calculation
             self.chunk_calculation_mandelbrot(xy);
             // window refresh
-            self.paint_partial_calculation_results_states();
+            self.paint_partial_calculation_results_states(false);
         });
         self.data_image.recalculate_pixels_states();
         perfectly_colour_mandelbrot_values(&self.data_image, &self.palette, &self.palette_zero);
@@ -519,8 +520,11 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
      * Paint partial results to show pixel states
      * The pixel states, which are finished show color instead
      */
-    pub fn paint_partial_calculation_results_states(&self) {
-        let ms_min = 10;
+    pub fn paint_partial_calculation_results_states(&self, paint_path: bool) {
+        // ms_min have serious impact on parallelization and speed of calculation,
+        // don't use less than 100
+        let ms_min = 250;
+
         let now = Instant::now();
 
         let mut last_called = self
@@ -540,11 +544,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
                 .lock()
                 .expect("Failed to lock application reference");
 
-            app.paint_partial_calculation_result_states(&self.data_image);
-
-            if self.fractal_type == NebulaType {
-                // TODO application::paint_path(&self.area, &self.data_image);
-            }
+            app.paint_partial_calculation_result_states(&self.data_image, paint_path, &self.area);
         }
 
         *last_called = Some(now);

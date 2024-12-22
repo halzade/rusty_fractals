@@ -29,7 +29,7 @@ fn init(config: &FractalConfig) -> Arc<Mutex<Application>> {
     window.set_label(name);
     window.set_size(width, height);
 
-    window.set_color(Color::from_rgb(40, 180, 150));
+    window.end();
     window.show();
 
     Arc::new(Mutex::new(Application {
@@ -171,12 +171,18 @@ impl Application {
      * STATES
      * ------
      */
-    pub fn paint_partial_calculation_result_states(&self, data_image: &DataImage) {
+    pub fn paint_partial_calculation_result_states(
+        &self,
+        data_image: &DataImage,
+        paint_path: bool,
+        area: &Area,
+    ) {
         match app::lock() {
             Ok(_) => {
                 let width = data_image.width_x;
                 let height = data_image.height_y;
 
+                // pixel states and image colors
                 let pixel_states: Vec<(u32, DomainElementState, Option<Rgb<u8>>)> = (0..height)
                     .flat_map(|y| {
                         (0..width).map(move |x| {
@@ -186,6 +192,18 @@ impl Application {
                         })
                     })
                     .collect();
+
+                // calculation path
+                let mut path: Vec<[f64; 2]> = Vec::new();
+                let mut area_copy = area.copy_data();
+                if paint_path {
+                    path = {
+                        let mut locked_path = data_image.show_path.lock().unwrap();
+                        std::mem::replace(&mut *locked_path, Default::default())
+                        // Replace with a default value
+                    };
+                    area_copy = area.copy_data();
+                }
 
                 let max_value = Arc::new(Mutex::new(0));
 
@@ -227,6 +245,14 @@ impl Application {
                             draw_colored_point(x, y, &color);
                         }
                     }
+
+                    if paint_path {
+                        draw::set_draw_color(Color::from_rgb(255, 215, 0));
+                        for p in path.as_slice() {
+                            let (x, y) = area_copy.point_to_pixel(p[0], p[1]);
+                            draw::draw_point(x as i32, y as i32);
+                        }
+                    }
                 });
                 // Trigger redraw events from the main thread
                 window.redraw();
@@ -244,21 +270,7 @@ impl Application {
  * static methods
  * ----------- */
 
-pub fn paint_path(area: &Area, data: &DataImage) {
-    let path = &data.show_path.lock().unwrap();
-
-    // this won't work because it isn't within window.show() method
-
-    for p in path.as_slice() {
-        let (x, y) = area.point_to_pixel(p[0], p[1]);
-        draw::set_draw_color(Color::from_rgb(255, 215, 0));
-        draw::draw_point(x as i32, y as i32);
-    }
-    // rendering must be done from main thread
-    app::awake();
-    app::redraw();
-}
-
+// called only from main thread within window.show() method
 fn draw_colored_point(x: usize, y: usize, color: &Rgb<u8>) {
     let r = *color.channels().get(0).unwrap();
     let g = *color.channels().get(1).unwrap();

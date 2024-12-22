@@ -1,12 +1,12 @@
 use rusty_fractals::application;
-use rusty_fractals::data_image::DataType::{Dynamic, Static};
-use rusty_fractals::fractal::CalculationType::{InfiniteVideoZoom, StaticImage};
+use rusty_fractals::data_image::DataType::Static;
+use rusty_fractals::fractal::CalculationType::StaticImage;
 use rusty_fractals::fractal::FractalType::NebulaType;
 use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
+use rusty_fractals::resolution_multiplier::ResolutionMultiplier::{Single, Square2, Square5};
 
 pub struct Science;
 
@@ -23,13 +23,13 @@ fn main() {
         fractal_type: NebulaType,
         iteration_min: 42,
         iteration_max: 800,
-        resolution_multiplier: Single,
+        resolution_multiplier: Square5,
 
         palette: BlueToWhiteCircleUp,
         palette_zero: Nothing,
 
-        width_x: 400,
-        height_y: 400,
+        width_x: 600,
+        height_y: 600,
         width_re: 3.0,
         center_re: -0.5,
         center_im: 0.0,

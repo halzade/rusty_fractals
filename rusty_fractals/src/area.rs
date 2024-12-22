@@ -34,6 +34,26 @@ pub struct AreaData {
     plank: f64,
 }
 
+pub struct AreaDataCopy {
+    pub center_re: f64,
+    pub center_im: f64,
+    pub width_re: f64,
+    pub width_xf64: f64,
+    pub width_half_xf64: f64,
+    pub height_im: f64,
+    pub height_yf64: f64,
+    pub height_half_yf64: f64,
+}
+
+impl AreaDataCopy {
+    pub fn point_to_pixel(&self, re: f64, im: f64) -> (usize, usize) {
+        let px = (self.width_xf64 * (re - self.center_re) / self.width_re) + self.width_half_xf64;
+        let py =
+            (self.height_yf64 * (im - self.center_im) / self.height_im) + self.height_half_yf64;
+        (px as usize, py as usize)
+    }
+}
+
 impl<'lt> Area {
     // TODO faster
     pub fn contains(&self, re: f64, im: f64) -> bool {
@@ -79,8 +99,7 @@ impl<'lt> Area {
     }
 
     /**
-     * Check first, if can convert
-     * Only then call this method
+     * Check first, if element can convert, only then call this method
      */
     pub fn point_to_pixel(&self, re: f64, im: f64) -> (usize, usize) {
         match self.data.lock() {
@@ -93,6 +112,24 @@ impl<'lt> Area {
                 println!("(): {}", e);
                 panic!()
             }
+        }
+    }
+
+    /**
+     * copy area data for point_to_pixel method
+     * element's re, im coordinates can be converted to x,y because they were verified during path calculation
+     */
+    pub fn copy_data(&self) -> AreaDataCopy {
+        let area = &self.data.lock().unwrap();
+        AreaDataCopy {
+            center_re: area.center_re,
+            center_im: area.center_im,
+            width_re: area.width_re,
+            width_xf64: area.width_xf64,
+            width_half_xf64: area.width_half_xf64,
+            height_im: area.height_im,
+            height_yf64: area.height_yf64,
+            height_half_yf64: area.height_half_yf64,
         }
     }
 
