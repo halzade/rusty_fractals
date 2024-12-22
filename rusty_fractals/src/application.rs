@@ -1,7 +1,7 @@
 use crate::area::Area;
-use crate::data_image::DataImage;
+use crate::data_image::{colour_for_state, DataImage};
 use crate::fractal::{FractalConfig, FractalMath};
-use crate::machine;
+use crate::{machine, pixel_states};
 use fltk::app::{event_button, event_coords, event_key};
 use fltk::enums::{Color, Event, Key};
 use fltk::window::DoubleWindow;
@@ -122,8 +122,6 @@ impl Application {
      * Use other painting methods to display the element states before and during calculation.
      */
     pub fn paint_final_calculation_result(&self, data_image: &DataImage) {
-        println!("paint_final_calculation_result()");
-
         let mut window = self.window.lock().unwrap();
 
         let width = data_image.width_x;
@@ -153,39 +151,47 @@ impl Application {
         app::awake();
     }
 
-    // pub fn paint_final_calculation_result_errors(&self, data: &DataImage) {
-    //     for y in 0..height {
-    //         for x in 0..width {
-    //             let (value, state, _, _, colour_index_o) =
-    //                 data_image.values_at(x as usize, y as usize);
-    //             let colour: Rgb<u8>;
-    //             if !pixel_states::is_finished_any(state) {
-    //                 colour = data_image::colour_for_state(state);
-    //             } else {
-    //                 match colour_index_o {
-    //                     Some(pixel_colour) => {
-    //                         colour = pixel_colour;
-    //                     }
-    //                     None => {
-    //                         let mut mv = max_value.lock().unwrap();
-    //                         if value > *mv {
-    //                             *mv = value;
-    //                         }
-    //                         // make color (3x) brighter
-    //                         let mut cv = ((value * 3) as f64 / *mv as f64) * 255.0;
-    //                         if cv > 255.0 {
-    //                             cv = 255.0;
-    //                         }
-    //                         let c = cv as u8;
-    //                         colour = Rgb([c, c, c]);
-    //                     }
-    //                 }
-    //             }
-    //             draw::set_draw_color(Color::from_rgb(*r, *g, *b));
-    //             draw::draw_point(x, y);
-    //         }
-    //     }
-    // }
+    pub fn paint_partial_calculation_result(&self, data_image: &DataImage) {
+        let mut window = self.window.lock().unwrap();
+
+        let width = data_image.width_x;
+        let height = data_image.height_y;
+        let max_value = Arc::new(Mutex::new(0));
+
+        for y in 0..height {
+            for x in 0..width {
+                let (value, state, _, _, colour_index_o) = data_image.values_at(x, y);
+                let color: Rgb<u8>;
+                if !pixel_states::is_finished_any(state) {
+                    color = colour_for_state(state);
+                } else {
+                    match colour_index_o {
+                        Some(pixel_colour) => {
+                            color = pixel_colour;
+                        }
+                        None => {
+                            let mut mv = max_value.lock().unwrap();
+                            if value > *mv {
+                                *mv = value;
+                            }
+                            // make color (3x) brighter
+                            let mut cv = ((value * 3) as f64 / *mv as f64) * 255.0;
+                            if cv > 255.0 {
+                                cv = 255.0;
+                            }
+                            let c = cv as u8;
+                            color = Rgb([c, c, c]);
+                        }
+                    }
+                }
+                draw_colored_point(x, y, &color);
+            }
+        }
+
+        // Trigger redraw events from the main thread
+        window.redraw();
+        app::awake();
+    }
 }
 
 /* --------------
@@ -220,8 +226,6 @@ pub fn paint_image_calculation_progress(xy: &[u32; 2], data: &DataImage) {
     let y_from = chunk_size_y * yy;
     let y_to = chunk_size_y * (yy + 1);
 
-    let lr = app::lock();
-
     for y in y_from..y_to {
         for x in x_from..x_to {
             let colour_index_o = data.colour_at(x, y);
@@ -233,11 +237,12 @@ pub fn paint_image_calculation_progress(xy: &[u32; 2], data: &DataImage) {
                     draw_colored_point(x, y, &ci);
                 }
             }
-            // rendering must be done from main thread
-            app::awake();
-            app::redraw();
         }
     }
+
+    // rendering must be done from main thread
+    app::awake();
+    app::redraw();
 }
 
 pub fn paint_image_result(data: &DataImage) {

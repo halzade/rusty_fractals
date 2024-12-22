@@ -14,11 +14,13 @@ use crate::fractal_stats::Stats;
 use crate::mem::Mem;
 use crate::palette::Palette;
 use crate::palettes::new_palette_by_name;
-use crate::perfect_colour_distribution::perfectly_colour_nebula_values;
+use crate::perfect_colour_distribution::{
+    perfectly_colour_mandelbrot_values, perfectly_colour_nebula_values,
+};
 use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong, FinishedTooShort};
 use crate::resolution_multiplier::ResolutionMultiplier;
-use crate::{area, data_image, fractal, fractal_stats, perfect_colour_distribution, pixel_states};
+use crate::{area, data_image, fractal, fractal_stats, pixel_states};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rayon::prelude::*;
@@ -141,7 +143,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             self.chunk_calculation(&xy);
             // window refresh
             // need to paint full image to show progress from other unfinished chunks
-            self.paint_full_image();
+            self.paint_partial_calculation_results_full_image_with_calculation_path();
         });
 
         self.data_image.recalculate_pixels_states();
@@ -155,12 +157,12 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
                 self.chunk_calculation_with_wrap(&xy);
                 // window refresh
                 // need to paint full image to show progress from other unfinished chunks
-                self.paint_full_image_with_calculation_path();
+                self.paint_partial_calculation_results_full_image_with_calculation_path();
             });
         }
         perfectly_colour_nebula_values(&self.data_image, &self.palette);
 
-        self.paint_full_image();
+        self.paint_final_calculation_result();
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
@@ -396,7 +398,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // prepare next frame
             self.zoom_in();
             self.recalculate_pixels_positions_for_next_calculation();
-            self.paint_full_image();
+            self.paint_partial_calculation_results_full_image();
             self.stats.update(&self.data_image, it);
         }
     }
@@ -410,7 +412,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // prepare next frame
             self.zoom_in();
             self.recalculate_pixels_positions_for_next_calculation();
-            self.paint_full_image();
+            self.paint_partial_calculation_results_full_image();
             self.stats.update(&self.data_image, it);
         }
     }
@@ -430,16 +432,11 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // calculation
             self.chunk_calculation_mandelbrot(xy);
             // window refresh
-            // TODO change need to paint full image to include partial progress on other chunks
-            // TODO change self.paint_full_image();
+            self.paint_partial_calculation_results_full_image();
         });
         self.data_image.recalculate_pixels_states();
-        perfect_colour_distribution::perfectly_colour_mandelbrot_values(
-            &self.data_image,
-            &self.palette,
-            &self.palette_zero,
-        );
-        self.paint_full_image();
+        perfectly_colour_mandelbrot_values(&self.data_image, &self.palette, &self.palette_zero);
+        self.paint_final_calculation_result();
     }
 
     fn chunk_calculation_mandelbrot(&self, xy: &[u32; 2]) {
@@ -482,7 +479,10 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
      * Application methods
      * -----------------*/
 
-    pub fn paint_full_image(&self) {
+    /**
+     * This method will paint only final image colors, no pixel states
+     */
+    pub fn paint_final_calculation_result(&self) {
         let app = self
             .app_ref
             .as_ref()
@@ -493,7 +493,10 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
         app.paint_final_calculation_result(&self.data_image);
     }
 
-    pub fn paint_full_image_with_calculation_path(&self) {
+    /**
+     * Paint partial results for Nebula fine fractals
+     */
+    pub fn paint_partial_calculation_results_full_image_with_calculation_path(&self) {
         let app = self
             .app_ref
             .as_ref()
@@ -505,7 +508,25 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
 
         // TODO application::paint_path(&self.area, &self.data_image);
     }
+
+    /**
+     * Paint partial results for Mandelbrot hard fractals
+     */
+    pub fn paint_partial_calculation_results_full_image(&self) {
+        let app = self
+            .app_ref
+            .as_ref()
+            .unwrap()
+            .lock()
+            .expect("Failed to lock application reference");
+
+        app.paint_final_calculation_result(&self.data_image);
+    }
 }
+
+/* --------------
+ * Static methods
+ * ----------- */
 
 /**
  * Creates x,y pairs for calculation.
