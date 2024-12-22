@@ -47,7 +47,7 @@ pub fn execute<F: FractalMath + 'static>(config: FractalConfig, fractal: F) {
     let application_arc = init(&config);
 
     println!("show()");
-    // application.init_window_actions();
+    application_arc.lock().unwrap().init_window_actions();
 
     println!("calculation - new thread ");
 
@@ -71,11 +71,7 @@ pub fn execute<F: FractalMath + 'static>(config: FractalConfig, fractal: F) {
  */
 impl Application {
     pub fn init_window_actions(&mut self) {
-        println!("show()");
-
-        // initialize window color, filled rectangle
-        // draw::set_draw_color(Color::from_rgb(40, 180, 150));
-        // draw::draw_rectf(0, 0, width, height);
+        println!("init_window_actions()");
 
         self.window
             .lock()

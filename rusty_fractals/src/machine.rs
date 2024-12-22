@@ -156,16 +156,16 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
      */
     pub fn calculate_nebula(&self) {
         println!("calculate_nebula()");
-        
+
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
-        
+
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
             self.chunk_calculation(&xy);
             // window refresh
             // application::paint_image_calculation_progress(xy, &self.data_image);
         });
-        
+
         self.data_image.recalculate_pixels_states();
 
         if self.resolution_multiplier != ResolutionMultiplier::Single {
@@ -181,14 +181,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
         }
         perfectly_colour_nebula_values(&self.data_image, &self.palette);
 
-        let app = self
-            .app_ref
-            .as_ref()
-            .unwrap()
-            .lock()
-            .expect("Failed to lock application reference");
-        
-        app.paint_final_calculation_result(&self.data_image);
+        self.paint_full_image();
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
@@ -384,13 +377,15 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // if iteration_max increased, ignore possible extension of previous calculation paths
             // path elements are going to migrate out of the screen shortly
             // removed last_iteration, last_visited_re, last_visited_im
+
+            self.stats.paths_new_points_amount_add(*&path.len());
+
             if self.data_image.is_dynamic() {
                 self.data_image.save_path(path, is_wrap);
             } else {
                 self.data_image
                     .translate_path_to_point_grid(path, &self.area, is_wrap);
             }
-            // TODO stats.paths_new_points_amount += path.size();
         }
         (iterator, length)
     }
@@ -418,6 +413,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // prepare next frame
             self.zoom_in();
             self.recalculate_pixels_positions_for_next_calculation();
+            self.paint_full_image();
             self.stats.update(&self.data_image, it);
         }
     }
@@ -431,6 +427,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // prepare next frame
             self.zoom_in();
             self.recalculate_pixels_positions_for_next_calculation();
+            self.paint_full_image();
             self.stats.update(&self.data_image, it);
         }
     }
@@ -495,6 +492,19 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             iterator += 1;
         }
         (iterator, m.quad())
+    }
+    
+    /* Application methods */
+    
+    pub fn paint_full_image(&self) {
+        let app = self
+            .app_ref
+            .as_ref()
+            .unwrap()
+            .lock()
+            .expect("Failed to lock application reference");
+
+        app.paint_final_calculation_result(&self.data_image);
     }
 }
 

@@ -6,6 +6,14 @@ pub struct Stats {
     data: Mutex<StatsData>,
 }
 
+impl Stats {
+    pub fn paths_new_points_amount_add(&self, path_length: usize) {
+        let data = &mut self.data.lock().unwrap();
+
+        data.paths_new_points_amount += path_length as u32;
+    }
+}
+
 pub struct StatsData {
     new_elements_too_long: u32,
     new_elements_too_short: u32,
@@ -167,8 +175,6 @@ impl Stats {
 }
 
 pub fn init() -> Stats {
-    // TODO
-    // data: Mutex::new(area_data),
     Stats {
         data: Mutex::new(StatsData {
             new_elements_too_long: 0,
