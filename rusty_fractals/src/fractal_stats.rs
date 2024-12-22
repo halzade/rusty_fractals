@@ -40,6 +40,7 @@ pub struct StatsData {
 }
 
 impl Stats {
+    #[rustfmt::skip]
     fn remember_this(&self, data_image: &DataImage) {
         let data = &mut self.data.lock().unwrap();
 
@@ -61,30 +62,14 @@ impl Stats {
         data.paths_total_amount_tolerance = (data.paths_total_amount_measure as f64 * 0.5) as u32;
         data.pixels_value_best_tolerance = (data.pixels_value_best_measure as f64 * 0.5) as u32;
 
-        // @formatter:off
-        println!(
-            "elementsLong_measure        {} ",
-            data.new_elements_long_measure
-        );
-        println!(
-            "pixels_value_total_measure  {} ",
-            data.pixels_value_total_measure
-        );
-        println!(
-            "pixels_value_best_measure   {} ",
-            data.pixels_value_best_measure
-        );
-        println!(
-            "paths_total_amount_measure  {} ",
-            data.paths_total_amount_measure
-        );
-        println!(
-            "average_path_length_measure {} ",
-            data.average_path_length_measure
-        );
-        // @formatter:on
+        println!("elementsLong_measure        {} ", data.new_elements_long_measure);
+        println!("pixels_value_total_measure  {} ", data.pixels_value_total_measure);
+        println!("pixels_value_best_measure   {} ", data.pixels_value_best_measure);
+        println!("paths_total_amount_measure  {} ", data.paths_total_amount_measure);
+        println!("average_path_length_measure {} ", data.average_path_length_measure);
     }
 
+    #[rustfmt::skip]
     pub fn update(&self, data_image: &DataImage, it: u32) {
         // Check if Stats should remember this iteration data for subsequent comparison
         if it == TAKE_MEASURES_AT_FRAME {
@@ -137,32 +122,12 @@ impl Stats {
                     > data.new_elements_long_tolerance;
             }
 
-            // @formatter:off
-            println!(
-                "not_enough_pixels_total_value {}",
-                data.not_enough_pixels_total_value
-            );
-            println!(
-                "less_pixels_total_value       {}",
-                data.less_pixels_total_value
-            );
-            println!(
-                "less_pixels_best_value        {} ({} < {})",
-                data.less_pixels_best_value, data.pixels_value_best, data.pixels_value_best_measure
-            );
-            println!(
-                "too_many_pixels_total_value   {}",
-                data.too_many_pixels_total_value
-            );
-            println!(
-                "too_many_paths_total          {}",
-                data.too_many_paths_total
-            );
-            println!(
-                "not_enough_long_elements      {}",
-                data.not_enough_long_elements
-            );
-            // @formatter:on
+            println!("not_enough_pixels_total_value {}", data.not_enough_pixels_total_value);
+            println!("less_pixels_total_value       {}", data.less_pixels_total_value);
+            println!("less_pixels_best_value        {} ({} < {})", data.less_pixels_best_value, data.pixels_value_best, data.pixels_value_best_measure);
+            println!("too_many_pixels_total_value   {}", data.too_many_pixels_total_value);
+            println!("too_many_paths_total          {}", data.too_many_paths_total);
+            println!("not_enough_long_elements      {}", data.not_enough_long_elements);
 
             let average_path_length =
                 data.pixels_value_total as f64 / data.paths_total_amount as f64;
@@ -171,16 +136,8 @@ impl Stats {
             let domain_elements_to_new_calculation_path_points =
                 data.paths_new_points_amount as f64 / new_elements_all as f64;
 
-            // @formatter:off
-            println!(
-                "average_path_length                             {} ({})",
-                average_path_length, data.average_path_length_measure
-            );
-            println!(
-                "domain_elements_to_new_calculation_path_points: {}",
-                domain_elements_to_new_calculation_path_points
-            );
-            // @formatter:on
+            println!("average_path_length                             {} ({})", average_path_length, data.average_path_length_measure);
+            println!("domain_elements_to_new_calculation_path_points: {}", domain_elements_to_new_calculation_path_points);
         }
     }
 
