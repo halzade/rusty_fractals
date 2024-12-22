@@ -123,8 +123,8 @@ impl Application {
 
         let mut window = self.window.lock().unwrap();
 
-        let width = data_image.width;
-        let height = data_image.height;
+        let width = data_image.width_x;
+        let height = data_image.height_y;
 
         let pixel_colors: Vec<Option<Rgb<u8>>> = (0..height)
             .flat_map(|y| (0..width).map(move |x| data_image.colour_at(x, y)))
@@ -208,8 +208,8 @@ pub fn paint_path(area: &Area, data: &DataImage) {
  * rendering must be done from main thread
  */
 pub fn paint_image_calculation_progress(xy: &[u32; 2], data: &DataImage) {
-    let chunk_size_x = data.width / 20;
-    let chunk_size_y = data.height / 20;
+    let chunk_size_x = data.width_x / 20;
+    let chunk_size_y = data.height_y / 20;
 
     let xx = xy[0] as usize;
     let yy = xy[1] as usize;
@@ -241,8 +241,8 @@ pub fn paint_image_calculation_progress(xy: &[u32; 2], data: &DataImage) {
 
 pub fn paint_image_result(data: &DataImage) {
     println!("paint_image_result()");
-    for y in 0..data.height {
-        for x in 0..data.width {
+    for y in 0..data.height_y {
+        for x in 0..data.width_x {
             let colour_index_o = data.colour_at(x, y);
             match colour_index_o {
                 None => {

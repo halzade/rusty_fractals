@@ -27,8 +27,8 @@ struct Mix {
 
 pub fn perfectly_colour_nebula_values(data: &DataImage, palette: &Palette) {
     println!("perfectly_colour_nebula_values()");
-    let width = data.width;
-    let height = data.height;
+    let width = data.width_x;
+    let height = data.height_y;
 
     // Result pixels, order by value
     let mut pixels: Vec<Pix> = Vec::new();
@@ -264,8 +264,8 @@ pub fn perfectly_colour_mandelbrot_values(
 ) {
     println!("perfectly_colour_mandelbrot_values()");
 
-    let width = data.width;
-    let height = data.height;
+    let width = data.width_x;
+    let height = data.height_y;
 
     // Result pixels, order by value
     let mut pixels: Vec<Mix> = Vec::new();
@@ -401,8 +401,8 @@ pub fn perfectly_colour_mandelbrot_values(
 
 // Return average colour of neighbour elements
 fn ac_if_black_dot(mp: &Mix, data: &DataImage) -> i32 {
-    let width = data.width;
-    let height = data.height;
+    let width = data.width_x;
+    let height = data.height_y;
     let pv = mp.value;
     let mut sum = 0;
     let mut neighbours = 0;

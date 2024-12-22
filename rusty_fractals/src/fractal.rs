@@ -1,6 +1,11 @@
+use crate::fractal::CalculationType::StaticImage;
+use crate::fractal::FractalType::NebulaType;
+use crate::fractal::OrbitType::Finite;
 use crate::mem::Mem;
 use crate::palettes::PaletteName;
+use crate::palettes::PaletteName::Nothing;
 use crate::resolution_multiplier::ResolutionMultiplier;
+use crate::resolution_multiplier::ResolutionMultiplier::Single;
 use std::cmp::PartialEq;
 
 pub struct FractalConfig {
@@ -32,8 +37,7 @@ pub enum FractalType {
     // for each calculation, count domain elements matching the intermediate-calculation results
     NebulaType,
     // split primes, Fibonacci's and other to RGB spectra
-    NebulaEulerType
-
+    NebulaEulerType,
 }
 
 /**
@@ -83,9 +87,43 @@ pub fn init_trivial() -> TrivialFractal {
     TrivialFractal {}
 }
 
+pub fn init_trivial_config() -> FractalConfig {
+    FractalConfig {
+        name: "Trivial",
+        fractal_type: NebulaType,
+        iteration_min: 0,
+        iteration_max: 1,
+        resolution_multiplier: Single,
+
+        palette: Nothing,
+        palette_zero: Nothing,
+
+        width_x: 1,
+        height_y: 1,
+        width_re: 1.0,
+        center_re: 0.0,
+        center_im: 0.0,
+
+        calc_type: StaticImage,
+        orbits: Finite,
+        update_max: 1,
+        update_min: 0,
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::fractal::{init_trivial, FractalMath};
+    use crate::mem::Mem;
 
     #[test]
-    fn test_it() {}
+    fn test_math() {
+        let f = init_trivial();
+        let mut m = &mut Mem::new(0.0, 0.0);
+
+        f.math(&mut m, 0.0, 0.0);
+
+        assert_eq!(m.re(), 0.0);
+        assert_eq!(m.im(), 0.0);
+    }
 }

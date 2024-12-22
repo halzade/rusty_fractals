@@ -17,8 +17,8 @@ use image::Rgb;
 use std::sync::{Arc, Mutex, MutexGuard};
 
 pub struct DataImage {
-    pub width: usize,
-    pub height: usize,
+    pub width_x: usize,
+    pub height_y: usize,
     pub data_type: DataType,
     // static data for image
     pub pixels: Vec<Vec<Mutex<Option<DataPx>>>>,
@@ -190,8 +190,8 @@ impl DataImage {
 
     pub fn recalculate_pixels_states(&self) {
         println!("recalculate_pixels_states()");
-        for y in 0..self.height {
-            for x in 0..self.width {
+        for y in 0..self.height_y {
+            for x in 0..self.width_x {
                 let mut mo_px = self.mo_px_at(x, y);
                 let p = mo_px.as_mut().unwrap();
                 p.past();
@@ -208,7 +208,7 @@ impl DataImage {
             for b in -neigh..(neigh + 1) {
                 let xx = x as i32 + a;
                 let yy = y as i32 + b;
-                if check_domain(xx, yy, self.width, self.height) {
+                if check_domain(xx, yy, self.width_x, self.height_y) {
                     let (_, state) = self.value_state_at(xx as usize, yy as usize);
                     if is_finished_success_past(state) {
                         return true;
@@ -221,8 +221,8 @@ impl DataImage {
 
     pub fn best_four_chunks_value(&self) -> u32 {
         println!("best_four_chunks_value()");
-        let chunk_size_x = self.width / 20;
-        let chunk_size_y = self.height / 20;
+        let chunk_size_x = self.width_x / 20;
+        let chunk_size_y = self.height_y / 20;
         let mut values: Vec<u32> = Vec::new();
         for x in 0..20 {
             for y in 0..20 {
@@ -321,7 +321,7 @@ impl DataImage {
             for b in -neigh..(neigh + 1) {
                 let xx = x as i32 + a;
                 let yy = y as i32 + b;
-                if (a != 0 || b != 0) && check_domain(xx, yy, self.width, self.height) {
+                if (a != 0 || b != 0) && check_domain(xx, yy, self.width_x, self.height_y) {
                     let mo_px = self.mo_px_at(xx as usize, yy as usize);
                     if mo_px.is_some() {
                         let px = mo_px.as_ref().unwrap();
@@ -351,8 +351,8 @@ pub fn init(data_type: DataType, area: &Area) -> DataImage {
     let hy = area.data.lock().unwrap().height_y;
     DataImage {
         data_type,
-        width: wx,
-        height: hy,
+        width_x: wx,
+        height_y: hy,
         pixels: init_domain(area),
         paths: Arc::new(Mutex::new(Vec::new())),
         show_path: Mutex::new(Vec::new()),
@@ -361,8 +361,8 @@ pub fn init(data_type: DataType, area: &Area) -> DataImage {
 
 pub fn init_trivial() -> DataImage {
     DataImage {
-        width: 1,
-        height: 1,
+        width_x: 1,
+        height_y: 1,
         data_type: Static,
         pixels: init_pixels_trivial(),
         paths: Arc::new(Mutex::new(Vec::new())),
@@ -396,7 +396,7 @@ fn init_pixels_trivial() -> Vec<Vec<Mutex<Option<DataPx>>>> {
     let mut vx = Vec::new();
     let mut vy = Vec::new();
 
-    vy.push(Mutex::new(Some(data_px::init(1f64, 1f64))));
+    vy.push(Mutex::new(Some(data_px::init(0f64, 0f64))));
     vx.push(vy);
 
     vx
@@ -447,10 +447,10 @@ mod tests {
     fn test_wrap_3() {
         // prepare test
         let data = init_trivial();
-        let area_plank = 0.1;
+        let area_plank = 1.0;
 
         // execute test
-        let (o_re, o_im) = data.origin_at(2, 3);
+        let (o_re, o_im) = data.origin_at(0, 0);
         let w = data.wrap(o_re, o_im, Square3, area_plank);
         assert_eq!(w.len(), 8);
         let (re, im) = element_at(&w, 0);
@@ -465,7 +465,7 @@ mod tests {
         let data = init_trivial();
         let area_plank = 0.1;
 
-        let (o_re, o_im) = data.origin_at(2, 3);
+        let (o_re, o_im) = data.origin_at(0, 0);
         let w = data.wrap(o_re, o_im, Square5, area_plank);
         assert_eq!(w.len(), 24);
     }
@@ -475,7 +475,7 @@ mod tests {
         let data = init_trivial();
         let area_plank = 0.1;
 
-        let (o_re, o_im) = data.origin_at(2, 3);
+        let (o_re, o_im) = data.origin_at(0, 0);
         let w = data.wrap(o_re, o_im, Square9, area_plank);
         assert_eq!(w.len(), 80);
     }
@@ -485,7 +485,7 @@ mod tests {
         let data = init_trivial();
         let area_plank = 0.1;
 
-        let (o_re, o_im) = data.origin_at(7, 8);
+        let (o_re, o_im) = data.origin_at(0, 0);
         let w = data.wrap(o_re, o_im, Square11, area_plank);
         assert_eq!(w.len(), 120);
     }
@@ -495,7 +495,7 @@ mod tests {
         let data = init_trivial();
         let area_plank = 0.1;
 
-        let (o_re, o_im) = data.origin_at(2, 3);
+        let (o_re, o_im) = data.origin_at(0, 0);
         let w = data.wrap(o_re, o_im, Square51, area_plank);
         assert_eq!(w.len(), 2600);
     }
@@ -505,7 +505,7 @@ mod tests {
         let data = init_trivial();
         let area_plank = 0.1;
 
-        let (o_re, o_im) = data.origin_at(2, 3);
+        let (o_re, o_im) = data.origin_at(0, 0);
         let w = data.wrap(o_re, o_im, Square101, area_plank);
         assert_eq!(w.len(), 10_200);
     }

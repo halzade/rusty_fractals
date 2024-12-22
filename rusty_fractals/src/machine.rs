@@ -7,7 +7,8 @@ use crate::data_px::{active_new, hibernated_deep_black};
 use crate::fractal::CalculationType::StaticImage;
 use crate::fractal::FractalType::MandelbrotType;
 use crate::fractal::{
-    CalculationType, FractalConfig, FractalMath, FractalType, OrbitType, TrivialFractal,
+    init_trivial_config, CalculationType, FractalConfig, FractalMath, FractalType, OrbitType,
+    TrivialFractal,
 };
 use crate::fractal_log::now;
 use crate::fractal_stats::Stats;
@@ -96,11 +97,12 @@ pub fn init<F: FractalMath>(config: &FractalConfig, fractal: F) -> Machine<'stat
 }
 
 pub fn init_trivial() -> Machine<'static, TrivialFractal> {
+    let conf = init_trivial_config();
     Machine {
         fractal: fractal::init_trivial(),
         name: "Trivial Fractal",
         data_image: data_image::init_trivial(),
-        area: area::init_trivial(),
+        area: area::init(&conf),
         width_x: 2,
         height_y: 2,
         width_re: 2.0,
@@ -493,9 +495,9 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
         }
         (iterator, m.quad())
     }
-    
+
     /* Application methods */
-    
+
     pub fn paint_full_image(&self) {
         let app = self
             .app_ref
@@ -527,15 +529,17 @@ pub fn shuffled_calculation_coordinates() -> Vec<[u32; 2]> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{fractal, machine};
+    use crate::{fractal, machine, pixel_states};
 
     #[test]
     fn test_calculate_path_xy() {
         let fractal = fractal::init_trivial();
         let machine = machine::init_trivial();
-        machine.calculate_path_xy(0, 0);
+        machine.calculate_path_xy(1, 1);
 
-        // TODO
+        let (s, _, _) = machine.data_image.state_origin_at(1, 1);
+
+        assert_eq!(pixel_states::is_active_new(s), true);
     }
 
     #[test]

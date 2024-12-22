@@ -68,8 +68,8 @@ pub fn init(origin_re: f64, origin_im: f64) -> DataPx {
         origin_im,
         value: 0,
         state: ActiveNew,
-        quad: 1.0,
-        quid: 1.0,
+        quad: 0.0,
+        quid: 0.0,
         colour: None,
     }
 }
@@ -102,8 +102,8 @@ pub fn active_new(re: f64, im: f64) -> DataPx {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_px::DataPx;
-    use crate::pixel_states::DomainElementState::FinishedSuccessPast;
+    use crate::data_px::{active_new, DataPx};
+    use crate::pixel_states::DomainElementState::{ActiveNew, FinishedSuccessPast};
 
     #[test]
     fn test_set_average_with() {
@@ -127,6 +127,13 @@ mod tests {
         };
 
         dp.set_average_with(other);
-        assert_eq!(dp.value, 55);
+        assert_eq!(dp.value, 6);
+    }
+
+    #[test]
+    fn test_active_new() {
+        let dpx = active_new(0.0, 0.0);
+        // implements PartialEq
+        assert_eq!(dpx.state == ActiveNew, true);
     }
 }

@@ -194,6 +194,8 @@ pub fn init<'lt>(config: &FractalConfig) -> Area {
     let height_y = config.height_y;
 
     let plank = width_re / (width_x as f64);
+    // center everything at the middle of pixel really
+    let plank_half = plank / 2.0;
     let height_im = width_re * ((height_y as f64) / (width_x as f64));
     let width_half_x = width_x / 2;
     let height_half_y = height_y / 2;
@@ -209,15 +211,16 @@ pub fn init<'lt>(config: &FractalConfig) -> Area {
     println!("border_low_im:  {}", border_low_im);
     println!("border_high_im: {}", border_high_im);
     println!("(plank):        {}", plank);
+    println!("(plank_half):   {}", plank_half);
 
     /* Generate domain elements */
     let mut numbers_re: Vec<f64> = Vec::new();
     let mut numbers_im: Vec<f64> = Vec::new();
     for x in 0..width_x {
-        numbers_re.push(border_low_re + (plank * x as f64));
+        numbers_re.push(border_low_re + (plank * x as f64) + plank_half);
     }
     for y in 0..height_y {
-        numbers_im.push(border_low_im + (plank * y as f64));
+        numbers_im.push(border_low_im + (plank * y as f64) + plank_half);
     }
 
     let area_data = AreaData {
@@ -246,88 +249,68 @@ pub fn init<'lt>(config: &FractalConfig) -> Area {
     }
 }
 
-pub fn init_trivial<'lt>() -> Area {
-    let area_data = AreaData {
-        width_x: 10,
-        width_re: 1.0,
-        width_xf64: 1.0,
-        width_half_x: 0.5 as usize,
-        width_half_xf64: 0.5,
-
-        height_y: 5,
-        height_yf64: 1.0,
-        height_im: 1.0,
-        height_half_y: 0.5 as usize,
-        height_half_yf64: 0.5,
-
-        numbers_re: Vec::new(),
-        numbers_im: Vec::new(),
-
-        center_re: 0.0,
-        center_im: 0.0,
-
-        border_low_re: -0.5,
-        border_high_re: 0.5,
-
-        border_low_im: 0.0,
-        border_high_im: 1.0,
-        plank: 0.1,
-    };
-    Area {
-        data: Mutex::new(area_data),
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::area::{init, init_trivial};
+    use crate::area::init;
+    use crate::fractal;
 
     #[test]
     fn test_init() {
-        let area = init_trivial();
-        assert_eq!(area.data.lock().unwrap().border_low_re, -0.5);
-        assert_eq!(area.data.lock().unwrap().border_high_re, 0.5);
-        assert_eq!(area.data.lock().unwrap().border_low_im, -0.25);
-        assert_eq!(area.data.lock().unwrap().border_high_im, 0.25);
+        let conf = fractal::init_trivial_config();
+        let area = init(&conf);
+        let data = area.data.lock().unwrap();
+
+        assert_eq!(data.border_low_re, -0.5);
+        assert_eq!(data.border_high_re, 0.5);
+        assert_eq!(data.border_low_im, -0.5);
+        assert_eq!(data.border_high_im, 0.5);
     }
 
     #[test]
     fn test_contains() {
-        let area = init_trivial();
-        assert_eq!(area.contains(0.4, 0.2), true);
-        assert_eq!(area.contains(0.4, 0.3), false);
-        assert_eq!(area.contains(0.6, 0.2), false);
+        let conf = fractal::init_trivial_config();
+        let area = init(&conf);
 
-        assert_eq!(area.contains(-0.4, -0.2), true);
-        assert_eq!(area.contains(-0.4, -0.3), false);
-        assert_eq!(area.contains(-0.6, -0.2), false);
+        // top right
+        assert_eq!(area.contains(0.4, 0.4), true);
+        assert_eq!(area.contains(0.4, 0.6), false);
+        assert_eq!(area.contains(0.6, 0.4), false);
 
-        assert_eq!(area.contains(-0.4, 0.2), true);
-        assert_eq!(area.contains(-0.4, 0.3), false);
-        assert_eq!(area.contains(-0.6, 0.2), false);
+        // bottom left
+        assert_eq!(area.contains(-0.4, -0.4), true);
+        assert_eq!(area.contains(-0.4, -0.6), false);
+        assert_eq!(area.contains(-0.6, -0.4), false);
 
-        assert_eq!(area.contains(0.4, -0.2), true);
-        assert_eq!(area.contains(0.4, -0.3), false);
-        assert_eq!(area.contains(0.6, -0.2), false);
+        // top left
+        assert_eq!(area.contains(-0.4, 0.4), true);
+        assert_eq!(area.contains(-0.6, 0.4), false);
+        assert_eq!(area.contains(-0.4, 0.6), false);
+
+        // bottom right
+        assert_eq!(area.contains(0.4, -0.4), true);
+        assert_eq!(area.contains(0.4, -0.6), false);
+        assert_eq!(area.contains(0.6, -0.4), false);
     }
 
     #[test]
     fn test_screen_to_domain_re() {
-        let area = init_trivial();
+        let conf = fractal::init_trivial_config();
+        let area = init(&conf);
+
         let res = area.screen_to_domain_re_copy();
-        assert_eq!(res[0], -0.5);
-        assert_eq!(res[5], 0.0);
-        assert_eq!(res[9], 0.4);
+
+        assert_eq!(res.len(), 1);
+        assert_eq!(res[0], 0.0);
     }
 
     #[test]
     fn test_screen_to_domain_im() {
-        let area = init_trivial();
+        let conf = fractal::init_trivial_config();
+        let area = init(&conf);
+
         let ims = area.screen_to_domain_im_copy();
-        assert_eq!(ims[0], -0.25);
-        assert_eq!(ims[1], -0.15);
-        assert_eq!(ims[2], -0.04999999999999999);
-        assert_eq!(ims[3], 0.050000000000000044);
-        assert_eq!(ims[4], 0.15000000000000002);
+
+        assert_eq!(ims.len(), 1);
+        assert_eq!(ims[0], 0.0);
     }
 }
