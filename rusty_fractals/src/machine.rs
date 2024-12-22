@@ -126,7 +126,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
         self.app_ref = Some(app_ref);
     }
 
-    pub fn execute_calculation(&self, app_ref: Arc<Mutex<Application>>) {
+    pub fn execute_calculation(&self) {
         println!("trigger_calculation()");
 
         let is_mandelbrot = self.fractal_type == MandelbrotType;
@@ -149,9 +149,6 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
                 self.calculate_nebula_zoom();
             }
         }
-
-        let app = app_ref.lock().unwrap();
-        app.window_repaint(Color::Green);
     }
 
     /**
@@ -181,11 +178,13 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
         }
         perfectly_colour_nebula_values(&self.data_image, &self.palette);
 
-        
-        // if let Some(app) = &self.app_ref {
-        //     let app = app.lock().unwrap();
-        //     app.paint_final_calculation_result(&self.data_image);
-        // }
+        let app = self
+            .app_ref
+            .as_ref()
+            .unwrap()
+            .lock()
+            .expect("Failed to lock application reference");
+        app.paint_final_calculation_result(Color::Green, &self.data_image);
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk

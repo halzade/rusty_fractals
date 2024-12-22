@@ -1,31 +1,21 @@
 use crate::area::Area;
 use crate::data_image::DataImage;
-use crate::fractal::CalculationType::StaticImage;
-use crate::fractal::FractalType::MandelbrotType;
 use crate::fractal::{FractalConfig, FractalMath};
 use crate::machine;
-use crate::machine::Machine;
-use crate::mem::Mem;
 use fltk::app::{event_button, event_coords, event_key, App};
 use fltk::enums::{Color, Event, Key};
 use fltk::window::DoubleWindow;
 use fltk::{app, draw, prelude::*, window::Window};
 use image::{Pixel, Rgb};
 use std::sync::{Arc, Mutex};
-use std::thread;
 
 pub struct Application {
-    // machine: Arc<Machine<'lt, F>>,
-
     /* DoubleWindow class provides a **double-buffered** window.
     - In double buffering:
     - All drawing operations are first performed in an **off-screen buffer**.
     - Once the drawing is complete, the off-screen buffer is copied (or "flipped") onto the screen in a single operation.
     - This eliminates flickering during redraws, as the user only sees the final, fully-drawn frame.*/
     pub window: Arc<Mutex<DoubleWindow>>, // Shared ownership of the GUI Window
-    // pub width: i32,
-    // pub height: i32,
-    // pub name: &'static str,
 }
 
 fn init(config: &FractalConfig) -> Arc<Mutex<Application>> {
@@ -38,7 +28,7 @@ fn init(config: &FractalConfig) -> Arc<Mutex<Application>> {
     window.set_label(name);
     window.set_size(width, height);
 
-    window.set_color(Color::Red);
+    window.set_color(Color::from_rgb(40, 180, 150));
     window.show();
 
     Arc::new(Mutex::new(Application {
@@ -52,17 +42,12 @@ fn init(config: &FractalConfig) -> Arc<Mutex<Application>> {
 pub fn execute<F: FractalMath + 'static>(config: FractalConfig, fractal: F) {
     println!("application.execute()");
 
-    // self.window.center_screen();
     let app = app::App::default();
-    
 
     let application_arc = init(&config);
-    // let mut application = application_arc.lock().unwrap();
 
     println!("show()");
     // application.init_window_actions();
-
-    // Clone the Arc, increasing its reference count
 
     println!("calculation - new thread ");
 
@@ -70,7 +55,7 @@ pub fn execute<F: FractalMath + 'static>(config: FractalConfig, fractal: F) {
         // clone arc, not application
         let mut ma = machine::init(&config, fractal);
         ma.set_application_ref(application_arc.clone());
-        ma.execute_calculation(application_arc.clone());
+        ma.execute_calculation();
     };
     rayon::spawn_fifo(task);
 
@@ -137,26 +122,26 @@ impl Application {
                 _ => false,
             });
     }
-    pub fn window_repaint(&self, color: Color) {
-        println!("window_repaint()");
-        
-        let mut window = self.window.lock().unwrap();
-        window.set_color(color);
-        window.redraw();
-        app::awake(); // Ensure the event loop processes the change immediately
+    pub fn paint_final_calculation_result(&self, color: Color, data_image: &DataImage) {
+        println!("paint_final_calculation_result()");
 
-        // println!("window_draw()");
-        // self.window.draw(move |_| {
-        //     println!("draw");
-        //     // never use self in here
-        //     // locking / unlocking app for draw is not necessary
-        //     // redraw() can't be called from draw().
-        //
-        //     draw::draw_rect_fill(0, 0, 200, 250, Color::from_rgb(40, 180, 150));
-        // });
+        let mut window = self.window.lock().unwrap();
+
+        println!("window_draw()");
+        window.draw(move |_| {
+            println!("draw");
+            // never use self in here
+            // locking / unlocking app for draw is not necessary
+            // redraw() can't be called from draw().
+
+            draw::draw_rect_fill(0, 0, 200, 250, Color::from_rgb(40, 80, 50));
+        });
+
+        window.redraw();
+        app::awake();
     }
 
-    pub fn paint_final_calculation_result(&self, data: &DataImage) {
+    pub fn paint_final_calculation_result_errors(&self, data: &DataImage) {
         // let mut window = self.window.lock().unwrap();
 
         println!("paint_image_result()");
@@ -185,7 +170,7 @@ impl Application {
         // rendering must be done from main thread
         // app::awake();
         // app::redraw();
-        // 
+        //
         // self.window.lock().unwrap().redraw();
 
         println!("paint_image_result() end.");
