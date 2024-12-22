@@ -122,7 +122,11 @@ pub fn init_trivial() -> Machine<'static, TrivialFractal> {
 }
 
 impl<'lt, F: FractalMath> Machine<'lt, F> {
-    pub fn execute_calculation(&mut self, app_ref: Arc<Mutex<Application>>) {
+    pub fn set_application_ref(&mut self, app_ref: Arc<Mutex<Application>>) {
+        self.app_ref = Some(app_ref);
+    }
+
+    pub fn execute_calculation(&self, app_ref: Arc<Mutex<Application>>) {
         println!("trigger_calculation()");
 
         let is_mandelbrot = self.fractal_type == MandelbrotType;
@@ -176,10 +180,12 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             });
         }
         perfectly_colour_nebula_values(&self.data_image, &self.palette);
-        // TODO application::paint_image_result(&self.data_image);
 
-        // let app = self.app_ref.as_ref().unwrap().lock().unwrap();
-        // app.window_repaint(Color::Green);
+        
+        // if let Some(app) = &self.app_ref {
+        //     let app = app.lock().unwrap();
+        //     app.paint_final_calculation_result(&self.data_image);
+        // }
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
@@ -232,10 +238,10 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
 
     pub fn zoom_in_recalculate_pixel_positions(&self) {
         self.area.zoom_in();
-        application::paint_image_result(&self.data_image);
+        // application::paint_image_result(&self.data_image);
 
         self.recalculate_pixels_positions_for_next_calculation();
-        application::paint_image_result(&self.data_image);
+        // application::paint_image_result(&self.data_image);
     }
 
     pub fn zoom_in(&self) {
@@ -449,7 +455,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             &self.palette,
             &self.palette_zero,
         );
-        application::paint_image_result(&self.data_image);
+        // application::paint_image_result(&self.data_image);
     }
 
     fn chunk_calculation_mandelbrot(&self, xy: &[u32; 2]) {
