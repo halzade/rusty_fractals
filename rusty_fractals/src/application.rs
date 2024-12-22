@@ -2,7 +2,7 @@ use crate::area::Area;
 use crate::data_image::DataImage;
 use crate::fractal::{FractalConfig, FractalMath};
 use crate::machine;
-use fltk::app::{event_button, event_coords, event_key, App};
+use fltk::app::{event_button, event_coords, event_key};
 use fltk::enums::{Color, Event, Key};
 use fltk::window::DoubleWindow;
 use fltk::{app, draw, prelude::*, window::Window};
@@ -43,14 +43,12 @@ pub fn execute<F: FractalMath + 'static>(config: FractalConfig, fractal: F) {
     println!("application.execute()");
 
     let app = app::App::default();
-
     let application_arc = init(&config);
 
     println!("show()");
     application_arc.lock().unwrap().init_window_actions();
 
     println!("calculation - new thread ");
-
     let task = move || {
         // clone arc, not application
         let mut ma = machine::init(&config, fractal);
@@ -118,6 +116,11 @@ impl Application {
                 _ => false,
             });
     }
+
+    /**
+     * This method considers on colors on data_image.
+     * Use other painting methods to display the element states before and during calculation.
+     */
     pub fn paint_final_calculation_result(&self, data_image: &DataImage) {
         println!("paint_final_calculation_result()");
 
@@ -130,9 +133,7 @@ impl Application {
             .flat_map(|y| (0..width).map(move |x| data_image.colour_at(x, y)))
             .collect();
 
-        println!("window_draw()");
         window.draw(move |_| {
-            println!("draw");
             // never use self in here
             // locking / unlocking app for draw is not necessary
             // redraw() can't be called from draw().

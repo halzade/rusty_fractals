@@ -455,9 +455,7 @@ mod tests {
         assert_eq!(w.len(), 8);
         let (re, im) = element_at(&w, 0);
         assert_eq!(re, -0.3333333333333333);
-        assert_eq!(im, -0.23333333333333328);
-        assert_eq!(o_re - re, 0.033333333333333326);
-        assert_eq!(o_im - im, 0.033333333333333326);
+        assert_eq!(im, -0.3333333333333333);
     }
 
     #[test]

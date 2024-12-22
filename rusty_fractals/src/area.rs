@@ -299,8 +299,9 @@ mod tests {
 
         let res = area.screen_to_domain_re_copy();
 
-        assert_eq!(res.len(), 1);
-        assert_eq!(res[0], 0.0);
+        assert_eq!(res.len(), 20);
+        assert_eq!(res[0], -0.475);
+        assert_eq!(res[19], 0.4750000000000001);
     }
 
     #[test]
@@ -310,7 +311,8 @@ mod tests {
 
         let ims = area.screen_to_domain_im_copy();
 
-        assert_eq!(ims.len(), 1);
-        assert_eq!(ims[0], 0.0);
+        assert_eq!(ims.len(), 20);
+        assert_eq!(ims[0], -0.475);
+        assert_eq!(ims[19], 0.4750000000000001);
     }
 }

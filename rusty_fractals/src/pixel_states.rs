@@ -11,7 +11,7 @@ pub const FINISHED_TOO_SHORT: Rgb<u8> = Rgb([220, 220, 240]);
 pub const FINISHED_TOO_LONG: Rgb<u8> = Rgb([20, 20, 20]);
 pub const HIBERNATED_DEEP_BLACK: Rgb<u8> = Rgb([90, 90, 90]);
 
-#[derive(PartialOrd, Ord, PartialEq, Eq, Clone, Copy)]
+#[derive(PartialOrd, Ord, PartialEq, Eq, Clone, Copy, Debug)]
 pub enum DomainElementState {
     /**
      * Calculation path Finished with success in previous calculation iteration (zoom).

@@ -1,3 +1,5 @@
+use crate::data_image::DataType;
+use crate::data_image::DataType::Static;
 use crate::fractal::CalculationType::StaticImage;
 use crate::fractal::FractalType::NebulaType;
 use crate::fractal::OrbitType::Finite;
@@ -25,6 +27,7 @@ pub struct FractalConfig {
     pub center_im: f64,
     // calculation config
     pub calc_type: CalculationType,
+    pub data_image_type: DataType,
     pub orbits: OrbitType, // fractal::finite_orbits / infinite_orbits
     pub update_max: u32,
     pub update_min: u32,
@@ -83,10 +86,13 @@ impl FractalMath for TrivialFractal {
     }
 }
 
-pub fn init_trivial() -> TrivialFractal {
+pub fn init_trivial_fractal() -> TrivialFractal {
     TrivialFractal {}
 }
 
+/**
+ * The smallest possible set to calculate upon is 20 x 20 = 400 px, because of chunks
+ */
 pub fn init_trivial_config() -> FractalConfig {
     FractalConfig {
         name: "Trivial",
@@ -98,13 +104,14 @@ pub fn init_trivial_config() -> FractalConfig {
         palette: Nothing,
         palette_zero: Nothing,
 
-        width_x: 1,
-        height_y: 1,
+        width_x: 20, // 1 chunk is 1 px
+        height_y: 20,
         width_re: 1.0,
         center_re: 0.0,
         center_im: 0.0,
 
         calc_type: StaticImage,
+        data_image_type: Static,
         orbits: Finite,
         update_max: 1,
         update_min: 0,
@@ -113,12 +120,12 @@ pub fn init_trivial_config() -> FractalConfig {
 
 #[cfg(test)]
 mod tests {
-    use crate::fractal::{init_trivial, FractalMath};
+    use crate::fractal::{init_trivial_fractal, FractalMath};
     use crate::mem::Mem;
 
     #[test]
     fn test_math() {
-        let f = init_trivial();
+        let f = init_trivial_fractal();
         let mut m = &mut Mem::new(0.0, 0.0);
 
         f.math(&mut m, 0.0, 0.0);

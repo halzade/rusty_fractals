@@ -2,7 +2,6 @@ use crate::application::Application;
 use crate::area::Area;
 use crate::constants::CALCULATION_BOUNDARY;
 use crate::data_image::DataImage;
-use crate::data_image::DataType::Static;
 use crate::data_px::{active_new, hibernated_deep_black};
 use crate::fractal::CalculationType::StaticImage;
 use crate::fractal::FractalType::MandelbrotType;
@@ -19,11 +18,7 @@ use crate::perfect_colour_distribution::perfectly_colour_nebula_values;
 use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong, FinishedTooShort};
 use crate::resolution_multiplier::ResolutionMultiplier;
-use crate::{
-    application, area, data_image, fractal, fractal_stats, palettes, perfect_colour_distribution,
-    pixel_states,
-};
-use fltk::enums::Color;
+use crate::{area, data_image, fractal, fractal_stats, perfect_colour_distribution, pixel_states};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rayon::prelude::*;
@@ -71,7 +66,7 @@ pub fn init<F: FractalMath>(config: &FractalConfig, fractal: F) -> Machine<'stat
     Machine {
         fractal,
         name: config.name,
-        data_image: data_image::init(Static, &area), // TODO Dynamic
+        data_image: data_image::init(config.data_image_type, &area),
         area,
         width_x: config.width_x,
         height_y: config.height_y,
@@ -98,29 +93,8 @@ pub fn init<F: FractalMath>(config: &FractalConfig, fractal: F) -> Machine<'stat
 
 pub fn init_trivial() -> Machine<'static, TrivialFractal> {
     let conf = init_trivial_config();
-    Machine {
-        fractal: fractal::init_trivial(),
-        name: "Trivial Fractal",
-        data_image: data_image::init_trivial(),
-        area: area::init(&conf),
-        width_x: 2,
-        height_y: 2,
-        width_re: 2.0,
-        center_re: 0.0,
-        center_im: 0.0,
-        palette: palettes::init_trivial(),
-        palette_zero: palettes::init_trivial(),
-        calc_type: StaticImage,
-        orbits: OrbitType::Finite,
-        iteration_min: 0,
-        iteration_max: 10,
-        update_max: 3,
-        update_min: 1,
-        resolution_multiplier: ResolutionMultiplier::Single,
-        fractal_type: MandelbrotType,
-        stats: fractal_stats::init(),
-        app_ref: None,
-    }
+    let fractal = fractal::init_trivial_fractal();
+    init(&conf, fractal)
 }
 
 impl<'lt, F: FractalMath> Machine<'lt, F> {
@@ -159,17 +133,20 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
     pub fn calculate_nebula(&self) {
         println!("calculate_nebula()");
 
-        let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
+        let coordinates_xy = shuffled_calculation_coordinates();
 
+        // calculation for a center of each pixel
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
             self.chunk_calculation(&xy);
             // window refresh
-            // application::paint_image_calculation_progress(xy, &self.data_image);
+            // need to paint full image to show progress from other unfinished chunks
+            self.paint_full_image();
         });
 
         self.data_image.recalculate_pixels_states();
 
+        // calculate for many other elements within the pixels
         if self.resolution_multiplier != ResolutionMultiplier::Single {
             println!("calculate() with wrap");
             // previous calculation completed, calculate more elements
@@ -177,8 +154,8 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
                 // calculation
                 self.chunk_calculation_with_wrap(&xy);
                 // window refresh
-                // application::paint_image_calculation_progress(xy, &self.data_image);
-                // application::paint_path(&self.area, &self.data_image);
+                // need to paint full image to show progress from other unfinished chunks
+                self.paint_full_image_with_calculation_path();
             });
         }
         perfectly_colour_nebula_values(&self.data_image, &self.palette);
@@ -320,6 +297,10 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
         assert!(c_created > 0);
     }
 
+    /**
+     * domain on which the image is calculate is split to 20 x 20 = 400 chunks
+     * this method returns numbers from 0 to 20
+     */
     pub fn chunk_boundaries(&self, xy: &[u32; 2]) -> (usize, usize, usize, usize) {
         let chunk_size_x = (self.width_x / 20) as u32;
         let chunk_size_y = (self.height_y / 20) as u32;
@@ -449,7 +430,8 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // calculation
             self.chunk_calculation_mandelbrot(xy);
             // window refresh
-            // application::paint_image_calculation_progress(xy, &self.data_image);
+            // TODO change need to paint full image to include partial progress on other chunks
+            // TODO change self.paint_full_image();
         });
         self.data_image.recalculate_pixels_states();
         perfect_colour_distribution::perfectly_colour_mandelbrot_values(
@@ -457,7 +439,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             &self.palette,
             &self.palette_zero,
         );
-        // application::paint_image_result(&self.data_image);
+        self.paint_full_image();
     }
 
     fn chunk_calculation_mandelbrot(&self, xy: &[u32; 2]) {
@@ -496,7 +478,9 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
         (iterator, m.quad())
     }
 
-    /* Application methods */
+    /* -------------------
+     * Application methods
+     * -----------------*/
 
     pub fn paint_full_image(&self) {
         let app = self
@@ -507,6 +491,19 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             .expect("Failed to lock application reference");
 
         app.paint_final_calculation_result(&self.data_image);
+    }
+
+    pub fn paint_full_image_with_calculation_path(&self) {
+        let app = self
+            .app_ref
+            .as_ref()
+            .unwrap()
+            .lock()
+            .expect("Failed to lock application reference");
+
+        app.paint_final_calculation_result(&self.data_image);
+
+        // TODO application::paint_path(&self.area, &self.data_image);
     }
 }
 
@@ -529,42 +526,61 @@ pub fn shuffled_calculation_coordinates() -> Vec<[u32; 2]> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{fractal, machine, pixel_states};
+    use crate::{machine, pixel_states};
+
+    #[test]
+    fn test_chunk_boundaries() {
+        let machine = machine::init_trivial();
+
+        let (re_left, re_right, im_top, im_bot) = machine.chunk_boundaries(&[0, 0]);
+
+        assert_eq!(re_left, 0);
+        assert_eq!(re_right, 1);
+
+        assert_eq!(im_top, 0);
+        assert_eq!(im_bot, 1);
+    }
 
     #[test]
     fn test_calculate_path_xy() {
-        let fractal = fractal::init_trivial();
         let machine = machine::init_trivial();
-        machine.calculate_path_xy(1, 1);
 
-        let (s, _, _) = machine.data_image.state_origin_at(1, 1);
-
+        // test condition
+        let (s, _, _) = machine.data_image.state_origin_at(0, 0);
         assert_eq!(pixel_states::is_active_new(s), true);
+
+        // test result
+        machine.calculate_path_xy(0, 0);
+        let (s, _, _) = machine.data_image.state_origin_at(0, 0);
+
+        assert_eq!(pixel_states::is_active_new(s), false);
+        assert_eq!(pixel_states::is_finished_any(s), true);
     }
 
     #[test]
     fn test_chunk_calculation_mandelbrot<'lt>() {
-        let mm = machine::init_trivial();
+        let machine = machine::init_trivial();
 
-        let x = 0;
-        let y = 0;
-        let xy = [x, y];
+        let xy = [0, 0];
 
-        mm.chunk_calculation_mandelbrot(&xy);
+        machine.chunk_calculation_mandelbrot(&xy);
+        let (s, _, _) = machine.data_image.state_origin_at(0, 0);
 
-        // TODO
+        println!("state: {:?}", s);
+
+        assert_eq!(pixel_states::is_active_new(s), false);
+        assert_eq!(pixel_states::is_finished_any(s), true);
     }
 
     #[test]
     fn test_calculate_path() {
         // prepare test data
-        let fractal = fractal::init_trivial();
         let machine = machine::init_trivial();
 
         // execute test
-        let (iterator, length) = machine.calculate_path(0.0, 0.0, false);
+        let (iterator, length) = machine.calculate_path(0.7, 0.7, false);
 
-        assert_eq!(iterator, 5);
+        assert_eq!(iterator, 1); // trivial iteration_max = 1
         assert_eq!(length, 0);
     }
 }
