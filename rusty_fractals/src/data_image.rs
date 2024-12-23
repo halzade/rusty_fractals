@@ -55,7 +55,7 @@ impl DataImage {
         let new_len = path.len();
         if new_len > (saved_len * 2) {
             println!("set_show_path() : {}", new_len);
-            
+
             // TODO faster
             *self.show_path.lock().unwrap() = path.clone();
         }
@@ -72,6 +72,7 @@ impl DataImage {
     }
 
     pub fn translate_all_paths_to_point_grid(&self, area: &Area) {
+        println!("translate_all_paths_to_point_grid()");
         let all = self.paths.lock().unwrap().to_owned();
         for path in all {
             for [re, im] in path {
@@ -90,14 +91,29 @@ impl DataImage {
 
     pub fn remove_elements_outside(&self, area: &Area) {
         println!("remove_elements_outside()");
-        let all = self.paths.lock().unwrap().to_owned();
-        for mut path in all {
-            path.retain(|&el| area.contains(el[0], el[1]));
+        // all paths
+        let mut all = self.paths.lock().unwrap().to_owned();
+
+        // elements outside Area
+        for path in all.iter_mut() {
+            path.retain(|el| area.contains(el[0], el[1]));
         }
+
+        // short paths
         self.paths
             .lock()
             .unwrap()
             .retain(|path| path.len() as u32 > MINIMUM_PATH_LENGTH);
+    }
+
+    pub fn clear_all_px_data(&self) {
+        for y in 0..self.height_y {
+            for x in 0..self.width_x {
+                let mut mo_px = self.mo_px_at(x, y);
+                let p = mo_px.as_mut().unwrap();
+                p.value = 0;
+            }
+        }
     }
 
     fn add(&self, x: usize, y: usize) {
@@ -106,8 +122,28 @@ impl DataImage {
         p.value += 1;
     }
 
+    // TODO this method should be private
     pub fn mo_px_at(&self, x: usize, y: usize) -> MutexGuard<Option<DataPx>> {
-        self.pixels.get(x).unwrap().get(y).unwrap().lock().unwrap()
+        if let Some(row) = self.pixels.get(x) {
+            if let Some(cell) = row.get(y) {
+                match cell.lock() {
+                    Ok(guard) => guard, // Return the lock if successful
+                    Err(_) => {
+                        // Poisoned lock
+                        println!("Failed to acquire lock for pixel at ({}, {}). The mutex might be poisoned.", x, y);
+                        panic!("Failed to acquire lock for pixel at ({}, {}).", x, y);
+                    }
+                }
+            } else {
+                // y index out of bounds
+                println!("Failed to get pixel at column {} in row {}.", y, x);
+                panic!("Pixel column index {} out of bounds.", y);
+            }
+        } else {
+            // x index out of bounds
+            println!("Failed to get row {} in pixels.", x);
+            panic!("Pixel row index {} out of bounds.", x);
+        }
     }
 
     fn move_px_to_new_position(&self, x: usize, y: usize, px: DataPx) {
@@ -449,7 +485,7 @@ mod tests {
     use crate::area;
     use crate::data_image::DataType::Dynamic;
     use crate::data_image::{init, init_trivial};
-    use crate::fractal::init_trivial_config;
+    use crate::fractal::{init_trivial_dynamic_config, init_trivial_static_config};
     use crate::pixel_states::DomainElementState::ActiveNew;
     use crate::resolution_multiplier::ResolutionMultiplier::{
         Square101, Square11, Square3, Square5, Square51, Square9,
@@ -461,8 +497,46 @@ mod tests {
     }
 
     #[test]
+    fn test_remove_elements_outside() {
+        let conf = init_trivial_dynamic_config();
+        let area = area::init(&conf);
+        let dynamic = init(Dynamic, &area);
+
+        // test data
+        // the last 2 pairs to should be removed
+        let path = vec![
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [10.0, 0.0],
+            [0.0, 10.0],
+            [10.0, 10.0],
+        ];
+        // full path  should be removed
+        let short = vec![[0.0, 0.0], [0.0, 0.0]];
+
+        dynamic.save_path(path, false);
+        dynamic.save_path(short, false);
+
+        // execute test
+        dynamic.remove_elements_outside(&area);
+
+        // get test data
+        let result_all = dynamic.paths.lock().unwrap();
+        assert_eq!(result_all.len(), 1);
+
+        let remaining_path = result_all.get(0).unwrap();
+        assert_eq!(remaining_path.len(), 8);
+    }
+
+    #[test]
     fn test_mo_px_at() {
-        let conf = init_trivial_config();
+        let conf = init_trivial_static_config();
         let area = area::init(&conf);
         let data = init(Dynamic, &area);
 

@@ -10,7 +10,8 @@ pub const PATH: &str = "/Fractals/";
 // to remove noise, ignore pixels with this value or less as 0
 pub const COLOURING_THRESHOLD: u32 = 3;
 
-// Delete shorter paths then this
+// Delete paths shorter than this
+// Remembered paths got shorter as some of their elements moved out of displayed Area
 pub const MINIMUM_PATH_LENGTH: u32 = 4;
 
 // 4 is quadrance from (0, 0)

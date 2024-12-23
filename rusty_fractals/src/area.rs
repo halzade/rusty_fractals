@@ -55,7 +55,6 @@ impl AreaDataCopy {
 }
 
 impl<'lt> Area {
-    // TODO faster
     pub fn contains(&self, re: f64, im: f64) -> bool {
         match self.data.lock() {
             Ok(d) => {
@@ -109,7 +108,7 @@ impl<'lt> Area {
                 (px as usize, py as usize)
             }
             Err(e) => {
-                println!("(): {}", e);
+                println!("point_to_pixel({},{}): {}", re, im, e);
                 panic!()
             }
         }
@@ -171,6 +170,7 @@ impl<'lt> Area {
         }
     }
 
+    // TODO
     pub fn move_to_initial_coordinates(&self, init_target_re: f64, init_target_im: f64) {
         println!("move_to_initial_coordinates()");
         match self.data.lock() {
@@ -188,6 +188,7 @@ impl<'lt> Area {
         self.data.lock().unwrap().plank
     }
 
+    // TODO
     pub fn move_target(&self, x: usize, y: usize) {
         match self.data.lock() {
             Ok(mut d) => {
@@ -293,7 +294,7 @@ mod tests {
 
     #[test]
     fn test_init() {
-        let conf = fractal::init_trivial_config();
+        let conf = fractal::init_trivial_static_config();
         let area = init(&conf);
         let data = area.data.lock().unwrap();
 
@@ -305,7 +306,7 @@ mod tests {
 
     #[test]
     fn test_contains() {
-        let conf = fractal::init_trivial_config();
+        let conf = fractal::init_trivial_static_config();
         let area = init(&conf);
 
         // top right
@@ -327,11 +328,28 @@ mod tests {
         assert_eq!(area.contains(0.4, -0.4), true);
         assert_eq!(area.contains(0.4, -0.6), false);
         assert_eq!(area.contains(0.6, -0.4), false);
+
+        // precision
+        assert_eq!(area.contains(0.4999999999999, -0.4), true);
+        assert_eq!(area.contains(0.5000000000001, -0.4), false);
+        assert_eq!(area.contains(0.5, -0.4), false);
+    }
+
+    #[test]
+    fn test_point_to_pixel() {
+        let conf = fractal::init_trivial_static_config();
+        let area = init(&conf);
+
+        let a = area.point_to_pixel(0.4, 0.4);
+        assert_eq!(a, (18, 18));
+
+        let b = area.point_to_pixel(-0.5, 0.499999);
+        assert_eq!(b, (0, 20));
     }
 
     #[test]
     fn test_screen_to_domain_re() {
-        let conf = fractal::init_trivial_config();
+        let conf = fractal::init_trivial_static_config();
         let area = init(&conf);
 
         let res = area.screen_to_domain_re_copy();
@@ -343,7 +361,7 @@ mod tests {
 
     #[test]
     fn test_screen_to_domain_im() {
-        let conf = fractal::init_trivial_config();
+        let conf = fractal::init_trivial_static_config();
         let area = init(&conf);
 
         let ims = area.screen_to_domain_im_copy();

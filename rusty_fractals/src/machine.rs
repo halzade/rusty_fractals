@@ -6,7 +6,7 @@ use crate::data_px::{active_new, hibernated_deep_black};
 use crate::fractal::CalculationType::StaticImage;
 use crate::fractal::FractalType::MandelbrotType;
 use crate::fractal::{
-    init_trivial_config, CalculationType, FractalConfig, FractalMath, FractalType, MemType,
+    init_trivial_static_config, CalculationType, FractalConfig, FractalMath, FractalType, MemType,
     OrbitType, TrivialFractal,
 };
 use crate::fractal_log::now;
@@ -24,6 +24,7 @@ use crate::{area, data_image, fractal, fractal_stats, pixel_states};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rayon::prelude::*;
+use std::marker::PhantomData;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
@@ -73,8 +74,7 @@ where
      * Machine (Self) related values
      */
     last_partial_refresh: Arc<Mutex<Option<Instant>>>,
-    // use to create new memories
-    m: M,
+    phantom_m_type: PhantomData<M>, // need to use M so compiler won't complain
 }
 
 pub fn init<F, M>(config: &FractalConfig, fractal: F) -> Machine<'static, F, M>
@@ -110,12 +110,12 @@ where
         app_ref: None,
         // machine values
         last_partial_refresh: Arc::new(Mutex::new(None)),
-        m: M::new(0.0, 0.0),
+        phantom_m_type: PhantomData::default(),
     }
 }
 
 pub fn init_trivial() -> Machine<'static, TrivialFractal, Mem> {
-    let conf = init_trivial_config();
+    let conf = init_trivial_static_config();
     let fractal = fractal::init_trivial_fractal();
     init(&conf, fractal)
 }
@@ -146,7 +146,7 @@ where
         } else {
             if is_image {
                 // Fine fractal image
-                self.calculate_nebula();
+                self.calculate_nebula_static_image();
             } else {
                 // Fine fractal video
                 self.calculate_nebula_zoom();
@@ -159,10 +159,10 @@ where
      * ----------------------------------- */
 
     /**
-     * Calculate the whole Nebula fractal
+     * Calculate whole Nebula fractal static image
      */
-    pub fn calculate_nebula(&self) {
-        println!("calculate_nebula()");
+    pub fn calculate_nebula_static_image(&self) {
+        println!("calculate_nebula_static_image()");
 
         let coordinates_xy = shuffled_calculation_coordinates();
 
@@ -172,24 +172,69 @@ where
             self.chunk_calculation(&xy);
             // window refresh
             // need to paint full image to show progress from other unfinished chunks
-            self.paint_partial_calculation_results_states(false);
+            self.paint_partial_calculation_results_states_maybe();
         });
 
         self.data_image.recalculate_pixels_states();
+        self.paint_partial_calculation_results_states_now();
 
         // wrap
         // calculate for many other elements within the pixels
         if self.resolution_multiplier != ResolutionMultiplier::Single {
-            println!("calculate() with wrap");
+            println!("calculate_nebula_static_image() with wrap");
             // previous calculation completed, calculate more elements
             coordinates_xy.par_iter().for_each(|xy| {
                 // calculation
                 self.chunk_calculation_with_wrap(&xy);
                 // window refresh
                 // need to paint full image to show progress from other unfinished chunks
-                self.paint_partial_calculation_results_states(true); // only every 100+ ms
+                self.paint_partial_calculation_results_states_with_paths(); // only every 100+ ms
             });
         }
+        perfectly_colour_nebula_values(&self.data_image, &self.palette);
+
+        self.paint_final_calculation_result_colors();
+    }
+
+    /**
+     * Calculate a Nebula fractal dynamic data image for infinite zoom
+     */
+    pub fn calculate_nebula_dynamic_data(&self) {
+        println!("calculate_nebula_dynamic_data()");
+
+        let coordinates_xy = shuffled_calculation_coordinates();
+
+        // calculation for a center of each pixel
+        coordinates_xy.par_iter().for_each(|xy| {
+            // calculation
+            self.chunk_calculation(&xy);
+            // window refresh
+            // need to paint full image to show progress from other unfinished chunks
+            self.paint_partial_calculation_results_states_dynamic_data_maybe();
+        });
+
+        self.data_image.recalculate_pixels_states();
+        self.paint_partial_calculation_results_states_now();
+
+        // wrap
+        // calculate for many other elements within the pixels
+        if self.resolution_multiplier != ResolutionMultiplier::Single {
+            println!("calculate_nebula_dynamic_data() with wrap");
+            // previous calculation completed, calculate more elements
+            coordinates_xy.par_iter().for_each(|xy| {
+                // calculation
+                self.chunk_calculation_with_wrap(&xy);
+                // window refresh
+                // need to paint full image to show progress from other unfinished chunks
+                self.paint_partial_calculation_results_states_dynamic_data_with_paths();
+                // only every 100+ ms
+            });
+        }
+
+        // reflect dynamic [re, im] paths to screen [x, y] px data
+        self.clear_all_px_data();
+        self.translate_all_paths_to_point_grid();
+
         perfectly_colour_nebula_values(&self.data_image, &self.palette);
 
         self.paint_final_calculation_result_colors();
@@ -233,7 +278,9 @@ where
     fn calculate_path_xy(&self, x: usize, y: usize) {
         let (state, origin_re, origin_im) = self.data_image.state_origin_at(x, y);
         if pixel_states::is_active_new(state) {
+            // calculate
             let (iterator, path_length) = self.calculate_path(origin_re, origin_im, false);
+
             let state = self.state_from_path_length(iterator, path_length);
             self.data_image.set_pixel_state(x, y, state);
         }
@@ -245,13 +292,15 @@ where
 
     pub fn zoom_in_recalculate_pixel_positions(&self) {
         self.area.zoom_in();
-        // application::paint_image_result(&self.data_image);
+        self.paint_partial_calculation_results_states_now();
 
         self.recalculate_pixels_positions_for_next_calculation();
-        // application::paint_image_result(&self.data_image);
+
+        self.paint_partial_calculation_results_states_now();
     }
 
     pub fn zoom_in(&self) {
+        println!("zoom_in()");
         self.area.zoom_in();
     }
 
@@ -375,10 +424,10 @@ where
             iterator += 1;
         }
 
-        if self.path_test(length, iterator) {
-            // This origin produced good data
-            // Record the calculation path
-
+        if self.path_test(length, iterator)
+        // This origin produced good data
+        // Record the calculation path
+        {
             let mut m = M::new(origin_re, origin_im);
 
             let mut path: Vec<[f64; 2]> = Vec::new();
@@ -428,12 +477,18 @@ where
         println!("calculate_nebula_zoom()");
         for it in 1.. {
             println!("{}:", it);
-            self.calculate_nebula();
+            self.calculate_nebula_dynamic_data();
 
             // prepare next frame
             self.zoom_in();
+
             self.recalculate_pixels_positions_for_next_calculation();
-            self.paint_partial_calculation_results_states(false);
+
+            // remove dynamic data which zoomed out of displayed Area
+            self.remove_elements_outside();
+
+            self.paint_partial_calculation_results_states_now();
+
             self.stats.update(&self.data_image, it);
         }
     }
@@ -446,8 +501,11 @@ where
 
             // prepare next frame
             self.zoom_in();
+
             self.recalculate_pixels_positions_for_next_calculation();
-            self.paint_partial_calculation_results_states(false);
+
+            self.paint_partial_calculation_results_states_now();
+
             self.stats.update(&self.data_image, it);
         }
     }
@@ -467,7 +525,7 @@ where
             // calculation
             self.chunk_calculation_mandelbrot(xy);
             // window refresh
-            self.paint_partial_calculation_results_states(false);
+            self.paint_partial_calculation_results_states_maybe();
         });
         self.data_image.recalculate_pixels_states();
         perfectly_colour_mandelbrot_values(&self.data_image, &self.palette, &self.palette_zero);
@@ -478,11 +536,15 @@ where
         let (x_from, x_to, y_from, y_to) = self.chunk_boundaries(xy);
         for x in x_from..x_to {
             for y in y_from..y_to {
+                // state before calculation
                 let (state, origin_re, origin_im) = self.data_image.state_origin_at(x, y);
-                // TODO, calculate only ActiveNew elements, copy quad and quid
-                if !pixel_states::is_finished_any(state) {
-                    // calculation
+
+                if pixel_states::is_active_new(state) {
+                    /*
+                     * calculation
+                     */
                     let (iterator, quad) = self.calculate_mandelbrot_path(origin_re, origin_im);
+                    // result
                     let state = self.state_from_path_length(iterator, iterator);
                     self.data_image.set_pixel_mandelbrot(
                         x,
@@ -510,6 +572,15 @@ where
         (iterator, m.quad())
     }
 
+    fn translate_all_paths_to_point_grid(&self) {
+        self.data_image
+            .translate_all_paths_to_point_grid(&self.area);
+    }
+
+    fn clear_all_px_data(&self) {
+        self.data_image.clear_all_px_data();
+    }
+
     /* -------------------
      * Application methods
      * -----------------*/
@@ -528,33 +599,76 @@ where
         app.paint_final_calculation_result_colors(&self.data_image);
     }
 
+    fn remove_elements_outside(&self) {
+        println!("remove_elements_outside()");
+        self.data_image.remove_elements_outside(&self.area);
+    }
+
+    pub fn paint_partial_calculation_results_states_with_paths(&self) {
+        self.paint_partial_calculation_results_states(true, false, false);
+    }
+
+    /**
+     * paint for sure
+     */
+    pub fn paint_partial_calculation_results_states_now(&self) {
+        self.paint_partial_calculation_results_states(false, true, false);
+    }
+
+    /**
+     * paint only if enough time passed since the last painting
+     */
+    pub fn paint_partial_calculation_results_states_maybe(&self) {
+        self.paint_partial_calculation_results_states(false, false, false);
+    }
+
+    pub fn paint_partial_calculation_results_states_dynamic_data_maybe(&self) {
+        self.paint_partial_calculation_results_states(false, false, true);
+    }
+
+    pub fn paint_partial_calculation_results_states_dynamic_data_with_paths(&self) {
+        self.paint_partial_calculation_results_states(true, false, true);
+    }
+
     /**
      * Paint partial results to show pixel states
      * The pixel states, which are finished show color instead
      */
-    pub fn paint_partial_calculation_results_states(&self, paint_path: bool) {
+    pub fn paint_partial_calculation_results_states(
+        &self,
+        paint_path: bool,
+        paint_now: bool,
+        is_dynamic: bool,
+    ) {
         // ms_min have serious impact on parallelization and speed of calculation,
         // don't use less than 100
         let ms_min = 250;
-
-        let now = Instant::now();
 
         let mut last_called = self
             .last_partial_refresh
             .lock()
             .expect("Failed to lock last_called");
 
+        let now = Instant::now();
+
         let called_in_past_enough = last_called.map_or(true, |last| {
             now.duration_since(last) >= Duration::from_millis(ms_min)
         });
 
-        if called_in_past_enough {
+        if called_in_past_enough || paint_now {
+            println!("paint_partial_calculation_results_states() condition");
             let app = self
                 .app_ref
                 .as_ref()
                 .unwrap()
                 .lock()
                 .expect("Failed to lock application reference");
+
+            if is_dynamic {
+                self.clear_all_px_data();
+                // drop dynamic data to px grid
+                self.translate_all_paths_to_point_grid();
+            }
 
             app.paint_partial_calculation_result_states(&self.data_image, paint_path, &self.area);
         }
