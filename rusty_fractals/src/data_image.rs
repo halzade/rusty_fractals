@@ -92,14 +92,19 @@ impl DataImage {
     pub fn remove_elements_outside(&self, area: &Area) {
         println!("remove_elements_outside()");
         // all paths
-        let mut all = self.paths.lock().unwrap().to_owned();
+        let all = self.paths.lock().unwrap().to_owned();
 
-        // elements outside Area
-        for path in all.iter_mut() {
-            path.retain(|el| area.contains(el[0], el[1]));
+        // remove elements outside Area
+        for i in 0..all.len() {
+            self.paths
+                .lock()
+                .unwrap()
+                .get_mut(i)
+                .unwrap()
+                .retain(|el| area.contains(el[0], el[1]))
         }
 
-        // short paths
+        // remove short paths
         self.paths
             .lock()
             .unwrap()

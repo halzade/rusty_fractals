@@ -1,6 +1,4 @@
-# WIP - nothing works (or compiles)
-
-
+# WIP
 
 # Rusty fractals
 
@@ -18,7 +16,6 @@ All these **calculation paths together** are what makes the **Nebula fractal**.
 ![nebula](images/nebula.jpg)
 ![fat star](images/fat_star.jpg)
 
-
 ## Nebula calculation
 
 For each pixel `px`,`py`, take a point in the center: `re`,`im`, that is (calculation)  **origin** (`origin_re`, `origin_im`).
@@ -35,7 +32,7 @@ During the repeated calculation, point `re, im` jumps around in spirals,
 <br/>
 In deliberately confusing terminology of complex numbers
 
-> z = z<sup>2</sup> + c 
+> z = z<sup>2</sup> + c
 
 Divergent calculation means that quadrance of values `re, im` is more then `CALCULATION_BOUNDARY = 4`
 
@@ -69,7 +66,6 @@ It takes only seconds to generate decent image or video frame on good CPU.
 
 Full zoom video or 10k resolution image may take 24h+
 
-
 ## Zoom video
 
 All calculation paths are held in memory because as the zoom progresses,   
@@ -88,7 +84,6 @@ https://github.com/halzade/rusty_fractals.git
 ## How to use
 
 Try first **fractal_science** and play with some parameters.
-
 
 ## Random ideas to do
 
