@@ -17,6 +17,11 @@ pub struct Application {
     - Once the drawing is complete, the off-screen buffer is copied (or "flipped") onto the screen in a single operation.
     - This eliminates flickering during redraws, as the user only sees the final, fully-drawn frame.*/
     pub window: Arc<Mutex<DoubleWindow>>, // Shared ownership of the GUI Window
+    application_data: Arc<Mutex<ApplicationData>>,
+}
+
+struct ApplicationData {
+    pub last_max_value: u32,
 }
 
 fn init(config: &FractalConfig) -> Arc<Mutex<Application>> {
@@ -34,6 +39,7 @@ fn init(config: &FractalConfig) -> Arc<Mutex<Application>> {
 
     Arc::new(Mutex::new(Application {
         window: Arc::new(Mutex::new(window)),
+        application_data: Arc::new(Mutex::new(ApplicationData { last_max_value: 0 })),
     }))
 }
 
@@ -200,17 +206,18 @@ impl Application {
 
                 // calculation path
                 let mut path: Vec<[f64; 2]> = Vec::new();
-                let mut area_copy = area.copy_data();
+                let area_copy = area.copy_data(); // TODO don't copy if not necessary
+
                 if paint_path {
                     path = {
                         let mut locked_path = data_image.show_path.lock().unwrap();
                         std::mem::replace(&mut *locked_path, Default::default())
                         // Replace with a default value
                     };
-                    area_copy = area.copy_data();
                 }
 
-                let max_value = Arc::new(Mutex::new(0));
+                // clone Arc
+                let app_data = self.application_data.clone();
 
                 let mut window = self.window.lock().unwrap();
 
@@ -233,12 +240,13 @@ impl Application {
                                         color = ci;
                                     }
                                     None => {
-                                        let mut mv = max_value.lock().unwrap();
-                                        if value > *mv {
-                                            *mv = value;
+                                        let mv = app_data.lock().unwrap().last_max_value;
+                                        if value > mv {
+                                            app_data.lock().unwrap().last_max_value = value;
                                         }
-                                        // make color (3x) brighter
-                                        let mut cv = ((value * 3) as f64 / *mv as f64) * 255.0;
+                                        // make color 3x brighter
+                                        // (0-1) * 255
+                                        let mut cv = (value as f64 * 3.0  / mv as f64) * 255.0;
                                         if cv > 255.0 {
                                             cv = 255.0;
                                         }
@@ -283,10 +291,4 @@ fn draw_colored_point(x: usize, y: usize, color: &Rgb<u8>) {
 
     draw::set_draw_color(Color::from_rgb(r, g, b));
     draw::draw_point(x as i32, y as i32);
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_it() {}
 }

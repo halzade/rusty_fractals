@@ -15,6 +15,7 @@ use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Square2;
 use image::Rgb;
 use std::sync::{Arc, Mutex, MutexGuard};
+use ResolutionMultiplier::{Single, Square101, Square11, Square3, Square5, Square51, Square9};
 
 pub struct DataImage {
     pub width_x: usize,
@@ -54,6 +55,8 @@ impl DataImage {
         let new_len = path.len();
         if new_len > (saved_len * 2) {
             println!("set_show_path() : {}", new_len);
+            
+            // TODO faster
             *self.show_path.lock().unwrap() = path.clone();
         }
     }
@@ -414,26 +417,26 @@ fn init_pixels_trivial() -> Vec<Vec<Mutex<Option<DataPx>>>> {
 
 pub fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
     match rm {
-        ResolutionMultiplier::Single => 1.0,
-        ResolutionMultiplier::Square3 => 3.0,
-        ResolutionMultiplier::Square5 => 5.0,
-        ResolutionMultiplier::Square9 => 9.0,
-        ResolutionMultiplier::Square11 => 11.0,
-        ResolutionMultiplier::Square51 => 51.0,
-        ResolutionMultiplier::Square101 => 101.0,
-        _ => 1.0,
+        Single => 1.0,
+        Square2 => 1.0, // special case
+        Square3 => 3.0,
+        Square5 => 5.0,
+        Square9 => 9.0,
+        Square11 => 11.0,
+        Square51 => 51.0,
+        Square101 => 101.0,
     }
 }
 
 pub fn colour_for_state(state: DomainElementState) -> Rgb<u8> {
     match state {
         // most of the elements are going to be FinishedSuccessPast
-        FinishedSuccessPast => FINISHED_SUCCESS_PAST,
-        HibernatedDeepBlack => HIBERNATED_DEEP_BLACK,
         ActiveNew => ACTIVE_NEW,
         FinishedSuccess => FINISHED_SUCCESS,
-        FinishedTooShort => FINISHED_TOO_SHORT,
         FinishedTooLong => FINISHED_TOO_LONG,
+        FinishedTooShort => FINISHED_TOO_SHORT,
+        FinishedSuccessPast => FINISHED_SUCCESS_PAST,
+        HibernatedDeepBlack => HIBERNATED_DEEP_BLACK,
     }
 }
 
@@ -443,7 +446,11 @@ fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_image::init_trivial;
+    use crate::area;
+    use crate::data_image::DataType::Dynamic;
+    use crate::data_image::{init, init_trivial};
+    use crate::fractal::init_trivial_config;
+    use crate::pixel_states::DomainElementState::ActiveNew;
     use crate::resolution_multiplier::ResolutionMultiplier::{
         Square101, Square11, Square3, Square5, Square51, Square9,
     };
@@ -451,6 +458,19 @@ mod tests {
     fn element_at(w: &Vec<[f64; 2]>, index: usize) -> (f64, f64) {
         let a = w.get(index).unwrap();
         (a[0], a[1])
+    }
+
+    #[test]
+    fn test_mo_px_at() {
+        let conf = init_trivial_config();
+        let area = area::init(&conf);
+        let data = init(Dynamic, &area);
+
+        let px1 = data.mo_px_at(0, 0);
+        let px2 = data.mo_px_at(19, 19);
+
+        assert_eq!(px1.unwrap().state, ActiveNew);
+        assert_eq!(px2.unwrap().state, ActiveNew);
     }
 
     #[test]

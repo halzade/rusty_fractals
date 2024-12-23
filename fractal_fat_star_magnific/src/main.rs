@@ -28,16 +28,12 @@ fn main() {
         resolution_multiplier: Single,
         palette: BlueToWhiteCircleUp,
 
-        // TODO
-        // const INIT_FINEBROT_AREA_SIZE : f64= 0.15;
-        // const INIT_FINEBROT_TARGET_re : f64= 0.5425;
-        // const INIT_FINEBROT_TARGET_im : f64= -0.31;
         palette_zero: Nothing,
-        width_x: 600,
-        height_y: 600,
-        width_re: 3.0,
-        center_re: 0.0,
-        center_im: 0.0,
+        width_x: 1200,
+        height_y: 1200,
+        width_re: 0.15,
+        center_re: 0.5425,
+        center_im: -0.31,
 
         calc_type: StaticImage,
         data_image_type: Static,

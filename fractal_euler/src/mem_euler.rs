@@ -8,7 +8,7 @@ use rusty_fractals::mathematician::Mathematician;
 pub struct MemEuler {
     pub m: Mem,
     pub it: u32,
-    // TODO separete primes, fibo, etc
+    // TODO separate primes, fibo, etc
     pub math: Mathematician,
     pub spectra: Spectra,
 }
