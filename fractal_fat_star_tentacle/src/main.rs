@@ -1,4 +1,5 @@
 use rusty_fractals::application;
+use rusty_fractals::data_image::DataType::Static;
 use rusty_fractals::fractal::CalculationType::StaticImage;
 use rusty_fractals::fractal::FractalType::NebulaType;
 use rusty_fractals::fractal::OrbitType::Infinite;
@@ -22,7 +23,7 @@ fn main() {
     let fractal_config = FractalConfig {
         name: "Fat Star Tentacle",
         iteration_min: 42,
-        iteration_max: 22000,
+        iteration_max: 2200,
         fractal_type: NebulaType,
         resolution_multiplier: Single,
         palette: BlueToWhiteCircleUp,
@@ -39,6 +40,7 @@ fn main() {
         center_im: 0.0,
 
         calc_type: StaticImage,
+        data_image_type: Static,
         orbits: Infinite,
         update_max: 150,
         update_min: 0,
