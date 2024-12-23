@@ -1,4 +1,5 @@
 use rusty_fractals::application;
+use rusty_fractals::data_image::DataType::Dynamic;
 use rusty_fractals::fractal::CalculationType::InfiniteVideoZoom;
 use rusty_fractals::fractal::FractalType::NebulaType;
 use rusty_fractals::fractal::OrbitType::Finite;
@@ -7,7 +8,7 @@ use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::PaletteName::{Nothing, PurpleToWhite};
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square2;
 
-pub struct NebulaTop {}
+pub struct NebulaTop;
 
 impl FractalMath<Mem> for NebulaTop {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
@@ -34,6 +35,7 @@ fn main() {
         center_im: -0.00000000709356,
 
         calc_type: InfiniteVideoZoom,
+        data_image_type: Dynamic,
         orbits: Finite,
         update_max: 150,
         update_min: 0,
