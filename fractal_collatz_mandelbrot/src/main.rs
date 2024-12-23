@@ -1,4 +1,5 @@
 use rusty_fractals::application;
+use rusty_fractals::data_image::DataType::Dynamic;
 use rusty_fractals::fractal::CalculationType::InfiniteVideoZoom;
 use rusty_fractals::fractal::FractalType::MandelbrotType;
 use rusty_fractals::fractal::OrbitType::Infinite;
@@ -7,9 +8,9 @@ use rusty_fractals::mem_collatz::MemCollatz;
 use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, GrayToBlue};
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
 
-pub struct CollatzConjectureMandelbrot<'lt> {}
+pub struct CollatzConjectureMandelbrot {}
 
-impl FractalMath<MemCollatz> for CollatzConjectureMandelbrot<'_> {
+impl FractalMath<MemCollatz> for CollatzConjectureMandelbrot {
     fn math(&self, mc: &mut MemCollatz, origin_re: f64, origin_im: f64) {
         mc.square();
         mc.plus_collatz(origin_re, origin_im);
@@ -33,6 +34,7 @@ fn main() {
         center_im: -0.214699221335319460,
 
         calc_type: InfiniteVideoZoom,
+        data_image_type: Dynamic,
         orbits: Infinite,
         update_max: 150,
         update_min: 0,
@@ -58,7 +60,7 @@ mod tests {
 
         collatz.math(&mut mc, 1.0, 0.1);
 
-        assert_eq!(mc.re(), 2.0);
-        assert_eq!(mc.im(), 0.65);
+        assert_eq!(mc.m.re, 2.0);
+        assert_eq!(mc.m.im, 0.65);
     }
 }

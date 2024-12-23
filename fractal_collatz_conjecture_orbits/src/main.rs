@@ -1,4 +1,5 @@
 use rusty_fractals::application;
+use rusty_fractals::data_image::DataType::Dynamic;
 use rusty_fractals::fractal::CalculationType::InfiniteVideoZoom;
 use rusty_fractals::fractal::FractalType::MandelbrotType;
 use rusty_fractals::fractal::OrbitType::Infinite;
@@ -34,6 +35,7 @@ fn main() {
         center_im: -0.200679435068532800,
 
         calc_type: InfiniteVideoZoom,
+        data_image_type: Dynamic,
         orbits: Infinite,
         update_max: 150,
         update_min: 0,
@@ -57,7 +59,7 @@ mod tests {
             num: 7,
         };
         collatz.math(&mut mc, 1.0, 0.1);
-        assert_eq!(mc.re(), 2.0);
-        assert_eq!(mc.im(), 1.1);
+        assert_eq!(mc.m.re, 2.0);
+        assert_eq!(mc.m.im, 1.1);
     }
 }
