@@ -1,4 +1,5 @@
 use rusty_fractals::application;
+use rusty_fractals::data_image::DataType::Static;
 use rusty_fractals::fractal::CalculationType::StaticImage;
 use rusty_fractals::fractal::FractalType::NebulaType;
 use rusty_fractals::fractal::OrbitType::Infinite;
@@ -33,6 +34,7 @@ fn main() {
         center_im: 0.0,
 
         calc_type: StaticImage,
+        data_image_type: Static,
         orbits: Infinite,
         update_max: 150,
         update_min: 0,

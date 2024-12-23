@@ -1,3 +1,5 @@
+use crate::fractal::MemType;
+
 // Memory object to carry calculation results
 pub struct Mem {
     pub re: f64,
@@ -5,18 +7,6 @@ pub struct Mem {
 }
 
 impl Mem {
-    pub fn new(re: f64, im: f64) -> Mem {
-        Mem { re, im }
-    }
-
-    pub fn re(&self) -> f64 {
-        self.re
-    }
-
-    pub fn im(&self) -> f64 {
-        self.im
-    }
-
     pub fn plus(&mut self, r: f64, i: f64) {
         self.re += r;
         self.im += i;
@@ -28,17 +18,32 @@ impl Mem {
         self.re = temp;
     }
 
-    pub fn quad(&self) -> f64 {
-        self.re * self.re + self.im * self.im
-    }
-
     pub fn conjugation(&mut self) {
         self.im *= -1.0;
     }
 }
 
+impl MemType<Mem> for Mem {
+    fn new(re: f64, im: f64) -> Mem {
+        Mem { re, im }
+    }
+
+    fn quad(&self) -> f64 {
+        self.re * self.re + self.im * self.im
+    }
+
+    fn re(&self) -> f64 {
+        self.re
+    }
+
+    fn im(&self) -> f64 {
+        self.im
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::fractal::MemType;
     use crate::mem::Mem;
 
     #[test]

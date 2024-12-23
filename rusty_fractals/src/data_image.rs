@@ -20,12 +20,16 @@ pub struct DataImage {
     pub width_x: usize,
     pub height_y: usize,
     pub data_type: DataType,
-    // static data for image
+    /*
+     * static data for image
+     */
     pub pixels: Vec<Vec<Mutex<Option<DataPx>>>>,
-    // dynamic data for zoom video
-    // As zoom progress, points [re,im] are projected to new pixels [px,py] until they migrate out of the tiny area.
-    // Elements outside the tiny result_area are removed. Very short (calculation) paths are also removed.
-    // All elements on paths are already inside result_area because they are filtered like that during the calculation.
+    /*
+     * dynamic data for zoom video
+     * As zoom progress, points [re,im] are projected to new pixels [px,py] until they migrate out of the tiny area.
+     * Elements outside the tiny result_area are removed. Very short (calculation) paths are also removed.
+     * All elements on paths are already inside result_area because they are filtered like that during the calculation.
+     */
     pub paths: Arc<Mutex<Vec<Vec<[f64; 2]>>>>,
     // show one patch during calculation with pixel wrap
     pub show_path: Mutex<Vec<[f64; 2]>>,

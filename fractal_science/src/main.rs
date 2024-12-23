@@ -10,7 +10,7 @@ use rusty_fractals::resolution_multiplier::ResolutionMultiplier::{Single, Square
 
 pub struct Science;
 
-impl FractalMath for Science {
+impl FractalMath<Mem> for Science {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         m.square();
         m.plus(origin_re, origin_im);
@@ -36,8 +36,7 @@ fn main() {
 
         calc_type: StaticImage,
         data_image_type: Static,
-
-        // calc_type: InfiniteVideoZoom,
+        // calc_type: StaticImage,
         // data_image_type: Dynamic,
 
         orbits: Finite,

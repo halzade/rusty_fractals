@@ -1,6 +1,6 @@
 use crate::area::Area;
 use crate::data_image::{colour_for_state, DataImage};
-use crate::fractal::{FractalConfig, FractalMath};
+use crate::fractal::{FractalConfig, FractalMath, MemType};
 use crate::pixel_states::DomainElementState;
 use crate::{machine, pixel_states};
 use fltk::app::{event_button, event_coords, event_key};
@@ -40,7 +40,11 @@ fn init(config: &FractalConfig) -> Arc<Mutex<Application>> {
 /**
  * start the application
  */
-pub fn execute<F: FractalMath + 'static>(config: FractalConfig, fractal: F) {
+pub fn execute<F, M>(config: FractalConfig, fractal: F)
+where
+    F: FractalMath<M> + 'static,
+    M: MemType<M>,
+{
     println!("application.execute()");
 
     let app = app::App::default();
@@ -54,6 +58,7 @@ pub fn execute<F: FractalMath + 'static>(config: FractalConfig, fractal: F) {
         // clone arc, not application
         let mut machine = machine::init(&config, fractal);
         machine.set_application_ref(application_arc.clone());
+        // execute fractal calculation
         machine.execute_calculation();
     };
     rayon::spawn_fifo(task);

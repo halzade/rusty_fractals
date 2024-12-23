@@ -56,22 +56,28 @@ pub enum OrbitType {
     Infinite,
 }
 
+/**
+ * StaticImage goes always with Static data_image type
+ * InfiniteVideoZoom goes always with Dynamic data_image type
+ *
+ * It is separated for debugging purposes.
+ */
 #[derive(PartialEq, Clone, Copy)]
 pub enum CalculationType {
     StaticImage,
     InfiniteVideoZoom,
 }
 
-pub trait FractalMath: Sync + Send {
-    fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64);
+pub trait FractalMath<M>: Sync + Send {
+    fn math(&self, m: &mut M, origin_re: f64, origin_im: f64);
 }
 
-// pub trait MemType<T> {
-//     fn new(re: f64, im: f64) -> T;
-//     fn quad(&self) -> f64;
-//     fn re(&self) -> f64;
-//     fn im(&self) -> f64;
-// }
+pub trait MemType<M>: Sync + Send {
+    fn new(re: f64, im: f64) -> M;
+    fn quad(&self) -> f64;
+    fn re(&self) -> f64;
+    fn im(&self) -> f64;
+}
 
 /**
  * A fractal object for test purposes
@@ -79,7 +85,7 @@ pub trait FractalMath: Sync + Send {
  */
 pub struct TrivialFractal;
 
-impl FractalMath for TrivialFractal {
+impl FractalMath<Mem> for TrivialFractal {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         m.square();
         m.plus(origin_re, origin_im);
@@ -126,11 +132,11 @@ mod tests {
     #[test]
     fn test_math() {
         let f = init_trivial_fractal();
-        let mut m = &mut Mem::new(0.0, 0.0);
+        let mut m = Mem { re: 0.0, im: 0.0 };
 
         f.math(&mut m, 0.0, 0.0);
 
-        assert_eq!(m.re(), 0.0);
-        assert_eq!(m.im(), 0.0);
+        assert_eq!(m.re, 0.0);
+        assert_eq!(m.im, 0.0);
     }
 }

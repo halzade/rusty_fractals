@@ -4,10 +4,10 @@ use crate::constants::CALCULATION_BOUNDARY;
 use crate::data_image::DataImage;
 use crate::data_px::{active_new, hibernated_deep_black};
 use crate::fractal::CalculationType::StaticImage;
-use crate::fractal::FractalType::{MandelbrotType, NebulaType};
+use crate::fractal::FractalType::MandelbrotType;
 use crate::fractal::{
-    init_trivial_config, CalculationType, FractalConfig, FractalMath, FractalType, OrbitType,
-    TrivialFractal,
+    init_trivial_config, CalculationType, FractalConfig, FractalMath, FractalType, MemType,
+    OrbitType, TrivialFractal,
 };
 use crate::fractal_log::now;
 use crate::fractal_stats::Stats;
@@ -30,9 +30,10 @@ use std::time::{Duration, Instant};
 /**
  * Machine owns all data
  */
-pub struct Machine<'lt, F>
+pub struct Machine<'lt, F, M>
 where
-    F: FractalMath,
+    F: FractalMath<M>,
+    M: MemType<M>,
 {
     /*
      * Fractal related values
@@ -72,9 +73,15 @@ where
      * Machine (Self) related values
      */
     last_partial_refresh: Arc<Mutex<Option<Instant>>>,
+    // use to create new memories
+    m: M,
 }
 
-pub fn init<F: FractalMath>(config: &FractalConfig, fractal: F) -> Machine<'static, F> {
+pub fn init<F, M>(config: &FractalConfig, fractal: F) -> Machine<'static, F, M>
+where
+    F: FractalMath<M>,
+    M: MemType<M>,
+{
     let area: Area = area::init(config);
     Machine {
         fractal,
@@ -103,16 +110,21 @@ pub fn init<F: FractalMath>(config: &FractalConfig, fractal: F) -> Machine<'stat
         app_ref: None,
         // machine values
         last_partial_refresh: Arc::new(Mutex::new(None)),
+        m: M::new(0.0, 0.0),
     }
 }
 
-pub fn init_trivial() -> Machine<'static, TrivialFractal> {
+pub fn init_trivial() -> Machine<'static, TrivialFractal, Mem> {
     let conf = init_trivial_config();
     let fractal = fractal::init_trivial_fractal();
     init(&conf, fractal)
 }
 
-impl<'lt, F: FractalMath> Machine<'lt, F> {
+impl<'lt, F, M> Machine<'lt, F, M>
+where
+    F: FractalMath<M>,
+    M: MemType<M>,
+{
     pub fn set_application_ref(&mut self, app_ref: Arc<Mutex<Application>>) {
         self.app_ref = Some(app_ref);
     }
@@ -345,7 +357,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
     pub fn calculate_path(&self, origin_re: f64, origin_im: f64, is_wrap: bool) -> (u32, u32) {
         let cb = CALCULATION_BOUNDARY as f64;
 
-        let mut m = Mem::new(origin_re, origin_im);
+        let mut m = M::new(origin_re, origin_im);
 
         let mut iterator = 0;
         let mut length = 0;
@@ -367,7 +379,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
             // This origin produced good data
             // Record the calculation path
 
-            let mut m = Mem::new(origin_re, origin_im);
+            let mut m = M::new(origin_re, origin_im);
 
             let mut path: Vec<[f64; 2]> = Vec::new();
             for _ in 0..iterator {
@@ -488,7 +500,7 @@ impl<'lt, F: FractalMath> Machine<'lt, F> {
     pub fn calculate_mandelbrot_path(&self, origin_re: f64, origin_im: f64) -> (u32, f64) {
         let cb = CALCULATION_BOUNDARY as f64;
 
-        let mut m = Mem::new(origin_re, origin_im);
+        let mut m = M::new(origin_re, origin_im);
 
         let mut iterator = 0;
         while m.quad() < cb && iterator < self.iteration_max {

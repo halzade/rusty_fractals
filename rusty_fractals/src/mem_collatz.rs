@@ -1,3 +1,4 @@
+use crate::fractal::MemType;
 use crate::mem::Mem;
 
 pub struct MemCollatz {
@@ -19,11 +20,11 @@ impl MemCollatz {
     }
 
     pub fn re(&self) -> f64 {
-        self.re()
+        self.m.re
     }
 
     pub fn im(&self) -> f64 {
-        self.im()
+        self.m.im
     }
 
     pub fn plus(&mut self, r: f64, i: f64) {

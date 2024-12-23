@@ -1,5 +1,6 @@
-use std::collections::HashSet;
 use crate::mem::Mem;
+use std::collections::HashSet;
+use crate::fractal::MemType;
 
 pub struct Mathematician {
     pub primes: HashSet<u32>,
@@ -8,7 +9,6 @@ pub struct Mathematician {
     pub square: HashSet<u32>,
 }
 
-#[allow(dead_code)]
 impl Mathematician {
     /**
      * (t^2 + x^2 - 2at)^2 = 4a^2 (t^2 + x^2)
@@ -94,21 +94,17 @@ impl Mathematician {
 
     /** (a + ib)^4 */
     pub fn binomial4(mut m: Mem) {
-        let temp = (m.re * m.re * m.re * m.re)
-            - (6.0 * m.re * m.re * m.re * m.im)
+        let temp = (m.re * m.re * m.re * m.re) - (6.0 * m.re * m.re * m.re * m.im)
             + (m.im * m.re * m.im * m.im);
-        m.im = (4.0 * m.re * m.re * m.re * m.im)
-            - (4.0 * m.re * m.im * m.im * m.im);
+        m.im = (4.0 * m.re * m.re * m.re * m.im) - (4.0 * m.re * m.im * m.im * m.im);
         m.re = temp;
     }
 
     /** (a + ib)^5 */
     pub fn binomial5(mut m: Mem) {
-        let temp = (m.re * m.re * m.re * m.re * m.re)
-            - (10.0 * m.re * m.re * m.re * m.im * m.im)
+        let temp = (m.re * m.re * m.re * m.re * m.re) - (10.0 * m.re * m.re * m.re * m.im * m.im)
             + (5.0 * m.re * m.im * m.im * m.im * m.im);
-        m.im = (5.0 * m.re * m.re * m.re * m.re * m.im)
-            - (10.0 * m.re * m.re * m.im * m.im * m.im)
+        m.im = (5.0 * m.re * m.re * m.re * m.re * m.im) - (10.0 * m.re * m.re * m.im * m.im * m.im)
             + (m.im * m.im * m.im * m.im * m.im);
         m.re = temp;
     }
@@ -130,7 +126,6 @@ impl Mathematician {
  * Fibonacci
  */
 
-#[allow(dead_code)]
 fn init_fibonacci(max: u32) {
     println!("init_fibonacci()");
     let mut fibonacci: HashSet<u32> = HashSet::new();
@@ -167,7 +162,7 @@ fn is_perfect_init(num: u32) -> bool {
             temp += i;
         }
     }
-    return temp == num;
+    temp == num
 }
 
 /**
@@ -195,7 +190,7 @@ fn is_prime_init(n: u32) -> bool {
             return false;
         }
     }
-    return true;
+    true
 }
 
 /**
