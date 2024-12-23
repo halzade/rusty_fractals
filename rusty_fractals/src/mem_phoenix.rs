@@ -15,7 +15,17 @@ pub struct MemPhoenix {
 }
 
 impl MemPhoenix {
-    pub fn new(re: f64, im: f64) -> MemPhoenix {
+    pub fn plus(&mut self, r: f64, i: f64) {
+        self.m.plus(r, i);
+    }
+
+    pub fn square(&mut self) {
+        self.m.square();
+    }
+}
+
+impl MemType<MemPhoenix> for MemPhoenix {
+    fn new(re: f64, im: f64) -> MemPhoenix {
         MemPhoenix {
             m: Mem { re, im },
             prev_prev_re: PHOENIX_INITIALIZER,
@@ -25,24 +35,16 @@ impl MemPhoenix {
         }
     }
 
-    pub fn re(&self) -> f64 {
-        self.m.re
-    }
-
-    pub fn im(&self) -> f64 {
-        self.m.im
-    }
-
-    pub fn quad(&self) -> f64 {
+    fn quad(&self) -> f64 {
         self.m.quad()
     }
 
-    pub fn plus(&mut self, r: f64, i: f64) {
-        self.m.plus(r, i);
+    fn re(&self) -> f64 {
+        self.m.re
     }
 
-    pub fn square(&mut self) {
-        self.m.square();
+    fn im(&self) -> f64 {
+        self.m.im
     }
 }
 

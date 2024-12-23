@@ -1,5 +1,6 @@
 use rusty_fractals::application;
 use rusty_fractals::constants::{PHOENIX_INIT_C, PHOENIX_INIT_P};
+use rusty_fractals::data_image::DataType::Static;
 use rusty_fractals::fractal::CalculationType::StaticImage;
 use rusty_fractals::fractal::FractalType::NebulaType;
 use rusty_fractals::fractal::OrbitType::Finite;
@@ -10,7 +11,7 @@ use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square9;
 
 pub struct Head {}
 
-impl FractalMath for Head {
+impl FractalMath<MemPhoenix> for Head {
     fn math(&self, mp: &mut MemPhoenix, origin_re: f64, origin_im: f64) {
         mp.square();
         mp.m.re += PHOENIX_INIT_C;
@@ -42,6 +43,7 @@ fn main() {
         center_im: -0.37573460559804,
 
         calc_type: StaticImage,
+        data_image_type: Static,
         orbits: Finite,
         update_max: 150,
         update_min: 0,
@@ -71,7 +73,7 @@ mod tests {
 
         head.math(&mut mp, 1.0, 0.1);
 
-        assert_eq!(mp.re(), 1.1);
-        assert_eq!(mp.im(), -0.15);
+        assert_eq!(mp.m.re, 1.1);
+        assert_eq!(mp.m.im, -0.15);
     }
 }
