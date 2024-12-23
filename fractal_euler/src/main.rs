@@ -4,8 +4,9 @@ mod pixel;
 
 use crate::mem_euler::MemEuler;
 use rusty_fractals::application;
+use rusty_fractals::data_image::DataType::Static;
 use rusty_fractals::fractal::CalculationType::StaticImage;
-use rusty_fractals::fractal::FractalType::{NebulaEulerType, NebulaType};
+use rusty_fractals::fractal::FractalType::NebulaEulerType;
 use rusty_fractals::fractal::OrbitType::Infinite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
@@ -42,6 +43,7 @@ fn main() {
 
         // calculation config
         calc_type: StaticImage,
+        data_image_type: Static,
         orbits: Infinite, // ?
         update_max: 150,
         update_min: 0,

@@ -1,0 +1,22 @@
+[workspace]
+members = [
+    "rusty_fractals",
+    "fractal_science",
+    "fractal_head",
+    "fractal_lotus",
+    "fractal_nebula",
+    "fractal_nebula_top",
+    "fractal_nebula_side",
+    "fractal_nebula_of_nebula",
+    "fractal_infinity",
+    "fractal_infinity_top",
+    "fractal_mandelbrot",
+    "fractal_mandelbrot_of_mandelbrot",
+    "fractal_fat_star",
+    "fractal_fat_star_magnific",
+    "fractal_fat_star_tentacle",
+    "fractal_euler",
+    "fractal_collatz_mandelbrot",
+    "fractal_collatz_conjecture",
+    "fractal_collatz_conjecture_orbits",
+]
