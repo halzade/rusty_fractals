@@ -1,4 +1,5 @@
 use rusty_fractals::application;
+use rusty_fractals::data_image::DataType::{Dynamic, Static};
 use rusty_fractals::fractal::CalculationType::InfiniteVideoZoom;
 use rusty_fractals::fractal::FractalType::MandelbrotType;
 use rusty_fractals::fractal::OrbitType::Finite;
@@ -41,6 +42,7 @@ fn main() {
         center_im: 0.0,
 
         calc_type: InfiniteVideoZoom,
+        data_image_type: Static,
         orbits: Finite,
         update_max: 150,
         update_min: 0,
@@ -51,6 +53,18 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    use crate::Mandelbrot;
+    use rusty_fractals::fractal::FractalMath;
+    use rusty_fractals::mem::Mem;
+
     #[test]
-    fn test_it() {}
+    fn test_math() {
+        let mandelbrot = Mandelbrot {};
+        let mut m = Mem { re: 0.0, im: 0.0 };
+
+        mandelbrot.math(&mut m, 1.0, 1.0);
+
+        assert_eq!(m.re, 1.0);
+        assert_eq!(m.im, 1.0);
+    }
 }

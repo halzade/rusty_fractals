@@ -58,7 +58,9 @@ pub enum OrbitType {
 
 /**
  * StaticImage goes always with Static data_image type
- * InfiniteVideoZoom goes always with Dynamic data_image type
+ * InfiniteVideoZoom goes always with
+ * - Dynamic data_image type for Nebula fractals
+ * - Static with Mandelbrot fractals
  *
  * It is separated for debugging purposes.
  */

@@ -1,4 +1,5 @@
 use rusty_fractals::application;
+use rusty_fractals::data_image::DataType::Static;
 use rusty_fractals::fractal::CalculationType::StaticImage;
 use rusty_fractals::fractal::FractalType::NebulaType;
 use rusty_fractals::fractal::OrbitType::Finite;
@@ -9,7 +10,7 @@ use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square11;
 
 pub struct Lotus {}
 
-impl FractalMath for Lotus {
+impl FractalMath<Mem> for Lotus {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         m.conjugation();
         m.square();
@@ -35,6 +36,7 @@ fn main() {
         center_im: 0.0, // -1.18770078111202,
 
         calc_type: StaticImage,
+        data_image_type: Static,
         orbits: Finite,
         update_max: 150,
         update_min: 0,
