@@ -1,8 +1,8 @@
 use crate::area::Area;
 use crate::constants::{MINIMUM_PATH_LENGTH, NEIGHBOURS};
-use crate::data_image::DataType::{Dynamic, Static};
 use crate::data_px;
 use crate::data_px::DataPx;
+use crate::fractal::FractalConfig;
 use crate::pixel_states::DomainElementState::{
     ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
     HibernatedDeepBlack,
@@ -20,7 +20,8 @@ use ResolutionMultiplier::{Single, Square101, Square11, Square3, Square5, Square
 pub struct DataImage {
     pub width_x: usize,
     pub height_y: usize,
-    pub data_type: DataType,
+    pub is_dynamic: bool,
+    pub is_mandelbrot: bool,
     /*
      * static data for image
      */
@@ -33,13 +34,8 @@ pub struct DataImage {
      */
     pub paths: Arc<Mutex<Vec<Vec<[f64; 2]>>>>,
     // show one patch during calculation with pixel wrap
+    // only for static image calculation, otherwise just get the longest path
     pub show_path: Mutex<Vec<[f64; 2]>>,
-}
-
-#[derive(PartialOrd, Ord, PartialEq, Eq, Clone, Copy)]
-pub enum DataType {
-    Dynamic,
-    Static,
 }
 
 impl DataImage {
@@ -49,22 +45,31 @@ impl DataImage {
         p.colour = Some(palette_colour);
     }
 
-    // save path to show during recalculation with pixel wrap
-    fn set_show_path(&self, path: &Vec<[f64; 2]>) {
+    /**
+     * for static image calculation, when wrap is going on
+     * save path to show during recalculation of pixel wrap
+     * - can't just get the longest path because paths are dropped to px grid immediately
+     * - remember the longest path.
+     */
+    fn remember_show_path_maybe(&self, path: &Vec<[f64; 2]>) {
         let saved_len = self.show_path.lock().unwrap().len();
         let new_len = path.len();
         if new_len > (saved_len * 2) {
             println!("set_show_path() : {}", new_len);
 
-            // TODO faster
             *self.show_path.lock().unwrap() = path.clone();
         }
     }
 
-    pub fn translate_path_to_point_grid(&self, path: Vec<[f64; 2]>, area: &Area, is_wrap: bool) {
-        if is_wrap {
-            self.set_show_path(&path);
-        }
+    // retrieve the longest path for dynamic zoom calculation
+    pub fn the_longest_path_copy(&self) -> Option<Vec<[f64; 2]>> {
+        let paths_lock = self.paths.lock().unwrap();
+        println!(" === this many paths {}", &paths_lock.len());
+
+        paths_lock.iter().max_by_key(|v| v.len()).cloned()
+    }
+
+    pub fn translate_one_path_to_point_grid_now(&self, path: Vec<[f64; 2]>, area: &Area) {
         for [re, im] in path {
             let (x, y) = area.point_to_pixel(re, im);
             self.add(x, y);
@@ -82,10 +87,11 @@ impl DataImage {
         }
     }
 
-    pub fn save_path(&self, path: Vec<[f64; 2]>, is_wrap: bool) {
-        if is_wrap {
-            self.set_show_path(&path);
-        }
+    /**
+     * save any path
+     * verify path length before saving
+     */
+    pub fn save_path(&self, path: Vec<[f64; 2]>) {
         self.paths.lock().unwrap().push(path);
     }
 
@@ -178,6 +184,14 @@ impl DataImage {
         let mut mo_px = self.mo_px_at(x, y);
         let p = mo_px.as_mut().unwrap();
         (p.value, p.state, p.colour)
+    }
+
+    pub fn state_at(&self, x: usize, y: usize) -> DomainElementState {
+        let mut mo_px = self.mo_px_at(x, y);
+
+        // TODO these don't have to be mutable
+        let p = mo_px.as_mut().unwrap();
+        p.state
     }
 
     pub fn colour_at(&self, x: usize, y: usize) -> Option<Rgb<u8>> {
@@ -369,17 +383,21 @@ impl DataImage {
     // Verify if any neighbor px,py finished well, long or at least too short.
     // This method identifies deep black convergent elements of Mandelbrot set interior.
     // Don't do any calculation for those.
-    pub fn all_neighbors_finished_bad(&self, x: usize, y: usize, is_mandelbrot: bool) -> bool {
+    pub fn all_neighbors_finished_bad(&self, x: usize, y: usize) -> bool {
         let neigh = NEIGHBOURS as i32;
+
         for a in -neigh..(neigh + 1) {
             for b in -neigh..(neigh + 1) {
                 let xx = x as i32 + a;
                 let yy = y as i32 + b;
+
                 if (a != 0 || b != 0) && check_domain(xx, yy, self.width_x, self.height_y) {
                     let mo_px = self.mo_px_at(xx as usize, yy as usize);
+
                     if mo_px.is_some() {
                         let px = mo_px.as_ref().unwrap();
-                        if is_mandelbrot {
+
+                        if self.is_mandelbrot {
                             if px.is_finished_too_long() || px.is_hibernated() {
                                 return false;
                             }
@@ -396,31 +414,21 @@ impl DataImage {
     }
 
     pub fn is_dynamic(&self) -> bool {
-        self.data_type == Dynamic
+        self.is_dynamic
     }
 }
 
-pub fn init(data_type: DataType, area: &Area) -> DataImage {
+pub fn init(conf: &FractalConfig, area: &Area) -> DataImage {
     let wx = area.data.lock().unwrap().width_x;
     let hy = area.data.lock().unwrap().height_y;
     DataImage {
-        data_type,
         width_x: wx,
         height_y: hy,
+        is_dynamic: conf.is_dynamic(),
+        is_mandelbrot: conf.is_mandelbrot(),
         pixels: init_domain(area),
         paths: Arc::new(Mutex::new(Vec::new())),
-        show_path: Mutex::new(Vec::new()),
-    }
-}
-
-pub fn init_trivial() -> DataImage {
-    DataImage {
-        width_x: 1,
-        height_y: 1,
-        data_type: Static,
-        pixels: init_pixels_trivial(),
-        paths: Arc::new(Mutex::new(Vec::new())),
-        show_path: Mutex::new(Vec::new()),
+        show_path: Mutex::new(vec![]),
     }
 }
 
@@ -443,16 +451,6 @@ fn init_domain(area: &Area) -> Vec<Vec<Mutex<Option<DataPx>>>> {
         }
         vx.push(vy);
     }
-    vx
-}
-
-fn init_pixels_trivial() -> Vec<Vec<Mutex<Option<DataPx>>>> {
-    let mut vx = Vec::new();
-    let mut vy = Vec::new();
-
-    vy.push(Mutex::new(Some(data_px::init(0f64, 0f64))));
-    vx.push(vy);
-
     vx
 }
 
@@ -488,13 +486,18 @@ fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::area;
-    use crate::data_image::DataType::Dynamic;
-    use crate::data_image::{init, init_trivial};
-    use crate::fractal::{init_trivial_dynamic_config, init_trivial_static_config};
+    use crate::data_image::init;
+    use crate::fractal::{init_trivial_dynamic_config, FractalConfig};
     use crate::pixel_states::DomainElementState::ActiveNew;
     use crate::resolution_multiplier::ResolutionMultiplier::{
         Square101, Square11, Square3, Square5, Square51, Square9,
     };
+
+    use crate::area::Area;
+    use std::sync::LazyLock;
+
+    static CONF: FractalConfig = init_trivial_dynamic_config();
+    static AREA: LazyLock<Area> = LazyLock::new(|| area::init(&CONF));
 
     fn element_at(w: &Vec<[f64; 2]>, index: usize) -> (f64, f64) {
         let a = w.get(index).unwrap();
@@ -502,10 +505,31 @@ mod tests {
     }
 
     #[test]
+    fn test_add() {
+        let dynamic = init(&CONF, &AREA);
+
+        dynamic.add(0, 0);
+        let v = dynamic.mo_px_at(0, 0);
+
+        assert_eq!(v.unwrap().value, 1);
+    }
+
+    #[test]
+    fn test_the_longest_path_copy() {
+        let dynamic = init(&CONF, &AREA);
+
+        dynamic.save_path(vec![[0.0, 0.0], [0.0, 0.0]]);
+        dynamic.save_path(vec![[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]);
+        dynamic.save_path(vec![[0.0, 0.0], [0.0, 0.0]]);
+
+        let longest = dynamic.the_longest_path_copy();
+
+        assert_eq!(longest.unwrap().len(), 3);
+    }
+
+    #[test]
     fn test_remove_elements_outside() {
-        let conf = init_trivial_dynamic_config();
-        let area = area::init(&conf);
-        let dynamic = init(Dynamic, &area);
+        let dynamic = init(&CONF, &AREA);
 
         // test data
         // the last 2 pairs to should be removed
@@ -525,11 +549,11 @@ mod tests {
         // full path  should be removed
         let short = vec![[0.0, 0.0], [0.0, 0.0]];
 
-        dynamic.save_path(path, false);
-        dynamic.save_path(short, false);
+        dynamic.save_path(path);
+        dynamic.save_path(short);
 
         // execute test
-        dynamic.remove_elements_outside(&area);
+        dynamic.remove_elements_outside(&AREA);
 
         // get test data
         let result_all = dynamic.paths.lock().unwrap();
@@ -541,9 +565,7 @@ mod tests {
 
     #[test]
     fn test_mo_px_at() {
-        let conf = init_trivial_static_config();
-        let area = area::init(&conf);
-        let data = init(Dynamic, &area);
+        let data = init(&CONF, &AREA);
 
         let px1 = data.mo_px_at(0, 0);
         let px2 = data.mo_px_at(19, 19);
@@ -555,22 +577,22 @@ mod tests {
     #[test]
     fn test_wrap_3() {
         // prepare test
-        let data = init_trivial();
-        let area_plank = 1.0;
+        let data = init(&CONF, &AREA);
+        let area_plank = AREA.plank();
 
         // execute test
         let (o_re, o_im) = data.origin_at(0, 0);
         let w = data.wrap(o_re, o_im, Square3, area_plank);
         assert_eq!(w.len(), 8);
         let (re, im) = element_at(&w, 0);
-        assert_eq!(re, -0.3333333333333333);
-        assert_eq!(im, -0.3333333333333333);
+        assert_eq!(re, -0.49166666666666664);
+        assert_eq!(im, -0.49166666666666664);
     }
 
     #[test]
     fn test_wrap_5() {
-        let data = init_trivial();
-        let area_plank = 0.1;
+        let data = init(&CONF, &AREA);
+        let area_plank = AREA.plank();
 
         let (o_re, o_im) = data.origin_at(0, 0);
         let w = data.wrap(o_re, o_im, Square5, area_plank);
@@ -579,8 +601,8 @@ mod tests {
 
     #[test]
     fn test_wrap_9() {
-        let data = init_trivial();
-        let area_plank = 0.1;
+        let data = init(&CONF, &AREA);
+        let area_plank = AREA.plank();
 
         let (o_re, o_im) = data.origin_at(0, 0);
         let w = data.wrap(o_re, o_im, Square9, area_plank);
@@ -589,8 +611,8 @@ mod tests {
 
     #[test]
     fn test_wrap_11() {
-        let data = init_trivial();
-        let area_plank = 0.1;
+        let data = init(&CONF, &AREA);
+        let area_plank = AREA.plank();
 
         let (o_re, o_im) = data.origin_at(0, 0);
         let w = data.wrap(o_re, o_im, Square11, area_plank);
@@ -599,8 +621,8 @@ mod tests {
 
     #[test]
     fn test_wrap_51() {
-        let data = init_trivial();
-        let area_plank = 0.1;
+        let data = init(&CONF, &AREA);
+        let area_plank = AREA.plank();
 
         let (o_re, o_im) = data.origin_at(0, 0);
         let w = data.wrap(o_re, o_im, Square51, area_plank);
@@ -609,8 +631,8 @@ mod tests {
 
     #[test]
     fn test_wrap_101() {
-        let data = init_trivial();
-        let area_plank = 0.1;
+        let data = init(&CONF, &AREA);
+        let area_plank = AREA.plank();
 
         let (o_re, o_im) = data.origin_at(0, 0);
         let w = data.wrap(o_re, o_im, Square101, area_plank);
