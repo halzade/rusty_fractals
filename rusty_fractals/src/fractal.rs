@@ -1,7 +1,4 @@
-use crate::data_image::DataType;
-use crate::data_image::DataType::{Dynamic, Static};
-use crate::fractal::CalculationType::{InfiniteVideoZoom, StaticImage};
-use crate::fractal::FractalType::NebulaType;
+use crate::fractal::FractalCalculationType::{DynamicSequenceNebula, StaticSequenceMandelbrot};
 use crate::fractal::OrbitType::Finite;
 use crate::mem::Mem;
 use crate::palettes::PaletteName;
@@ -9,13 +6,16 @@ use crate::palettes::PaletteName::Nothing;
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Single;
 use std::cmp::PartialEq;
+use FractalCalculationType::StaticImageMandelbrot;
 
 pub struct FractalConfig {
-    pub name: &'static str,
     // fractal config
+    pub name: &'static str,
+    pub orbits: OrbitType, // fractal::finite_orbits / infinite_orbits
+    pub fractal_calc_type: FractalCalculationType,
+    // calculation config
     pub iteration_min: u32,
     pub iteration_max: u32,
-    pub fractal_type: FractalType,
     pub resolution_multiplier: ResolutionMultiplier,
     pub palette: PaletteName,
     pub palette_zero: PaletteName,
@@ -25,22 +25,20 @@ pub struct FractalConfig {
     pub width_re: f64,
     pub center_re: f64,
     pub center_im: f64,
-    // calculation config
-    pub calc_type: CalculationType,
-    pub data_image_type: DataType,
-    pub orbits: OrbitType, // fractal::finite_orbits / infinite_orbits
+    // calculation update config
     pub update_max: u32,
     pub update_min: u32,
 }
 
-#[derive(PartialEq, Clone, Copy)]
-pub enum FractalType {
-    // for each domain element, count the calculation
-    MandelbrotType,
-    // for each calculation, count domain elements matching the intermediate-calculation results
-    NebulaType,
-    // split primes, Fibonacci's and other to RGB spectra
-    NebulaEulerType,
+impl FractalConfig {
+    pub fn is_dynamic(&self) -> bool {
+        self.fractal_calc_type == DynamicSequenceNebula
+    }
+
+    pub fn is_mandelbrot(&self) -> bool {
+        self.fractal_calc_type == StaticImageMandelbrot
+            || self.fractal_calc_type == StaticSequenceMandelbrot
+    }
 }
 
 /**
@@ -53,21 +51,41 @@ pub enum OrbitType {
     // Only edges/surface of the set
     Finite,
     // include set volume
+    // this config implies humongous amount of data
     Infinite,
 }
 
 /**
- * StaticImage goes always with Static data_image type
- * InfiniteVideoZoom goes always with
- * - Dynamic data_image type for Nebula fractals
- * - Static with Mandelbrot fractals
+ * Mandelbrot fractal
+ * - for each domain element, count the calculations
  *
- * It is separated for debugging purposes.
+ * Nebula fractal
+ * - for each calculation, count domain elements matching the intermediate-calculation results
+ *
+ * Euler fractal
+ * - split primes, Fibonacci's and other calculation sequences to RGB spectra
  */
 #[derive(PartialEq, Clone, Copy)]
-pub enum CalculationType {
-    StaticImage,
-    InfiniteVideoZoom,
+pub enum FractalCalculationType {
+    /** Nebula fractals
+     * - drop calculation path to px grid immediately
+     * - can't read the longest path because of that
+     * - static data for image
+     * - dynamic data for zoom sequence
+     */
+    StaticImageNebula,
+    DynamicSequenceNebula,
+    /**
+     * Mandelbrot like fractals
+     * - use static data for both image and zoom sequence
+     */
+    StaticImageMandelbrot,
+    StaticSequenceMandelbrot,
+    /**
+     * Euler like fractals
+     * - wip
+     */
+    StaticSpectralImageEuler,
 }
 
 pub trait FractalMath<M>: Sync + Send {
@@ -104,7 +122,8 @@ pub fn init_trivial_fractal() -> TrivialFractal {
 pub fn init_trivial_static_config() -> FractalConfig {
     FractalConfig {
         name: "Static",
-        fractal_type: NebulaType,
+        orbits: Finite,
+        fractal_calc_type: StaticImageMandelbrot,
         iteration_min: 1,
         iteration_max: 3, // path length too short = 0,1, convergent = 2, divergent = 3
         resolution_multiplier: Single,
@@ -118,18 +137,15 @@ pub fn init_trivial_static_config() -> FractalConfig {
         center_re: 0.0,
         center_im: 0.0,
 
-        calc_type: StaticImage,
-        data_image_type: Static,
-        orbits: Finite,
         update_max: 1,
         update_min: 0,
     }
 }
 
-pub fn init_trivial_dynamic_config() -> FractalConfig {
+pub const fn init_trivial_dynamic_config() -> FractalConfig {
     FractalConfig {
         name: "Dynamic",
-        fractal_type: NebulaType,
+        fractal_calc_type: DynamicSequenceNebula,
         iteration_min: 1,
         iteration_max: 3, // path length too short = 0,1, convergent = 2, divergent = 3
         resolution_multiplier: Single,
@@ -143,8 +159,6 @@ pub fn init_trivial_dynamic_config() -> FractalConfig {
         center_re: 0.0,
         center_im: 0.0,
 
-        calc_type: InfiniteVideoZoom,
-        data_image_type: Dynamic,
         orbits: Finite,
         update_max: 1,
         update_min: 0,

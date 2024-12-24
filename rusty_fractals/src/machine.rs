@@ -3,10 +3,9 @@ use crate::area::Area;
 use crate::constants::CALCULATION_BOUNDARY;
 use crate::data_image::DataImage;
 use crate::data_px::{active_new, hibernated_deep_black};
-use crate::fractal::CalculationType::StaticImage;
-use crate::fractal::FractalType::MandelbrotType;
+use crate::fractal::FractalCalculationType::StaticImageNebula;
 use crate::fractal::{
-    init_trivial_static_config, CalculationType, FractalConfig, FractalMath, FractalType, MemType,
+    init_trivial_static_config, FractalCalculationType, FractalConfig, FractalMath, MemType,
     OrbitType, TrivialFractal,
 };
 use crate::fractal_log::now;
@@ -27,6 +26,10 @@ use rayon::prelude::*;
 use std::marker::PhantomData;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
+use FractalCalculationType::{
+    DynamicSequenceNebula, StaticImageMandelbrot, StaticSequenceMandelbrot,
+    StaticSpectralImageEuler,
+};
 
 /**
  * Machine owns all data
@@ -41,7 +44,7 @@ where
      */
     pub name: &'lt str,
     pub fractal: F,
-    pub fractal_type: FractalType,
+    pub fractal_calc_type: FractalCalculationType,
     // area config
     pub area: Area,
     pub width_x: usize,  // width x in pixels
@@ -56,7 +59,6 @@ where
     // used to color the (black) inside of Mandelbrot set
     pub palette_zero: Palette,
     // calculation config
-    pub calc_type: CalculationType,
     pub orbits: OrbitType, // fractal::finite_orbits / infinite_orbits
     pub iteration_min: u32,
     pub iteration_max: u32,
@@ -86,7 +88,8 @@ where
     Machine {
         fractal,
         name: config.name,
-        data_image: data_image::init(config.data_image_type, &area),
+        fractal_calc_type: config.fractal_calc_type,
+        data_image: data_image::init(config, &area),
         area,
         width_x: config.width_x,
         height_y: config.height_y,
@@ -99,9 +102,8 @@ where
         iteration_max: config.iteration_max,
         palette: new_palette_by_name(&config.palette),
         palette_zero: new_palette_by_name(&config.palette_zero),
-        calc_type: config.calc_type,
+
         resolution_multiplier: config.resolution_multiplier,
-        fractal_type: config.fractal_type,
         orbits: OrbitType::Finite,
         update_max: config.update_max,
         update_min: config.update_min,
@@ -132,24 +134,27 @@ where
     pub fn execute_calculation(&self) {
         println!("trigger_calculation()");
 
-        let is_mandelbrot = self.fractal_type == MandelbrotType;
-        let is_image = self.calc_type == StaticImage;
+        let fractal_calculation = self.fractal_calc_type;
 
-        if is_mandelbrot {
-            if is_image {
+        match fractal_calculation {
+            StaticImageNebula => {
+                // Fine fractal image
+                self.calculate_nebula_static_image();
+            }
+            DynamicSequenceNebula => {
+                // Fine fractal video
+                self.calculate_nebula_zoom();
+            }
+            StaticImageMandelbrot => {
                 // Hard fractal image
                 self.calculate_mandelbrot();
-            } else {
+            }
+            StaticSequenceMandelbrot => {
                 // Hard fractal video
                 self.calculate_mandelbrot_zoom();
             }
-        } else {
-            if is_image {
-                // Fine fractal image
-                self.calculate_nebula_static_image();
-            } else {
-                // Fine fractal video
-                self.calculate_nebula_zoom();
+            StaticSpectralImageEuler => {
+                todo!()
             }
         }
     }
@@ -169,7 +174,7 @@ where
         // calculation for a center of each pixel
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
-            self.chunk_calculation(&xy);
+            self.chunk_calculation(&xy, false);
             // window refresh
             // need to paint full image to show progress from other unfinished chunks
             self.paint_partial_calculation_results_states_maybe();
@@ -185,7 +190,7 @@ where
             // previous calculation completed, calculate more elements
             coordinates_xy.par_iter().for_each(|xy| {
                 // calculation
-                self.chunk_calculation_with_wrap(&xy);
+                self.chunk_calculation_with_wrap(&xy, true);
                 // window refresh
                 // need to paint full image to show progress from other unfinished chunks
                 self.paint_partial_calculation_results_states_with_paths(); // only every 100+ ms
@@ -202,15 +207,17 @@ where
     pub fn calculate_nebula_dynamic_data(&self) {
         println!("calculate_nebula_dynamic_data()");
 
+        self.paint_pixel_states_now();
+
         let coordinates_xy = shuffled_calculation_coordinates();
 
         // calculation for a center of each pixel
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
-            self.chunk_calculation(&xy);
+            self.chunk_calculation(&xy, false);
             // window refresh
             // need to paint full image to show progress from other unfinished chunks
-            self.paint_partial_calculation_results_states_dynamic_data_maybe();
+            self.paint_partial_calculation_results_states_maybe();
         });
 
         self.data_image.recalculate_pixels_states();
@@ -223,10 +230,11 @@ where
             // previous calculation completed, calculate more elements
             coordinates_xy.par_iter().for_each(|xy| {
                 // calculation
-                self.chunk_calculation_with_wrap(&xy);
+                // TODO really true?
+                self.chunk_calculation_with_wrap(&xy, true);
                 // window refresh
                 // need to paint full image to show progress from other unfinished chunks
-                self.paint_partial_calculation_results_states_dynamic_data_with_paths();
+                self.paint_partial_calculation_results_states_with_paths();
                 // only every 100+ ms
             });
         }
@@ -241,16 +249,16 @@ where
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
-    fn chunk_calculation(&self, xy: &[u32; 2]) {
+    fn chunk_calculation(&self, xy: &[u32; 2], save_path: bool) {
         let (x_from, x_to, y_from, y_to) = self.chunk_boundaries(xy);
         for x in x_from..x_to {
             for y in y_from..y_to {
-                self.calculate_path_xy(x, y);
+                self.calculate_path_xy(x, y, save_path);
             }
         }
     }
 
-    fn chunk_calculation_with_wrap(&self, xy: &[u32; 2]) {
+    fn chunk_calculation_with_wrap(&self, xy: &[u32; 2], save_path: bool) {
         if self.resolution_multiplier == ResolutionMultiplier::Single {
             panic!()
         }
@@ -268,18 +276,18 @@ where
                     );
                     // within the same pixel
                     for [re, im] in wrap {
-                        self.calculate_path(re, im, true);
+                        self.calculate_path(re, im, save_path);
                     }
                 }
             }
         }
     }
 
-    fn calculate_path_xy(&self, x: usize, y: usize) {
+    fn calculate_path_xy(&self, x: usize, y: usize, save_path: bool) {
         let (state, origin_re, origin_im) = self.data_image.state_origin_at(x, y);
         if pixel_states::is_active_new(state) {
             // calculate
-            let (iterator, path_length) = self.calculate_path(origin_re, origin_im, false);
+            let (iterator, path_length) = self.calculate_path(origin_re, origin_im, save_path);
 
             let state = self.state_from_path_length(iterator, path_length);
             self.data_image.set_pixel_state(x, y, state);
@@ -357,11 +365,7 @@ where
                     let re = res[x];
                     let im = ims[y];
 
-                    if self.data_image.all_neighbors_finished_bad(
-                        x,
-                        y,
-                        self.fractal_type == MandelbrotType,
-                    ) {
+                    if self.data_image.all_neighbors_finished_bad(x, y) {
                         // Calculation for some positions should be skipped as they are too far away form any long successful divergent position
                         mo_px.replace(hibernated_deep_black(re, im));
                     } else {
@@ -403,7 +407,12 @@ where
         }
     }
 
-    pub fn calculate_path(&self, origin_re: f64, origin_im: f64, is_wrap: bool) -> (u32, u32) {
+    pub fn calculate_path(
+        &self,
+        origin_re: f64,
+        origin_im: f64,
+        save_show_path: bool,
+    ) -> (u32, u32) {
         let cb = CALCULATION_BOUNDARY as f64;
 
         let mut m = M::new(origin_re, origin_im);
@@ -444,11 +453,17 @@ where
 
             self.stats.paths_new_points_amount_add(*&path.len());
 
+            if save_show_path {
+                self.data_image.remember_show_path_maybe(&path);
+            }
+
+            // save path only for wrap calculation of static image, when data are static, so I can't just get the longest path
             if self.data_image.is_dynamic() {
-                self.data_image.save_path(path, is_wrap);
+                // move path to dynamic data
+                self.data_image.save_path(path);
             } else {
                 self.data_image
-                    .translate_path_to_point_grid(path, &self.area, is_wrap);
+                    .translate_one_path_to_point_grid_now(path, &self.area);
             }
         }
         (iterator, length)
@@ -605,41 +620,28 @@ where
     }
 
     pub fn paint_partial_calculation_results_states_with_paths(&self) {
-        self.paint_partial_calculation_results_states(true, false, false);
+        self.paint_partial_calculation_results_states(false, true);
     }
 
     /**
      * paint for sure
      */
     pub fn paint_partial_calculation_results_states_now(&self) {
-        self.paint_partial_calculation_results_states(false, true, false);
+        self.paint_partial_calculation_results_states(true, false);
     }
 
     /**
      * paint only if enough time passed since the last painting
      */
     pub fn paint_partial_calculation_results_states_maybe(&self) {
-        self.paint_partial_calculation_results_states(false, false, false);
-    }
-
-    pub fn paint_partial_calculation_results_states_dynamic_data_maybe(&self) {
-        self.paint_partial_calculation_results_states(false, false, true);
-    }
-
-    pub fn paint_partial_calculation_results_states_dynamic_data_with_paths(&self) {
-        self.paint_partial_calculation_results_states(true, false, true);
+        self.paint_partial_calculation_results_states(false, false);
     }
 
     /**
      * Paint partial results to show pixel states
      * The pixel states, which are finished show color instead
      */
-    pub fn paint_partial_calculation_results_states(
-        &self,
-        paint_path: bool,
-        paint_now: bool,
-        is_dynamic: bool,
-    ) {
+    pub fn paint_partial_calculation_results_states(&self, paint_now: bool, paint_path: bool) {
         // ms_min have serious impact on parallelization and speed of calculation,
         // don't use less than 100
         let ms_min = 250;
@@ -664,16 +666,34 @@ where
                 .lock()
                 .expect("Failed to lock application reference");
 
-            if is_dynamic {
-                self.clear_all_px_data();
-                // drop dynamic data to px grid
-                self.translate_all_paths_to_point_grid();
+            let path: Option<Vec<[f64; 2]>>;
+
+            if self.fractal_calc_type == StaticImageNebula {
+                if paint_path {
+                    // path = self.data_image.the_longest_path_copy()
+                    path = self.data_image.a_saved_path();
+                } else {
+                    path = None;
+                }
+            } else {
+                path = None;
             }
 
-            app.paint_partial_calculation_result_states(&self.data_image, paint_path, &self.area);
+            app.paint_partial_calculation_result_states(&self.data_image, &self.area, path);
         }
 
         *last_called = Some(now);
+    }
+
+    pub fn paint_pixel_states_now(&self) {
+        let app = self
+            .app_ref
+            .as_ref()
+            .unwrap()
+            .lock()
+            .expect("Failed to lock application reference");
+
+        app.paint_pixel_states(&self.data_image);
     }
 }
 
@@ -755,7 +775,7 @@ mod tests {
         assert_eq!(pixel_states::is_active_new(s), true);
 
         // test result
-        machine.calculate_path_xy(0, 0);
+        machine.calculate_path_xy(0, 0, false);
         let (s, _, _) = machine.data_image.state_origin_at(0, 0);
 
         assert_eq!(pixel_states::is_active_new(s), false);

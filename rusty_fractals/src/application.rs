@@ -1,8 +1,8 @@
-use crate::area::Area;
+use crate::area::{Area, AreaDataCopy};
 use crate::data_image::{colour_for_state, DataImage};
 use crate::fractal::{FractalConfig, FractalMath, MemType};
-use crate::pixel_states::DomainElementState;
-use crate::{machine, pixel_states};
+use crate::machine;
+use crate::pixel_states::{is_active_new, DomainElementState};
 use fltk::app::{event_button, event_coords, event_key};
 use fltk::enums::{Color, Event, Key};
 use fltk::window::DoubleWindow;
@@ -64,7 +64,9 @@ where
         // clone arc, not application
         let mut machine = machine::init(&config, fractal);
         machine.set_application_ref(application_arc.clone());
-        // execute fractal calculation
+        /*
+         * execute fractal calculation
+         */
         machine.execute_calculation();
     };
     rayon::spawn_fifo(task);
@@ -175,7 +177,7 @@ impl Application {
     }
 
     /**
-     * This method paints states from data_image.
+     * This method paints states from data_image
      * For finished states it uses color instead
      *
      * ------
@@ -185,8 +187,8 @@ impl Application {
     pub fn paint_partial_calculation_result_states(
         &self,
         data_image: &DataImage,
-        paint_path: bool,
         area: &Area,
+        path_op: Option<Vec<[f64; 2]>>,
     ) {
         match app::lock() {
             Ok(_) => {
@@ -205,15 +207,15 @@ impl Application {
                     .collect();
 
                 // calculation path
-                let mut path: Vec<[f64; 2]> = Vec::new();
-                let area_copy = area.copy_data(); // TODO don't copy if not necessary
+                let area_copy_op: Option<AreaDataCopy>;
 
-                if paint_path {
-                    path = {
-                        let mut locked_path = data_image.show_path.lock().unwrap();
-                        std::mem::replace(&mut *locked_path, Default::default())
-                        // Replace with a default value
-                    };
+                let path: Vec<[f64; 2]>;
+                if path_op == None {
+                    path = Vec::new();
+                    area_copy_op = None;
+                } else {
+                    path = Vec::from(path_op.unwrap());
+                    area_copy_op = Some(area.copy_data());
                 }
 
                 // clone Arc
@@ -228,12 +230,16 @@ impl Application {
 
                     for y in 0..height {
                         for x in 0..width {
+
+                            // read data
                             let (value, state, colour_index_o) = pixel_states[y * width + x];
                             let color: Rgb<u8>;
-                            if !pixel_states::is_finished_any(state) {
+                            if is_active_new(state) {
+
                                 // paint state
                                 color = colour_for_state(state);
                             } else {
+
                                 // finished, use color
                                 match colour_index_o {
                                     Some(ci) => {
@@ -246,7 +252,7 @@ impl Application {
                                         }
                                         // make color 3x brighter
                                         // (0-1) * 255
-                                        let mut cv = (value as f64 * 3.0  / mv as f64) * 255.0;
+                                        let mut cv = (value as f64 * 3.0 / mv as f64) * 255.0;
                                         if cv > 255.0 {
                                             cv = 255.0;
                                         }
@@ -259,10 +265,12 @@ impl Application {
                         }
                     }
 
-                    if paint_path {
+                    // path may be empty vector and area_copy None
+                    if path.len() > 0 {
                         draw::set_draw_color(Color::from_rgb(255, 215, 0));
-                        for p in path.as_slice() {
-                            let (x, y) = area_copy.point_to_pixel(p[0], p[1]);
+                        let area_copy = area_copy_op.as_ref().unwrap();
+                        for el in &path {
+                            let (x, y) = area_copy.point_to_pixel(el[0], el[1]);
                             draw::draw_point(x as i32, y as i32);
                         }
                     }
@@ -273,6 +281,48 @@ impl Application {
             }
             Err(_) => {
                 println!("paint_partial_calculation_result_states(): app::lock() failed");
+            }
+        }
+        app::unlock();
+    }
+
+    /**
+     * paint only pixel states
+     */
+    pub fn paint_pixel_states(&self, data_image: &DataImage) {
+        match app::lock() {
+            Ok(_) => {
+                let width = data_image.width_x;
+                let height = data_image.height_y;
+
+                // pixel states and image colors
+                let pixel_states: Vec<DomainElementState> = (0..height)
+                    .flat_map(|y| (0..width).map(move |x| data_image.state_at(x, y)))
+                    .collect();
+
+                let mut window = self.window.lock().unwrap();
+
+                window.draw(move |_| {
+                    /* --------------------------------------------------------------------------------
+                     * All painting must be done within draw() method. Otherwise it doesn't do anything
+                     * ----------------------------------------------------------------------------- */
+
+                    for y in 0..height {
+                        for x in 0..width {
+
+                            // read data
+                            let state = pixel_states[y * width + x];
+                            let color = colour_for_state(state);
+                            draw_colored_point(x, y, &color);
+                        }
+                    }
+                });
+                // Trigger redraw events from the main thread
+                window.redraw();
+                app::awake();
+            }
+            Err(_) => {
+                println!("paint_pixel_states(): app::lock() failed");
             }
         }
         app::unlock();
