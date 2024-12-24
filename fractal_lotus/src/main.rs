@@ -1,7 +1,5 @@
 use rusty_fractals::application;
-use rusty_fractals::data_image::DataType::Static;
-use rusty_fractals::fractal::CalculationType::StaticImage;
-use rusty_fractals::fractal::FractalType::NebulaType;
+use rusty_fractals::fractal::FractalCalculationType::StaticImageNebula;
 use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
@@ -21,7 +19,8 @@ impl FractalMath<Mem> for Lotus {
 fn main() {
     let fractal_config = FractalConfig {
         name: "Lotus",
-        fractal_type: NebulaType,
+        fractal_calc_type: StaticImageNebula,
+
         iteration_min: 42,
         iteration_max: 8000,
         resolution_multiplier: Square11,
@@ -32,11 +31,9 @@ fn main() {
         width_x: 1280,
         height_y: 1000,
         width_re: 3.5,
-        center_re: 0.0, //  0.67748277351478,
-        center_im: 0.0, // -1.18770078111202,
+        center_re: 0.67748277351478,
+        center_im: -1.18770078111202,
 
-        calc_type: StaticImage,
-        data_image_type: Static,
         orbits: Finite,
         update_max: 150,
         update_min: 0,

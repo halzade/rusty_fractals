@@ -1,12 +1,10 @@
 use rusty_fractals::application;
-use rusty_fractals::data_image::DataType::Static;
-use rusty_fractals::fractal::CalculationType::StaticImage;
-use rusty_fractals::fractal::FractalType::NebulaType;
+use rusty_fractals::fractal::FractalCalculationType::StaticImageNebula;
 use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::{Single, Square2, Square5};
+use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square5;
 
 pub struct Science;
 
@@ -20,9 +18,11 @@ impl FractalMath<Mem> for Science {
 fn main() {
     let fractal_config = FractalConfig {
         name: "Science",
-        fractal_type: NebulaType,
+        fractal_calc_type: StaticImageNebula,
+        orbits: Finite,
+
         iteration_min: 42,
-        iteration_max: 800,
+        iteration_max: 1800,
         resolution_multiplier: Square5,
 
         palette: BlueToWhiteCircleUp,
@@ -34,12 +34,6 @@ fn main() {
         center_re: -0.5,
         center_im: 0.0,
 
-        calc_type: StaticImage,
-        data_image_type: Static,
-        // calc_type: StaticImage,
-        // data_image_type: Dynamic,
-
-        orbits: Finite,
         update_max: 150,
         update_min: 0,
     };

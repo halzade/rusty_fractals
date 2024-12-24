@@ -1,7 +1,5 @@
 use rusty_fractals::application;
-use rusty_fractals::data_image::DataType::Dynamic;
-use rusty_fractals::fractal::CalculationType::InfiniteVideoZoom;
-use rusty_fractals::fractal::FractalType::NebulaType;
+use rusty_fractals::fractal::FractalCalculationType::DynamicSequenceNebula;
 use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
@@ -20,9 +18,10 @@ impl FractalMath<Mem> for NebulaSide {
 fn main() {
     let fractal_config = FractalConfig {
         name: "Nebula Side",
+        fractal_calc_type: DynamicSequenceNebula,
+
         iteration_min: 42,
         iteration_max: 14800,
-        fractal_type: NebulaType,
         resolution_multiplier: Square2,
 
         palette: BlueToWhiteCircleUp,
@@ -34,8 +33,6 @@ fn main() {
         center_re: -0.10675625916322415,
         center_im: -0.8914368889277283,
 
-        calc_type: InfiniteVideoZoom,
-        data_image_type: Dynamic,
         orbits: Finite,
         update_max: 150,
         update_min: 0,

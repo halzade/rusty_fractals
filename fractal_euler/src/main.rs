@@ -4,9 +4,7 @@ mod pixel;
 
 use crate::mem_euler::MemEuler;
 use rusty_fractals::application;
-use rusty_fractals::data_image::DataType::Static;
-use rusty_fractals::fractal::CalculationType::StaticImage;
-use rusty_fractals::fractal::FractalType::NebulaEulerType;
+use rusty_fractals::fractal::FractalCalculationType::StaticSpectralImageEuler;
 use rusty_fractals::fractal::OrbitType::Infinite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
@@ -27,9 +25,10 @@ impl FractalMath<MemEuler> for Euler {
 fn main() {
     let fractal_config = FractalConfig {
         name: "Euler",
+        fractal_calc_type: StaticSpectralImageEuler,
+
         iteration_min: 42,
         iteration_max: 80000,
-        fractal_type: NebulaEulerType,
         resolution_multiplier: Single,
         palette: BlueToWhiteCircleUp, // TODO PALETTE_3_RGB
         palette_zero: Nothing,
@@ -42,9 +41,7 @@ fn main() {
         center_im: 0.0,
 
         // calculation config
-        calc_type: StaticImage,
-        data_image_type: Static,
-        orbits: Infinite, // ?
+        orbits: Infinite, // TODO probably not
         update_max: 150,
         update_min: 0,
     };

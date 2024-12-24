@@ -1,7 +1,5 @@
 use rusty_fractals::application;
-use rusty_fractals::data_image::DataType::Static;
-use rusty_fractals::fractal::CalculationType::StaticImage;
-use rusty_fractals::fractal::FractalType::NebulaType;
+use rusty_fractals::fractal::FractalCalculationType::StaticImageNebula;
 use rusty_fractals::fractal::OrbitType::Infinite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
@@ -22,9 +20,10 @@ impl FractalMath<Mem> for FatStarMagnific {
 fn main() {
     let fractal_config = FractalConfig {
         name: "Fat Star",
+        fractal_calc_type: StaticImageNebula,
+
         iteration_min: 8,
         iteration_max: 81000,
-        fractal_type: NebulaType,
         resolution_multiplier: Single,
         palette: BlueToWhiteCircleUp,
 
@@ -35,8 +34,6 @@ fn main() {
         center_re: 0.5425,
         center_im: -0.31,
 
-        calc_type: StaticImage,
-        data_image_type: Static,
         orbits: Infinite,
         update_max: 150,
         update_min: 0,

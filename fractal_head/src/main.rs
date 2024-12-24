@@ -1,8 +1,6 @@
 use rusty_fractals::application;
 use rusty_fractals::constants::{PHOENIX_INIT_C, PHOENIX_INIT_P};
-use rusty_fractals::data_image::DataType::Static;
-use rusty_fractals::fractal::CalculationType::StaticImage;
-use rusty_fractals::fractal::FractalType::NebulaType;
+use rusty_fractals::fractal::FractalCalculationType::StaticImageNebula;
 use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem_phoenix::MemPhoenix;
@@ -31,7 +29,7 @@ fn main() {
         name: "Head",
         iteration_min: 8,
         iteration_max: 25000,
-        fractal_type: NebulaType,
+        fractal_calc_type: StaticImageNebula,
         resolution_multiplier: Square9,
         palette: BlueToWhiteCircleUp,
 
@@ -42,8 +40,6 @@ fn main() {
         center_re: -0.16884290496519,
         center_im: -0.37573460559804,
 
-        calc_type: StaticImage,
-        data_image_type: Static,
         orbits: Finite,
         update_max: 150,
         update_min: 0,

@@ -1,7 +1,5 @@
 use rusty_fractals::application;
-use rusty_fractals::data_image::DataType::{Dynamic, Static};
-use rusty_fractals::fractal::CalculationType::InfiniteVideoZoom;
-use rusty_fractals::fractal::FractalType::MandelbrotType;
+use rusty_fractals::fractal::FractalCalculationType::StaticSequenceMandelbrot;
 use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
@@ -27,9 +25,10 @@ impl FractalMath<Mem> for Mandelbrot {
 fn main() {
     let fractal_config = FractalConfig {
         name: "Mandelbrot",
-        fractal_type: MandelbrotType,
-        iteration_min: 0,
+        fractal_calc_type: StaticSequenceMandelbrot,
+
         iteration_max: 2500,
+        iteration_min: 0,
         resolution_multiplier: Single,
 
         palette: BlueToWhiteCircleUp,
@@ -41,8 +40,6 @@ fn main() {
         center_re: -0.5,
         center_im: 0.0,
 
-        calc_type: InfiniteVideoZoom,
-        data_image_type: Static,
         orbits: Finite,
         update_max: 150,
         update_min: 0,

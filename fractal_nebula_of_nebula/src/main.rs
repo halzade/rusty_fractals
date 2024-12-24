@@ -1,7 +1,5 @@
 use rusty_fractals::application;
-use rusty_fractals::data_image::DataType::Static;
-use rusty_fractals::fractal::CalculationType::StaticImage;
-use rusty_fractals::fractal::FractalType::NebulaType;
+use rusty_fractals::fractal::FractalCalculationType::StaticImageNebula;
 use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
@@ -35,7 +33,8 @@ impl FractalMath<Mem> for NebulaOfNebula {
 fn main() {
     let fractal_config = FractalConfig {
         name: "Nebula of Nebula",
-        fractal_type: NebulaType,
+        fractal_calc_type: StaticImageNebula,
+
         iteration_min: 42,
         iteration_max: 2480,
         resolution_multiplier: Square3,
@@ -49,8 +48,6 @@ fn main() {
         center_re: 0.0,
         center_im: 0.0,
 
-        calc_type: StaticImage,
-        data_image_type: Static,
         orbits: Finite,
         update_max: 150,
         update_min: 0,

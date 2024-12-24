@@ -1,7 +1,5 @@
 use rusty_fractals::application;
-use rusty_fractals::data_image::DataType::Dynamic;
-use rusty_fractals::fractal::CalculationType::InfiniteVideoZoom;
-use rusty_fractals::fractal::FractalType::MandelbrotType;
+use rusty_fractals::fractal::FractalCalculationType::StaticSequenceMandelbrot;
 use rusty_fractals::fractal::OrbitType::Ignore;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem_collatz::MemCollatz;
@@ -21,9 +19,10 @@ impl FractalMath<MemCollatz> for CollatzConjecture {
 fn main() {
     let fractal_config = FractalConfig {
         name: "Collatz Conjecture",
+        fractal_calc_type: StaticSequenceMandelbrot,
+
         iteration_min: 0,
         iteration_max: 1348,
-        fractal_type: MandelbrotType,
         resolution_multiplier: Single,
         palette: BlueToWhiteCircleUp,
         palette_zero: GrayToBlackCircleDown,
@@ -34,8 +33,6 @@ fn main() {
         center_re: -0.088485445553580480,
         center_im: -0.200679435068532800,
 
-        calc_type: InfiniteVideoZoom,
-        data_image_type: Dynamic,
         orbits: Ignore,
         update_max: 0,
         update_min: 0,
