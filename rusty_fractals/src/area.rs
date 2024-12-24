@@ -198,10 +198,12 @@ impl<'lt> Area {
                 println!("move_target({}, {})", re, im);
                 d.center_re = re;
                 d.center_im = im;
+
                 d.border_low_re = d.center_re - d.width_re / 2.0;
                 d.border_high_re = d.center_re + d.width_re / 2.0 - d.plank;
                 d.border_low_im = d.center_im - d.height_im / 2.0;
                 d.border_high_im = d.center_im + d.height_im / 2.0 - d.plank;
+
                 d.numbers_re.clear();
                 d.numbers_im.clear();
                 // use re, im in the center of each pixel
@@ -344,7 +346,7 @@ mod tests {
         assert_eq!(a, (18, 18));
 
         let b = area.point_to_pixel(-0.5, 0.499999);
-        assert_eq!(b, (0, 20));
+        assert_eq!(b, (0, 19)); // from 0 to 19 is 20 chunks x
     }
 
     #[test]
