@@ -1,5 +1,11 @@
-/* For simplicity Euler Fractal uses only three explicitly defined spectra */
-pub enum Spectra { Red, Green, Blue }
+/**
+*For simplicity Euler Fractal uses only three explicitly defined spectra
+*/
+pub enum Spectra {
+    Red,
+    Green,
+    Blue,
+}
 
 struct PixelsEuler {
     width: u32,
@@ -52,4 +58,3 @@ mod tests {
     #[test]
     fn test_it() {}
 }
-

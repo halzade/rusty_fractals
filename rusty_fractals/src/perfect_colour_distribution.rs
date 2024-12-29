@@ -97,14 +97,14 @@ pub fn perfectly_colour_nebula_values(data: &DataImage, palette: &Palette) {
     }
     assert_eq!(pixels.len(), pi);
     println!("painted:                     {}", pi);
-    // Behold, the colouring is perfect
+    // Behold, the colouring is perfect!
 }
 
 /*
 fn perfectly_colour_euler_values(data: &DataImage, palette3: &Palette3) {
 
-    let width = data.width;
-    let height = data.height;
+    let width = data.width_x;
+    let height = data.height_y;
 
     // Result pixels, order by value
     let mut pixels_red: Vec<Pix> = Vec::new();
@@ -122,9 +122,8 @@ fn perfectly_colour_euler_values(data: &DataImage, palette3: &Palette3) {
     // read screen values
     for y in 0..height {
         for x in 0..width {
-            let r = data.value_at(x, y, red);
-            let g = data.value_at(x, y, green);
-            let b = data.value_at(x, y, blue);
+            let (r, g ,b) = data.value_3_at(x, y);
+            
             if r <= threshold {
                 zero_value_elements_red += 1;
             }
@@ -145,7 +144,7 @@ fn perfectly_colour_euler_values(data: &DataImage, palette3: &Palette3) {
     pixels_green.sort_by(|first, second| first.1.cmp(&second.1));
     pixels_blue.sort_by(|first, second| first.1.cmp(&second.1));
 
-    let all_pixels_total : u32 = width * height;
+    let all_pixels_total : u32 = width as u32 * height as u32;
     let all_pixels_non_zero_red : u32 = all_pixels_total - zero_value_elements_red;
     let all_pixels_non_zero_green : u32 = all_pixels_total - zero_value_elements_green;
     let all_pixels_non_zero_blue : u32 = all_pixels_total - zero_value_elements_blue;
@@ -179,7 +178,7 @@ fn perfectly_colour_euler_values(data: &DataImage, palette3: &Palette3) {
 
     // paint mismatched pixel amount with the least value colour
     for pi_red in 0..(left_red + zero_value_elements_red) {
-        let sp = pixelsRed.get(pi_red);
+        let sp = pixels_red.get(pi_red);
         result_image.put_pixel(sp.x, sp.y, red, 0);
     }
     // colour all remaining pixels, these are order by value

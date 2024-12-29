@@ -26,6 +26,7 @@ pub struct DataImage {
      * static data for image
      */
     pub pixels: Vec<Vec<Mutex<Option<DataPx>>>>,
+//    pub pixels3: Vec<Vec<Mutex<Option<DataPx3>>>>,
     /*
      * dynamic data for zoom video
      * As zoom progress, points [re,im] are projected to new pixels [px,py] until they migrate out of the tiny area.
@@ -171,6 +172,29 @@ impl DataImage {
         }
     }
 
+    // pub fn mo_3_px_at(&self, x: usize, y: usize) -> MutexGuard<Option<DataPx3>> {
+    //     if let Some(row) = self.pixels3.get(x) {
+    //         if let Some(cell) = row.get(y) {
+    //             match cell.lock() {
+    //                 Ok(guard) => guard, // Return the lock if successful
+    //                 Err(_) => {
+    //                     // Poisoned lock
+    //                     println!("Failed to acquire lock for pixel at ({}, {}). The mutex might be poisoned.", x, y);
+    //                     panic!("Failed to acquire lock for pixel at ({}, {}).", x, y);
+    //                 }
+    //             }
+    //         } else {
+    //             // y index out of bounds
+    //             println!("Failed to get pixel at column {} in row {}.", y, x);
+    //             panic!("Pixel column index {} out of bounds.", y);
+    //         }
+    //     } else {
+    //         // x index out of bounds
+    //         println!("Failed to get row {} in pixels.", x);
+    //         panic!("Pixel row index {} out of bounds.", x);
+    //     }
+    // }
+
     fn move_px_to_new_position(&self, x: usize, y: usize, px: DataPx) {
         let mu = self.pixels.get(x).unwrap().get(y).unwrap();
         let lo = mu.lock();
@@ -225,6 +249,12 @@ impl DataImage {
         let p = mo_px.as_mut().unwrap();
         p.value
     }
+
+    // pub fn value_3_at(&self, x: usize, y: usize) -> (u32, u32, u32) {
+    //     let mut mo_px = self.mo_3_px_at(x, y);
+    //     let p = mo_px.as_mut().unwrap();
+    //     p.value3
+    // }
 
     pub fn state_origin_at(&self, x: usize, y: usize) -> (DomainElementState, f64, f64) {
         let mut mo_px = self.mo_px_at(x, y);
