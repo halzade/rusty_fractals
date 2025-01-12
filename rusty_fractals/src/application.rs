@@ -2,15 +2,24 @@ use crate::area::{Area, AreaDataCopy};
 use crate::data_image::{colour_for_state, DataImage};
 use crate::fractal::{FractalConfig, FractalMath, MemType};
 use crate::machine;
+use crate::machine::Machine;
 use crate::pixel_states::{is_active_new, DomainElementState};
 use fltk::app::{event_button, event_coords, event_key};
 use fltk::enums::{Color, Event, Key};
 use fltk::window::DoubleWindow;
 use fltk::{app, draw, prelude::*, window::Window};
 use image::{Pixel, Rgb};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 
-pub struct Application {
+/**
+ * Application owns Machine
+ */
+pub struct Application<F, M>
+where
+    F: FractalMath<M> + 'static,
+    M: MemType<M> + 'static,
+{
     /* DoubleWindow class provides a **double-buffered** window.
     - In double buffering:
     - All drawing operations are first performed in an **off-screen buffer**.
@@ -18,13 +27,21 @@ pub struct Application {
     - This eliminates flickering during redraws, as the user only sees the final, fully-drawn frame.*/
     pub window: Arc<Mutex<DoubleWindow>>, // Shared ownership of the GUI Window
     application_data: Arc<Mutex<ApplicationData>>,
+    pub machine_ref: Arc<Mutex<Option<Machine<'static, F, M>>>>,
+    pub is_shutting_down: Arc<AtomicBool>,
 }
 
 struct ApplicationData {
     pub last_max_value: u32,
 }
 
-fn init(config: &FractalConfig) -> Arc<Mutex<Application>> {
+fn init<'lt, F, M>(
+    config: &FractalConfig,
+) -> Arc<Mutex<Application<F, M>>>
+where
+    F: FractalMath<M> + 'static,
+    M: MemType<M> + 'static,
+{
     let mut window = Window::default();
 
     let width = config.width_x as i32;
@@ -40,6 +57,11 @@ fn init(config: &FractalConfig) -> Arc<Mutex<Application>> {
     Arc::new(Mutex::new(Application {
         window: Arc::new(Mutex::new(window)),
         application_data: Arc::new(Mutex::new(ApplicationData { last_max_value: 0 })),
+
+        // will referenced Machine later, when created by owning thread.
+        machine_ref: Arc::new(Mutex::new(None)),
+
+        is_shutting_down: Arc::new(Default::default()),
     }))
 }
 
@@ -49,25 +71,30 @@ fn init(config: &FractalConfig) -> Arc<Mutex<Application>> {
 pub fn execute<F, M>(config: FractalConfig, fractal: F)
 where
     F: FractalMath<M> + 'static,
-    M: MemType<M>,
+    M: MemType<M> + 'static,
 {
     println!("application.execute()");
 
     let app = app::App::default();
     let application_arc = init(&config);
 
-    println!("show()");
+    let machine = machine::init(&config, fractal);
+    
+    let machine_arc = Arc::new(Mutex::new(machine));
+
+    
+    // Application ref
+    machine_arc.lock().unwrap().set_application_ref(application_arc.clone());
+    
+    // Window actions
     application_arc.lock().unwrap().init_window_actions();
 
     println!("calculation - new thread ");
     let task = move || {
-        // clone arc, not application
-        let mut machine = machine::init(&config, fractal);
-        machine.set_application_ref(application_arc.clone());
         /*
          * execute fractal calculation
          */
-        machine.execute_calculation();
+        machine_arc.lock().unwrap().execute_calculation();
     };
     rayon::spawn_fifo(task);
 
@@ -81,9 +108,18 @@ where
 /**
  * Use static calls to communicate between app and Machine
  */
-impl Application {
-    pub fn init_window_actions(&mut self) {
+impl<F, M> Application<F,M>
+where
+    F: FractalMath<M> + 'static,
+    M: MemType<M> + 'static,
+{
+    pub fn init_window_actions(&self) {
         println!("init_window_actions()");
+
+        let shutdown_flag = self.is_shutting_down.clone();
+
+        // clone Arc, not Machine
+        let machine_ref = self.machine_ref.clone();
 
         self.window
             .lock()
@@ -94,7 +130,8 @@ impl Application {
                     match ek {
                         Key::Escape => {
                             println!("exit");
-                            // TODO self.app.quit(); // `self` is still directly referenced here
+                            shutdown_flag.store(true, Ordering::Relaxed); // Signal shutdown
+                            app::awake(); // Wake the app so it can break the event loop
                         }
                         _ => {}
                     }
@@ -109,8 +146,7 @@ impl Application {
                         }
                         ' ' => {
                             println!("space bar");
-                            // TODO probably not the right method
-                            // TODO self.machine.zoom_in_recalculate_pixel_positions();
+                            machine_ref.lock().unwrap().as_mut().unwrap().zoom_in_recalculate_pixel_positions();
                             true
                         }
                         _ => false,
@@ -122,6 +158,7 @@ impl Application {
                     if left {
                         let (x, y) = event_coords();
                         println!("c: {} {}", x, y);
+                        // TODO
                         //self.machine.move_target(x as usize, y as usize);
                         //self.machine.zoom_in_recalculate_pixel_positions();
                     }

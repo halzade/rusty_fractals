@@ -33,11 +33,12 @@ use FractalCalculationType::{
 
 /**
  * Machine owns all data
+ * Machine is owned by Application
  */
 pub struct Machine<'lt, F, M>
 where
-    F: FractalMath<M>,
-    M: MemType<M>,
+    F: FractalMath<M> + 'static,
+    M: MemType<M> + 'static,
 {
     /*
      * Fractal related values
@@ -71,7 +72,7 @@ where
     /*
      * Application related values
      */
-    pub app_ref: Option<Arc<Mutex<Application>>>,
+    pub app_ref: Option<Arc<Mutex<Application<F, M>>>>,
     /*
      * Machine (Self) related values
      */
@@ -119,6 +120,7 @@ where
 pub fn init_trivial() -> Machine<'static, TrivialFractal, Mem> {
     let conf = init_trivial_static_config();
     let fractal = fractal::init_trivial_fractal();
+
     init(&conf, fractal)
 }
 
@@ -127,7 +129,7 @@ where
     F: FractalMath<M>,
     M: MemType<M>,
 {
-    pub fn set_application_ref(&mut self, app_ref: Arc<Mutex<Application>>) {
+    pub fn set_application_ref(&mut self, app_ref: Arc<Mutex<Application<F, M>>>) {
         self.app_ref = Some(app_ref);
     }
 
