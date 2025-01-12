@@ -1,6 +1,6 @@
+use crate::fractal::MemType;
 use crate::mem::Mem;
 use std::collections::HashSet;
-use crate::fractal::MemType;
 
 pub struct Mathematician {
     pub primes: HashSet<u32>,

@@ -58,10 +58,7 @@ where
     let application = Application {
         window: Arc::new(Mutex::new(window)),
         application_data: Arc::new(Mutex::new(ApplicationData { last_max_value: 0 })),
-
-        // will referenced Machine later, when created by owning thread.
-        machine_arc: machine_arc,
-
+        machine_arc,
         is_shutting_down: Arc::new(Default::default()),
     };
 
