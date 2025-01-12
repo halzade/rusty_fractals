@@ -27,7 +27,7 @@ where
     - This eliminates flickering during redraws, as the user only sees the final, fully-drawn frame.*/
     pub window: Arc<Mutex<DoubleWindow>>, // Shared ownership of the GUI Window
     application_data: Arc<Mutex<ApplicationData>>,
-    pub machine_ref: Arc<Mutex<Option<Machine<'static, F, M>>>>,
+    pub machine_arc: Arc<Mutex<Machine<'static, F, M>>>,
     pub is_shutting_down: Arc<AtomicBool>,
 }
 
@@ -35,9 +35,7 @@ struct ApplicationData {
     pub last_max_value: u32,
 }
 
-fn init<'lt, F, M>(
-    config: &FractalConfig,
-) -> Arc<Mutex<Application<F, M>>>
+fn init<'lt, F, M>(config: &FractalConfig, fractal: F) -> Arc<Mutex<Application<F, M>>>
 where
     F: FractalMath<M> + 'static,
     M: MemType<M> + 'static,
@@ -54,15 +52,31 @@ where
     window.end();
     window.show();
 
-    Arc::new(Mutex::new(Application {
+    let machine = machine::init(&config, fractal);
+    let machine_arc = Arc::new(Mutex::new(machine));
+
+    let application = Application {
         window: Arc::new(Mutex::new(window)),
         application_data: Arc::new(Mutex::new(ApplicationData { last_max_value: 0 })),
 
         // will referenced Machine later, when created by owning thread.
-        machine_ref: Arc::new(Mutex::new(None)),
+        machine_arc: machine_arc,
 
         is_shutting_down: Arc::new(Default::default()),
-    }))
+    };
+
+    let application_arc = Arc::new(Mutex::new(application));
+
+    // Set Application ref for Machine
+    application_arc
+        .lock()
+        .unwrap()
+        .machine_arc
+        .lock()
+        .unwrap()
+        .set_application_ref(application_arc.clone());
+
+    application_arc
 }
 
 /**
@@ -76,25 +90,19 @@ where
     println!("application.execute()");
 
     let app = app::App::default();
-    let application_arc = init(&config);
+    let application_arc = init(&config, fractal);
 
-    let machine = machine::init(&config, fractal);
-    
-    let machine_arc = Arc::new(Mutex::new(machine));
-
-    
-    // Application ref
-    machine_arc.lock().unwrap().set_application_ref(application_arc.clone());
-    
     // Window actions
     application_arc.lock().unwrap().init_window_actions();
+
+    let machine_arc_clone = application_arc.lock().unwrap().machine_arc.clone();
 
     println!("calculation - new thread ");
     let task = move || {
         /*
          * execute fractal calculation
          */
-        machine_arc.lock().unwrap().execute_calculation();
+        machine_arc_clone.lock().unwrap().execute_calculation();
     };
     rayon::spawn_fifo(task);
 
@@ -108,7 +116,7 @@ where
 /**
  * Use static calls to communicate between app and Machine
  */
-impl<F, M> Application<F,M>
+impl<F, M> Application<F, M>
 where
     F: FractalMath<M> + 'static,
     M: MemType<M> + 'static,
@@ -119,7 +127,7 @@ where
         let shutdown_flag = self.is_shutting_down.clone();
 
         // clone Arc, not Machine
-        let machine_ref = self.machine_ref.clone();
+        let machine_ref = self.machine_arc.clone();
 
         self.window
             .lock()
@@ -146,7 +154,10 @@ where
                         }
                         ' ' => {
                             println!("space bar");
-                            machine_ref.lock().unwrap().as_mut().unwrap().zoom_in_recalculate_pixel_positions();
+                            machine_ref
+                                .lock()
+                                .unwrap()
+                                .zoom_in_recalculate_pixel_positions();
                             true
                         }
                         _ => false,
@@ -158,9 +169,16 @@ where
                     if left {
                         let (x, y) = event_coords();
                         println!("c: {} {}", x, y);
-                        // TODO
-                        //self.machine.move_target(x as usize, y as usize);
-                        //self.machine.zoom_in_recalculate_pixel_positions();
+
+                        machine_ref
+                            .lock()
+                            .unwrap()
+                            .move_target(x as usize, y as usize);
+
+                        machine_ref
+                            .lock()
+                            .unwrap()
+                            .zoom_in_recalculate_pixel_positions();
                     }
                     false
                 }
