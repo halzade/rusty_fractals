@@ -24,7 +24,7 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rayon::prelude::*;
 use std::marker::PhantomData;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
 use FractalCalculationType::{
     DynamicSequenceNebula, StaticImageMandelbrot, StaticSequenceMandelbrot,
@@ -72,11 +72,11 @@ where
     /*
      * Application related values
      */
-    pub app_ref: Option<Arc<Mutex<Application<F, M>>>>,
+    pub app_ref: Option<Arc<RwLock<Application<F, M>>>>,
     /*
      * Machine (Self) related values
      */
-    last_partial_refresh: Arc<Mutex<Option<Instant>>>,
+    last_partial_refresh: Arc<RwLock<Option<Instant>>>,
     phantom_m_type: PhantomData<M>, // need to use M so compiler won't complain
 }
 
@@ -112,7 +112,7 @@ where
         // application reference
         app_ref: None,
         // machine values
-        last_partial_refresh: Arc::new(Mutex::new(None)),
+        last_partial_refresh: Arc::new(RwLock::new(None)),
         phantom_m_type: PhantomData::default(),
     }
 }
@@ -129,7 +129,7 @@ where
     F: FractalMath<M>,
     M: MemType<M>,
 {
-    pub fn set_application_ref(&mut self, app_ref: Arc<Mutex<Application<F, M>>>) {
+    pub fn set_application_ref(&mut self, app_ref: Arc<RwLock<Application<F, M>>>) {
         self.app_ref = Some(app_ref);
     }
 
@@ -321,8 +321,8 @@ where
         // Some elements will be moved to new positions
         // For all the moved elements, subsequent calculations will be skipped.
         let area = &self.area;
-        let cre = area.data.lock().unwrap().center_re;
-        let cim = area.data.lock().unwrap().center_im;
+        let cre = area.data.read().unwrap().center_re;
+        let cim = area.data.read().unwrap().center_im;
 
         let (cx, cy) = area.point_to_pixel(cre, cim);
 
@@ -610,7 +610,7 @@ where
             .app_ref
             .as_ref()
             .unwrap()
-            .lock()
+            .read()
             .expect("Failed to lock application reference");
 
         app.paint_final_calculation_result_colors(&self.data_image);
@@ -650,7 +650,7 @@ where
 
         let mut last_called = self
             .last_partial_refresh
-            .lock()
+            .write()
             .expect("Failed to lock last_called");
 
         let now = Instant::now();
@@ -665,7 +665,7 @@ where
                 .app_ref
                 .as_ref()
                 .unwrap()
-                .lock()
+                .read()
                 .expect("Failed to lock application reference");
 
             let path: Option<Vec<[f64; 2]>>;
@@ -692,7 +692,7 @@ where
             .app_ref
             .as_ref()
             .unwrap()
-            .lock()
+            .read()
             .expect("Failed to lock application reference");
 
         app.paint_pixel_states(&self.data_image);

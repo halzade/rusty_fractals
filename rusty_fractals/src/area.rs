@@ -1,12 +1,12 @@
+use std::sync::RwLock;
 use crate::constants::ZOOM;
 use crate::fractal::FractalConfig;
-use std::sync::Mutex;
 
 /**
  * RxR Area on which the Fractal is calculated
  */
 pub struct Area {
-    pub data: Mutex<AreaData>,
+    pub data: RwLock<AreaData>,
 }
 
 /**
@@ -56,7 +56,7 @@ impl AreaDataCopy {
 
 impl<'lt> Area {
     pub fn contains(&self, re: f64, im: f64) -> bool {
-        match self.data.lock() {
+        match self.data.read() {
             Ok(d) => {
                 re > d.border_low_re
                     && re < d.border_high_re
@@ -75,7 +75,7 @@ impl<'lt> Area {
      */
     pub fn screen_to_domain_re_copy(&self) -> Vec<f64> {
         println!("screen_to_domain_re_copy()");
-        match self.data.lock() {
+        match self.data.read() {
             Ok(d) => d.numbers_re.clone(),
             Err(e) => {
                 println!("(): {}", e);
@@ -88,7 +88,7 @@ impl<'lt> Area {
      * Maps pixels [x, y] to their center [re, im]
      */
     pub fn screen_to_domain_im_copy(&self) -> Vec<f64> {
-        match self.data.lock() {
+        match self.data.read() {
             Ok(d) => d.numbers_im.clone(),
             Err(e) => {
                 println!("(): {}", e);
@@ -101,7 +101,7 @@ impl<'lt> Area {
      * Check first, if element can convert, only then call this method
      */
     pub fn point_to_pixel(&self, re: f64, im: f64) -> (usize, usize) {
-        match self.data.lock() {
+        match self.data.read() {
             Ok(d) => {
                 let px = (d.width_xf64 * (re - d.center_re) / d.width_re) + d.width_half_xf64;
                 let py = (d.height_yf64 * (im - d.center_im) / d.height_im) + d.height_half_yf64;
@@ -119,7 +119,7 @@ impl<'lt> Area {
      * element's re, im coordinates can be converted to x,y because they were verified during path calculation
      */
     pub fn copy_data(&self) -> AreaDataCopy {
-        let area = &self.data.lock().unwrap();
+        let area = &self.data.read().unwrap();
         AreaDataCopy {
             center_re: area.center_re,
             center_im: area.center_im,
@@ -134,7 +134,7 @@ impl<'lt> Area {
 
     pub fn zoom_in(&self) {
         println!("zoom_in()");
-        match self.data.lock() {
+        match self.data.write() {
             Ok(mut d) => {
                 d.width_re = d.width_re * ZOOM;
                 d.height_im = d.width_re * ((d.height_y as f64) / (d.width_x as f64));
@@ -173,7 +173,7 @@ impl<'lt> Area {
     // TODO
     pub fn move_to_initial_coordinates(&self, init_target_re: f64, init_target_im: f64) {
         println!("move_to_initial_coordinates()");
-        match self.data.lock() {
+        match self.data.write() {
             Ok(mut d) => {
                 d.center_re = init_target_re;
                 d.center_im = init_target_im;
@@ -185,12 +185,12 @@ impl<'lt> Area {
     }
 
     pub fn plank(&self) -> f64 {
-        self.data.lock().unwrap().plank
+        self.data.read().unwrap().plank
     }
 
     // TODO
     pub fn move_target(&self, x: usize, y: usize) {
-        match self.data.lock() {
+        match self.data.write() {
             Ok(mut d) => {
                 println!("move_target({}, {})", x, y);
                 let re = d.numbers_re[x];
@@ -285,7 +285,7 @@ pub fn init<'lt>(config: &FractalConfig) -> Area {
         plank,
     };
     Area {
-        data: Mutex::new(area_data),
+        data: RwLock::new(area_data),
     }
 }
 
@@ -298,7 +298,7 @@ mod tests {
     fn test_init() {
         let conf = fractal::init_trivial_static_config();
         let area = init(&conf);
-        let data = area.data.lock().unwrap();
+        let data = area.data.read().unwrap();
 
         assert_eq!(data.border_low_re, -0.5);
         assert_eq!(data.border_high_re, 0.5);

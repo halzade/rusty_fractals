@@ -14,7 +14,7 @@ use crate::pixel_states::{
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Square2;
 use image::Rgb;
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, RwLock, RwLockWriteGuard};
 use ResolutionMultiplier::{Single, Square101, Square11, Square3, Square5, Square51, Square9};
 
 pub struct DataImage {
@@ -25,18 +25,17 @@ pub struct DataImage {
     /*
      * static data for image
      */
-    pub pixels: Vec<Vec<Mutex<Option<DataPx>>>>,
-//    pub pixels3: Vec<Vec<Mutex<Option<DataPx3>>>>,
+    pub pixels: Vec<Vec<RwLock<Option<DataPx>>>>,
     /*
      * dynamic data for zoom video
      * As zoom progress, points [re,im] are projected to new pixels [px,py] until they migrate out of the tiny area.
      * Elements outside the tiny result_area are removed. Very short (calculation) paths are also removed.
      * All elements on paths are already inside result_area because they are filtered like that during the calculation.
      */
-    pub paths: Arc<Mutex<Vec<Vec<[f64; 2]>>>>,
+    pub paths: Arc<RwLock<Vec<Vec<[f64; 2]>>>>,
     // show one patch during calculation with pixel wrap
     // only for static image calculation, otherwise just get the longest path
-    pub show_path: Mutex<Vec<[f64; 2]>>,
+    pub show_path: RwLock<Vec<[f64; 2]>>,
 }
 
 impl DataImage {
@@ -53,11 +52,11 @@ impl DataImage {
      * - remember the longest path.
      */
     pub fn remember_show_path_maybe(&self, path: &Vec<[f64; 2]>) {
-        let saved_len = self.show_path.lock().unwrap().len();
+        let saved_len = self.show_path.read().unwrap().len();
         let new_len = path.len();
         if new_len > (saved_len * 2) {
             // save path
-            *self.show_path.lock().unwrap() = path.clone();
+            *self.show_path.write().unwrap() = path.clone();
         }
     }
 
@@ -67,7 +66,7 @@ impl DataImage {
     pub fn the_longest_path_copy(&self) -> Option<Vec<[f64; 2]>> {
         println!("the_longest_path_copy()");
 
-        let paths_lock = self.paths.lock().unwrap();
+        let paths_lock = self.paths.read().unwrap();
         paths_lock.iter().max_by_key(|v| v.len()).cloned()
     }
 
@@ -77,9 +76,9 @@ impl DataImage {
     pub fn a_saved_path(&self) -> Option<Vec<[f64; 2]>> {
         println!("a_saved_path");
 
-        let ret = Some(self.show_path.lock().unwrap().clone());
+        let ret = Some(self.show_path.read().unwrap().clone());
 
-        *self.show_path.lock().unwrap() = Vec::new();
+        *self.show_path.write().unwrap() = Vec::new();
 
         ret
     }
@@ -93,7 +92,7 @@ impl DataImage {
 
     pub fn translate_all_paths_to_point_grid(&self, area: &Area) {
         println!("translate_all_paths_to_point_grid()");
-        let all = self.paths.lock().unwrap().to_owned();
+        let all = self.paths.read().unwrap().to_owned();
         for path in all {
             for [re, im] in path {
                 let (x, y) = area.point_to_pixel(re, im);
@@ -107,18 +106,18 @@ impl DataImage {
      * verify path length before saving
      */
     pub fn save_path(&self, path: Vec<[f64; 2]>) {
-        self.paths.lock().unwrap().push(path);
+        self.paths.write().unwrap().push(path);
     }
 
     pub fn remove_elements_outside(&self, area: &Area) {
         println!("remove_elements_outside()");
         // all paths
-        let all = self.paths.lock().unwrap().to_owned();
+        let all = self.paths.read().unwrap().to_owned();
 
         // remove elements outside Area
         for i in 0..all.len() {
             self.paths
-                .lock()
+                .write()
                 .unwrap()
                 .get_mut(i)
                 .unwrap()
@@ -127,7 +126,7 @@ impl DataImage {
 
         // remove short paths
         self.paths
-            .lock()
+            .write()
             .unwrap()
             .retain(|path| path.len() as u32 > MINIMUM_PATH_LENGTH);
     }
@@ -149,14 +148,14 @@ impl DataImage {
     }
 
     // TODO this method should be private
-    pub fn mo_px_at(&self, x: usize, y: usize) -> MutexGuard<Option<DataPx>> {
+    pub fn mo_px_at(&self, x: usize, y: usize) -> RwLockWriteGuard<Option<DataPx>> {
         if let Some(row) = self.pixels.get(x) {
             if let Some(cell) = row.get(y) {
-                match cell.lock() {
+                match cell.write() {
                     Ok(guard) => guard, // Return the lock if successful
                     Err(_) => {
                         // Poisoned lock
-                        println!("Failed to acquire lock for pixel at ({}, {}). The mutex might be poisoned.", x, y);
+                        println!("Failed to acquire lock for pixel at ({}, {}). The RwLock might be poisoned.", x, y);
                         panic!("Failed to acquire lock for pixel at ({}, {}).", x, y);
                     }
                 }
@@ -172,14 +171,14 @@ impl DataImage {
         }
     }
 
-    // pub fn mo_3_px_at(&self, x: usize, y: usize) -> MutexGuard<Option<DataPx3>> {
+    // pub fn mo_3_px_at(&self, x: usize, y: usize) -> RwLockWriteGuard<Option<DataPx3>> {
     //     if let Some(row) = self.pixels3.get(x) {
     //         if let Some(cell) = row.get(y) {
     //             match cell.lock() {
     //                 Ok(guard) => guard, // Return the lock if successful
     //                 Err(_) => {
     //                     // Poisoned lock
-    //                     println!("Failed to acquire lock for pixel at ({}, {}). The mutex might be poisoned.", x, y);
+    //                     println!("Failed to acquire lock for pixel at ({}, {}). The RwLock might be poisoned.", x, y);
     //                     panic!("Failed to acquire lock for pixel at ({}, {}).", x, y);
     //                 }
     //             }
@@ -197,7 +196,7 @@ impl DataImage {
 
     fn move_px_to_new_position(&self, x: usize, y: usize, px: DataPx) {
         let mu = self.pixels.get(x).unwrap().get(y).unwrap();
-        let lo = mu.lock();
+        let lo = mu.write();
         match lo {
             Ok(mut op) => {
                 op.replace(px);
@@ -463,25 +462,25 @@ impl DataImage {
 }
 
 pub fn init(conf: &FractalConfig, area: &Area) -> DataImage {
-    let wx = area.data.lock().unwrap().width_x;
-    let hy = area.data.lock().unwrap().height_y;
+    let wx = area.data.read().unwrap().width_x;
+    let hy = area.data.read().unwrap().height_y;
     DataImage {
         width_x: wx,
         height_y: hy,
         is_dynamic: conf.is_dynamic(),
         is_mandelbrot: conf.is_mandelbrot(),
         pixels: init_domain(area),
-        paths: Arc::new(Mutex::new(Vec::new())),
-        show_path: Mutex::new(vec![]),
+        paths: Arc::new(RwLock::new(Vec::new())),
+        show_path: RwLock::new(vec![]),
     }
 }
 
-fn init_domain(area: &Area) -> Vec<Vec<Mutex<Option<DataPx>>>> {
+fn init_domain(area: &Area) -> Vec<Vec<RwLock<Option<DataPx>>>> {
     println!("init_domain()");
     let mut vx = Vec::new();
 
-    let wx = area.data.lock().unwrap().width_x;
-    let hy = area.data.lock().unwrap().height_y;
+    let wx = area.data.read().unwrap().width_x;
+    let hy = area.data.read().unwrap().height_y;
 
     let res = area.screen_to_domain_re_copy();
     let ims = area.screen_to_domain_im_copy();
@@ -491,7 +490,7 @@ fn init_domain(area: &Area) -> Vec<Vec<Mutex<Option<DataPx>>>> {
         for y in 0..hy {
             let origin_re = res[x];
             let origin_im = ims[y];
-            vy.push(Mutex::new(Some(data_px::init(origin_re, origin_im))));
+            vy.push(RwLock::new(Some(data_px::init(origin_re, origin_im))));
         }
         vx.push(vy);
     }
@@ -600,7 +599,7 @@ mod tests {
         dynamic.remove_elements_outside(&AREA);
 
         // get test data
-        let result_all = dynamic.paths.lock().unwrap();
+        let result_all = dynamic.paths.read().unwrap();
         assert_eq!(result_all.len(), 1);
 
         let remaining_path = result_all.get(0).unwrap();

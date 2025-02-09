@@ -10,7 +10,7 @@ use fltk::window::DoubleWindow;
 use fltk::{app, draw, prelude::*, window::Window};
 use image::{Pixel, Rgb};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 
 /**
  * Application owns Machine
@@ -25,9 +25,9 @@ where
     - All drawing operations are first performed in an **off-screen buffer**.
     - Once the drawing is complete, the off-screen buffer is copied (or "flipped") onto the screen in a single operation.
     - This eliminates flickering during redraws, as the user only sees the final, fully-drawn frame.*/
-    pub window: Arc<Mutex<DoubleWindow>>, // Shared ownership of the GUI Window
-    application_data: Arc<Mutex<ApplicationData>>,
-    pub machine_arc: Arc<Mutex<Machine<'static, F, M>>>,
+    pub window: Arc<RwLock<DoubleWindow>>, // Shared ownership of the GUI Window
+    application_data: Arc<RwLock<ApplicationData>>,
+    pub machine_arc: Arc<RwLock<Machine<'static, F, M>>>,
     pub is_shutting_down: Arc<AtomicBool>,
 }
 
@@ -35,7 +35,7 @@ struct ApplicationData {
     pub last_max_value: u32,
 }
 
-fn init<'lt, F, M>(config: &FractalConfig, fractal: F) -> Arc<Mutex<Application<F, M>>>
+fn init<'lt, F, M>(config: &FractalConfig, fractal: F) -> Arc<RwLock<Application<F, M>>>
 where
     F: FractalMath<M> + 'static,
     M: MemType<M> + 'static,
@@ -53,23 +53,23 @@ where
     window.show();
 
     let machine = machine::init(&config, fractal);
-    let machine_arc = Arc::new(Mutex::new(machine));
+    let machine_arc = Arc::new(RwLock::new(machine));
 
     let application = Application {
-        window: Arc::new(Mutex::new(window)),
-        application_data: Arc::new(Mutex::new(ApplicationData { last_max_value: 0 })),
+        window: Arc::new(RwLock::new(window)),
+        application_data: Arc::new(RwLock::new(ApplicationData { last_max_value: 0 })),
         machine_arc,
         is_shutting_down: Arc::new(Default::default()),
     };
 
-    let application_arc = Arc::new(Mutex::new(application));
+    let application_arc = Arc::new(RwLock::new(application));
 
     // Set Application ref for Machine
     application_arc
-        .lock()
+        .write()
         .unwrap()
         .machine_arc
-        .lock()
+        .write()
         .unwrap()
         .set_application_ref(application_arc.clone());
 
@@ -90,16 +90,16 @@ where
     let application_arc = init(&config, fractal);
 
     // Window actions
-    application_arc.lock().unwrap().init_window_actions();
+    application_arc.read().unwrap().init_window_actions();
 
-    let machine_arc_clone = application_arc.lock().unwrap().machine_arc.clone();
+    let machine_arc_clone = application_arc.read().unwrap().machine_arc.clone();
 
     println!("calculation - new thread ");
     let task = move || {
         /*
          * execute fractal calculation
          */
-        machine_arc_clone.lock().unwrap().execute_calculation();
+        machine_arc_clone.read().unwrap().execute_calculation();
     };
     rayon::spawn_fifo(task);
 
@@ -127,7 +127,7 @@ where
         let machine_ref = self.machine_arc.clone();
 
         self.window
-            .lock()
+            .write()
             .unwrap()
             .handle(move |_, event| match event {
                 Event::KeyDown => {
@@ -152,7 +152,7 @@ where
                         ' ' => {
                             println!("space bar");
                             machine_ref
-                                .lock()
+                                .read()
                                 .unwrap()
                                 .zoom_in_recalculate_pixel_positions();
                             true
@@ -168,12 +168,12 @@ where
                         println!("c: {} {}", x, y);
 
                         machine_ref
-                            .lock()
+                            .read()
                             .unwrap()
                             .move_target(x as usize, y as usize);
 
                         machine_ref
-                            .lock()
+                            .read()
                             .unwrap()
                             .zoom_in_recalculate_pixel_positions();
                     }
@@ -201,7 +201,7 @@ where
                     .flat_map(|y| (0..width).map(move |x| data_image.colour_at(x, y)))
                     .collect();
 
-                let mut window = self.window.lock().unwrap();
+                let mut window = self.window.write().unwrap();
                 window.draw(move |_| {
                     // never use self in here
                     // locking / unlocking app for draw is not necessary, says so AI
@@ -273,7 +273,7 @@ where
                 // clone Arc
                 let app_data = self.application_data.clone();
 
-                let mut window = self.window.lock().unwrap();
+                let mut window = self.window.write().unwrap();
 
                 window.draw(move |_| {
                     /* --------------------------------------------------------------------------------
@@ -298,9 +298,9 @@ where
                                         color = ci;
                                     }
                                     None => {
-                                        let mv = app_data.lock().unwrap().last_max_value;
+                                        let mv = app_data.read().unwrap().last_max_value;
                                         if value > mv {
-                                            app_data.lock().unwrap().last_max_value = value;
+                                            app_data.write().unwrap().last_max_value = value;
                                         }
                                         // make color 3x brighter
                                         // (0-1) * 255
@@ -352,7 +352,7 @@ where
                     .flat_map(|y| (0..width).map(move |x| data_image.state_at(x, y)))
                     .collect();
 
-                let mut window = self.window.lock().unwrap();
+                let mut window = self.window.write().unwrap();
 
                 window.draw(move |_| {
                     /* --------------------------------------------------------------------------------

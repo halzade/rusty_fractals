@@ -1,16 +1,14 @@
 use crate::constants::TAKE_MEASURES_AT_FRAME;
 use crate::data_image::DataImage;
-use std::sync::Mutex;
+use std::sync::RwLock;
 
 pub struct Stats {
-    data: Mutex<StatsData>,
+    data: RwLock<StatsData>,
 }
 
 impl Stats {
     pub fn paths_new_points_amount_add(&self, path_length: usize) {
-        let data = &mut self.data.lock().unwrap();
-
-        data.paths_new_points_amount += path_length as u32;
+        self.data.write().unwrap().paths_new_points_amount += path_length as u32;
     }
 }
 
@@ -50,7 +48,7 @@ pub struct StatsData {
 impl Stats {
     #[rustfmt::skip]
     fn remember_this(&self, data_image: &DataImage) {
-        let data = &mut self.data.lock().unwrap();
+        let data = &mut self.data.write().unwrap();
 
         println!("new_elements_long  {}", data.new_elements_long);
         println!("pixels_value_total {}", data.pixels_value_total);
@@ -86,7 +84,7 @@ impl Stats {
 
         /* Subsequent comparison */
         if it > TAKE_MEASURES_AT_FRAME {
-            let data = &mut self.data.lock().unwrap();
+            let data = &mut self.data.write().unwrap();
 
             // Total value
             data.not_enough_pixels_total_value = false;
@@ -150,7 +148,7 @@ impl Stats {
     }
 
     pub fn clean(&mut self) {
-        let data = &mut self.data.lock().unwrap();
+        let data = &mut self.data.write().unwrap();
 
         data.new_elements_too_long = 0;
         data.new_elements_too_short = 0;
@@ -162,7 +160,7 @@ impl Stats {
     }
 
     pub fn print(&self) {
-        let data = &mut self.data.lock().unwrap();
+        let data = &mut self.data.read().unwrap();
 
         println!("new_elements_too_long   {}", data.new_elements_too_long);
         println!("new_elements_too_short  {}", data.new_elements_too_short);
@@ -176,7 +174,7 @@ impl Stats {
 
 pub fn init() -> Stats {
     Stats {
-        data: Mutex::new(StatsData {
+        data: RwLock::new(StatsData {
             new_elements_too_long: 0,
             new_elements_too_short: 0,
             new_elements_long: 0,
