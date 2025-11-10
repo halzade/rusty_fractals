@@ -11,10 +11,10 @@ fractal_head                     -
 fractal_infinity                 -  
 fractal_infinity_top             -  
 fractal_lotus                    -  
-fractal_mandelbrot               -  
+**fractal_mandelbrot             - done**  
 fractal_mandelbrot_of_mandelbrot -  
 fractal_nebula                   -  
 fractal_nebula_of_nebula         -  
-fractal_nebula_perfection        - WIP  
+fractal_nebula_perfection        - WIP, rename  
 fractal_nebula_side              -  
 fractal_nebula_top               -  

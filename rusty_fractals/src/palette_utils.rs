@@ -153,7 +153,7 @@ fn function_result(d: f64, function: &Function) -> f64 {
         Function::Quadratic => d * d,
         Function::Exp => d.exp() - 1.0,
         Function::Exp2 => (d * d).exp() - 1.0,
-        Function::CircleDown => (1.0 - (d * d)).sqrt(),
+        Function::CircleDown => (1.0 - (d * d)).sqrt(), // TODO not ok
         Function::CircleUp => 1.0 - (1.0 - (d * d)).sqrt(),
     }
 }

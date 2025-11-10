@@ -3,7 +3,7 @@ use rusty_fractals::fractal::FractalCalculationType::StaticImageMandelbrot;
 use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
-use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, GrayToBlackCircleDown};
+use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, LinearGold};
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
 
 /**
@@ -32,7 +32,7 @@ fn main() {
         resolution_multiplier: Single,
 
         palette: BlueToWhiteCircleUp,
-        palette_zero: GrayToBlackCircleDown,
+        palette_zero: LinearGold,
 
         width_x: 1280,
         height_y: 720,
