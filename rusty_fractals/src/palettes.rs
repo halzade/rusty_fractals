@@ -1,7 +1,7 @@
 use crate::palette::Palette;
 use crate::palette::Palette3;
 use crate::palette_utils::make_spectrum;
-use crate::palettes::Function::{CircleDown, CircleUp, Exp2, Linear1, Quadratic};
+use crate::palettes::Function::{CircleDown, CircleUp, Exp2, Linear1};
 use image::Rgb;
 
 const WHITE: Rgb<u8> = Rgb([255, 255, 255]);
@@ -33,6 +33,7 @@ pub enum PaletteName {
     GrayToBlackCircleDown,
     PurpleToWhite,
     LinearGold,
+    LinearRed,
 }
 
 pub fn new<'lt>(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Palette {
@@ -53,6 +54,7 @@ pub fn new_palette_by_name<'lt>(palette_name: &PaletteName) -> Palette {
         PaletteName::GrayToBlackCircleDown => palette_gray_to_black_circle_down(),
         PaletteName::PurpleToWhite => palette_purple_to_white(),
         PaletteName::LinearGold => palette_linear_gold(),
+        PaletteName::LinearRed => palette_linear_red(),
         PaletteName::Nothing => init_trivial(),
     }
 }
@@ -102,6 +104,10 @@ pub fn palette_purple_to_white<'lt>() -> Palette {
 
 pub fn palette_linear_gold<'lt>() -> Palette {
     new(Linear1, Rgb([4, 13, 33]), GOLD)
+}
+
+pub fn palette_linear_red<'lt>() -> Palette {
+    new(Linear1, BLACK, RED)
 }
 
 pub fn init_trivial<'lt>() -> Palette {

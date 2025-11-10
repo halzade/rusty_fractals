@@ -169,16 +169,20 @@ pub fn init_default() -> Vec<Rgb<u8>> {
 #[cfg(test)]
 mod tests {
     use crate::palette_utils::{function_result, make_spectrum};
-    use crate::palettes::Function::Linear1;
+    use crate::palettes::Function::{CircleDown, CircleUp, Linear1};
     use image::{Pixel, Rgb};
 
     #[test]
     fn test_function_result() {
-        let f = Linear1;
-        assert_eq!(function_result(0.0, &f), 0.0);
-        assert_eq!(function_result(0.1, &f), 0.1);
-        assert_eq!(function_result(0.5, &f), 0.5);
-        assert_eq!(function_result(1.0, &f), 1.0);
+        assert_eq!(function_result(0.0, &Linear1), 0.0);
+        assert_eq!(function_result(0.5, &Linear1), 0.5);
+        assert_eq!(function_result(1.0, &Linear1), 1.0);
+
+        assert_eq!(function_result(0.0, &CircleUp), 0.0);
+        assert_eq!(function_result(1.0, &CircleUp), 1.0);
+
+        assert_eq!(function_result(0.0, &CircleDown), 1.0);
+        assert_eq!(function_result(1.0, &CircleDown), 0.0);
     }
 
     #[test]
