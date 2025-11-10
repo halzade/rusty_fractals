@@ -181,10 +181,10 @@ impl DataImage {
         &self,
         x: usize,
         y: usize,
-    ) -> (u32, DomainElementState, f64, f64, Option<Rgb<u8>>) {
+    ) -> (u32, DomainElementState, f64, Option<Rgb<u8>>) {
         let mut mo_px = self.mo_px_at(x, y);
         let p = mo_px.as_mut().unwrap();
-        (p.value, p.state, p.quad, p.quid, p.color)
+        (p.value, p.state, p.quad, p.color)
     }
 
     pub fn values3_at(&self, x: usize, y: usize) -> (u32, DomainElementState, Option<Rgb<u8>>) {
@@ -249,7 +249,6 @@ impl DataImage {
         let mut mo_px = self.mo_px_at(x, y);
         let p = mo_px.as_mut().unwrap();
         p.quad = quad;
-        p.quid = 1.0 / quad;
         p.state = state;
         if iterator < 1 {
             p.value = 1;
@@ -265,7 +264,6 @@ impl DataImage {
         let mut mo_px = self.mo_px_at(x, y);
         let p = mo_px.as_mut().unwrap();
         p.quad = 1.0;
-        p.quid = 1.0;
         p.state = state;
     }
 

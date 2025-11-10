@@ -10,11 +10,12 @@ pub struct DataPx {
     pub origin_re: f64,
     pub origin_im: f64,
     pub value: u32,
-    // Element state is decided by calculation result. Alternatively: If all it's neighbours finished too long, it is going to be created as HibernatedBlack and its origin won't seed any calculation path.
+    /* Element state is decided by calculation result.
+     * Alternatively: If all it's neighbours finished too long, it is going to be 
+     * created as HibernatedBlack and its origin won't seed any calculation path.
+     */
     pub state: DomainElementState,
     pub quad: f64,
-    // inverted quadrance
-    pub quid: f64,
     pub color: Option<Rgb<u8>>,
 }
 
@@ -83,33 +84,30 @@ pub fn init(origin_re: f64, origin_im: f64) -> DataPx {
         value: 0,
         state: ActiveNew,
         quad: 0.0,
-        quid: 0.0,
         color: None,
     }
 }
 
 pub fn hibernated_deep_black(re: f64, im: f64) -> DataPx {
-    // TODO copy quad and quid
+    // TODO copy quad
     DataPx {
         origin_re: re,
         origin_im: im,
         value: 0,
         state: HibernatedDeepBlack,
         quad: 1.0,
-        quid: 1.0,
         color: None,
     }
 }
 
 pub fn active_new(re: f64, im: f64) -> DataPx {
-    // todo copy quad and quid
+    // todo copy quad
     DataPx {
         origin_re: re,
         origin_im: im,
         value: 0,
         state: ActiveNew,
         quad: 1.0,
-        quid: 1.0,
         color: None,
     }
 }
@@ -127,7 +125,6 @@ mod tests {
             value: 10,
             state: FinishedSuccessPast,
             quad: 0.0,
-            quid: 0.0,
             color: None,
         };
         let other = DataPx {
@@ -136,7 +133,6 @@ mod tests {
             value: 3,
             state: FinishedSuccessPast,
             quad: 0.0,
-            quid: 0.0,
             color: None,
         };
 

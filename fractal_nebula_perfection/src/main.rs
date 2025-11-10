@@ -1,9 +1,9 @@
 use rusty_fractals::application;
 use rusty_fractals::fractal::FractalCalculationType::StaticImageNebula;
-use rusty_fractals::fractal::OrbitType::Finite;
+use rusty_fractals::fractal::OrbitType::Infinite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
-use rusty_fractals::palettes::PaletteName::{BlackToWhiteCircleUp, BlackWBWB, Nothing};
+use rusty_fractals::palettes::PaletteName::{BlackWBWB, Nothing};
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
 
 pub struct NebulaPerfection {}
@@ -32,7 +32,7 @@ fn main() {
         center_re: -1.25,
         center_im: 0.0,
 
-        orbits: Finite,
+        orbits: Infinite,
         update_max: 150,
         update_min: 0,
     };

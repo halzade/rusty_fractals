@@ -15,7 +15,6 @@ struct Mix {
     value: u32,
     // the black interior of set
     quad: f64,
-    quid: f64,
 }
 
 pub fn perfectly_color_mandelbrot_values(
@@ -36,15 +35,14 @@ pub fn perfectly_color_mandelbrot_values(
 
     for y in 0..height {
         for x in 0..width {
-            let (value, _, quad, quid, _) = data.values5_at(x, y);
+            let (value, _, quad, _) = data.values5_at(x, y);
             if value == 0 {
                 zero_value_elements += 1;
                 pixels_zero.push(Mix {
                     x,
                     y,
                     value,
-                    quad,
-                    quid,
+                    quad
                 });
             } else {
                 pixels.push(Mix {
@@ -52,7 +50,6 @@ pub fn perfectly_color_mandelbrot_values(
                     y,
                     value,
                     quad,
-                    quid,
                 });
             }
         }
@@ -62,7 +59,7 @@ pub fn perfectly_color_mandelbrot_values(
     pixels.sort_by(|first, second| {
         let ordering = first.value.cmp(&second.value);
         if ordering == Equal {
-            return first.quid.total_cmp(&second.quid);
+            return second.quad.total_cmp(&first.quad);
         }
         ordering
     });
