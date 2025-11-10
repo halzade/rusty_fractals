@@ -6,23 +6,17 @@ pub fn now(message: &str) {
     println!("{}: {}", no(), message);
 }
 
-const X: usize = 249;
-const Y: usize = 248;
-
-pub fn only(x: usize, y: usize, message: &str) {
-    if x == X {
-        if y == Y {
-            println!("* {}: {}", no(), message);
-        }
-    }
-}
-
 fn no() -> String {
     Utc::now().format(TIME_FORMAT).to_string()
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::fractal_log::no;
+
     #[test]
-    fn test_it() {}
+    fn test_no() {
+        let n = no();
+        assert_ne!(n.len(), 0);
+    }
 }

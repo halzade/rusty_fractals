@@ -36,10 +36,10 @@ pub struct DataImage {
 }
 
 impl DataImage {
-    pub fn colour(&self, x: usize, y: usize, palette_colour: Rgb<u8>) {
+    pub fn color(&self, x: usize, y: usize, palette_color: Rgb<u8>) {
         let mut mo_px = self.mo_px_at(x, y);
         let p = mo_px.as_mut().unwrap();
-        p.colour = Some(palette_colour);
+        p.color = Some(palette_color);
     }
 
     /**
@@ -183,13 +183,13 @@ impl DataImage {
     ) -> (u32, DomainElementState, f64, f64, Option<Rgb<u8>>) {
         let mut mo_px = self.mo_px_at(x, y);
         let p = mo_px.as_mut().unwrap();
-        (p.value, p.state, p.quad, p.quid, p.colour)
+        (p.value, p.state, p.quad, p.quid, p.color)
     }
 
     pub fn values3_at(&self, x: usize, y: usize) -> (u32, DomainElementState, Option<Rgb<u8>>) {
         let mut mo_px = self.mo_px_at(x, y);
         let p = mo_px.as_mut().unwrap();
-        (p.value, p.state, p.colour)
+        (p.value, p.state, p.color)
     }
 
     pub fn state_at(&self, x: usize, y: usize) -> DomainElementState {
@@ -200,10 +200,10 @@ impl DataImage {
         p.state
     }
 
-    pub fn colour_at(&self, x: usize, y: usize) -> Option<Rgb<u8>> {
+    pub fn color_at(&self, x: usize, y: usize) -> Option<Rgb<u8>> {
         let mut mo_px = self.mo_px_at(x, y);
         let p = mo_px.as_mut().unwrap();
-        p.colour
+        p.color
     }
 
     pub fn value_state_at(&self, x: usize, y: usize) -> (u32, DomainElementState) {
@@ -478,7 +478,7 @@ pub fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
     }
 }
 
-pub fn colour_for_state(state: DomainElementState) -> Rgb<u8> {
+pub fn color_for_state(state: DomainElementState) -> Rgb<u8> {
     match state {
         // most of the elements are going to be FinishedSuccessPast
         ActiveNew => ACTIVE_NEW,
@@ -497,7 +497,7 @@ fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::area;
-    use crate::data_image::init;
+    use crate::data_image::{color_for_state, init};
     use crate::fractal::{init_trivial_dynamic_config, FractalConfig};
     use crate::pixel_states::DomainElementState::ActiveNew;
     use crate::resolution_multiplier::ResolutionMultiplier::{
@@ -505,6 +505,7 @@ mod tests {
     };
 
     use crate::area::Area;
+    use image::Pixel;
     use std::sync::LazyLock;
 
     static CONF: FractalConfig = init_trivial_dynamic_config();
@@ -648,5 +649,11 @@ mod tests {
         let (o_re, o_im) = data.origin_at(0, 0);
         let w = data.wrap(o_re, o_im, Square101, area_plank);
         assert_eq!(w.len(), 10_200);
+    }
+
+    #[test]
+    fn test_color_for_state() {
+        let red = color_for_state(ActiveNew).channels()[0];
+        assert_eq!(red, 40);
     }
 }
