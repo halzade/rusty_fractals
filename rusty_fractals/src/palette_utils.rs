@@ -56,11 +56,13 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
     let rgb255 = 255.0;
 
     let mut spectrum: Vec<Rgb<u8>> = Vec::new();
-    let forward = function_result(0.0, &function) != 1.0;
-    println!("spectrum forward: {}", forward);
 
-    for i in 0..max_dif_abs + 1 {
-        let d: f64 = (i as f64 / max_dif) as f64;
+    // first color
+    spectrum.push(from.clone());
+
+    for i in 1..max_dif_abs {
+        // if from i=0, then d could be -0
+        let d: f64 = i as f64 / max_dif;
         // optimized dif on interval <0, 1>
         // 0 -> 1, like circle up is forward
         // 1 -> 0, like circle down is backwards
@@ -138,31 +140,9 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
         }
     }
 
-    let spec_from;
-    let spec_to;
-    if forward {
-        spec_from = spectrum.get(0).unwrap();
-        spec_to = spectrum.get(spectrum.len() - 1).unwrap();
-    } else {
-        // functions (1 -> 0) like circle down
-        spec_from = spectrum.get(spectrum.len() - 1).unwrap();
-        spec_to = spectrum.get(0).unwrap();
-    }
-    let spec_r_from = spec_from.channels()[0] as u8;
-    let spec_g_from = spec_from.channels()[1] as u8;
-    let spec_b_from = spec_from.channels()[2] as u8;
-    let spec_r_to = spec_to.channels()[0] as u8;
-    let spec_g_to = spec_to.channels()[1] as u8;
-    let spec_b_to = spec_to.channels()[2] as u8;
+    // last color
+    spectrum.push(to.clone());
 
-    // assert spectrum so that the coloring can be perfect
-    assert_eq!(r_from, spec_r_from);
-    assert_eq!(g_from, spec_g_from);
-    assert_eq!(b_from, spec_b_from);
-    assert_eq!(r_to, spec_r_to);
-    assert_eq!(g_to, spec_g_to);
-    assert_eq!(b_to, spec_b_to);
-    println!("color spectrum certified");
     spectrum
 }
 
@@ -192,6 +172,34 @@ pub fn init_default() -> Vec<Rgb<u8>> {
 
 #[cfg(test)]
 mod tests {
+    use crate::palette_utils::{function_result, make_spectrum};
+    use crate::palettes::Function::Linear1;
+    use image::Rgb;
+
     #[test]
-    fn test_it() {}
+    fn test_function_result() {
+        let f = Linear1;
+        assert_eq!(function_result(0.0, &f), 0.0);
+        assert_eq!(function_result(0.1, &f), 0.1);
+        assert_eq!(function_result(0.5, &f), 0.5);
+        assert_eq!(function_result(1.0, &f), 1.0);
+    }
+
+    #[test]
+    fn test_make_spectrum() {
+        let b1: Rgb<u8> = Rgb([0, 0, 0]);
+        let b2: Rgb<u8> = Rgb([2, 2, 2]);
+        // light to dark
+        let res = make_spectrum(Linear1, b1, b2);
+        assert_eq!(res.len(), 3);
+    }
+
+    #[test]
+    fn test_make_spectrum_inv() {
+        let b2: Rgb<u8> = Rgb([2, 2, 2]);
+        let b1: Rgb<u8> = Rgb([0, 0, 0]);
+        // dark to light
+        let res = make_spectrum(Linear1, b2, b1);
+        assert_eq!(res.len(), 3);
+    }
 }

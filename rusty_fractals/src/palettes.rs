@@ -26,6 +26,7 @@ pub enum PaletteName {
     BlackToWhiteExp2,
     BlackToWhiteCircleUp,
     BlackWhiteBlack,
+    BlackWBWB,
     BlueToWhiteCircleUp,
     GrayToBlue,
     GrayToBlackCircleDown,
@@ -44,6 +45,7 @@ pub fn new_palette_by_name<'lt>(palette_name: &PaletteName) -> Palette {
         PaletteName::BlackToWhiteExp2 => palette_black_to_white_exp2(),
         PaletteName::BlackToWhiteCircleUp => palette_black_to_white_circle_up(),
         PaletteName::BlackWhiteBlack => palette_black_white_black(),
+        PaletteName::BlackWBWB => palette_bwbwb(),
         PaletteName::BlueToWhiteCircleUp => palette_blue_to_white_circle_up(),
         PaletteName::GrayToBlue => palette_gray_to_blue(),
         PaletteName::GrayToBlackCircleDown => palette_gray_to_black_circle_down(),
@@ -66,6 +68,16 @@ pub fn palette_black_white_black<'lt>() -> Palette {
     black_to_white_work.append(&mut white_to_black);
     Palette {
         spectrum: black_to_white_work,
+    }
+}
+
+pub fn palette_bwbwb<'lt>() -> Palette {
+    let mut bwbwb_work = make_spectrum(Linear1, BLACK, WHITE);
+    bwbwb_work.append(&mut make_spectrum(Linear1, WHITE, BLACK));
+    bwbwb_work.append(&mut make_spectrum(Linear1, BLACK, WHITE));
+    bwbwb_work.append(&mut make_spectrum(Linear1, WHITE, BLACK));
+    Palette {
+        spectrum: bwbwb_work,
     }
 }
 
