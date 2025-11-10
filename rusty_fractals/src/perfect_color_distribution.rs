@@ -63,7 +63,9 @@ pub fn perfectly_color_mandelbrot_values(
         }
         ordering
     });
-    pixels_zero.sort_by(|first, second| first.quad.total_cmp(&second.quad));
+
+    // inverted order
+    pixels_zero.sort_by(|first, second| second.quad.total_cmp(&first.quad));
 
     let all_pixels_total: u32 = (width * height) as u32;
     let all_pixels_non_zero: u32 = all_pixels_total - zero_value_elements;

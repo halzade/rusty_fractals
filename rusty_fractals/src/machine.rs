@@ -14,6 +14,7 @@ use crate::mem::Mem;
 use crate::palette::Palette;
 use crate::palettes::new_palette_by_name;
 use crate::perfect_color_distribution::perfectly_color_mandelbrot_values;
+use crate::perfect_color_distribution_nebula::perfectly_color_nebula_values;
 use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong, FinishedTooShort};
 use crate::resolution_multiplier::ResolutionMultiplier;
@@ -28,7 +29,6 @@ use FractalCalculationType::{
     DynamicSequenceNebula, StaticImageMandelbrot, StaticSequenceMandelbrot,
     StaticSpectralImageEuler,
 };
-use crate::perfect_color_distribution_nebula::perfectly_color_nebula_values;
 
 /**
  * Machine owns all data
@@ -407,11 +407,7 @@ where
         }
     }
 
-    pub fn calculate_path(
-        &self,
-        origin_re: f64,
-        origin_im: f64
-    ) -> (u32, u32) {
+    pub fn calculate_path(&self, origin_re: f64, origin_im: f64) -> (u32, u32) {
         let cb = CALCULATION_BOUNDARY as f64;
 
         let mut m = M::new(origin_re, origin_im);
