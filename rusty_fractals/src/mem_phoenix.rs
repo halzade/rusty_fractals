@@ -22,10 +22,8 @@ impl MemPhoenix {
     pub fn square(&mut self) {
         self.m.square();
     }
-}
 
-impl MemType<MemPhoenix> for MemPhoenix {
-    fn new(re: f64, im: f64) -> MemPhoenix {
+    pub fn new(re: f64, im: f64) -> MemPhoenix {
         MemPhoenix {
             m: Mem { re, im },
             prev_prev_re: PHOENIX_INITIALIZER,
@@ -33,6 +31,12 @@ impl MemType<MemPhoenix> for MemPhoenix {
             prev_re: PHOENIX_INITIALIZER,
             prev_im: PHOENIX_INITIALIZER,
         }
+    }
+}
+
+impl MemType<MemPhoenix> for MemPhoenix {
+    fn new(re: f64, im: f64) -> MemPhoenix {
+        MemPhoenix::new(re, im)
     }
 
     fn quad(&self) -> f64 {
@@ -50,6 +54,13 @@ impl MemType<MemPhoenix> for MemPhoenix {
 
 #[cfg(test)]
 mod tests {
+    use crate::mem_phoenix::MemPhoenix;
+
     #[test]
-    fn test_it() {}
+    fn test_plus() {
+        let mut mp = MemPhoenix::new(0.02, 0.1);
+        mp.plus(1.1, 1.2);
+        assert_eq!(mp.m.re, 1.12);
+        assert_eq!(mp.m.im, 1.3);
+    }
 }

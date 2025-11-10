@@ -39,6 +39,11 @@ pub fn init_default() -> Palette {
 
 #[cfg(test)]
 mod tests {
+    use crate::palette::init_default;
+
     #[test]
-    fn test_it() {}
+    fn test_init_default() {
+        let p = init_default();
+        assert_eq!(p.spectrum.len(), 3);
+    }
 }
