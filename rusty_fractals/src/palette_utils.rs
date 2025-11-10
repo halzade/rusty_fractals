@@ -18,10 +18,10 @@ fn a(v: i32) -> u8 {
     v.abs() as u8
 }
 
-// Fill colour spectrum with colours between colours:
-// from     : colour for lower values
-// to       : colour for higher values
-// function : defines gradient of colour change
+// Fill color spectrum with colors between colors:
+// from     : color for lower values
+// to       : color for higher values
+// function : defines gradient of color change
 pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<u8>> {
     let r_from = from.channels()[0];
     let g_from = from.channels()[1];
@@ -44,9 +44,9 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
     let max_dif_abs = a(max_dif as i32) as u32;
     println!("max dif: {}", max_dif);
 
-    let r_step: f64 = (r_dif as f64 / max_dif_abs as f64) as f64;
-    let g_step: f64 = (g_dif as f64 / max_dif_abs as f64) as f64;
-    let b_step: f64 = (b_dif as f64 / max_dif_abs as f64) as f64;
+    let r_step: f64 = r_dif as f64 / max_dif_abs as f64;
+    let g_step: f64 = g_dif as f64 / max_dif_abs as f64;
+    let b_step: f64 = b_dif as f64 / max_dif_abs as f64;
     println!("step r: {}", r_step);
     println!("step g: {}", g_step);
     println!("step b: {}", b_step);
@@ -132,7 +132,7 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
             stop = true;
         }
 
-        // Add colours to Palette
+        // Add colo§rs to Palette
         spectrum.push(Rgb([r_new as u8, g_new as u8, b_new as u8]));
         // println!("{} {} {}", r_new as u8, g_new as u8, b_new as u8);
         if stop {
@@ -146,8 +146,8 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
     spectrum
 }
 
-// Calculates how much should colour in smooth colour palette change
-// function : defines gradient of change from colour "from" (d=0) to colour "to" (d=1)
+// Calculates how much should color in smooth color palette change
+// function : defines gradient of change from color "from" (d=0) to color "to" (d=1)
 // d : 0 <= d <= 1
 fn function_result(d: f64, function: &Function) -> f64 {
     match function {

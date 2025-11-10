@@ -13,8 +13,8 @@ use crate::fractal_stats::Stats;
 use crate::mem::Mem;
 use crate::palette::Palette;
 use crate::palettes::new_palette_by_name;
-use crate::perfect_colour_distribution::{
-    perfectly_colour_mandelbrot_values, perfectly_colour_nebula_values,
+use crate::perfect_color_distribution::{
+    perfectly_color_mandelbrot_values, perfectly_color_nebula_values,
 };
 use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong, FinishedTooShort};
@@ -198,7 +198,7 @@ where
                 self.paint_partial_calculation_results_states_with_paths(); // only every 100+ ms
             });
         }
-        perfectly_colour_nebula_values(&self.data_image, &self.palette);
+        perfectly_color_nebula_values(&self.data_image, &self.palette);
 
         self.paint_final_calculation_result_colors();
     }
@@ -244,7 +244,7 @@ where
         self.clear_all_px_data();
         self.translate_all_paths_to_point_grid();
 
-        perfectly_colour_nebula_values(&self.data_image, &self.palette);
+        perfectly_color_nebula_values(&self.data_image, &self.palette);
 
         self.paint_final_calculation_result_colors();
     }
@@ -539,7 +539,7 @@ where
             self.paint_partial_calculation_results_states_maybe();
         });
         self.data_image.recalculate_pixels_states();
-        perfectly_colour_mandelbrot_values(&self.data_image, &self.palette, &self.palette_zero);
+        perfectly_color_mandelbrot_values(&self.data_image, &self.palette, &self.palette_zero);
         self.paint_final_calculation_result_colors();
     }
 

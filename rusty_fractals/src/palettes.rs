@@ -113,6 +113,13 @@ pub fn palette_3_rgb() -> Palette3 {
 
 #[cfg(test)]
 mod tests {
+    use crate::palettes::new;
+    use crate::palettes::Function::Linear1;
+    use image::Rgb;
+
     #[test]
-    fn test_it() {}
+    fn test_new() {
+        let n = new(Linear1, Rgb([100, 100, 100]), Rgb([103, 103, 103]));
+        assert_eq!(n.spectrum.len(), 4);
+    }
 }

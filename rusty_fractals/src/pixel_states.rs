@@ -17,7 +17,7 @@ pub enum DomainElementState {
      * Calculation path Finished with success in previous calculation iteration (zoom).
      * This is updated state from previous state {@link #FinishedSuccess}.
      * If there was a conflict when moving pixels to new location after zoomIn(), use this state.
-     * There won't be any difference in result data, only in mandelbrot pixel state and colour.
+     * There won't be any difference in result data, only in mandelbrot pixel state and color.
      */
     FinishedSuccessPast,
 

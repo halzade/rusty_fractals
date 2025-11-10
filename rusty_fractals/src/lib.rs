@@ -16,7 +16,7 @@ pub mod mem_phoenix;
 pub mod palette;
 pub mod palette_utils;
 pub mod palettes;
-pub mod perfect_colour_distribution;
+pub mod perfect_color_distribution;
 pub mod pixel_states;
 pub mod resolution_multiplier;
 pub mod rusty_tests;

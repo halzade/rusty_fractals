@@ -1,4 +1,4 @@
-use crate::data_image::{colour_for_state, DataImage};
+use crate::data_image::{color_for_state, DataImage};
 use crate::fractal::{FractalConfig, FractalMath, MemType};
 use crate::machine;
 use crate::machine::Machine;
@@ -197,7 +197,7 @@ where
                 let height = data_image.height_y;
 
                 let pixel_colors: Vec<Option<Rgb<u8>>> = (0..height)
-                    .flat_map(|y| (0..width).map(move |x| data_image.colour_at(x, y)))
+                    .flat_map(|y| (0..width).map(move |x| data_image.color_at(x, y)))
                     .collect();
 
                 let mut window = self.window.write().unwrap();
@@ -269,16 +269,16 @@ where
                         for x in 0..width {
 
                             // read data
-                            let (value, state, colour_index_o) = pixel_states[y * width + x];
+                            let (value, state, color_index_o) = pixel_states[y * width + x];
                             let color: Rgb<u8>;
                             if is_active_new(state) {
 
                                 // paint state
-                                color = colour_for_state(state);
+                                color = color_for_state(state);
                             } else {
 
                                 // finished, use color
-                                match colour_index_o {
+                                match color_index_o {
                                     Some(ci) => {
                                         color = ci;
                                     }
@@ -339,7 +339,7 @@ where
 
                             // read data
                             let state = pixel_states[y * width + x];
-                            let color = colour_for_state(state);
+                            let color = color_for_state(state);
                             draw_colored_point(x, y, &color);
                         }
                     }

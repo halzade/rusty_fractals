@@ -15,7 +15,7 @@ pub struct DataPx {
     pub quad: f64,
     // inverted quadrance
     pub quid: f64,
-    pub colour: Option<Rgb<u8>>,
+    pub color: Option<Rgb<u8>>,
 }
 
 impl DataPx {
@@ -71,9 +71,9 @@ impl DataPx {
 //     pub value_b: u32,
 //     // Element state is decided by calculation result. Alternatively: If all it's neighbours finished too long, it is going to be created as HibernatedBlack and its origin won't seed any calculation path.
 //     pub state: DomainElementState,
-//     pub colour_r: Option<Rgb<u8>>,
-//     pub colour_g: Option<Rgb<u8>>,
-//     pub colour_b: Option<Rgb<u8>>,
+//     pub color_r: Option<Rgb<u8>>,
+//     pub color_g: Option<Rgb<u8>>,
+//     pub color_b: Option<Rgb<u8>>,
 // }
 
 pub fn init(origin_re: f64, origin_im: f64) -> DataPx {
@@ -84,7 +84,7 @@ pub fn init(origin_re: f64, origin_im: f64) -> DataPx {
         state: ActiveNew,
         quad: 0.0,
         quid: 0.0,
-        colour: None,
+        color: None,
     }
 }
 
@@ -97,7 +97,7 @@ pub fn hibernated_deep_black(re: f64, im: f64) -> DataPx {
         state: HibernatedDeepBlack,
         quad: 1.0,
         quid: 1.0,
-        colour: None,
+        color: None,
     }
 }
 
@@ -110,7 +110,7 @@ pub fn active_new(re: f64, im: f64) -> DataPx {
         state: ActiveNew,
         quad: 1.0,
         quid: 1.0,
-        colour: None,
+        color: None,
     }
 }
 
@@ -128,7 +128,7 @@ mod tests {
             state: FinishedSuccessPast,
             quad: 0.0,
             quid: 0.0,
-            colour: None,
+            color: None,
         };
         let other = DataPx {
             origin_re: 0.0,
@@ -137,7 +137,7 @@ mod tests {
             state: FinishedSuccessPast,
             quad: 0.0,
             quid: 0.0,
-            colour: None,
+            color: None,
         };
 
         dp.set_average_with(other);

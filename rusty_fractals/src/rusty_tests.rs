@@ -1,19 +1,19 @@
+use crate::data_image::color_for_state;
+use crate::pixel_states::DomainElementState;
+use crate::pixel_states::DomainElementState::{
+    ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
+    HibernatedDeepBlack,
+};
 use fltk::app::{event_key, App};
 use fltk::enums::ColorDepth::Rgb8;
 use fltk::enums::{Event, Key};
 use fltk::image::RgbImage;
 use fltk::{frame::Frame, prelude::*, window::Window};
 use image::{ImageBuffer, Rgb};
-use crate::data_image::colour_for_state;
-use crate::pixel_states::DomainElementState;
-use crate::pixel_states::DomainElementState::{
-    ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
-    HibernatedDeepBlack,
-};
 
 const INT: i32 = 100;
 
-pub fn show_state_colours() {
+pub fn show_state_colors() {
     let width = 600;
     let height = 100;
     let mut image = image::RgbImage::new(width as u32, height as u32);
@@ -62,12 +62,23 @@ fn color_interval(
     state: DomainElementState,
 ) {
     for x in (from * INT)..(to * INT) {
-        image.put_pixel(x as u32, y as u32, colour_for_state(state));
+        image.put_pixel(x as u32, y as u32, color_for_state(state));
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::pixel_states::DomainElementState::ActiveNew;
+    use crate::rusty_tests::color_interval;
+    use image::{ImageBuffer, Pixel, Rgb};
+
     #[test]
-    fn test_it() {}
+    fn test_state_colors() {
+        let mut image: ImageBuffer<Rgb<u8>, Vec<u8>> = ImageBuffer::new(1, 1);
+
+        color_interval(&mut image, 1, 1, 1, ActiveNew);
+        let red = image.get_pixel(0, 0).channels()[0];
+
+        assert_eq!(red, 40);
+    }
 }

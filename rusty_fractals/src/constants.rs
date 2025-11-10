@@ -8,7 +8,7 @@ pub const NEIGHBOURS: u8 = 3;
 pub const PATH: &str = "/Fractals/";
 
 // to remove noise, ignore pixels with this value or less as 0
-pub const COLOURING_THRESHOLD: u32 = 3;
+pub const COLORING_THRESHOLD: u32 = 3;
 
 // Delete paths shorter than this
 // Remembered paths got shorter as some of their elements moved out of displayed Area
@@ -21,7 +21,7 @@ pub const CALCULATION_BOUNDARY: u32 = 4;
 // 0.98 is a good choice for 25fps and moderate speed
 pub const ZOOM: f64 = 0.98;
 
-// take result data snapshot for comparison at well coloured frame
+// take result data snapshot for comparison at well colored frame
 pub const TAKE_MEASURES_AT_FRAME: u32 = 20;
 
 // phoenix fractal constants
