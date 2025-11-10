@@ -1,4 +1,3 @@
-use crate::area::{Area, AreaDataCopy};
 use crate::data_image::{colour_for_state, DataImage};
 use crate::fractal::{FractalConfig, FractalMath, MemType};
 use crate::machine;
@@ -238,9 +237,7 @@ where
      */
     pub fn paint_partial_calculation_result_states(
         &self,
-        data_image: &DataImage,
-        area: &Area,
-        path_op: Option<Vec<[f64; 2]>>,
+        data_image: &DataImage
     ) {
         match app::lock() {
             Ok(_) => {
@@ -257,18 +254,6 @@ where
                         })
                     })
                     .collect();
-
-                // calculation path
-                let area_copy_op: Option<AreaDataCopy>;
-
-                let path: Vec<[f64; 2]>;
-                if path_op == None {
-                    path = Vec::new();
-                    area_copy_op = None;
-                } else {
-                    path = Vec::from(path_op.unwrap());
-                    area_copy_op = Some(area.copy_data());
-                }
 
                 // clone Arc
                 let app_data = self.application_data.clone();
@@ -314,16 +299,6 @@ where
                                 }
                             }
                             draw_colored_point(x, y, &color);
-                        }
-                    }
-
-                    // path may be empty vector and area_copy None
-                    if path.len() > 0 {
-                        draw::set_draw_color(Color::from_rgb(255, 215, 0));
-                        let area_copy = area_copy_op.as_ref().unwrap();
-                        for el in &path {
-                            let (x, y) = area_copy.point_to_pixel(el[0], el[1]);
-                            draw::draw_point(x as i32, y as i32);
                         }
                     }
                 });

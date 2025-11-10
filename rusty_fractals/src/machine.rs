@@ -176,7 +176,7 @@ where
         // calculation for a center of each pixel
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
-            self.chunk_calculation(&xy, false);
+            self.chunk_calculation(&xy);
             // window refresh
             // need to paint full image to show progress from other unfinished chunks
             self.paint_partial_calculation_results_states_maybe();
@@ -192,7 +192,7 @@ where
             // previous calculation completed, calculate more elements
             coordinates_xy.par_iter().for_each(|xy| {
                 // calculation
-                self.chunk_calculation_with_wrap(&xy, true);
+                self.chunk_calculation_with_wrap(&xy);
                 // window refresh
                 // need to paint full image to show progress from other unfinished chunks
                 self.paint_partial_calculation_results_states_with_paths(); // only every 100+ ms
@@ -216,7 +216,7 @@ where
         // calculation for a center of each pixel
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
-            self.chunk_calculation(&xy, false);
+            self.chunk_calculation(&xy);
             // window refresh
             // need to paint full image to show progress from other unfinished chunks
             self.paint_partial_calculation_results_states_maybe();
@@ -232,8 +232,7 @@ where
             // previous calculation completed, calculate more elements
             coordinates_xy.par_iter().for_each(|xy| {
                 // calculation
-                // TODO really true?
-                self.chunk_calculation_with_wrap(&xy, true);
+                self.chunk_calculation_with_wrap(&xy);
                 // window refresh
                 // need to paint full image to show progress from other unfinished chunks
                 self.paint_partial_calculation_results_states_with_paths();
@@ -251,16 +250,16 @@ where
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
-    fn chunk_calculation(&self, xy: &[u32; 2], save_path: bool) {
+    fn chunk_calculation(&self, xy: &[u32; 2]) {
         let (x_from, x_to, y_from, y_to) = self.chunk_boundaries(xy);
         for x in x_from..x_to {
             for y in y_from..y_to {
-                self.calculate_path_xy(x, y, save_path);
+                self.calculate_path_xy(x, y);
             }
         }
     }
 
-    fn chunk_calculation_with_wrap(&self, xy: &[u32; 2], save_path: bool) {
+    fn chunk_calculation_with_wrap(&self, xy: &[u32; 2]) {
         if self.resolution_multiplier == ResolutionMultiplier::Single {
             panic!()
         }
@@ -278,18 +277,18 @@ where
                     );
                     // within the same pixel
                     for [re, im] in wrap {
-                        self.calculate_path(re, im, save_path);
+                        self.calculate_path(re, im);
                     }
                 }
             }
         }
     }
 
-    fn calculate_path_xy(&self, x: usize, y: usize, save_path: bool) {
+    fn calculate_path_xy(&self, x: usize, y: usize) {
         let (state, origin_re, origin_im) = self.data_image.state_origin_at(x, y);
         if pixel_states::is_active_new(state) {
             // calculate
-            let (iterator, path_length) = self.calculate_path(origin_re, origin_im, save_path);
+            let (iterator, path_length) = self.calculate_path(origin_re, origin_im);
 
             let state = self.state_from_path_length(iterator, path_length);
             self.data_image.set_pixel_state(x, y, state);
@@ -412,8 +411,7 @@ where
     pub fn calculate_path(
         &self,
         origin_re: f64,
-        origin_im: f64,
-        save_show_path: bool,
+        origin_im: f64
     ) -> (u32, u32) {
         let cb = CALCULATION_BOUNDARY as f64;
 
@@ -454,10 +452,6 @@ where
             // removed last_iteration, last_visited_re, last_visited_im
 
             self.stats.paths_new_points_amount_add(*&path.len());
-
-            if save_show_path {
-                self.data_image.remember_show_path_maybe(&path);
-            }
 
             // save path only for wrap calculation of static image, when data are static, so I can't just get the longest path
             if self.data_image.is_dynamic() {
@@ -622,28 +616,28 @@ where
     }
 
     pub fn paint_partial_calculation_results_states_with_paths(&self) {
-        self.paint_partial_calculation_results_states(false, true);
+        self.paint_partial_calculation_results_states(false);
     }
 
     /**
      * paint for sure
      */
     pub fn paint_partial_calculation_results_states_now(&self) {
-        self.paint_partial_calculation_results_states(true, false);
+        self.paint_partial_calculation_results_states(true);
     }
 
     /**
      * paint only if enough time passed since the last painting
      */
     pub fn paint_partial_calculation_results_states_maybe(&self) {
-        self.paint_partial_calculation_results_states(false, false);
+        self.paint_partial_calculation_results_states(false);
     }
 
     /**
      * Paint partial results to show pixel states
      * The pixel states, which are finished show color instead
      */
-    pub fn paint_partial_calculation_results_states(&self, paint_now: bool, paint_path: bool) {
+    pub fn paint_partial_calculation_results_states(&self, paint_now: bool) {
         // ms_min have serious impact on parallelization and speed of calculation,
         // don't use less than 100
         let ms_min = 250;
@@ -668,20 +662,7 @@ where
                 .read()
                 .expect("Failed to lock application reference");
 
-            let path: Option<Vec<[f64; 2]>>;
-
-            if self.fractal_calc_type == StaticImageNebula {
-                if paint_path {
-                    // path = self.data_image.the_longest_path_copy()
-                    path = self.data_image.a_saved_path();
-                } else {
-                    path = None;
-                }
-            } else {
-                path = None;
-            }
-
-            app.paint_partial_calculation_result_states(&self.data_image, &self.area, path);
+            app.paint_partial_calculation_result_states(&self.data_image);
         }
 
         *last_called = Some(now);
@@ -777,7 +758,7 @@ mod tests {
         assert_eq!(pixel_states::is_active_new(s), true);
 
         // test result
-        machine.calculate_path_xy(0, 0, false);
+        machine.calculate_path_xy(0, 0);
         let (s, _, _) = machine.data_image.state_origin_at(0, 0);
 
         assert_eq!(pixel_states::is_active_new(s), false);
@@ -805,7 +786,7 @@ mod tests {
         let machine = machine::init_trivial();
 
         // execute test
-        let (iterator, length) = machine.calculate_path(0.7, 0.7, false);
+        let (iterator, length) = machine.calculate_path(0.7, 0.7);
 
         assert_eq!(iterator, 2); // trivial iteration_max = 3
         assert_eq!(length, 0);

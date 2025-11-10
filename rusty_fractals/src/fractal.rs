@@ -71,9 +71,11 @@ pub enum FractalCalculationType {
      * - drop calculation path to px grid immediately
      * - can't read the longest path because of that
      * - static data for image
-     * - dynamic data for zoom sequence
      */
     StaticImageNebula,
+    /**
+     * - dynamic data for zoom sequence
+     */
     DynamicSequenceNebula,
     /**
      * Mandelbrot like fractals

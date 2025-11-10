@@ -33,9 +33,6 @@ pub struct DataImage {
      * All elements on paths are already inside result_area because they are filtered like that during the calculation.
      */
     pub paths: Arc<RwLock<Vec<Vec<[f64; 2]>>>>,
-    // show one patch during calculation with pixel wrap
-    // only for static image calculation, otherwise just get the longest path
-    pub show_path: RwLock<Vec<[f64; 2]>>,
 }
 
 impl DataImage {
@@ -46,21 +43,6 @@ impl DataImage {
     }
 
     /**
-     * for static image calculation, when wrap is going on
-     * save path to show during recalculation of pixel wrap
-     * - can't just get the longest path because paths are dropped to px grid immediately
-     * - remember the longest path.
-     */
-    pub fn remember_show_path_maybe(&self, path: &Vec<[f64; 2]>) {
-        let saved_len = self.show_path.read().unwrap().len();
-        let new_len = path.len();
-        if new_len > (saved_len * 2) {
-            // save path
-            *self.show_path.write().unwrap() = path.clone();
-        }
-    }
-
-    /**
      * retrieve the longest path for dynamic sequence calculation
      */
     pub fn the_longest_path_copy(&self) -> Option<Vec<[f64; 2]>> {
@@ -68,19 +50,6 @@ impl DataImage {
 
         let paths_lock = self.paths.read().unwrap();
         paths_lock.iter().max_by_key(|v| v.len()).cloned()
-    }
-
-    /**
-     * retrieve saved path for static image wrap calculation
-     */
-    pub fn a_saved_path(&self) -> Option<Vec<[f64; 2]>> {
-        println!("a_saved_path");
-
-        let ret = Some(self.show_path.read().unwrap().clone());
-
-        *self.show_path.write().unwrap() = Vec::new();
-
-        ret
     }
 
     pub fn translate_one_path_to_point_grid_now(&self, path: Vec<[f64; 2]>, area: &Area) {
@@ -471,7 +440,6 @@ pub fn init(conf: &FractalConfig, area: &Area) -> DataImage {
         is_mandelbrot: conf.is_mandelbrot(),
         pixels: init_domain(area),
         paths: Arc::new(RwLock::new(Vec::new())),
-        show_path: RwLock::new(vec![]),
     }
 }
 
