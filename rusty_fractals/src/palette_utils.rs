@@ -62,7 +62,7 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
 
     for i in 1..max_dif_abs {
         // if from i=0, then d could be -0
-        let d: f64 = i as f64 / max_dif;
+        let d: f64 = i as f64 / max_dif_abs as f64;
         // optimized dif on interval <0, 1>
         // 0 -> 1, like circle up is forward
         // 1 -> 0, like circle down is backwards
@@ -72,10 +72,6 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
         let mut r_new = r_from as f64 + (value * r_step);
         let mut g_new = g_from as f64 + (value * g_step);
         let mut b_new = b_from as f64 + (value * b_step);
-        if i == 0 {
-            println!("v: {}", v);
-            println!("r_new={} = {} + ({} * {})", r_new, r_from, value, r_step);
-        }
 
         if r_new > rgb255 {
             r_new = rgb255;
@@ -174,7 +170,7 @@ pub fn init_default() -> Vec<Rgb<u8>> {
 mod tests {
     use crate::palette_utils::{function_result, make_spectrum};
     use crate::palettes::Function::Linear1;
-    use image::Rgb;
+    use image::{Pixel, Rgb};
 
     #[test]
     fn test_function_result() {
@@ -191,7 +187,30 @@ mod tests {
         let b2: Rgb<u8> = Rgb([2, 2, 2]);
         // light to dark
         let res = make_spectrum(Linear1, b1, b2);
+
+        let r1 = res.get(0).unwrap().channels()[0];
+        let r2 = res.get(1).unwrap().channels()[0];
+        let r3 = res.get(2).unwrap().channels()[0];
+        assert_eq!(r1, 0);
+        assert_eq!(r2, 1);
+        assert_eq!(r3, 2);
         assert_eq!(res.len(), 3);
+    }
+
+    #[test]
+    fn test_make_spectrum_5() {
+        let b1: Rgb<u8> = Rgb([0, 4, 2]);
+        let b2: Rgb<u8> = Rgb([4, 1, 4]);
+        // light to dark
+        let res = make_spectrum(Linear1, b1, b2);
+
+        let r3 = res.get(2).unwrap().channels()[0];
+        let g3 = res.get(2).unwrap().channels()[1];
+        let b3 = res.get(2).unwrap().channels()[2];
+        assert_eq!(r3, 2);
+        assert_eq!(g3, 2);
+        assert_eq!(b3, 3);
+        assert_eq!(res.len(), 5);
     }
 
     #[test]
@@ -200,6 +219,42 @@ mod tests {
         let b1: Rgb<u8> = Rgb([0, 0, 0]);
         // dark to light
         let res = make_spectrum(Linear1, b2, b1);
+        let r1 = res.get(0).unwrap().channels()[0];
+        let r2 = res.get(1).unwrap().channels()[0];
+        let r3 = res.get(2).unwrap().channels()[0];
+        assert_eq!(r1, 2);
+        assert_eq!(r2, 1);
+        assert_eq!(r3, 0);
         assert_eq!(res.len(), 3);
+    }
+
+    #[test]
+    fn test_make_spectrum_inv_5() {
+        let b2: Rgb<u8> = Rgb([4, 2, 0]);
+        let b1: Rgb<u8> = Rgb([0, 0, 4]);
+        // dark to light
+        let res = make_spectrum(Linear1, b2, b1);
+        let r1 = res.get(0).unwrap().channels()[0];
+        let g1 = res.get(0).unwrap().channels()[1];
+        let b1 = res.get(0).unwrap().channels()[2];
+        assert_eq!(r1, 4);
+        assert_eq!(g1, 2);
+        assert_eq!(b1, 0);
+
+        let r3 = res.get(2).unwrap().channels()[0];
+        let g3 = res.get(2).unwrap().channels()[1];
+        let b3 = res.get(2).unwrap().channels()[2];
+        assert_eq!(r3, 2);
+        assert_eq!(g3, 1);
+        assert_eq!(b3, 2);
+
+        let r5 = res.get(4).unwrap().channels()[0];
+        let g5 = res.get(4).unwrap().channels()[1];
+        let b5 = res.get(4).unwrap().channels()[2];
+        assert_eq!(r5, 0);
+        assert_eq!(g5, 0);
+        assert_eq!(b5, 4);
+
+        assert_eq!(res.len(), 5);
     }
 }
