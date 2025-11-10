@@ -8,6 +8,7 @@ members = [
     "fractal_nebula_top",
     "fractal_nebula_side",
     "fractal_nebula_of_nebula",
+    "fractal_nebula_perfection",
     "fractal_infinity",
     "fractal_infinity_top",
     "fractal_mandelbrot",

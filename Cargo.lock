@@ -434,6 +434,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "fractal_nebula_perfection"
+version = "0.1.0"
+dependencies = [
+ "rusty_fractals",
+]
+
+[[package]]
 name = "fractal_nebula_side"
 version = "0.1.0"
 dependencies = [
