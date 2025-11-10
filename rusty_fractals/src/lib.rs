@@ -19,5 +19,4 @@ pub mod palettes;
 pub mod perfect_color_distribution;
 pub mod pixel_states;
 pub mod resolution_multiplier;
-pub mod rusty_tests;
 pub mod application;
