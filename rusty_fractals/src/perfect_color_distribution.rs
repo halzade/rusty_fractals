@@ -246,17 +246,6 @@ fn perfectly_color_euler_values(data: &DataImage, palette3: &Palette3) {
 }
 */
 
-const NEIGHBOR_COORDINATES: [[i32; 2]; 8] = [
-    [-1, -1],
-    [0, -1],
-    [1, -1],
-    [-1, 0],
-    [1, 0],
-    [-1, 1],
-    [0, 1],
-    [1, 1],
-];
-
 pub fn perfectly_color_mandelbrot_values(
     data: &DataImage,
     palette: &Palette,
@@ -351,20 +340,6 @@ pub fn perfectly_color_mandelbrot_values(
     let pixels_length = pixels.len();
     assert_eq!(pixels.len(), pi);
 
-    // Fix black dots caused by quad inverse imperfection
-    // Keep incorrect quad results
-    for mpp in pixels {
-        let average_color_index = ac_if_black_dot(&mpp, data);
-        if average_color_index != -1 {
-            // let mpp.colorValue(average_color_index);
-            data.color(
-                mpp.x,
-                mpp.y,
-                palette.spectrum_value(average_color_index as usize),
-            );
-        }
-    }
-
     // Paint insides of Mandelbrot set
     let zero_palette_color_count = palette_zero.spectrum.len() as u32;
     let zero_single_color_use =
@@ -399,45 +374,11 @@ pub fn perfectly_color_mandelbrot_values(
     // Behold, the coloring is perfect!
 }
 
-// Return average color of neighbour elements
-fn ac_if_black_dot(mp: &Mix, data: &DataImage) -> i32 {
-    let width = data.width_x;
-    let height = data.height_y;
-    let pv = mp.value;
-    let mut sum = 0;
-    let mut neighbours = 0;
-    for c in NEIGHBOR_COORDINATES {
-        let x = mp.x as i32 + c[0];
-        let y = mp.y as i32 + c[1];
-        if check_domain(x, y, width, height) {
-            let neighbor_value = data.value_at(x as usize, y as usize);
-            if (pv as i32 - neighbor_value as i32).abs() > 2 {
-                // verify only one value difference gradient
-                return -1;
-            }
-            sum += neighbor_value;
-            neighbours += 1;
-        } else {
-            // don't fix elements of edges
-            return -1;
-        }
-    }
-    let cv = mp.value as i32;
-    let average_value = (sum as f64 / neighbours as f64) as i32;
-
-    if cv < average_value - 5 {
-        // darker
-        return average_value;
-    }
-    -1
-}
-
-fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
-    x >= 0 && x < width as i32 && y >= 0 && y < height as i32
-}
-
 #[cfg(test)]
 mod tests {
+
     #[test]
-    fn test_it() {}
+    fn test_perfectly_color_mandelbrot_values() {
+        // TODO
+    }
 }

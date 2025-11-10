@@ -45,6 +45,7 @@ impl DataImage {
     /**
      * retrieve the longest path for dynamic sequence calculation
      */
+    // TODO delete stupid methods
     pub fn the_longest_path_copy(&self) -> Option<Vec<[f64; 2]>> {
         println!("the_longest_path_copy()");
 
@@ -497,7 +498,7 @@ fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::area;
-    use crate::data_image::{color_for_state, init};
+    use crate::data_image::{check_domain, color_for_state, init};
     use crate::fractal::{init_trivial_dynamic_config, FractalConfig};
     use crate::pixel_states::DomainElementState::ActiveNew;
     use crate::resolution_multiplier::ResolutionMultiplier::{
@@ -655,5 +656,15 @@ mod tests {
     fn test_color_for_state() {
         let red = color_for_state(ActiveNew).channels()[0];
         assert_eq!(red, 40);
+    }
+
+    #[test]
+    fn test_check_domain() {
+        assert_eq!(check_domain(0, 0, 0, 0), false);
+        assert_eq!(check_domain(0, 0, 1, 1), true);
+        assert_eq!(check_domain(-1, 0, 1, 1), false);
+        assert_eq!(check_domain(0, -1, 1, 1), false);
+        assert_eq!(check_domain(2, 0, 1, 1), false);
+        assert_eq!(check_domain(0, 2, 1, 1), false);
     }
 }
