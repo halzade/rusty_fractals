@@ -7,7 +7,7 @@ fractal_euler - TODO
 fractal_fat_star -  
 fractal_fat_star_magnific -  
 fractal_fat_star_tentacle -  
-fractal_head -  
+**fractal_head - done**  
 fractal_infinity -  
 fractal_infinity_top -  
 fractal_lotus -  
