@@ -38,8 +38,15 @@ impl MemType<MemCollatz> for MemCollatz {
     fn new(re: f64, im: f64) -> MemCollatz {
         MemCollatz {
             m: Mem { re, im },
-            // it has 1348 steps
+            // 1348 steps
             num: 989_345_275_647,
+
+            // TODO
+            // 1563 steps
+            // num: 7_887_663_552_367,
+
+            // 2456 steps
+            // num: 28_019_077_177_231_758_495,
         }
     }
 

@@ -51,7 +51,7 @@ impl MemEuler {
 
     pub fn euler(&mut self) {
         self.it += 1;
-        if self.math.is_prime(&self.it) {
+        if self.math.is_prime(self.it) {
             self.m.re = 0.01 / self.m.re;
             self.m.im = 0.01 / self.m.im;
         }

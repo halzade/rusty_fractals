@@ -10,10 +10,19 @@ pub struct Mathematician {
 }
 
 impl Mathematician {
+    pub fn new() -> Self {
+        Mathematician {
+            primes: HashSet::new(),
+            fibonacci: HashSet::new(),
+            perfect: HashSet::new(),
+            square: HashSet::new(),
+        }
+    }
+
     /**
      * (t^2 + x^2 - 2at)^2 = 4a^2 (t^2 + x^2)
      */
-    fn is_outside_cardioid(re: f64, im: f64) -> bool {
+    pub fn is_outside_cardioid(re: f64, im: f64) -> bool {
         let a = 0.25;
         let t = re - 0.25;
         let t2 = t * t;
@@ -25,30 +34,30 @@ impl Mathematician {
     /**
      * circle with center at re=-1,im=0 and radius 1/4
      */
-    fn is_outside_circle(re: f64, im: f64) -> bool {
+    pub fn is_outside_circle(re: f64, im: f64) -> bool {
         ((re + 1.0) * (re + 1.0)) + (im * im) > 0.0625
     }
 
-    fn rotate_by(mut m: Mem, t: f64) {
+    pub fn rotate_by(mut m: Mem, t: f64) {
         let temp = (1.0 - t * t) / (1.0 + t * t);
         m.im = (2.0 * t) / (1.0 + t * t);
         m.re = temp;
     }
 
-    pub fn is_prime(&self, n: &u32) -> bool {
-        self.primes.contains(n)
+    pub fn is_prime(&self, n: u32) -> bool {
+        self.primes.contains(&n)
     }
 
-    pub fn is_fibonacci(&self, n: &u32) -> bool {
-        self.fibonacci.contains(n)
+    pub fn is_fibonacci(&self, n: u32) -> bool {
+        self.fibonacci.contains(&n)
     }
 
-    pub fn is_perfect(&self, n: &u32) -> bool {
-        self.perfect.contains(n)
+    pub fn is_perfect(&self, n: u32) -> bool {
+        self.perfect.contains(&n)
     }
 
-    pub fn is_square(&self, n: &u32) -> bool {
-        self.square.contains(n)
+    pub fn is_square(&self, n: u32) -> bool {
+        self.square.contains(&n)
     }
 
     pub fn multiply_by(mut m: Mem, re: f64, im: f64) {
@@ -120,44 +129,69 @@ impl Mathematician {
         m.re = re / d;
         m.im = im / d;
     }
-}
 
-/**
- * Fibonacci
- */
+    /**
+     * Fibonacci
+     */
 
-fn init_fibonacci(max: u32) {
-    println!("init_fibonacci()");
-    let mut fibonacci: HashSet<u32> = HashSet::new();
-    let mut a = 0;
-    let mut b = 1;
-    let mut sum;
-    while b <= max {
-        sum = a + b;
-        fibonacci.insert(sum);
-        a = b;
-        b = sum;
+    pub fn init_fibonacci(&mut self, max: u32) {
+        println!("init_fibonacci()");
+        let mut a = 0;
+        let mut b = 1;
+        let mut sum;
+        while b <= max {
+            sum = a + b;
+            self.fibonacci.insert(sum);
+            a = b;
+            b = sum;
+        }
     }
-}
 
-/**
- * Perfect
- */
+    /**
+     * Perfect
+     */
 
-pub fn init_perfect_numbers(max: u32) {
-    println!("init_perfect_numbers()");
-    let mut perfect: HashSet<u32> = HashSet::new();
-    for i in 0..max {
-        if is_perfect_init(i) {
-            perfect.insert(i);
+    pub fn init_perfect_numbers(&mut self, max: u32) {
+        println!("init_perfect_numbers()");
+        for i in 1..(max + 1) {
+            if is_perfect_init(i) {
+                self.perfect.insert(i);
+            }
+        }
+    }
+
+    /**
+     * Primes
+     */
+
+    pub fn init_primes(&mut self, max: u32) {
+        println!("init_primes()");
+        for i in 1..(max + 1) {
+            if is_prime_init(i) {
+                self.primes.insert(i);
+            }
+        }
+    }
+
+    /**
+     * Squares
+     */
+
+    pub fn init_squares(&mut self, max: u32) {
+        println!("init_squares()");
+        let mut sq;
+        let investigate_to = f64::sqrt(max as f64) as u32 + 1;
+        for i in 0..investigate_to {
+            sq = i * i;
+            self.square.insert(sq);
         }
     }
 }
 
-fn is_perfect_init(num: u32) -> bool {
+pub fn is_perfect_init(num: u32) -> bool {
     let mut temp = 0;
     let max = (num as f64 / 2.0) as u32;
-    for i in 1..max {
+    for i in 1..(max + 1) {
         if num % i == 0 {
             temp += i;
         }
@@ -165,22 +199,10 @@ fn is_perfect_init(num: u32) -> bool {
     temp == num
 }
 
-/**
- * Primes
- */
-
-pub fn init_primes(max: u32) -> HashSet<u32> {
-    println!("init_primes()");
-    let mut primes: HashSet<u32> = HashSet::new();
-    for i in 0..max {
-        if is_prime_init(i) {
-            primes.insert(i);
-        }
-    }
-    primes
-}
-
 fn is_prime_init(n: u32) -> bool {
+    if n == 2 {
+        return true;
+    }
     if n % 2 == 0 {
         return false;
     }
@@ -193,23 +215,56 @@ fn is_prime_init(n: u32) -> bool {
     true
 }
 
-/**
- * Squares
- */
-
-pub fn init_squares(max: u32) {
-    println!("init_squares()");
-    let mut square: HashSet<u32> = HashSet::new();
-    let mut sq;
-    let investigate_to = f64::sqrt(max as f64) as u32 + 1;
-    for i in 0..investigate_to {
-        sq = i * i;
-        square.insert(sq);
-    }
-}
-
 #[cfg(test)]
 mod tests {
+    use crate::mathematician::Mathematician;
+
     #[test]
-    fn test_it() {}
+    fn test_is_outside_cardioid() {
+        assert_eq!(Mathematician::is_outside_cardioid(0.0, 0.0), false);
+        assert_eq!(Mathematician::is_outside_cardioid(2.0, 1.0), true);
+    }
+
+    #[test]
+    fn test_is_outside_circle() {
+        assert_eq!(Mathematician::is_outside_circle(-1.0, 0.0), false);
+        assert_eq!(Mathematician::is_outside_circle(2.0, 1.0), true);
+    }
+
+    #[test]
+    fn test_is_prime() {
+        let mut m: Mathematician = Mathematician::new();
+        m.init_primes(5);
+        assert_eq!(m.is_prime(1), true);
+        assert_eq!(m.is_prime(2), true);
+        assert_eq!(m.is_prime(4), false);
+        assert_eq!(m.is_prime(5), true);
+    }
+
+    #[test]
+    fn test_is_fibonacci() {
+        let mut m: Mathematician = Mathematician::new();
+        m.init_fibonacci(5);
+        assert_eq!(m.is_fibonacci(1), true);
+        assert_eq!(m.is_fibonacci(2), true);
+        assert_eq!(m.is_fibonacci(3), true);
+        assert_eq!(m.is_fibonacci(4), false);
+        assert_eq!(m.is_fibonacci(5), true);
+    }
+
+    #[test]
+    fn test_is_perfect() {
+        let mut m: Mathematician = Mathematician::new();
+        m.init_perfect_numbers(6);
+        assert_eq!(m.is_perfect(5), false);
+        assert_eq!(m.is_perfect(6), true);
+    }
+
+    #[test]
+    fn test_is_square() {
+        let mut m: Mathematician = Mathematician::new();
+        m.init_squares(4);
+        assert_eq!(m.is_square(3), false);
+        assert_eq!(m.is_square(4), true);
+    }
 }
