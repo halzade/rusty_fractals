@@ -3,7 +3,7 @@ use rusty_fractals::fractal::FractalCalculationType::StaticSequenceMandelbrot;
 use rusty_fractals::fractal::OrbitType::Ignore;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem_collatz::MemCollatz;
-use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, GrayToBlackCircleDown};
+use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, LinearGray};
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
 
 pub struct CollatzConjecture {}
@@ -25,7 +25,7 @@ fn main() {
         iteration_max: 1348,
         resolution_multiplier: Single,
         palette: BlueToWhiteCircleUp,
-        palette_zero: GrayToBlackCircleDown,
+        palette_zero: LinearGray,
 
         width_x: 1280,
         height_y: 720,

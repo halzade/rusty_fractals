@@ -24,6 +24,8 @@ pub fn perfectly_color_mandelbrot_values(
 ) {
     println!("perfectly_color_mandelbrot_values()");
 
+    // TODO palette_zero.is_linear(); ?
+
     let width = data.width_x;
     let height = data.height_y;
 

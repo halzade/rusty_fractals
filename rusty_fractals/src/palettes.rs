@@ -1,7 +1,7 @@
 use crate::palette::Palette;
 use crate::palette::Palette3;
 use crate::palette_utils::make_spectrum;
-use crate::palettes::Function::{CircleDown, CircleUp, Exp2, Linear1};
+use crate::palettes::Function::{CircleUp, Exp2, Linear1};
 use image::Rgb;
 
 const WHITE: Rgb<u8> = Rgb([255, 255, 255]);
@@ -29,11 +29,11 @@ pub enum PaletteName {
     BlackWhiteBlack,
     BlackWBWB,
     BlueToWhiteCircleUp,
-    GrayToBlue,
-    GrayToBlackCircleDown,
     PurpleToWhite,
     LinearGold,
     LinearRed,
+    LinearBlue,
+    LinearGray,
 }
 
 pub fn new<'lt>(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Palette {
@@ -50,11 +50,11 @@ pub fn new_palette_by_name<'lt>(palette_name: &PaletteName) -> Palette {
         PaletteName::BlackWhiteBlack => palette_black_white_black(),
         PaletteName::BlackWBWB => palette_bwbwb(),
         PaletteName::BlueToWhiteCircleUp => palette_blue_to_white_circle_up(),
-        PaletteName::GrayToBlue => palette_gray_to_blue(),
-        PaletteName::GrayToBlackCircleDown => palette_gray_to_black_circle_down(),
         PaletteName::PurpleToWhite => palette_purple_to_white(),
         PaletteName::LinearGold => palette_linear_gold(),
         PaletteName::LinearRed => palette_linear_red(),
+        PaletteName::LinearBlue => palette_linear_blue(),
+        PaletteName::LinearGray => palette_linear_gray(),
         PaletteName::Nothing => init_trivial(),
     }
 }
@@ -90,12 +90,12 @@ pub fn palette_blue_to_white_circle_up<'lt>() -> Palette {
     new(CircleUp, Rgb([4, 13, 33]), WHITE)
 }
 
-pub fn palette_gray_to_blue<'lt>() -> Palette {
-    new(CircleDown, Rgb([104, 113, 133]), Rgb([4, 13, 33]))
+pub fn palette_linear_blue<'lt>() -> Palette {
+    new(Linear1, Rgb([104, 113, 133]), Rgb([4, 13, 33]))
 }
 
-pub fn palette_gray_to_black_circle_down<'lt>() -> Palette {
-    new(CircleDown, Rgb([100, 100, 100]), Rgb([0, 0, 0]))
+pub fn palette_linear_gray<'lt>() -> Palette {
+    new(Linear1, Rgb([100, 100, 100]), Rgb([0, 0, 0]))
 }
 
 pub fn palette_purple_to_white<'lt>() -> Palette {
