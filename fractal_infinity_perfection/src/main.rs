@@ -6,9 +6,9 @@ use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::PaletteName::{BlackWBWB, Nothing};
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
 
-pub struct NebulaPerfection {}
+pub struct InfinityPerfection {}
 
-impl FractalMath<Mem> for NebulaPerfection {
+impl FractalMath<Mem> for InfinityPerfection {
     fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
         m.square();
         m.plus(origin_re, origin_im);
@@ -17,11 +17,11 @@ impl FractalMath<Mem> for NebulaPerfection {
 
 fn main() {
     let fractal_config = FractalConfig {
-        name: "NebulaPerfection",
+        name: "InfinityPerfection",
         fractal_calc_type: StaticImageNebula,
 
-        iteration_min: 42,
-        iteration_max: 1480,
+        iteration_min: 3000,
+        iteration_max: 180_000,
         resolution_multiplier: Single,
         palette: BlackWBWB,
 
@@ -37,18 +37,18 @@ fn main() {
         update_min: 0,
     };
 
-    application::execute(fractal_config, NebulaPerfection {});
+    application::execute(fractal_config, InfinityPerfection {});
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::NebulaPerfection;
+    use crate::InfinityPerfection;
     use rusty_fractals::fractal::FractalMath;
     use rusty_fractals::mem::Mem;
 
     #[test]
     fn test_math() {
-        let nebula = NebulaPerfection {};
+        let nebula = InfinityPerfection {};
         let mut m = Mem { re: 0.0, im: 0.0 };
         nebula.math(&mut m, 1.0, 0.1);
         assert_eq!(m.re, 1.0);

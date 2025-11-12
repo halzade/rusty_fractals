@@ -392,6 +392,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "fractal_infinity_perfection"
+version = "0.1.0"
+dependencies = [
+ "rusty_fractals",
+]
+
+[[package]]
 name = "fractal_infinity_top"
 version = "0.1.0"
 dependencies = [
@@ -428,13 +435,6 @@ dependencies = [
 
 [[package]]
 name = "fractal_nebula_of_nebula"
-version = "0.1.0"
-dependencies = [
- "rusty_fractals",
-]
-
-[[package]]
-name = "fractal_nebula_perfection"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
