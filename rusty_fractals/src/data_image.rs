@@ -1,6 +1,5 @@
 use crate::area::Area;
 use crate::constants::{MINIMUM_PATH_LENGTH, NEIGHBOURS};
-use crate::data_px;
 use crate::data_px::DataPx;
 use crate::fractal::{FractalConfig, Optimizer};
 use crate::pixel_states::DomainElementState::{
@@ -13,6 +12,7 @@ use crate::pixel_states::{
 };
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Square2;
+use crate::{area, data_px, fractal};
 use image::Rgb;
 use std::sync::{Arc, RwLock, RwLockWriteGuard};
 use ResolutionMultiplier::{Single, Square101, Square11, Square3, Square5, Square51, Square9};
@@ -432,6 +432,13 @@ impl DataImage {
 pub fn init(conf: &FractalConfig, area: &Area) -> DataImage {
     init_o(conf, area, None)
 }
+
+pub fn init_trivial() -> DataImage {
+    let conf = fractal::init_trivial_static_config();
+    let area = area::init(&conf);
+    init(&conf, &area)
+}
+
 pub fn init_o(conf: &FractalConfig, area: &Area, oo: Option<Optimizer>) -> DataImage {
     let wx = area.data.read().unwrap().width_x;
     let hy = area.data.read().unwrap().height_y;
