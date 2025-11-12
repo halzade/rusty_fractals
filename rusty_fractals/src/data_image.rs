@@ -2,7 +2,7 @@ use crate::area::Area;
 use crate::constants::{MINIMUM_PATH_LENGTH, NEIGHBOURS};
 use crate::data_px;
 use crate::data_px::DataPx;
-use crate::fractal::FractalConfig;
+use crate::fractal::{FractalConfig, Optimizer};
 use crate::pixel_states::DomainElementState::{
     ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
     HibernatedDeepBlack,
@@ -430,6 +430,9 @@ impl DataImage {
 }
 
 pub fn init(conf: &FractalConfig, area: &Area) -> DataImage {
+    init_o(conf, area, None)
+}
+pub fn init_o(conf: &FractalConfig, area: &Area, oo: Option<Optimizer>) -> DataImage {
     let wx = area.data.read().unwrap().width_x;
     let hy = area.data.read().unwrap().height_y;
     DataImage {
@@ -437,12 +440,12 @@ pub fn init(conf: &FractalConfig, area: &Area) -> DataImage {
         height_y: hy,
         is_dynamic: conf.is_dynamic(),
         is_mandelbrot: conf.is_mandelbrot(),
-        pixels: init_domain(area),
+        pixels: init_domain(area, oo),
         paths: Arc::new(RwLock::new(Vec::new())),
     }
 }
 
-fn init_domain(area: &Area) -> Vec<Vec<RwLock<Option<DataPx>>>> {
+fn init_domain(area: &Area, oo: Option<Optimizer>) -> Vec<Vec<RwLock<Option<DataPx>>>> {
     println!("init_domain()");
     let mut vx = Vec::new();
 
@@ -452,12 +455,17 @@ fn init_domain(area: &Area) -> Vec<Vec<RwLock<Option<DataPx>>>> {
     let res = area.screen_to_domain_re_copy();
     let ims = area.screen_to_domain_im_copy();
 
+    let optimizer = oo.unwrap_or_else(Optimizer::trivial);
+
     for x in 0..wx {
         let mut vy = Vec::new();
         for y in 0..hy {
             let origin_re = res[x];
             let origin_im = ims[y];
-            vy.push(RwLock::new(Some(data_px::init(origin_re, origin_im))));
+            let state = (optimizer.initial_state_for)(origin_re, origin_im);
+            vy.push(RwLock::new(Some(data_px::init(
+                origin_re, origin_im, state,
+            ))));
         }
         vx.push(vy);
     }

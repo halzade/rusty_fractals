@@ -23,8 +23,9 @@ impl Mathematician {
      * (t^2 + x^2 - 2at)^2 = 4a^2 (t^2 + x^2)
      */
     pub fn is_outside_cardioid(re: f64, im: f64) -> bool {
-        let a = 0.25;
-        let t = re - 0.25;
+        // precise value a = 0.25
+        let a = 0.24;
+        let t = re - 0.24;
         let t2 = t * t;
         let x2 = im * im;
         let left_side = t2 + x2 + 2.0 * a * t;
@@ -35,7 +36,8 @@ impl Mathematician {
      * circle with center at re=-1,im=0 and radius 1/4
      */
     pub fn is_outside_circle(re: f64, im: f64) -> bool {
-        ((re + 1.0) * (re + 1.0)) + (im * im) > 0.0625
+        // precise diameter squared is 0.0625
+        ((re + 1.0) * (re + 1.0)) + (im * im) > 0.062
     }
 
     pub fn rotate_by(mut m: Mem, t: f64) {

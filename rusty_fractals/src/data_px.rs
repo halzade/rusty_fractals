@@ -77,12 +77,12 @@ impl DataPx {
 //     pub color_b: Option<Rgb<u8>>,
 // }
 
-pub fn init(origin_re: f64, origin_im: f64) -> DataPx {
+pub fn init(origin_re: f64, origin_im: f64, state: DomainElementState) -> DataPx {
     DataPx {
         origin_re,
         origin_im,
         value: 0,
-        state: ActiveNew,
+        state: state,
         quad: 0.0,
         color: None,
     }

@@ -1,5 +1,5 @@
 use crate::data_image::{color_for_state, DataImage};
-use crate::fractal::{FractalConfig, FractalMath, MemType};
+use crate::fractal::{FractalConfig, FractalMath, MemType, Optimizer};
 use crate::machine;
 use crate::machine::Machine;
 use crate::pixel_states::{is_active_new, DomainElementState};
@@ -34,7 +34,7 @@ struct ApplicationData {
     pub last_max_value: u32,
 }
 
-fn init<'lt, F, M>(config: &FractalConfig, fractal: F) -> Arc<RwLock<Application<F, M>>>
+fn init_o<'lt, F, M>(config: &FractalConfig, fractal: F, oo: Option<Optimizer>) -> Arc<RwLock<Application<F, M>>>
 where
     F: FractalMath<M> + 'static,
     M: MemType<M> + 'static,
@@ -51,7 +51,7 @@ where
     window.end();
     window.show();
 
-    let machine = machine::init(&config, fractal);
+    let machine = machine::init_o(&config, fractal, oo);
     let machine_arc = Arc::new(RwLock::new(machine));
 
     let application = Application {
@@ -75,10 +75,17 @@ where
     application_arc
 }
 
+pub fn execute<F, M>(config: FractalConfig, fractal: F)
+where
+    F: FractalMath<M> + 'static,
+    M: MemType<M> + 'static,
+{
+    execute_o(config, fractal, None)
+}
 /**
  * start the application
  */
-pub fn execute<F, M>(config: FractalConfig, fractal: F)
+pub fn execute_o<F, M>(config: FractalConfig, fractal: F, oo: Option<Optimizer>)
 where
     F: FractalMath<M> + 'static,
     M: MemType<M> + 'static,
@@ -86,7 +93,7 @@ where
     println!("application.execute()");
 
     let app = app::App::default();
-    let application_arc = init(&config, fractal);
+    let application_arc = init_o(&config, fractal, oo);
 
     // Window actions
     application_arc.read().unwrap().init_window_actions();
@@ -235,10 +242,7 @@ where
      * STATES
      * ------
      */
-    pub fn paint_partial_calculation_result_states(
-        &self,
-        data_image: &DataImage
-    ) {
+    pub fn paint_partial_calculation_result_states(&self, data_image: &DataImage) {
         match app::lock() {
             Ok(_) => {
                 let width = data_image.width_x;

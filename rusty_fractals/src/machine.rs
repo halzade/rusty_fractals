@@ -3,10 +3,11 @@ use crate::area::Area;
 use crate::constants::CALCULATION_BOUNDARY;
 use crate::data_image::DataImage;
 use crate::data_px::{active_new, hibernated_deep_black};
+use crate::files::save_image;
 use crate::fractal::FractalCalculationType::StaticImageNebula;
 use crate::fractal::{
     init_trivial_static_config, FractalCalculationType, FractalConfig, FractalMath, MemType,
-    OrbitType, TrivialFractal,
+    Optimizer, OrbitType, TrivialFractal,
 };
 use crate::fractal_log::now;
 use crate::fractal_stats::Stats;
@@ -84,12 +85,24 @@ where
     F: FractalMath<M>,
     M: MemType<M>,
 {
+    init_o(config, fractal, None)
+}
+
+pub fn init_o<F, M>(
+    config: &FractalConfig,
+    fractal: F,
+    oo: Option<Optimizer>,
+) -> Machine<'static, F, M>
+where
+    F: FractalMath<M>,
+    M: MemType<M>,
+{
     let area: Area = area::init(config);
     Machine {
         fractal,
         name: config.name,
         fractal_calc_type: config.fractal_calc_type,
-        data_image: data_image::init(config, &area),
+        data_image: data_image::init_o(config, &area, oo),
         area,
         width_x: config.width_x,
         height_y: config.height_y,
@@ -200,6 +213,8 @@ where
         perfectly_color_nebula_values(&self.data_image, &self.palette);
 
         self.paint_final_calculation_result_colors();
+
+        save_image(&self.data_image);
     }
 
     /**
@@ -536,6 +551,8 @@ where
         self.data_image.recalculate_pixels_states();
         perfectly_color_mandelbrot_values(&self.data_image, &self.palette, &self.palette_zero);
         self.paint_final_calculation_result_colors();
+
+        // save_image(&self.data_image);
     }
 
     fn chunk_calculation_mandelbrot(&self, xy: &[u32; 2]) {
