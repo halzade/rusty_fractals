@@ -13,7 +13,7 @@ fractal_infinity_top -
 fractal_lotus -  
 **fractal_mandelbrot - done**  
 **fractal_mandelbrot_of_mandelbrot - done**  
-fractal_nebula -  
+**fractal_nebula - done**  
 fractal_nebula_of_nebula -  
 fractal_nebula_perfection - WIP, rename  
 fractal_nebula_side -  
