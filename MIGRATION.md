@@ -15,6 +15,6 @@ fractal_infinity_perfection - wip
 **fractal_mandelbrot - done**  
 **fractal_mandelbrot_of_mandelbrot - done**  
 **fractal_nebula - done**  
-fractal_nebula_of_nebula -  
+**fractal_nebula_of_nebula - done**  
 fractal_nebula_side -  
 fractal_nebula_top -  

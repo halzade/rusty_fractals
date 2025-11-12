@@ -36,14 +36,14 @@ fn main() {
         fractal_calc_type: StaticImageNebula,
 
         iteration_min: 42,
-        iteration_max: 2480,
+        iteration_max: 8000,
         resolution_multiplier: Square3,
 
         palette: BlueToWhiteCircleUp,
         palette_zero: Nothing,
 
-        width_x: 800,
-        height_y: 800,
+        width_x: 1000,
+        height_y: 1000,
         width_re: 0.5,
         center_re: 0.0,
         center_im: 0.0,
