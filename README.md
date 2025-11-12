@@ -78,7 +78,7 @@ Path elements `re im` which move out of the image boundary are removed.
 ## Contributions are welcomed
 
 ```
-https://github.com/halzade/rusty_fractals.git
+git clone https://github.com/halzade/rusty_fractals.git
 ```
 
 ## How to use
