@@ -9,7 +9,6 @@ use crate::fractal::{
     init_trivial_static_config, FractalCalculationType, FractalConfig, FractalMath, MemType,
     Optimizer, OrbitType, TrivialFractal,
 };
-use crate::fractal_log::now;
 use crate::fractal_stats::Stats;
 use crate::mem::Mem;
 use crate::palette::Palette;
@@ -21,7 +20,7 @@ use crate::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong, 
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::{area, data_image, fractal, fractal_stats, pixel_states};
 use rand::seq::SliceRandom;
-use rand::thread_rng;
+use rand::rng;
 use rayon::prelude::*;
 use std::marker::PhantomData;
 use std::sync::{Arc, RwLock};
@@ -168,7 +167,7 @@ where
                 self.calculate_mandelbrot_zoom();
             }
             StaticSpectralImageEuler => {
-                todo!()
+                // todo() self.calculate_euler();
             }
         }
     }
@@ -339,32 +338,32 @@ where
 
         let (cx, cy) = area.point_to_pixel(cre, cim);
 
-        now("1. move top left to center");
+        // 1. move top left to center
         for y in 0..cy {
             for x in 0..cx {
                 self.data_image.move_to_new_position(x, y, area);
             }
         }
-        now("2. move top right to center");
+        // 2. move top right to center
         for y in 0..cy {
             for x in (cx..self.width_x).rev() {
                 self.data_image.move_to_new_position(x, y, area);
             }
         }
-        now("3. move bottom left to center");
+        // 3. move bottom left to center
         for y in (cy..self.height_y).rev() {
             for x in 0..cx {
                 self.data_image.move_to_new_position(x, y, area);
             }
         }
-        now("4. move bottom right to center");
+        // 4. move bottom right to center
         for y in (cy..self.height_y).rev() {
             for x in (cx..self.width_x).rev() {
                 self.data_image.move_to_new_position(x, y, area);
             }
         }
         // Create new elements on positions where no px moved to
-        now("fill empty places");
+        // 5. fill empty places
         let mut c_moved = 0;
         let mut c_created = 0;
 
@@ -709,7 +708,7 @@ pub fn shuffled_calculation_coordinates() -> Vec<[u32; 2]> {
             coordinates_xy.push([x, y]);
         }
     }
-    coordinates_xy.shuffle(&mut thread_rng());
+    coordinates_xy.shuffle(&mut rng());
     coordinates_xy
 }
 
