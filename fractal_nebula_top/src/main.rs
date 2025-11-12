@@ -1,7 +1,7 @@
 use rusty_fractals::application;
 use rusty_fractals::fractal::FractalCalculationType::DynamicSequenceNebula;
 use rusty_fractals::fractal::OrbitType::Finite;
-use rusty_fractals::fractal::{FractalConfig, FractalMath};
+use rusty_fractals::fractal::{FractalConfig, FractalMath, Optimizer};
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::PaletteName::{Nothing, PurpleToWhite};
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square2;
@@ -38,7 +38,9 @@ fn main() {
         update_min: 0,
     };
 
-    application::execute(fractal_config, NebulaTop {});
+    let o = Optimizer::nebula_optimization();
+
+    application::execute_o(fractal_config, NebulaTop {}, Some(o));
 }
 
 #[cfg(test)]
