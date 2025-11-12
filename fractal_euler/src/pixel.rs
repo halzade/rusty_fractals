@@ -7,7 +7,7 @@ pub enum Spectra {
     Blue,
 }
 
-struct PixelsEuler {
+pub struct PixelsEuler {
     width: u32,
     height: u32,
     elements_red: Vec<Vec<u32>>,
@@ -16,6 +16,16 @@ struct PixelsEuler {
 }
 
 impl PixelsEuler {
+    pub fn init(w: u32, h: u32) -> PixelsEuler {
+        PixelsEuler {
+            width: w,
+            height: h,
+            elements_red: vec![vec![0; w as usize]; h as usize],
+            elements_green: vec![vec![0; w as usize]; h as usize],
+            elements_blue: vec![vec![0; w as usize]; h as usize],
+        }
+    }
+
     pub fn add(&mut self, x: usize, y: usize, spec: Spectra) {
         match spec {
             Spectra::Red => self.elements_red[x][y] += 1,
@@ -55,6 +65,31 @@ impl PixelsEuler {
 
 #[cfg(test)]
 mod tests {
+    use crate::pixel::Spectra::{Blue, Green};
+    use crate::pixel::{PixelsEuler, Spectra};
+    use Spectra::Red;
+
     #[test]
-    fn test_it() {}
+    fn test_add() {
+        let mut p = PixelsEuler::init(1, 1);
+
+        p.add(0, 0, Blue);
+
+        let b = p.value_at(0, 0, Blue);
+        let r = p.value_at(0, 0, Red);
+        assert_eq!(b, 1);
+        assert_eq!(r, 0);
+    }
+
+    #[test]
+    fn test_set() {
+        let mut p = PixelsEuler::init(1, 1);
+
+        p.set(0, 0, Green, 5);
+
+        let g = p.value_at(0, 0, Green);
+        let r = p.value_at(0, 0, Red);
+        assert_eq!(g, 5);
+        assert_eq!(r, 0);
+    }
 }
