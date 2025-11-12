@@ -204,6 +204,25 @@ pub fn init() -> Stats {
 
 #[cfg(test)]
 mod tests {
+    use crate::{data_image, fractal_stats};
+
     #[test]
-    fn test_it() {}
+    fn test_paths_new_points_amount() {
+        let mut fs = fractal_stats::init();
+
+        fs.paths_new_points_amount_add(1);
+        assert_eq!(fs.data.read().unwrap().paths_new_points_amount, 1);
+
+        fs.clean();
+        assert_eq!(fs.data.read().unwrap().paths_new_points_amount, 0);
+    }
+
+    #[test]
+    fn test_update() {
+        let fs = fractal_stats::init();
+        let di = data_image::init_trivial();
+
+        fs.update(&di, 1);
+        assert_eq!(fs.data.read().unwrap().paths_new_points_amount, 0);
+    }
 }
