@@ -44,13 +44,13 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use crate::Science;
-    use rusty_fractals::fractal::FractalMath;
+    use rusty_fractals::fractal::{FractalMath, MemType};
     use rusty_fractals::mem::Mem;
 
     #[test]
     fn test_math() {
         let fractal = Science;
-        let mut m = Mem { re: 0.0, im: 0.0 };
+        let mut m = Mem::new(0.0, 0.0);
 
         fractal.math(&mut m, 1.0, 0.1);
 

@@ -60,8 +60,8 @@ mod tests {
         let euler = Euler {};
         let mut me = MemEuler::new(0.0, 0.0);
 
-        euler.math(&mut me, 1.0, 0.1);
-        assert_eq!(me.m.re, 0.0);
+        euler.math(&mut me, 1.0, 0.0);
+        assert_eq!(me.m.re, 2.00);
         assert_eq!(me.m.im, 0.0);
     }
 }

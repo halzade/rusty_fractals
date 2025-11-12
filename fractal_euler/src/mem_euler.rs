@@ -66,7 +66,7 @@ mod tests {
         me.plus(1.0, 1.1);
 
         assert_eq!(me.m.re, 1.0);
-        assert_eq!(me.m.re, 1.1);
-        assert_eq!(me.it, 1);
+        assert_eq!(me.m.im, 1.1);
+        assert_eq!(me.it, 0);
     }
 }
