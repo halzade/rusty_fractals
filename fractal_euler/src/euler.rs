@@ -53,9 +53,8 @@ fn calculate_path() {
     /*
     let mut iterator = 0;
     let length = 0;
-    final MemEuler
-    m = new
-    MemEuler(el.origin_re, el.origin_im);
+
+    let m = MemEuler::new(origin_re, origin_im);
     while m.quad() < CALCULATION_BOUNDARY && iterator < ITERATION_MAX {
         /*
          * Investigate if this is a good calculation path

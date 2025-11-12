@@ -40,10 +40,19 @@ pub fn init_default() -> Palette {
 #[cfg(test)]
 mod tests {
     use crate::palette::init_default;
+    use image::Pixel;
 
     #[test]
     fn test_init_default() {
         let p = init_default();
         assert_eq!(p.spectrum.len(), 3);
+    }
+
+    #[test]
+    fn test_spectrum_value() {
+        let p = init_default();
+
+        let rgb = p.spectrum_value(2);
+        assert_eq!(rgb.channels()[0], 0);
     }
 }

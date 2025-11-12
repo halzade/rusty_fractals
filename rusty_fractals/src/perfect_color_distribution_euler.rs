@@ -4,9 +4,6 @@
 // - Zero elements and noise color by the lowest color
 // - color all significant pixels ordered by value
 
-use crate::data_image::DataImage;
-use crate::palette::Palette3;
-
 // for Nebula like fractals
 struct Pix {
     x: usize,
@@ -71,23 +68,23 @@ fn perfectly_color_euler_values(data: &DataImage, palette3: &Palette3) {
     let left_blue : u32 = all_pixels_non_zero_blue - (palette_color_count * single_color_use_blue);
 
     println!("------------------------------------");
-    println!("All pixels to paint:         {}", all_pixels_total);
-    println!("---------------------------> {}", (zero_value_elements_red + left_red + (single_color_use_red * palette_color_count)));
-    println!("---------------------------> {}", (zero_value_elements_green + left_green + (single_color_use_green * palette_color_count)));
-    println!("---------------------------> {}", (zero_value_elements_blue + left_blue + (single_color_use_blue * palette_color_count)));
-    println!("Zero value pixels to paint:  {}", zero_value_elements_red);
-    println!("Zero value pixels to paint:  {}", zero_value_elements_green);
-    println!("Zero value pixels to paint:  {}", zero_value_elements_blue);
-    println!("Non zero pixels to paint:    {}", all_pixels_non_zero_red);
-    println!("Non zero pixels to paint:    {}", all_pixels_non_zero_green);
-    println!("Non zero pixels to paint:    {}", all_pixels_non_zero_blue);
-    println!("Spectrum, available colors: {}", palette_color_count);
-    println!("Pixels per each color:      {}", single_color_use_red);
-    println!("Pixels per each color:      {}", single_color_use_green);
-    println!("Pixels per each color:      {}", single_color_use_blue);
-    println!("left:                        {}", left_red);
-    println!("left:                        {}", left_green);
-    println!("left:                        {}", left_blue);
+    println!("All pixels to paint:        {:8}", all_pixels_total);
+    println!("--------------------------> {:8}", (zero_value_elements_red + left_red + (single_color_use_red * palette_color_count)));
+    println!("--------------------------> {:8}", (zero_value_elements_green + left_green + (single_color_use_green * palette_color_count)));
+    println!("--------------------------> {:8}", (zero_value_elements_blue + left_blue + (single_color_use_blue * palette_color_count)));
+    println!("Zero value pixels to paint: {:8}", zero_value_elements_red);
+    println!("Zero value pixels to paint: {:8}", zero_value_elements_green);
+    println!("Zero value pixels to paint: {:8}", zero_value_elements_blue);
+    println!("Non zero pixels to paint:   {:8}", all_pixels_non_zero_red);
+    println!("Non zero pixels to paint:   {:8}", all_pixels_non_zero_green);
+    println!("Non zero pixels to paint:   {:8}", all_pixels_non_zero_blue);
+    println!("Spectrum, available colors: {:8}", palette_color_count);
+    println!("Pixels per each color:      {:8}", single_color_use_red);
+    println!("Pixels per each color:      {:8}", single_color_use_green);
+    println!("Pixels per each color:      {:8}", single_color_use_blue);
+    println!("left:                       {:8}", left_red);
+    println!("left:                       {:8}", left_green);
+    println!("left:                       {:8}", left_blue);
     println!("------------------------------------");
 
     // paint mismatched pixel amount with the least value color

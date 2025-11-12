@@ -40,8 +40,7 @@ impl MemType<MemCollatz> for MemCollatz {
             m: Mem { re, im },
             // 1348 steps
             num: 989_345_275_647,
-
-            // TODO
+            
             // 1563 steps
             // num: 7_887_663_552_367,
 

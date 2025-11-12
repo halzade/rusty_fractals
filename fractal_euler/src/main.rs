@@ -41,7 +41,7 @@ fn main() {
         center_im: 0.0,
 
         // calculation config
-        orbits: Infinite, // TODO probably not
+        orbits: Infinite,
         update_max: 150,
         update_min: 0,
     };

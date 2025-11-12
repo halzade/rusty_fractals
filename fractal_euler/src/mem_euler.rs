@@ -47,7 +47,6 @@ impl MemEuler {
     }
 }
 
-// TODO
 pub enum Spectra {
     Red,
     Green,

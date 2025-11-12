@@ -45,16 +45,16 @@ pub fn perfectly_color_nebula_values(data: &DataImage, palette: &Palette) {
     let left: u32 = all_pixels_non_zero - (palette_color_count * single_color_use);
 
     println!("------------------------------------");
-    println!("All pixels to paint:         {}", all_pixels_total);
+    println!("All pixels to paint:        {:8}", all_pixels_total);
     println!(
         "---------------------------> {}",
         zero_value_elements + left + (single_color_use * palette_color_count)
     );
-    println!("Zero value pixels to paint:  {}", zero_value_elements);
-    println!("Non zero pixels to paint:    {}", all_pixels_non_zero);
-    println!("Spectrum, available colors: {}", palette_color_count);
-    println!("Pixels per each color:      {}", single_color_use);
-    println!("left:                        {}", left);
+    println!("Zero value pixels to paint: {:8}", zero_value_elements);
+    println!("Non zero pixels to paint:   {:8}", all_pixels_non_zero);
+    println!("Spectrum, available colors: {:8}", palette_color_count);
+    println!("Pixels per each color:      {:8}", single_color_use);
+    println!("left:                       {:8}", left);
     println!("------------------------------------");
 
     // paint mismatched pixel amount with the least value color

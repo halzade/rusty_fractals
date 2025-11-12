@@ -24,8 +24,6 @@ pub fn perfectly_color_mandelbrot_values(
 ) {
     println!("perfectly_color_mandelbrot_values()");
 
-    // TODO palette_zero.is_linear(); ?
-
     let width = data.width_x;
     let height = data.height_y;
 
@@ -40,19 +38,9 @@ pub fn perfectly_color_mandelbrot_values(
             let (value, _, quad, _) = data.values5_at(x, y);
             if value == 0 {
                 zero_value_elements += 1;
-                pixels_zero.push(Mix {
-                    x,
-                    y,
-                    value,
-                    quad
-                });
+                pixels_zero.push(Mix { x, y, value, quad });
             } else {
-                pixels.push(Mix {
-                    x,
-                    y,
-                    value,
-                    quad,
-                });
+                pixels.push(Mix { x, y, value, quad });
             }
         }
     }
@@ -77,16 +65,16 @@ pub fn perfectly_color_mandelbrot_values(
     let left = all_pixels_non_zero - (palette_color_count * single_color_use);
 
     println!("------------------------------------");
-    println!("All pixels to paint:         {}", all_pixels_total);
+    println!("All pixels to paint:        {:8}", all_pixels_total);
     println!(
         "---------------------------> {}",
         zero_value_elements + left + (single_color_use * palette_color_count)
     );
-    println!("Zero value pixels to paint:  {}", zero_value_elements);
-    println!("Non zero pixels to paint:    {}", all_pixels_non_zero);
-    println!("Spectrum, available colors: {}", palette_color_count);
-    println!("Pixels per each color:      {}", single_color_use);
-    println!("left:                        {}", left);
+    println!("Zero value pixels to paint: {:8}", zero_value_elements);
+    println!("Non zero pixels to paint:   {:8}", all_pixels_non_zero);
+    println!("Spectrum, available colors: {:8}", palette_color_count);
+    println!("Pixels per each color:      {:8}", single_color_use);
+    println!("left:                       {:8}", left);
     println!("------------------------------------");
 
     // paint mismatched pixel amount with the least value color
