@@ -4,7 +4,7 @@ use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square11;
+use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square5;
 
 pub struct Lotus {}
 
@@ -23,7 +23,7 @@ fn main() {
 
         iteration_min: 42,
         iteration_max: 8000,
-        resolution_multiplier: Square11,
+        resolution_multiplier: Square5,
 
         palette: BlueToWhiteCircleUp,
         palette_zero: Nothing,
@@ -31,9 +31,11 @@ fn main() {
         width_x: 1280,
         height_y: 1000,
         width_re: 3.5,
-        center_re: 0.67748277351478,
-        center_im: -1.18770078111202,
-
+        center_re: 0.0,
+        center_im: 0.0,
+        // video
+        // center_re: 0.67748277351478,
+        // center_im: -1.18770078111202,
         orbits: Finite,
         update_max: 150,
         update_min: 0,

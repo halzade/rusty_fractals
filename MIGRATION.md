@@ -10,7 +10,7 @@ fractal_fat_star_tentacle -
 **fractal_head - done**  
 fractal_infinity -  
 fractal_infinity_top -  
-fractal_lotus -  
+**fractal_lotus - done**  
 **fractal_mandelbrot - done**  
 **fractal_mandelbrot_of_mandelbrot - done**  
 **fractal_nebula - done**  
