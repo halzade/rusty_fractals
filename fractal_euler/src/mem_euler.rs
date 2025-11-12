@@ -1,6 +1,6 @@
 use rusty_fractals::fractal::MemType;
+use rusty_fractals::mathematician;
 use rusty_fractals::mem::Mem;
-use rusty_fractals::mathematician::Mathematician;
 
 /**
  * Memory object for Euler fractal
@@ -8,27 +8,16 @@ use rusty_fractals::mathematician::Mathematician;
 pub struct MemEuler {
     pub m: Mem,
     pub it: u32,
-    // TODO separate primes, fibo, etc
-    pub math: Mathematician,
-    pub spectra: Spectra,
 }
 
 impl MemType<MemEuler> for MemEuler {
     fn new(re: f64, im: f64) -> MemEuler {
         MemEuler {
-            m: Mem { re, im },
+            m: Mem::new(re, im),
             it: 0,
-            math: Mathematician {
-                // TODO
-                primes: Default::default(),
-                fibonacci: Default::default(),
-                perfect: Default::default(),
-                square: Default::default(),
-            },
-            // TODO
-            spectra: Spectra::Red,
         }
     }
+
     fn quad(&self) -> f64 {
         self.m.quad()
     }
@@ -51,7 +40,7 @@ impl MemEuler {
 
     pub fn euler(&mut self) {
         self.it += 1;
-        if self.math.is_prime(self.it) {
+        if mathematician::is_prime(self.it) {
             self.m.re = 0.01 / self.m.re;
             self.m.im = 0.01 / self.m.im;
         }
@@ -59,10 +48,25 @@ impl MemEuler {
 }
 
 // TODO
-pub enum Spectra { Red, Green, Blue }
+pub enum Spectra {
+    Red,
+    Green,
+    Blue,
+}
 
 #[cfg(test)]
 mod tests {
+    use crate::mem_euler::MemEuler;
+    use rusty_fractals::fractal::MemType;
+
     #[test]
-    fn test_it() {}
+    fn test_plus() {
+        let mut me = MemEuler::new(0.0, 0.0);
+
+        me.plus(1.0, 1.1);
+
+        assert_eq!(me.m.re, 1.0);
+        assert_eq!(me.m.re, 1.1);
+        assert_eq!(me.it, 1);
+    }
 }

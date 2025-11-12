@@ -1,6 +1,5 @@
 use crate::fractal::FractalCalculationType::{DynamicSequenceNebula, StaticSequenceMandelbrot};
 use crate::fractal::OrbitType::Finite;
-use crate::mathematician::Mathematician;
 use crate::mem::Mem;
 use crate::palettes::PaletteName;
 use crate::palettes::PaletteName::Nothing;
@@ -10,6 +9,7 @@ use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Single;
 use std::cmp::PartialEq;
 use FractalCalculationType::StaticImageMandelbrot;
+use crate::mathematician;
 
 pub struct FractalConfig {
     // fractal config
@@ -58,7 +58,7 @@ impl Optimizer {
      */
     pub fn nebula_optimization() -> Self {
         fn fn_ok(re: f64, im: f64) -> bool {
-            Mathematician::is_outside_cardioid(re, im) && Mathematician::is_outside_circle(re, im)
+            mathematician::is_outside_cardioid(re, im) && mathematician::is_outside_circle(re, im)
         }
         fn fn_state(re: f64, im: f64) -> DomainElementState {
             if fn_ok(re, im) {

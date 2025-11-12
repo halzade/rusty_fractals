@@ -51,20 +51,17 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use crate::Euler;
-    use rusty_fractals::fractal::FractalMath;
-    use rusty_fractals::mem::Mem;
     use crate::mem_euler::MemEuler;
+    use crate::Euler;
+    use rusty_fractals::fractal::{FractalMath, MemType};
 
     #[test]
     fn test_math() {
         let euler = Euler {};
-        let mut m = Mem { re: 0.0, im: 0.0 };
+        let mut me = MemEuler::new(0.0, 0.0);
 
-        // TODO
-        // let mut me = MemEuler { m: m, it: 0 };
-        // euler.math(&mut m, 1.0, 0.1);
-        assert_eq!(m.re, 0.0);
-        assert_eq!(m.im, 0.0);
+        euler.math(&mut me, 1.0, 0.1);
+        assert_eq!(me.m.re, 0.0);
+        assert_eq!(me.m.im, 0.0);
     }
 }
