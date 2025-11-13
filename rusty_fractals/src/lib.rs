@@ -1,9 +1,11 @@
 extern crate core;
 
+pub mod application;
 pub mod area;
 pub mod constants;
 pub mod data_image;
 pub mod data_px;
+pub mod data_px3;
 pub mod files;
 pub mod fractal;
 pub mod fractal_log;
@@ -17,8 +19,7 @@ pub mod palette;
 pub mod palette_utils;
 pub mod palettes;
 pub mod perfect_color_distribution;
-pub mod pixel_states;
-pub mod resolution_multiplier;
-pub mod application;
 pub mod perfect_color_distribution_euler;
 pub mod perfect_color_distribution_nebula;
+pub mod pixel_states;
+pub mod resolution_multiplier;
