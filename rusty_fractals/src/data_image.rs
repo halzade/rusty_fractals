@@ -7,15 +7,15 @@ use crate::pixel_states::DomainElementState::{
     HibernatedDeepBlack,
 };
 use crate::pixel_states::{
-    is_finished_success_past, DomainElementState, ACTIVE_NEW, FINISHED_SUCCESS,
-    FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK,
+    ACTIVE_NEW, DomainElementState, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG,
+    FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK, is_finished_success_past,
 };
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Square2;
 use crate::{area, data_px, fractal};
+use ResolutionMultiplier::{Single, Square3, Square5, Square9, Square11, Square51, Square101};
 use image::Rgb;
-use std::sync::{Arc, RwLock, RwLockWriteGuard};
-use ResolutionMultiplier::{Single, Square101, Square11, Square3, Square5, Square51, Square9};
+use std::sync::{Arc, RwLock};
 
 pub struct DataImage {
     pub width_x: usize,
@@ -25,7 +25,7 @@ pub struct DataImage {
     /*
      * static data for image
      */
-    pub pixels: Vec<Vec<RwLock<Option<DataPx>>>>,
+    pub pixels: Vec<DataPx>,
     /*
      * dynamic data for zoom video
      * As zoom progress, points [re,im] are projected to new pixels [px,py] until they migrate out of the tiny area.
@@ -37,20 +37,7 @@ pub struct DataImage {
 
 impl DataImage {
     pub fn color(&self, x: usize, y: usize, palette_color: Rgb<u8>) {
-        let mut mo_px = self.mo_px_at(x, y);
-        let p = mo_px.as_mut().unwrap();
-        p.color = Some(palette_color);
-    }
-
-    /**
-     * retrieve the longest path for dynamic sequence calculation
-     */
-    // TODO delete stupid methods
-    pub fn the_longest_path_copy(&self) -> Option<Vec<[f64; 2]>> {
-        println!("the_longest_path_copy()");
-
-        let paths_lock = self.paths.read().unwrap();
-        paths_lock.iter().max_by_key(|v| v.len()).cloned()
+        self.px_at(x, y).set_c(palette_color);
     }
 
     pub fn translate_one_path_to_point_grid_now(&self, path: Vec<[f64; 2]>, area: &Area) {
@@ -104,41 +91,19 @@ impl DataImage {
     pub fn clear_all_px_data(&self) {
         for y in 0..self.height_y {
             for x in 0..self.width_x {
-                let mut mo_px = self.mo_px_at(x, y);
-                let p = mo_px.as_mut().unwrap();
-                p.value = 0;
+                self.px_at(x, y).set_v(0);
             }
         }
     }
 
     fn add(&self, x: usize, y: usize) {
-        let mut mo_px = self.mo_px_at(x, y);
-        let p = mo_px.as_mut().unwrap();
-        p.value += 1;
+        self.px_at(x, y).add_v1();
     }
 
-    // TODO this method should be private
-    pub fn mo_px_at(&self, x: usize, y: usize) -> RwLockWriteGuard<Option<DataPx>> {
-        if let Some(row) = self.pixels.get(x) {
-            if let Some(cell) = row.get(y) {
-                match cell.write() {
-                    Ok(guard) => guard, // Return the lock if successful
-                    Err(_) => {
-                        // Poisoned lock
-                        println!("Failed to acquire lock for pixel at ({}, {}). The RwLock might be poisoned.", x, y);
-                        panic!("Failed to acquire lock for pixel at ({}, {}).", x, y);
-                    }
-                }
-            } else {
-                // y index out of bounds
-                println!("Failed to get pixel at column {} in row {}.", y, x);
-                panic!("Pixel column index {} out of bounds.", y);
-            }
-        } else {
-            // x index out of bounds
-            println!("Failed to get row {} in pixels.", x);
-            panic!("Pixel row index {} out of bounds.", x);
-        }
+    fn px_at(&self, x: usize, y: usize) -> &DataPx {
+        self.pixels
+            .get(x + y * self.width_x)
+            .expect("Pixel out of bounds")
     }
 
     // pub fn mo_3_px_at(&self, x: usize, y: usize) -> RwLockWriteGuard<Option<DataPx3>> {
@@ -164,77 +129,54 @@ impl DataImage {
     //     }
     // }
 
-    fn move_px_to_new_position(&self, x: usize, y: usize, px: DataPx) {
-        let mu = self.pixels.get(x).unwrap().get(y).unwrap();
-        let lo = mu.write();
-        match lo {
-            Ok(mut op) => {
-                op.replace(px);
-            }
-            Err(e) => {
-                println!("move_px_to_new_position(): {}", e);
-            }
-        }
+    fn move_px_to_new_position(&self, x: usize, y: usize, px: &DataPx) {
+        self.px_at(x, y).override_by(px);
     }
 
-    pub fn values5_at(
+    fn kill_at(&self, x: usize, y: usize) {
+        self.px_at(x, y).kill();
+    }
+
+    pub fn values_state_quad_color_at(
         &self,
         x: usize,
         y: usize,
     ) -> (u32, DomainElementState, f64, Option<Rgb<u8>>) {
-        let mut mo_px = self.mo_px_at(x, y);
-        let p = mo_px.as_mut().unwrap();
-        (p.value, p.state, p.quad, p.color)
+        self.px_at(x, y).get_vsqc()
     }
 
-    pub fn values3_at(&self, x: usize, y: usize) -> (u32, DomainElementState, Option<Rgb<u8>>) {
-        let mut mo_px = self.mo_px_at(x, y);
-        let p = mo_px.as_mut().unwrap();
-        (p.value, p.state, p.color)
+    pub fn values_state_color_at(&self, x: usize, y: usize) -> (u32, DomainElementState, Option<Rgb<u8>>) {
+        self.px_at(x, y).get_vsc()
     }
 
     pub fn state_at(&self, x: usize, y: usize) -> DomainElementState {
-        let mut mo_px = self.mo_px_at(x, y);
-
-        // TODO these don't have to be mutable
-        let p = mo_px.as_mut().unwrap();
-        p.state
+        self.px_at(x, y).get_s()
     }
 
     pub fn color_at(&self, x: usize, y: usize) -> Option<Rgb<u8>> {
-        let mut mo_px = self.mo_px_at(x, y);
-        let p = mo_px.as_mut().unwrap();
-        p.color
+        self.px_at(x, y).get_c()
     }
 
     pub fn value_state_at(&self, x: usize, y: usize) -> (u32, DomainElementState) {
-        let mut mo_px = self.mo_px_at(x, y);
-        let p = mo_px.as_mut().unwrap();
-        (p.value, p.state)
+        self.px_at(x, y).get_vs()
     }
 
     pub fn value_at(&self, x: usize, y: usize) -> u32 {
-        let mut mo_px = self.mo_px_at(x, y);
-        let p = mo_px.as_mut().unwrap();
-        p.value
+        self.px_at(x, y).get_v()
     }
 
     // pub fn value_3_at(&self, x: usize, y: usize) -> (u32, u32, u32) {
-    //     let mut mo_px = self.mo_3_px_at(x, y);
+    //     let mo_px = self.mo_3_px_at(x, y);
     //     let p = mo_px.as_mut().unwrap();
     //     p.value3
     // }
 
     pub fn state_origin_at(&self, x: usize, y: usize) -> (DomainElementState, f64, f64) {
-        let mut mo_px = self.mo_px_at(x, y);
-        let p = mo_px.as_mut().unwrap();
-        (p.state, p.origin_re, p.origin_im)
+        self.px_at(x, y).get_sri()
     }
 
     pub fn origin_at(&self, x: usize, y: usize) -> (f64, f64) {
-        let mut mo_px = self.mo_px_at(x, y);
-        let p = mo_px.as_mut().unwrap();
-        (p.origin_re, p.origin_im)
+        self.px_at(x, y).get_ri()
     }
 
     pub fn set_pixel_mandelbrot(
@@ -246,34 +188,28 @@ impl DataImage {
         state: DomainElementState,
         max: u32,
     ) {
-        let mut mo_px = self.mo_px_at(x, y);
-        let p = mo_px.as_mut().unwrap();
-        p.quad = quad;
-        p.state = state;
-        if iterator < 1 {
-            p.value = 1;
-        } else if iterator == max {
-            p.value = 0;
-        } else {
-            p.value = iterator
-        }
+        let value = {
+            if iterator < 1 {
+                1
+            } else if iterator == max {
+                0
+            } else {
+                iterator
+            }
+        };
+        self.px_at(x, y).set_qsv(quad, state, value);
     }
 
     // for Nebula like fractals
     pub fn set_pixel_state(&self, x: usize, y: usize, state: DomainElementState) {
-        let mut mo_px = self.mo_px_at(x, y);
-        let p = mo_px.as_mut().unwrap();
-        p.quad = 1.0;
-        p.state = state;
+        self.px_at(x, y).set_qs(1.0, state);
     }
 
     pub fn recalculate_pixels_states(&self) {
         println!("recalculate_pixels_states()");
         for y in 0..self.height_y {
             for x in 0..self.width_x {
-                let mut mo_px = self.mo_px_at(x, y);
-                let p = mo_px.as_mut().unwrap();
-                p.past();
+                self.px_at(x, y).past();
             }
         }
     }
@@ -331,7 +267,7 @@ impl DataImage {
         let mut sum = 0;
         for x in x_from..x_to {
             for y in y_from..y_to {
-                sum += self.mo_px_at(x, y).as_ref().unwrap().value;
+                sum += self.px_at(x, y).get_v();
             }
         }
         sum
@@ -370,31 +306,59 @@ impl DataImage {
     }
 
     pub fn move_to_new_position(&self, x: usize, y: usize, area: &Area) {
-        let mut mo_px = self.mo_px_at(x, y);
-        let p = mo_px.as_mut().unwrap();
+        let pxo = self.px_at(x, y);
+        let (ore, oim) = pxo.get_ri();
         // There was already zoom in, the new area is smaller
-        if area.contains(p.origin_re, p.origin_im) {
+        if area.contains(ore, oim) {
             // Element didn't move out of the smaller area
             // new pixel position
-            let (nx, ny) = area.point_to_pixel(p.origin_re, p.origin_im);
+            let (nx, ny) = area.point_to_pixel(ore, oim);
             if (x == nx) && (y == ny) {
                 // insignificant move within the same pixel
             } else {
                 // move px to new position
-                self.move_px_to_new_position(nx, ny, p.to_owned());
-                // clean old position
-                *mo_px = None;
+                self.move_px_to_new_position(nx, ny, pxo);
             }
         } else {
             // clean position of elements which moved beyond area edges
-            *mo_px = None;
+            self.kill_at(x, y)
         }
+    }
+
+    pub fn fill_the_gaps(&self, area: &Area) -> (u32, u32) {
+        let res = area.screen_to_domain_re_copy();
+        let ims = area.screen_to_domain_im_copy();
+
+        let mut c_moved = 0;
+        let mut c_created = 0;
+
+        for y in 0..self.height_y {
+            for x in 0..self.width_x {
+                let mo_px = self.px_at(x, y);
+                if !mo_px.is_alive() {
+                    c_created += 1;
+
+                    let re = res[x];
+                    let im = ims[y];
+
+                    if self.all_neighbors_finished_bad(x, y) {
+                        // Calculation for some positions should be skipped as they are too far away form any long successful divergent position
+                        mo_px.reset(re, im, HibernatedDeepBlack);
+                    } else {
+                        mo_px.reset(re, im, ActiveNew);
+                    }
+                } else {
+                    c_moved += 1;
+                }
+            }
+        }
+        (c_moved, c_created)
     }
 
     // Verify if any neighbor px,py finished well, long or at least too short.
     // This method identifies deep black convergent elements of Mandelbrot set interior.
     // Don't do any calculation for those.
-    pub fn all_neighbors_finished_bad(&self, x: usize, y: usize) -> bool {
+    fn all_neighbors_finished_bad(&self, x: usize, y: usize) -> bool {
         let neigh = NEIGHBOURS as i32;
 
         for a in -neigh..(neigh + 1) {
@@ -403,19 +367,15 @@ impl DataImage {
                 let yy = y as i32 + b;
 
                 if (a != 0 || b != 0) && check_domain(xx, yy, self.width_x, self.height_y) {
-                    let mo_px = self.mo_px_at(xx as usize, yy as usize);
+                    let px = self.px_at(xx as usize, yy as usize);
 
-                    if mo_px.is_some() {
-                        let px = mo_px.as_ref().unwrap();
-
-                        if self.is_mandelbrot {
-                            if px.is_finished_too_long() || px.is_hibernated() {
-                                return false;
-                            }
-                        } else {
-                            if px.is_finished_success_any() || px.is_finished_too_short() {
-                                return false;
-                            }
+                    if self.is_mandelbrot {
+                        if px.is_finished_too_long() || px.is_hibernated() {
+                            return false;
+                        }
+                    } else {
+                        if px.is_finished_success_any() || px.is_finished_too_short() {
+                            return false;
                         }
                     }
                 }
@@ -452,9 +412,9 @@ pub fn init_o(conf: &FractalConfig, area: &Area, oo: Option<Optimizer>) -> DataI
     }
 }
 
-fn init_domain(area: &Area, oo: Option<Optimizer>) -> Vec<Vec<RwLock<Option<DataPx>>>> {
+fn init_domain(area: &Area, oo: Option<Optimizer>) -> Vec<DataPx> {
     println!("init_domain()");
-    let mut vx = Vec::new();
+    let mut ret = Vec::new();
 
     let wx = area.data.read().unwrap().width_x;
     let hy = area.data.read().unwrap().height_y;
@@ -465,18 +425,15 @@ fn init_domain(area: &Area, oo: Option<Optimizer>) -> Vec<Vec<RwLock<Option<Data
     let optimizer = oo.unwrap_or_else(Optimizer::trivial);
 
     for x in 0..wx {
-        let mut vy = Vec::new();
         for y in 0..hy {
             let origin_re = res[x];
             let origin_im = ims[y];
             let state = (optimizer.initial_state_for)(origin_re, origin_im);
-            vy.push(RwLock::new(Some(data_px::init(
-                origin_re, origin_im, state,
-            ))));
+
+            ret.push(data_px::init(origin_re, origin_im, state));
         }
-        vx.push(vy);
     }
-    vx
+    ret
 }
 
 pub fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
@@ -512,10 +469,10 @@ fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
 mod tests {
     use crate::area;
     use crate::data_image::{check_domain, color_for_state, init};
-    use crate::fractal::{init_trivial_dynamic_config, FractalConfig};
+    use crate::fractal::{FractalConfig, init_trivial_dynamic_config};
     use crate::pixel_states::DomainElementState::ActiveNew;
     use crate::resolution_multiplier::ResolutionMultiplier::{
-        Square101, Square11, Square3, Square5, Square51, Square9,
+        Square3, Square5, Square9, Square11, Square51, Square101,
     };
 
     use crate::area::Area;
@@ -535,22 +492,9 @@ mod tests {
         let dynamic = init(&CONF, &AREA);
 
         dynamic.add(0, 0);
-        let v = dynamic.mo_px_at(0, 0);
+        let v = dynamic.px_at(0, 0);
 
-        assert_eq!(v.unwrap().value, 1);
-    }
-
-    #[test]
-    fn test_the_longest_path_copy() {
-        let dynamic = init(&CONF, &AREA);
-
-        dynamic.save_path(vec![[0.0, 0.0], [0.0, 0.0]]);
-        dynamic.save_path(vec![[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]);
-        dynamic.save_path(vec![[0.0, 0.0], [0.0, 0.0]]);
-
-        let longest = dynamic.the_longest_path_copy();
-
-        assert_eq!(longest.unwrap().len(), 3);
+        assert_eq!(v.get_v(), 1);
     }
 
     #[test]
@@ -593,11 +537,11 @@ mod tests {
     fn test_mo_px_at() {
         let data = init(&CONF, &AREA);
 
-        let px1 = data.mo_px_at(0, 0);
-        let px2 = data.mo_px_at(19, 19);
+        let px1 = data.px_at(0, 0);
+        let px2 = data.px_at(19, 19);
 
-        assert_eq!(px1.unwrap().state, ActiveNew);
-        assert_eq!(px2.unwrap().state, ActiveNew);
+        assert_eq!(px1.get_s(), ActiveNew);
+        assert_eq!(px2.get_s(), ActiveNew);
     }
 
     #[test]

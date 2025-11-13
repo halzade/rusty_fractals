@@ -35,7 +35,7 @@ pub fn perfectly_color_mandelbrot_values(
 
     for y in 0..height {
         for x in 0..width {
-            let (value, _, quad, _) = data.values5_at(x, y);
+            let (value, _, quad, _) = data.values_state_quad_color_at(x, y);
             if value == 0 {
                 zero_value_elements += 1;
                 pixels_zero.push(Mix { x, y, value, quad });

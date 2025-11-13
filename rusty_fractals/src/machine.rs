@@ -2,7 +2,6 @@ use crate::application::Application;
 use crate::area::Area;
 use crate::constants::CALCULATION_BOUNDARY;
 use crate::data_image::DataImage;
-use crate::data_px::{active_new, hibernated_deep_black};
 use crate::files::save_image;
 use crate::fractal::FractalCalculationType::StaticImageNebula;
 use crate::fractal::{
@@ -364,32 +363,8 @@ where
         }
         // Create new elements on positions where no px moved to
         // 5. fill empty places
-        let mut c_moved = 0;
-        let mut c_created = 0;
+        let (c_moved, c_created) = self.data_image.fill_the_gaps(&self.area);
 
-        let res = area.screen_to_domain_re_copy();
-        let ims = area.screen_to_domain_im_copy();
-
-        for y in 0..self.height_y {
-            for x in 0..self.width_x {
-                let mut mo_px = self.data_image.mo_px_at(x, y);
-                if mo_px.is_none() {
-                    c_created += 1;
-
-                    let re = res[x];
-                    let im = ims[y];
-
-                    if self.data_image.all_neighbors_finished_bad(x, y) {
-                        // Calculation for some positions should be skipped as they are too far away form any long successful divergent position
-                        mo_px.replace(hibernated_deep_black(re, im));
-                    } else {
-                        mo_px.replace(active_new(re, im));
-                    }
-                } else {
-                    c_moved += 1;
-                }
-            }
-        }
         println!("moved:     {}", c_moved);
         println!("created:   {}", c_created);
         assert!(c_moved > 0);

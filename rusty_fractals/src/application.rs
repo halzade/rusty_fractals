@@ -252,7 +252,7 @@ where
                 let pixel_states: Vec<(u32, DomainElementState, Option<Rgb<u8>>)> = (0..height)
                     .flat_map(|y| {
                         (0..width).map(move |x| {
-                            let (value, state, color_opt) = data_image.values3_at(x, y);
+                            let (value, state, color_opt) = data_image.values_state_color_at(x, y);
                             let rgb_color = color_opt.map(|c| Rgb(c.0));
                             (value, state, rgb_color)
                         })

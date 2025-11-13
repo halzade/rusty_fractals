@@ -4,7 +4,7 @@ use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square5;
+use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square2;
 
 pub struct Science;
 
@@ -23,13 +23,13 @@ fn main() {
 
         iteration_min: 42,
         iteration_max: 1800,
-        resolution_multiplier: Square5,
+        resolution_multiplier: Square2,
 
         palette: BlueToWhiteCircleUp,
         palette_zero: Nothing,
 
-        width_x: 600,
-        height_y: 600,
+        width_x: 400,
+        height_y: 400,
         width_re: 3.0,
         center_re: -0.5,
         center_im: 0.0,
