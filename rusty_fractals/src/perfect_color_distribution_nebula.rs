@@ -46,10 +46,7 @@ pub fn perfectly_color_nebula_values(data: &DataImage, palette: &Palette) {
 
     println!("------------------------------------");
     println!("All pixels to paint:        {:8}", all_pixels_total);
-    println!(
-        "---------------------------> {}",
-        zero_value_elements + left + (single_color_use * palette_color_count)
-    );
+    println!("--------------------------->{:8}", zero_value_elements + left + (single_color_use * palette_color_count));
     println!("Zero value pixels to paint: {:8}", zero_value_elements);
     println!("Non zero pixels to paint:   {:8}", all_pixels_non_zero);
     println!("Spectrum, available colors: {:8}", palette_color_count);
@@ -85,7 +82,7 @@ pub fn perfectly_color_nebula_values(data: &DataImage, palette: &Palette) {
         }
     }
     assert_eq!(pixels.len(), pi);
-    println!("painted:                     {}", pi);
+    println!("painted:                    {:8}", pi);
     // Behold, the coloring is perfect!
 }
 

@@ -66,10 +66,7 @@ pub fn perfectly_color_mandelbrot_values(
 
     println!("------------------------------------");
     println!("All pixels to paint:        {:8}", all_pixels_total);
-    println!(
-        "---------------------------> {}",
-        zero_value_elements + left + (single_color_use * palette_color_count)
-    );
+    println!("--------------------------->{:8}", zero_value_elements + left + (single_color_use * palette_color_count));
     println!("Zero value pixels to paint: {:8}", zero_value_elements);
     println!("Non zero pixels to paint:   {:8}", all_pixels_non_zero);
     println!("Spectrum, available colors: {:8}", palette_color_count);
@@ -107,9 +104,9 @@ pub fn perfectly_color_mandelbrot_values(
         (zero_value_elements as f64 / zero_palette_color_count as f64) as u32;
     let zero_left = zero_value_elements - (zero_palette_color_count * zero_single_color_use);
 
-    println!("zero_palette_color_count:   {}", zero_palette_color_count);
-    println!("zero_single_color_use:      {}", zero_single_color_use);
-    println!("zero_left:                   {}", zero_left);
+    println!("zero_palette_color_count:   {:8}", zero_palette_color_count);
+    println!("zero_single_color_use:      {:8}", zero_single_color_use);
+    println!("zero_left:                  {:8}", zero_left);
     let mut piz = 0;
     for _ in 0..zero_left {
         let mp = pixels_zero.get(piz).expect("pixel error");
@@ -131,7 +128,7 @@ pub fn perfectly_color_mandelbrot_values(
     assert_eq!(pixels_zero.len(), piz);
     assert_eq!(pixels_zero.len() + pixels_length, all_pixels_total as usize);
     assert_eq!(all_pixels_total as usize, pi + piz);
-    println!("painted:                     {}", pi + piz);
+    println!("painted:                    {:8}", pi + piz);
     // Behold, the coloring is perfect!
 }
 
