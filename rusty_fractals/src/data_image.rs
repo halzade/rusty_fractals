@@ -1,6 +1,7 @@
 use crate::area::Area;
 use crate::constants::{MINIMUM_PATH_LENGTH, NEIGHBOURS};
 use crate::data_px::DataPx;
+use crate::data_px3::DataPx3;
 use crate::fractal::{FractalConfig, Optimizer};
 use crate::pixel_states::DomainElementState::{
     ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
@@ -26,6 +27,7 @@ pub struct DataImage {
      * static data for image
      */
     pub pixels: Vec<DataPx>,
+    pub pixels3: Vec<DataPx3>,
     /*
      * dynamic data for zoom video
      * As zoom progress, points [re,im] are projected to new pixels [px,py] until they migrate out of the tiny area.
@@ -38,6 +40,16 @@ pub struct DataImage {
 impl DataImage {
     pub fn color(&self, x: usize, y: usize, palette_color: Rgb<u8>) {
         self.px_at(x, y).set_c(palette_color);
+    }
+
+    pub fn color_r(&self, x: usize, y: usize, cr: usize) {
+        // todo self.px_at3(x, y).set_c(Red, cr);
+    }
+    pub fn color_g(&self, x: usize, y: usize, c: usize) {
+        // todo self.px_at3(x, y).set_c(Green, c);
+    }
+    pub fn color_b(&self, x: usize, y: usize, c: usize) {
+        // todo self.px_at3(x, y).set_c(Blue, c);
     }
 
     pub fn translate_one_path_to_point_grid_now(&self, path: Vec<[f64; 2]>, area: &Area) {
@@ -106,28 +118,11 @@ impl DataImage {
             .expect("Pixel out of bounds")
     }
 
-    // pub fn mo_3_px_at(&self, x: usize, y: usize) -> RwLockWriteGuard<Option<DataPx3>> {
-    //     if let Some(row) = self.pixels3.get(x) {
-    //         if let Some(cell) = row.get(y) {
-    //             match cell.lock() {
-    //                 Ok(guard) => guard, // Return the lock if successful
-    //                 Err(_) => {
-    //                     // Poisoned lock
-    //                     println!("Failed to acquire lock for pixel at ({}, {}). The RwLock might be poisoned.", x, y);
-    //                     panic!("Failed to acquire lock for pixel at ({}, {}).", x, y);
-    //                 }
-    //             }
-    //         } else {
-    //             // y index out of bounds
-    //             println!("Failed to get pixel at column {} in row {}.", y, x);
-    //             panic!("Pixel column index {} out of bounds.", y);
-    //         }
-    //     } else {
-    //         // x index out of bounds
-    //         println!("Failed to get row {} in pixels.", x);
-    //         panic!("Pixel row index {} out of bounds.", x);
-    //     }
-    // }
+    fn px_at3(&self, x: usize, y: usize) -> &DataPx3 {
+        self.pixels3
+            .get(x + y * self.width_x)
+            .expect("Pixel out of bounds")
+    }
 
     fn move_px_to_new_position(&self, x: usize, y: usize, px: &DataPx) {
         self.px_at(x, y).override_by(px);
@@ -145,7 +140,11 @@ impl DataImage {
         self.px_at(x, y).get_vsqc()
     }
 
-    pub fn values_state_color_at(&self, x: usize, y: usize) -> (u32, DomainElementState, Option<Rgb<u8>>) {
+    pub fn values_state_color_at(
+        &self,
+        x: usize,
+        y: usize,
+    ) -> (u32, DomainElementState, Option<Rgb<u8>>) {
         self.px_at(x, y).get_vsc()
     }
 
@@ -165,12 +164,14 @@ impl DataImage {
         self.px_at(x, y).get_v()
     }
 
-    // pub fn value_3_at(&self, x: usize, y: usize) -> (u32, u32, u32) {
-    //     let mo_px = self.mo_3_px_at(x, y);
-    //     let p = mo_px.as_mut().unwrap();
-    //     p.value3
-    // }
-
+    pub fn value_at3(&self, x: usize, y: usize) -> (u32, u32, u32) {
+        self.px_at3(x, y).get_v3()
+    }
+    
+    pub fn color_at3(&self, x: usize, y: usize) {
+        self.px_at3(x, y).set_c3()
+    }
+    
     pub fn state_origin_at(&self, x: usize, y: usize) -> (DomainElementState, f64, f64) {
         self.px_at(x, y).get_sri()
     }
@@ -408,6 +409,7 @@ pub fn init_o(conf: &FractalConfig, area: &Area, oo: Option<Optimizer>) -> DataI
         is_dynamic: conf.is_dynamic(),
         is_mandelbrot: conf.is_mandelbrot(),
         pixels: init_domain(area, oo),
+        pixels3: Vec::new(),
         paths: Arc::new(RwLock::new(Vec::new())),
     }
 }

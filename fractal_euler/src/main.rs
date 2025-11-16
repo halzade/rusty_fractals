@@ -1,14 +1,17 @@
-mod euler;
-mod mem_euler;
-mod pixel;
-
-use crate::mem_euler::MemEuler;
 use rusty_fractals::application;
 use rusty_fractals::fractal::FractalCalculationType::StaticSpectralImageEuler;
 use rusty_fractals::fractal::OrbitType::Infinite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
-use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
+use rusty_fractals::mem_euler::MemEuler;
+use rusty_fractals::palettes::PaletteName::Nothing;
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
+
+/** Fractal Euler type uses three color spectra for better mathematical analysis and better coloring results.
+ *  Possible use as:
+ *  - prime path length & el. order      -> Red spectrum
+ *  - Fibonacci path lengths & el. order -> Green spectrum
+ *  - other path lengths & el. order     -> Blue spectrum
+ */
 
 struct Euler {}
 
@@ -30,12 +33,12 @@ fn main() {
         iteration_min: 42,
         iteration_max: 80000,
         resolution_multiplier: Single,
-        palette: BlueToWhiteCircleUp, // TODO PALETTE_3_RGB
+        palette: Nothing,
         palette_zero: Nothing,
 
         // area
-        width_x: 1920,
-        height_y: 1080,
+        width_x: 400,
+        height_y: 400,
         width_re: 4.0,
         center_re: 0.0,
         center_im: 0.0,
@@ -51,9 +54,9 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use crate::mem_euler::MemEuler;
     use crate::Euler;
     use rusty_fractals::fractal::{FractalMath, MemType};
+    use rusty_fractals::mem_euler::MemEuler;
 
     #[test]
     fn test_math() {

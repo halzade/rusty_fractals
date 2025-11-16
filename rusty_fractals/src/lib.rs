@@ -23,3 +23,6 @@ pub mod perfect_color_distribution_euler;
 pub mod perfect_color_distribution_nebula;
 pub mod pixel_states;
 pub mod resolution_multiplier;
+pub mod euler;
+pub mod mem_euler;
+pub mod pixel;

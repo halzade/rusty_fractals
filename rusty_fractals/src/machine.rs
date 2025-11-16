@@ -14,6 +14,7 @@ use crate::palette::Palette;
 use crate::palettes::new_palette_by_name;
 use crate::perfect_color_distribution::perfectly_color_mandelbrot_values;
 use crate::perfect_color_distribution_nebula::perfectly_color_nebula_values;
+use crate::perfect_color_distribution_euler::perfectly_color_euler_values;
 use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong, FinishedTooShort};
 use crate::resolution_multiplier::ResolutionMultiplier;
@@ -166,7 +167,7 @@ where
                 self.calculate_mandelbrot_zoom();
             }
             StaticSpectralImageEuler => {
-                // todo() self.calculate_euler();
+                self.calculate_euler();
             }
         }
     }
@@ -260,6 +261,34 @@ where
 
         self.paint_final_calculation_result_colors();
     }
+
+    /* ------------------------------------
+    * Methods for Euler fractal calculation
+    * ---------------------------------- */
+
+    /**
+     * Calculate whole Euler fractal static image
+     */
+    pub fn calculate_euler(&self) {
+        println!("calculate_euler()");
+
+        let coordinates_xy = shuffled_calculation_coordinates();
+        coordinates_xy.par_iter().for_each(|xy| {
+
+            // TODO
+            self.chunk_calculation(&xy);
+            self.paint_partial_calculation_results_states_maybe();
+        });
+
+        self.data_image.recalculate_pixels_states();
+        self.paint_partial_calculation_results_states_now();
+
+
+        perfectly_color_euler_values(&self.data_image);
+
+        self.paint_final_calculation_result_colors();
+    }
+
 
     // in sequence executes as 20x20 parallel for each image part/chunk
     fn chunk_calculation(&self, xy: &[u32; 2]) {

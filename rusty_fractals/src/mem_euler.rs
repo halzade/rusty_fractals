@@ -1,6 +1,6 @@
-use rusty_fractals::fractal::MemType;
-use rusty_fractals::mathematician;
-use rusty_fractals::mem::Mem;
+use crate::fractal::MemType;
+use crate::mathematician;
+use crate::mem::Mem;
 
 /**
  * Memory object for Euler fractal
@@ -47,16 +47,11 @@ impl MemEuler {
     }
 }
 
-pub enum Spectra {
-    Red,
-    Green,
-    Blue,
-}
-
 #[cfg(test)]
 mod tests {
+    use crate::fractal::MemType;
+    use crate::mathematician;
     use crate::mem_euler::MemEuler;
-    use rusty_fractals::fractal::MemType;
 
     #[test]
     fn test_plus() {
@@ -67,5 +62,21 @@ mod tests {
         assert_eq!(me.m.re, 1.0);
         assert_eq!(me.m.im, 1.1);
         assert_eq!(me.it, 0);
+    }
+
+    #[test]
+    fn test_euler() {
+        let mut me = MemEuler::new(0.5, 0.5);
+        mathematician::init_primes(2);
+
+        me.euler();
+        assert_eq!(me.it, 1);
+        assert_eq!(me.m.re, 0.5);
+        assert_eq!(me.m.im, 0.5);
+
+        me.euler();
+        assert_eq!(me.it, 2);
+        assert_eq!(me.m.re, 0.02);
+        assert_eq!(me.m.im, 0.02);
     }
 }
