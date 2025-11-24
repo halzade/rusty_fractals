@@ -1,32 +1,30 @@
-use std::sync::RwLock;
 use crate::constants::ZOOM;
 use crate::fractal::FractalConfig;
+use std::sync::RwLock;
 
 /**
  * RxR Area on which the Fractal is calculated
  */
 pub struct Area {
-    pub data: RwLock<AreaData>,
+    data: RwLock<AreaData>,
 }
 
 /**
  * Mutable Area data.
  */
 pub struct AreaData {
-    pub width_x: usize,
-    pub width_xf64: f64,
-    pub height_y: usize,
-    pub height_yf64: f64,
-    pub width_re: f64,
-    pub height_im: f64,
-    pub width_half_x: usize,
-    pub width_half_xf64: f64,
-    pub height_half_y: usize,
-    pub height_half_yf64: f64,
-    pub numbers_re: Vec<f64>,
-    pub numbers_im: Vec<f64>,
-    pub center_re: f64,
-    pub center_im: f64,
+    width_x: usize,
+    width_xf64: f64,
+    height_y: usize,
+    height_yf64: f64,
+    width_re: f64,
+    height_im: f64,
+    width_half_xf64: f64,
+    height_half_yf64: f64,
+    numbers_re: Vec<f64>,
+    numbers_im: Vec<f64>,
+    center_re: f64,
+    center_im: f64,
     border_low_re: f64,
     border_low_im: f64,
     border_high_re: f64,
@@ -34,27 +32,23 @@ pub struct AreaData {
     plank: f64,
 }
 
-pub struct AreaDataCopy {
-    pub center_re: f64,
-    pub center_im: f64,
-    pub width_re: f64,
-    pub width_xf64: f64,
-    pub width_half_xf64: f64,
-    pub height_im: f64,
-    pub height_yf64: f64,
-    pub height_half_yf64: f64,
-}
-
-impl AreaDataCopy {
-    pub fn point_to_pixel(&self, re: f64, im: f64) -> (usize, usize) {
-        let px = (self.width_xf64 * (re - self.center_re) / self.width_re) + self.width_half_xf64;
-        let py =
-            (self.height_yf64 * (im - self.center_im) / self.height_im) + self.height_half_yf64;
-        (px as usize, py as usize)
-    }
-}
-
 impl<'lt> Area {
+    pub fn width_x(&self) -> usize {
+        self.data.read().unwrap().width_x
+    }
+
+    pub fn height_y(&self) -> usize {
+        self.data.read().unwrap().height_y
+    }
+
+    pub fn center_re(&self) -> f64 {
+        self.data.read().unwrap().center_re
+    }
+
+    pub fn center_im(&self) -> f64 {
+        self.data.read().unwrap().center_im
+    }
+
     pub fn contains(&self, re: f64, im: f64) -> bool {
         match self.data.read() {
             Ok(d) => {
@@ -114,37 +108,28 @@ impl<'lt> Area {
         }
     }
 
-    /**
-     * copy area data for point_to_pixel method
-     * element's re, im coordinates can be converted to x,y because they were verified during path calculation
-     */
-    pub fn copy_data(&self) -> AreaDataCopy {
-        let area = &self.data.read().unwrap();
-        AreaDataCopy {
-            center_re: area.center_re,
-            center_im: area.center_im,
-            width_re: area.width_re,
-            width_xf64: area.width_xf64,
-            width_half_xf64: area.width_half_xf64,
-            height_im: area.height_im,
-            height_yf64: area.height_yf64,
-            height_half_yf64: area.height_half_yf64,
-        }
+    pub fn zoom_in(&self) {
+        self.zoom_in_by(ZOOM);
     }
 
-    pub fn zoom_in(&self) {
+    pub fn zoom_in_by(&self, zoom: f64) {
         println!("zoom_in()");
         match self.data.write() {
             Ok(mut d) => {
-                d.width_re = d.width_re * ZOOM;
+                d.width_re = d.width_re * zoom;
                 d.height_im = d.width_re * ((d.height_y as f64) / (d.width_x as f64));
 
                 d.plank = d.width_re / d.width_x as f64;
 
-                d.border_low_re = d.center_re - d.width_re / 2.0;
-                d.border_high_re = d.center_re + d.width_re / 2.0 - d.plank;
+                d.border_low_re = d.center_re - (d.width_re / 2.0);
+                d.border_high_re = d.center_re + (d.width_re / 2.0);
                 d.border_low_im = d.center_im - d.height_im / 2.0;
-                d.border_high_im = d.center_im + d.height_im / 2.0 - d.plank;
+                d.border_high_im = d.center_im + (d.height_im / 2.0);
+
+                d.width_xf64 = d.width_x as f64;
+                d.height_yf64 = d.height_y as f64;
+                d.width_half_xf64 = d.width_xf64 / 2.0;
+                d.height_half_yf64 = d.height_yf64 / 2.0;
 
                 d.numbers_re.clear();
                 d.numbers_im.clear();
@@ -200,9 +185,14 @@ impl<'lt> Area {
                 d.center_im = im;
 
                 d.border_low_re = d.center_re - d.width_re / 2.0;
-                d.border_high_re = d.center_re + d.width_re / 2.0 - d.plank;
+                d.border_high_re = d.center_re + d.width_re / 2.0;
                 d.border_low_im = d.center_im - d.height_im / 2.0;
-                d.border_high_im = d.center_im + d.height_im / 2.0 - d.plank;
+                d.border_high_im = d.center_im + d.height_im / 2.0;
+
+                d.width_xf64 = d.width_x as f64;
+                d.height_yf64 = d.height_y as f64;
+                d.width_half_xf64 = d.width_xf64 / 2.0;
+                d.height_half_yf64 = d.height_yf64 / 2.0;
 
                 d.numbers_re.clear();
                 d.numbers_im.clear();
@@ -222,6 +212,27 @@ impl<'lt> Area {
                 println!("(): {}", e);
             }
         }
+    }
+
+    pub fn print_info(&self) {
+        println!("print_info()");
+        let d = self.data.read().unwrap();
+        println!("width_re:       {:6}", d.width_re);
+        println!("height_im:      {:6}", d.height_im);
+        println!("border_low_re:  {:6}", d.border_low_re);
+        println!("border_high_re: {:6}", d.border_high_re);
+        println!("border_low_im:  {:6}", d.border_low_im);
+        println!("border_high_im: {:6}", d.border_high_im);
+        println!("(plank):        {:6}", d.plank);
+    }
+
+    pub fn print_more(&self) {
+        println!("print_more()");
+        let d = self.data.read().unwrap();
+        println!("width_xf64:       {:6}", d.width_xf64);
+        println!("width_half_xf64:  {:6}", d.width_half_xf64);
+        println!("height_yf64:      {:6}", d.height_yf64);
+        println!("height_half_yf64: {:6}", d.height_half_yf64);
     }
 }
 
@@ -244,15 +255,6 @@ pub fn init<'lt>(config: &FractalConfig) -> Area {
     let border_low_im = center_im - height_im / 2.0;
     let border_high_im = center_im + height_im / 2.0;
 
-    println!("width_re:       {}", width_re);
-    println!("height_im:      {}", height_im);
-    println!("border_low_re:  {}", border_low_re);
-    println!("border_high_re: {}", border_high_re);
-    println!("border_low_im:  {}", border_low_im);
-    println!("border_high_im: {}", border_high_im);
-    println!("(plank):        {}", plank);
-    println!("(plank_half):   {}", plank_half);
-
     /* Generate domain elements */
     let mut numbers_re: Vec<f64> = Vec::new();
     let mut numbers_im: Vec<f64> = Vec::new();
@@ -270,9 +272,7 @@ pub fn init<'lt>(config: &FractalConfig) -> Area {
         height_yf64: height_y as f64,
         width_re,
         height_im,
-        width_half_x,
         width_half_xf64: width_half_x as f64,
-        height_half_y,
         height_half_yf64: height_half_y as f64,
         numbers_re,
         numbers_im,
@@ -338,7 +338,7 @@ mod tests {
     }
 
     #[test]
-    fn test_point_to_pixel() {
+    fn test_point_to_pixel_static() {
         let conf = fractal::init_trivial_static_config();
         let area = init(&conf);
 
@@ -347,6 +347,33 @@ mod tests {
 
         let b = area.point_to_pixel(-0.5, 0.499999);
         assert_eq!(b, (0, 19)); // from 0 to 19 is 20 chunks x
+    }
+
+    #[test]
+    fn test_point_to_pixel_dynamic() {
+        let conf = fractal::init_trivial_dynamic_config();
+        let area = init(&conf);
+
+        let a = area.point_to_pixel(-0.225, -0.225);
+        assert_eq!(a, (5, 5));
+
+        let a = area.point_to_pixel(-0.225, 0.225);
+        assert_eq!(a, (5, 14));
+
+        let a = area.point_to_pixel(0.225, -0.225);
+        assert_eq!(a, (14, 5));
+
+        let a = area.point_to_pixel(0.225, 0.225);
+        assert_eq!(a, (14, 14));
+
+        let a = area.point_to_pixel(0.175, -0.175);
+        assert_eq!(a, (13, 6));
+
+        let a = area.point_to_pixel(0.4, 0.4);
+        assert_eq!(a, (18, 18));
+
+        let a = area.point_to_pixel(-0.5, 0.499999);
+        assert_eq!(a, (0, 19)); // from 0 to 19 is 20 chunks x
     }
 
     #[test]
@@ -371,5 +398,58 @@ mod tests {
         assert_eq!(ims.len(), 20);
         assert_eq!(ims[0], -0.475);
         assert_eq!(ims[19], 0.4750000000000001);
+    }
+
+    #[test]
+    fn test_print_info() {
+        let c = fractal::init_trivial_dynamic_config();
+        let a = init(&c);
+
+        a.print_info();
+    }
+
+    #[test]
+    fn test_print_more() {
+        let c = fractal::init_trivial_dynamic_config();
+        let a = init(&c);
+
+        a.print_more();
+    }
+
+    #[test]
+    fn test_zoom_in_by() {
+        let c = fractal::init_trivial_dynamic_config();
+        let a = init(&c);
+
+        a.zoom_in_by(0.5);
+
+        let d = a.data.read().unwrap();
+        assert_eq!(d.center_re, 0.0);
+        assert_eq!(d.center_im, 0.0);
+        assert_eq!(d.width_re, 0.5);
+        assert_eq!(d.height_im, 0.5);
+        assert_eq!(d.border_low_re, -0.25);
+        assert_eq!(d.border_high_re, 0.25);
+        assert_eq!(d.border_low_im, -0.25);
+        assert_eq!(d.border_high_im, 0.25);
+    }
+
+    #[test]
+    fn test_zoom_in() {
+        let c = fractal::init_trivial_dynamic_config();
+        let a = init(&c);
+
+        a.zoom_in();
+        a.print_info();
+
+        let d = a.data.read().unwrap();
+        assert_eq!(d.center_re, 0.0);
+        assert_eq!(d.center_im, 0.0);
+        assert_eq!(d.width_re, 0.98);
+        assert_eq!(d.height_im, 0.98);
+        assert_eq!(d.border_low_re, -0.49);
+        assert_eq!(d.border_high_re, 0.49);
+        assert_eq!(d.border_low_im, -0.49);
+        assert_eq!(d.border_high_im, 0.49);
     }
 }
