@@ -204,7 +204,8 @@ pub fn init() -> Stats {
 
 #[cfg(test)]
 mod tests {
-    use crate::{data_image, fractal_stats};
+    use crate::fractal::init_trivial_static_config;
+    use crate::{area, data_image, fractal_stats};
 
     #[test]
     fn test_paths_new_points_amount() {
@@ -220,7 +221,9 @@ mod tests {
     #[test]
     fn test_update() {
         let fs = fractal_stats::init();
-        let di = data_image::init_trivial();
+        let fc = init_trivial_static_config();
+        let a = area::init(&fc);
+        let di = data_image::init(&fc, &a);
 
         fs.update(&di, 1);
         assert_eq!(fs.data.read().unwrap().paths_new_points_amount, 0);

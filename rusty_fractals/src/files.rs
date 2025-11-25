@@ -25,13 +25,17 @@ pub fn save_image(data_image: &DataImage) {
 #[cfg(test)]
 mod tests {
 
-    use crate::data_image;
     use crate::files::save_image;
+    use crate::fractal::init_trivial_static_config;
+    use crate::{area, data_image};
 
     #[test]
     fn test_save_image() {
         let name = "fractal.jpg";
-        save_image(&data_image::init_trivial());
+
+        let c = init_trivial_static_config();
+        let a = area::init(&c);
+        save_image(&data_image::init(&c, &a));
 
         // verify file created
         assert!(std::fs::metadata(name).unwrap().is_file());

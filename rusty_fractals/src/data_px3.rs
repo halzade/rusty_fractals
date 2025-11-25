@@ -28,7 +28,7 @@ impl DataPx3 {
         (d.value_r, d.value_g, d.value_b)
     }
 
-    pub fn set_c(&self, sp: Spectra, c: u8) {
+    pub fn set_c(&self, sp: Spectra, c: usize) {
         match sp {
             // todo
             Spectra::Red => {

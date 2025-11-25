@@ -1,5 +1,6 @@
 use crate::fractal::FractalCalculationType::{DynamicSequenceNebula, StaticSequenceMandelbrot};
 use crate::fractal::OrbitType::Finite;
+use crate::mathematician;
 use crate::mem::Mem;
 use crate::palettes::PaletteName;
 use crate::palettes::PaletteName::Nothing;
@@ -7,9 +8,8 @@ use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{ActiveNew, HibernatedDeepBlack};
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Single;
-use std::cmp::PartialEq;
 use FractalCalculationType::StaticImageMandelbrot;
-use crate::mathematician;
+use std::cmp::PartialEq;
 
 pub struct FractalConfig {
     // fractal config
@@ -213,7 +213,7 @@ pub const fn init_trivial_dynamic_config() -> FractalConfig {
 
 #[cfg(test)]
 mod tests {
-    use crate::fractal::{init_trivial_fractal, FractalMath, Optimizer};
+    use crate::fractal::{FractalMath, Optimizer, init_trivial_fractal};
     use crate::mem::Mem;
     use crate::pixel_states::DomainElementState::{ActiveNew, HibernatedDeepBlack};
 

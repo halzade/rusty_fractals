@@ -12,7 +12,7 @@ pub struct DataPx {
 }
 
 #[derive(Clone, Copy)]
-pub struct Data {
+struct Data {
     origin_re: f64,
     origin_im: f64,
     value: u32,
@@ -153,13 +153,13 @@ impl DataPx {
     pub fn override_by(&self, master: &DataPx) {
         // data
         let m = master.data.read().unwrap();
-        let mut d = self.data.write().unwrap();
-        d.origin_re = m.origin_re;
-        d.origin_im = m.origin_im;
-        d.value = m.value;
-        d.state = m.state;
-        d.quad = m.quad;
-        d.color = m.color;
+        let mut s = self.data.write().unwrap();
+        s.origin_re = m.origin_re;
+        s.origin_im = m.origin_im;
+        s.value = m.value;
+        s.state = m.state;
+        s.quad = m.quad;
+        s.color = m.color;
 
         // is alive
         *self.is_alive.write().expect("e2") = true;

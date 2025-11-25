@@ -12,7 +12,7 @@ pub struct Area {
 /**
  * Mutable Area data.
  */
-pub struct AreaData {
+struct AreaData {
     width_x: usize,
     width_xf64: f64,
     height_y: usize,
@@ -68,27 +68,14 @@ impl<'lt> Area {
      * Maps pixels [x, y] to their center [re, im]
      */
     pub fn screen_to_domain_re_copy(&self) -> Vec<f64> {
-        println!("screen_to_domain_re_copy()");
-        match self.data.read() {
-            Ok(d) => d.numbers_re.clone(),
-            Err(e) => {
-                println!("(): {}", e);
-                panic!()
-            }
-        }
+        self.data.read().unwrap().numbers_re.clone()
     }
 
     /**
      * Maps pixels [x, y] to their center [re, im]
      */
     pub fn screen_to_domain_im_copy(&self) -> Vec<f64> {
-        match self.data.read() {
-            Ok(d) => d.numbers_im.clone(),
-            Err(e) => {
-                println!("(): {}", e);
-                panic!()
-            }
-        }
+        self.data.read().unwrap().numbers_im.clone()
     }
 
     /**
@@ -145,7 +132,7 @@ impl<'lt> Area {
 
                 // im
                 for y in 0..d.height_y {
-                    let v = d.border_low_im + (d.plank * y as f64) + ph;
+                    let v = d.border_high_im - (d.plank * y as f64) + ph;
                     d.numbers_im.push(v);
                 }
             }
@@ -262,7 +249,7 @@ pub fn init<'lt>(config: &FractalConfig) -> Area {
         numbers_re.push(border_low_re + (plank * x as f64) + plank_half);
     }
     for y in 0..height_y {
-        numbers_im.push(border_low_im + (plank * y as f64) + plank_half);
+        numbers_im.push(border_high_im - (plank * y as f64) + plank_half);
     }
 
     let area_data = AreaData {
@@ -377,7 +364,7 @@ mod tests {
     }
 
     #[test]
-    fn test_screen_to_domain_re() {
+    fn test_screen_to_domain_re_copy() {
         let conf = fractal::init_trivial_static_config();
         let area = init(&conf);
 
@@ -389,15 +376,15 @@ mod tests {
     }
 
     #[test]
-    fn test_screen_to_domain_im() {
+    fn test_screen_to_domain_im_copy() {
         let conf = fractal::init_trivial_static_config();
         let area = init(&conf);
 
         let ims = area.screen_to_domain_im_copy();
 
         assert_eq!(ims.len(), 20);
-        assert_eq!(ims[0], -0.475);
-        assert_eq!(ims[19], 0.4750000000000001);
+        assert_eq!(ims[0], 0.4750000000000001);
+        assert_eq!(ims[19], -0.475);
     }
 
     #[test]

@@ -1,8 +1,10 @@
 use crate::area::Area;
 use crate::constants::{MINIMUM_PATH_LENGTH, NEIGHBOURS};
+use crate::data_px;
 use crate::data_px::DataPx;
 use crate::data_px3::DataPx3;
 use crate::fractal::{FractalConfig, Optimizer};
+use crate::pixel::Spectra::{Blue, Green, Red};
 use crate::pixel_states::DomainElementState::{
     ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
     HibernatedDeepBlack,
@@ -13,7 +15,6 @@ use crate::pixel_states::{
 };
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Square2;
-use crate::{area, data_px, fractal};
 use ResolutionMultiplier::{Single, Square3, Square5, Square9, Square11, Square51, Square101};
 use image::Rgb;
 use std::sync::{Arc, RwLock};
@@ -43,13 +44,13 @@ impl DataImage {
     }
 
     pub fn color_r(&self, x: usize, y: usize, cr: usize) {
-        // todo self.px_at3(x, y).set_c(Red, cr);
+        self.px_at3(x, y).set_c(Red, cr);
     }
     pub fn color_g(&self, x: usize, y: usize, c: usize) {
-        // todo self.px_at3(x, y).set_c(Green, c);
+        self.px_at3(x, y).set_c(Green, c);
     }
     pub fn color_b(&self, x: usize, y: usize, c: usize) {
-        // todo self.px_at3(x, y).set_c(Blue, c);
+        self.px_at3(x, y).set_c(Blue, c);
     }
 
     pub fn translate_one_path_to_point_grid_now(&self, path: Vec<[f64; 2]>, area: &Area) {
@@ -112,7 +113,10 @@ impl DataImage {
         self.px_at(x, y).add_v1();
     }
 
-    fn px_at(&self, x: usize, y: usize) -> &DataPx {
+    /**
+     * [0,0] is at the top left
+     */
+    pub(crate) fn px_at(&self, x: usize, y: usize) -> &DataPx {
         self.pixels
             .get(x + y * self.width_x)
             .expect("Pixel out of bounds")
@@ -167,11 +171,11 @@ impl DataImage {
     pub fn value_at3(&self, x: usize, y: usize) -> (u32, u32, u32) {
         self.px_at3(x, y).get_v3()
     }
-    
+
     pub fn color_at3(&self, x: usize, y: usize) {
         self.px_at3(x, y).set_c3()
     }
-    
+
     pub fn state_origin_at(&self, x: usize, y: usize) -> (DomainElementState, f64, f64) {
         self.px_at(x, y).get_sri()
     }
@@ -307,8 +311,9 @@ impl DataImage {
     }
 
     pub fn move_to_new_position(&self, x: usize, y: usize, area: &Area) {
-        let pxo = self.px_at(x, y);
-        let (ore, oim) = pxo.get_ri();
+        let px = self.px_at(x, y);
+        let (ore, oim) = px.get_ri();
+
         // There was already zoom in, the new area is smaller
         if area.contains(ore, oim) {
             // Element didn't move out of the smaller area
@@ -318,7 +323,7 @@ impl DataImage {
                 // insignificant move within the same pixel
             } else {
                 // move px to new position
-                self.move_px_to_new_position(nx, ny, pxo);
+                self.move_px_to_new_position(nx, ny, px);
             }
         } else {
             // clean position of elements which moved beyond area edges
@@ -388,21 +393,32 @@ impl DataImage {
     pub fn is_dynamic(&self) -> bool {
         self.is_dynamic
     }
+
+    /**
+     * expect 99 most
+     */
+    pub fn print_data_values(&self) {
+        for y in 0..self.height_y {
+            for x in 0..self.width_x {
+                let v = self.px_at(x, y).get_v();
+                print!("{:3}", v);
+            }
+            println!();
+        }
+    }
+
+    pub fn set(&self, x: usize, y: usize, value: u32) {
+        self.px_at(x, y).set_v(value);
+    }
 }
 
 pub fn init(conf: &FractalConfig, area: &Area) -> DataImage {
     init_o(conf, area, None)
 }
 
-pub fn init_trivial() -> DataImage {
-    let conf = fractal::init_trivial_static_config();
-    let area = area::init(&conf);
-    init(&conf, &area)
-}
-
 pub fn init_o(conf: &FractalConfig, area: &Area, oo: Option<Optimizer>) -> DataImage {
-    let wx = area.data.read().unwrap().width_x;
-    let hy = area.data.read().unwrap().height_y;
+    let wx = area.width_x();
+    let hy = area.height_y();
     DataImage {
         width_x: wx,
         height_y: hy,
@@ -414,20 +430,23 @@ pub fn init_o(conf: &FractalConfig, area: &Area, oo: Option<Optimizer>) -> DataI
     }
 }
 
+/**
+ * [0,0] is at the top left
+ */
 fn init_domain(area: &Area, oo: Option<Optimizer>) -> Vec<DataPx> {
     println!("init_domain()");
     let mut ret = Vec::new();
 
-    let wx = area.data.read().unwrap().width_x;
-    let hy = area.data.read().unwrap().height_y;
+    let wx = area.width_x();
+    let hy = area.height_y();
 
     let res = area.screen_to_domain_re_copy();
     let ims = area.screen_to_domain_im_copy();
 
     let optimizer = oo.unwrap_or_else(Optimizer::trivial);
 
-    for x in 0..wx {
-        for y in 0..hy {
+    for y in 0..hy {
+        for x in 0..wx {
             let origin_re = res[x];
             let origin_im = ims[y];
             let state = (optimizer.initial_state_for)(origin_re, origin_im);
@@ -470,7 +489,7 @@ fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::area;
-    use crate::data_image::{check_domain, color_for_state, init};
+    use crate::data_image::{check_domain, color_for_state, init, init_domain};
     use crate::fractal::{FractalConfig, init_trivial_dynamic_config};
     use crate::pixel_states::DomainElementState::ActiveNew;
     use crate::resolution_multiplier::ResolutionMultiplier::{
@@ -478,6 +497,7 @@ mod tests {
     };
 
     use crate::area::Area;
+    use crate::machine::init_trivial_dynamic;
     use image::Pixel;
     use std::sync::LazyLock;
 
@@ -625,5 +645,47 @@ mod tests {
         assert_eq!(check_domain(0, -1, 1, 1), false);
         assert_eq!(check_domain(2, 0, 1, 1), false);
         assert_eq!(check_domain(0, 2, 1, 1), false);
+    }
+
+    #[test]
+    fn test_print_data_values() {
+        let di = init(&CONF, &AREA);
+        di.print_data_values();
+    }
+
+    #[test]
+    fn test_move_to_new_position() {
+        let a = area::init(&CONF);
+        let di = init(&CONF, &a);
+
+        di.set(14, 5, 22);
+        a.zoom_in_by(0.5);
+
+        di.move_to_new_position(14, 5, &a);
+        di.print_data_values();
+
+        assert_eq!(di.px_at(14, 5).is_alive(), false);
+        assert_eq!(di.px_at(19, 1).is_alive(), true);
+        assert_eq!(di.px_at(19, 1).get_v(), 22);
+    }
+    #[test]
+    fn test_move_px_to_new_position() {
+        let di = init(&CONF, &AREA);
+        di.set(14, 5, 11);
+
+        di.move_px_to_new_position(1, 1, di.px_at(14, 5));
+
+        assert_eq!(di.px_at(14, 5).is_alive(), false);
+        assert_eq!(di.px_at(1, 1).is_alive(), true);
+        assert_eq!(di.px_at(1, 1).get_v(), 11);
+    }
+
+    #[test]
+    fn test_init_domain() {
+        let di = init(&CONF, &AREA);
+        assert_eq!(di.origin_at(0, 0), (-0.475, 0.475));
+        assert_eq!(di.origin_at(19, 0), (0.475, 0.475));
+        assert_eq!(di.origin_at(0, 19), (-0.475, -0.475));
+        assert_eq!(di.origin_at(19, 19), (0.475, -0.475));
     }
 }

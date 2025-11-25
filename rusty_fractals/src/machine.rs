@@ -5,30 +5,30 @@ use crate::data_image::DataImage;
 use crate::files::save_image;
 use crate::fractal::FractalCalculationType::StaticImageNebula;
 use crate::fractal::{
-    init_trivial_static_config, FractalCalculationType, FractalConfig, FractalMath, MemType,
-    Optimizer, OrbitType, TrivialFractal,
+    FractalCalculationType, FractalConfig, FractalMath, MemType, Optimizer, OrbitType,
+    TrivialFractal, init_trivial_dynamic_config, init_trivial_static_config,
 };
 use crate::fractal_stats::Stats;
 use crate::mem::Mem;
 use crate::palette::Palette;
 use crate::palettes::new_palette_by_name;
 use crate::perfect_color_distribution::perfectly_color_mandelbrot_values;
-use crate::perfect_color_distribution_nebula::perfectly_color_nebula_values;
 use crate::perfect_color_distribution_euler::perfectly_color_euler_values;
+use crate::perfect_color_distribution_nebula::perfectly_color_nebula_values;
 use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong, FinishedTooShort};
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::{area, data_image, fractal, fractal_stats, pixel_states};
-use rand::seq::SliceRandom;
-use rand::rng;
-use rayon::prelude::*;
-use std::marker::PhantomData;
-use std::sync::{Arc, RwLock};
-use std::time::{Duration, Instant};
 use FractalCalculationType::{
     DynamicSequenceNebula, StaticImageMandelbrot, StaticSequenceMandelbrot,
     StaticSpectralImageEuler,
 };
+use rand::rng;
+use rand::seq::SliceRandom;
+use rayon::prelude::*;
+use std::marker::PhantomData;
+use std::sync::{Arc, RwLock};
+use std::time::{Duration, Instant};
 
 /**
  * Machine owns all data
@@ -128,8 +128,15 @@ where
     }
 }
 
-pub fn init_trivial() -> Machine<'static, TrivialFractal, Mem> {
+pub fn init_trivial_static() -> Machine<'static, TrivialFractal, Mem> {
     let conf = init_trivial_static_config();
+    let fractal = fractal::init_trivial_fractal();
+
+    init(&conf, fractal)
+}
+
+pub fn init_trivial_dynamic() -> Machine<'static, TrivialFractal, Mem> {
+    let conf = init_trivial_dynamic_config();
     let fractal = fractal::init_trivial_fractal();
 
     init(&conf, fractal)
@@ -263,8 +270,8 @@ where
     }
 
     /* ------------------------------------
-    * Methods for Euler fractal calculation
-    * ---------------------------------- */
+     * Methods for Euler fractal calculation
+     * ---------------------------------- */
 
     /**
      * Calculate whole Euler fractal static image
@@ -274,7 +281,6 @@ where
 
         let coordinates_xy = shuffled_calculation_coordinates();
         coordinates_xy.par_iter().for_each(|xy| {
-
             // TODO
             self.chunk_calculation(&xy);
             self.paint_partial_calculation_results_states_maybe();
@@ -283,12 +289,10 @@ where
         self.data_image.recalculate_pixels_states();
         self.paint_partial_calculation_results_states_now();
 
-
         perfectly_color_euler_values(&self.data_image);
 
         self.paint_final_calculation_result_colors();
     }
-
 
     // in sequence executes as 20x20 parallel for each image part/chunk
     fn chunk_calculation(&self, xy: &[u32; 2]) {
@@ -354,6 +358,10 @@ where
         self.area.zoom_in();
     }
 
+    pub fn zoom_in_by(&self, zoom: f64) {
+        self.area.zoom_in_by(zoom);
+    }
+
     // This is called after calculation finished, a zoom-in was called and new area measures recalculated
     pub fn recalculate_pixels_positions_for_next_calculation(&self) {
         println!("recalculate_pixels_positions_for_next_calculation()");
@@ -361,8 +369,8 @@ where
         // Some elements will be moved to new positions
         // For all the moved elements, subsequent calculations will be skipped.
         let area = &self.area;
-        let cre = area.data.read().unwrap().center_re;
-        let cim = area.data.read().unwrap().center_im;
+        let cre = area.center_re();
+        let cim = area.center_im();
 
         let (cx, cy) = area.point_to_pixel(cre, cim);
 
@@ -724,7 +732,7 @@ mod tests {
 
     #[test]
     fn test_state_from_path_length() {
-        let machine = machine::init_trivial();
+        let machine = machine::init_trivial_static();
 
         let zero = machine.state_from_path_length(0, 0);
         let short_out = machine.state_from_path_length(1, 0);
@@ -753,7 +761,7 @@ mod tests {
 
     #[test]
     fn test_chunk_boundaries() {
-        let machine = machine::init_trivial();
+        let machine = machine::init_trivial_static();
 
         let (re_left, re_right, im_top, im_bot) = machine.chunk_boundaries(&[0, 0]);
 
@@ -766,7 +774,7 @@ mod tests {
 
     #[test]
     fn test_calculate_path_xy() {
-        let machine = machine::init_trivial();
+        let machine = machine::init_trivial_static();
 
         // test condition
         let (s, _, _) = machine.data_image.state_origin_at(0, 0);
@@ -782,7 +790,7 @@ mod tests {
 
     #[test]
     fn test_chunk_calculation_mandelbrot<'lt>() {
-        let machine = machine::init_trivial();
+        let machine = machine::init_trivial_static();
 
         let xy = [0, 0];
 
@@ -798,12 +806,43 @@ mod tests {
     #[test]
     fn test_calculate_path() {
         // prepare test data
-        let machine = machine::init_trivial();
+        let machine = machine::init_trivial_static();
 
         // execute test
         let (iterator, length) = machine.calculate_path(0.7, 0.7);
 
         assert_eq!(iterator, 2); // trivial iteration_max = 3
         assert_eq!(length, 0);
+    }
+
+    #[test]
+    fn test_recalculate_pixels_positions_for_next_calculation() {
+        let machine = machine::init_trivial_dynamic();
+        let d = &machine.data_image;
+
+        // top left
+        d.set(2, 2, 1);
+        d.set(0, 0, 6);
+
+        // top right
+        d.set(17, 2, 2);
+        d.set(19, 0, 7);
+
+        // bottom left
+        d.set(2, 17, 3);
+        d.set(0, 19, 8);
+
+        // bottom right
+        d.set(17, 17, 4);
+        d.set(19, 19, 9);
+
+        d.print_data_values();
+
+        machine.zoom_in_by(0.5);
+        machine.recalculate_pixels_positions_for_next_calculation();
+
+        d.print_data_values();
+
+        assert!(machine.data_image.is_dynamic());
     }
 }
