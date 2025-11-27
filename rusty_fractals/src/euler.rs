@@ -2,7 +2,7 @@ use crate::mathematician;
 use crate::pixel::Spectra;
 use crate::pixel::Spectra::{Blue, Green, Red};
 
-fn translate_paths_to_pixel_grid() {
+fn _translate_paths_to_pixel_grid() {
     /*
     for path in paths {
         for i in 0..path.size() - 1 {
@@ -19,7 +19,7 @@ fn translate_paths_to_pixel_grid() {
      */
 }
 
-fn colors_for(element_index: u32, path_length: u32) -> Spectra {
+fn _colors_for(element_index: u32, path_length: u32) -> Spectra {
     if mathematician::is_prime(element_index) {
         return Red;
     }

@@ -54,7 +54,8 @@ impl PixelsEuler {
         }
     }
 
-    fn set(&mut self, x: usize, y: usize, spec: Spectra, color_value: u32) {
+    // TODO
+    fn _set(&mut self, x: usize, y: usize, spec: Spectra, color_value: u32) {
         match spec {
             Spectra::Red => self.elements_red[x][y] = color_value,
             Spectra::Green => self.elements_green[x][y] = color_value,
@@ -85,7 +86,7 @@ mod tests {
     fn test_set() {
         let mut p = PixelsEuler::init(1, 1);
 
-        p.set(0, 0, Green, 5);
+        p._set(0, 0, Green, 5);
 
         let g = p.value_at(0, 0, Green);
         let r = p.value_at(0, 0, Red);

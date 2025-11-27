@@ -127,7 +127,7 @@ pub fn perfectly_color_euler_values(data: &DataImage) {
 
     let mut pi_green = 0;
     while pi_green < (left_green + zero_value_elements_green) as usize {
-        let sp = pixels_green.get(pi_green).unwrap();
+        let _sp = pixels_green.get(pi_green).unwrap();
         // data.color_g(sp.x, sp.y, palette3.spectrum_value_green(0));
 
         pi_green += 1;
@@ -156,7 +156,7 @@ pub fn perfectly_color_euler_values(data: &DataImage) {
         pi_blue += 1;
     }
     // color all remaining pixels, these are order by value
-    for palette_color_index in 0..palette_color_count as usize {
+    for _palette_color_index in 0..palette_color_count as usize {
         for _ in 0..single_color_use_blue {
             // color all these pixels with same color
             pi_blue += 1;

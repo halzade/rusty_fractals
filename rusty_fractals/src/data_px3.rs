@@ -4,7 +4,7 @@ use image::Rgb;
 use std::sync::RwLock;
 
 pub struct DataPx3 {
-    is_alive: RwLock<bool>,
+    _is_alive: RwLock<bool>, // TODO
     data3: RwLock<Data3>,
 }
 
@@ -28,7 +28,7 @@ impl DataPx3 {
         (d.value_r, d.value_g, d.value_b)
     }
 
-    pub fn set_c(&self, sp: Spectra, c: usize) {
+    pub fn set_c(&self, sp: Spectra, _c: usize) {
         match sp {
             // todo
             Spectra::Red => {
