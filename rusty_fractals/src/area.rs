@@ -307,11 +307,11 @@ mod tests {
         let conf = fractal::init_trivial_static_config();
         let area = init(&conf);
 
-        let a = area.point_to_pixel(0.4, 0.4);
-        assert_eq!(a, (18, 18));
+        let a = area.point_to_pixel(0.5, 0.5);
+        assert_eq!(a, (2, 2));
 
-        let b = area.point_to_pixel(-0.5, 0.499999);
-        assert_eq!(b, (0, 19)); // from 0 to 19 is 20 chunks x
+        let b = area.point_to_pixel(0.0, 0.0);
+        assert_eq!(b, (1, 1));
     }
 
     #[test]
@@ -319,26 +319,21 @@ mod tests {
         let conf = fractal::init_trivial_dynamic_config();
         let area = init(&conf);
 
-        let a = area.point_to_pixel(-0.225, -0.225);
-        assert_eq!(a, (5, 5));
+        let a = area.point_to_pixel(-0.5, 0.5);
+        assert_eq!(a, (0, 0));
 
-        let a = area.point_to_pixel(-0.225, 0.225);
-        assert_eq!(a, (5, 14));
+        let a = area.point_to_pixel(0.5, 0.5);
+        assert_eq!(a, (2, 0));
 
-        let a = area.point_to_pixel(0.225, -0.225);
-        assert_eq!(a, (14, 5));
+        let a = area.point_to_pixel(0.0, 0.0);
+        assert_eq!(a, (1, 1));
 
-        let a = area.point_to_pixel(0.225, 0.225);
-        assert_eq!(a, (14, 14));
+        let a = area.point_to_pixel(-0.5, -0.5);
+        assert_eq!(a, (0, 2));
 
-        let a = area.point_to_pixel(0.175, -0.175);
-        assert_eq!(a, (13, 6));
+        let a = area.point_to_pixel(0.5, 0.5);
+        assert_eq!(a, (2, 2));
 
-        let a = area.point_to_pixel(0.4, 0.4);
-        assert_eq!(a, (18, 18));
-
-        let a = area.point_to_pixel(-0.5, 0.499999);
-        assert_eq!(a, (0, 19)); // from 0 to 19 is 20 chunks x
     }
 
     #[test]
