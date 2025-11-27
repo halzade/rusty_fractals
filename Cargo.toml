@@ -21,3 +21,4 @@ members = [
     "fractal_collatz_conjecture",
     "fractal_collatz_conjecture_orbits",
 ]
+resolver = "3"

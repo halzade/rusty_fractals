@@ -7,9 +7,9 @@ keywords = ["fractal"]
 
 [dependencies]
 rayon = "1.11.0"
-image = "0.25.8"
+image = "0.25.9"
 rand = "0.10.0-rc.5"
-fltk = "1.5.21"
+fltk = "1.5.22"
 chrono = "0.4.42"
 
 [badges]
