@@ -119,13 +119,13 @@ impl DataImage {
     pub(crate) fn px_at(&self, x: usize, y: usize) -> &DataPx {
         self.pixels
             .get(x + y * self.width_x)
-            .expect("Pixel out of bounds")
+            .expect(&format!("[{}, {}] out of bounds", x, y))
     }
 
     fn px_at3(&self, x: usize, y: usize) -> &DataPx3 {
         self.pixels3
             .get(x + y * self.width_x)
-            .expect("Pixel out of bounds")
+            .expect(&format!("[{}, {}] out of bounds", x, y))
     }
 
     fn move_px_to_new_position(&self, x: usize, y: usize, px: &DataPx) {
@@ -489,7 +489,7 @@ fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::area;
-    use crate::data_image::{check_domain, color_for_state, init, init_domain};
+    use crate::data_image::{check_domain, color_for_state, init};
     use crate::fractal::{FractalConfig, init_trivial_dynamic_config};
     use crate::pixel_states::DomainElementState::ActiveNew;
     use crate::resolution_multiplier::ResolutionMultiplier::{
@@ -497,7 +497,6 @@ mod tests {
     };
 
     use crate::area::Area;
-    use crate::machine::init_trivial_dynamic;
     use image::Pixel;
     use std::sync::LazyLock;
 

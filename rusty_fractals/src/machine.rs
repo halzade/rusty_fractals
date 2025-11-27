@@ -845,4 +845,10 @@ mod tests {
 
         assert!(machine.data_image.is_dynamic());
     }
+
+    #[test]
+    fn test_shuffled_calculation_coordinates() {
+        let co = machine::shuffled_calculation_coordinates();
+        assert_eq!(co.len(), 400);
+    }
 }

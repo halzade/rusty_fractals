@@ -171,14 +171,14 @@ pub fn init_trivial_static_config() -> FractalConfig {
         orbits: Finite,
         fractal_calc_type: StaticImageMandelbrot,
         iteration_min: 1,
-        iteration_max: 3, // path length too short = 0,1, convergent = 2, divergent = 3
+        iteration_max: 3, // path length too short = 0 & 1, convergent = 2, divergent = 3
         resolution_multiplier: Single,
 
         palette: Nothing,
         palette_zero: Nothing,
 
-        width_x: 20, // 1 chunk is 1 px (20 / 20)
-        height_y: 20,
+        width_x: 2,
+        height_y: 2,
         width_re: 1.0,
         center_re: 0.0,
         center_im: 0.0,
@@ -199,8 +199,8 @@ pub const fn init_trivial_dynamic_config() -> FractalConfig {
         palette: Nothing,
         palette_zero: Nothing,
 
-        width_x: 20, // 1 chunk is 1 px
-        height_y: 20,
+        width_x: 2,
+        height_y: 2,
         width_re: 1.0,
         center_re: 0.0,
         center_im: 0.0,
