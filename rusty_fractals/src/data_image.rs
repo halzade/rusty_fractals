@@ -657,21 +657,46 @@ mod tests {
         di.print_data_values();
     }
 
+    /**
+     * :)
+     */
     #[test]
     fn test_move_to_new_position() {
-        let a = area::init(&CONF);
-        let di = init(&CONF, &a);
+        let dc = init_trivial_dynamic_config(7);
+        let ar = area::init(&dc);
+        let di = init(&dc, &ar);
 
-        di.set(2, 2, 22);
-        a.zoom_in_by(0.5);
+        di.set(2, 2, 13);
+        di.set(4, 2, 14);
+        di.set(2, 4, 15);
+        di.set(4, 4, 16);
 
-        di.move_to_new_position(14, 5, &a);
-        di.print_data_values();
+        ar.zoom_in_by(0.5);
 
-        assert_eq!(di.px_at(14, 5).is_alive(), false);
-        assert_eq!(di.px_at(19, 1).is_alive(), true);
-        assert_eq!(di.px_at(19, 1).get_v(), 22);
+        // move data from these positions to new coordinates
+        di.move_to_new_position(2, 2, &ar);
+        di.move_to_new_position(4, 2, &ar);
+        di.move_to_new_position(2, 4, &ar);
+        di.move_to_new_position(4, 4, &ar);
+
+        // original position
+        assert_eq!(di.px_at(2, 2).is_alive(), false);
+        assert_eq!(di.px_at(4, 2).is_alive(), false);
+        assert_eq!(di.px_at(2, 4).is_alive(), false);
+        assert_eq!(di.px_at(4, 4).is_alive(), false);
+
+        // moved after zoom in
+        assert_eq!(di.px_at(1, 1).is_alive(), true);
+        assert_eq!(di.px_at(5, 1).is_alive(), true);
+        assert_eq!(di.px_at(1, 5).is_alive(), true);
+        assert_eq!(di.px_at(5, 5).is_alive(), true);
+
+        assert_eq!(di.px_at(1, 1).get_v(), 13);
+        assert_eq!(di.px_at(5, 1).get_v(), 14);
+        assert_eq!(di.px_at(1, 5).get_v(), 15);
+        assert_eq!(di.px_at(5, 5).get_v(), 16);
     }
+
     #[test]
     fn test_move_px_to_new_position() {
         let di = init(&CONF, &AREA);

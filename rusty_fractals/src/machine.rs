@@ -5,8 +5,8 @@ use crate::data_image::DataImage;
 use crate::files::save_image;
 use crate::fractal::FractalCalculationType::StaticImageNebula;
 use crate::fractal::{
-    FractalCalculationType, FractalConfig, FractalMath, MemType, Optimizer, OrbitType,
-    TrivialFractal, init_trivial_dynamic_config, init_trivial_static_config,
+    init_trivial_dynamic_config, init_trivial_static_config, FractalCalculationType, FractalConfig, FractalMath, MemType,
+    Optimizer, OrbitType, TrivialFractal,
 };
 use crate::fractal_stats::Stats;
 use crate::mem::Mem;
@@ -19,16 +19,16 @@ use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong, FinishedTooShort};
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::{area, data_image, fractal, fractal_stats, pixel_states};
-use FractalCalculationType::{
-    DynamicSequenceNebula, StaticImageMandelbrot, StaticSequenceMandelbrot,
-    StaticSpectralImageEuler,
-};
 use rand::rng;
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
 use std::marker::PhantomData;
 use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
+use FractalCalculationType::{
+    DynamicSequenceNebula, StaticImageMandelbrot, StaticSequenceMandelbrot,
+    StaticSpectralImageEuler,
+};
 
 /**
  * Machine owns all data
@@ -800,8 +800,6 @@ mod tests {
 
         machine.chunk_calculation_mandelbrot(&xy);
         let (s, _, _) = machine.data_image.state_origin_at(0, 0);
-
-        println!("state: {:?}", s);
 
         assert_eq!(pixel_states::is_active_new(s), false);
         assert_eq!(pixel_states::is_finished_any(s), true);
