@@ -4,12 +4,13 @@ use image::{ImageBuffer, RgbImage};
 pub fn save_image(data_image: &DataImage) {
     println!("save_image()");
 
-    let width = data_image.width_x;
-    let height = data_image.height_y;
+    let width = data_image.width_xp;
+    let height = data_image.height_yp;
     let path = "fractal.jpg";
 
     let mut img: RgbImage = ImageBuffer::new(width as u32, height as u32);
 
+    // [0, height)
     for y in 0..height {
         for x in 0..width {
             if let Some(color) = data_image.color_at(x, y) {

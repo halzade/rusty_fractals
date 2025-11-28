@@ -25,8 +25,8 @@ impl Pix {
 pub fn perfectly_color_euler_values(data: &DataImage) {
     // todo
     
-    let width = data.width_x;
-    let height = data.height_y;
+    let width = data.width_xp;
+    let height = data.height_yp;
 
     let palette3: Palette3 = palette_3_rgb();
 

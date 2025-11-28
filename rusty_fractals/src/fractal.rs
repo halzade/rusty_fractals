@@ -23,8 +23,10 @@ pub struct FractalConfig {
     pub palette: PaletteName,
     pub palette_zero: PaletteName,
     // area config
-    pub width_x: usize,
-    pub height_y: usize,
+    pub width_xl: usize,  // length [-0.5, 0.5] = 2 intervals for width_re = 1
+    pub width_xp: usize,  // points [-0.5, 0, 0.5] = 3 elements for width_re = 1
+    pub height_yl: usize, // length [0.5, -0.5] = 2 intervals for width_im = 1
+    pub height_yp: usize, // points [0.5, 0, -0.5] = 3 elements for width_im = 1
     pub width_re: f64,
     pub center_re: f64,
     pub center_im: f64,
@@ -177,8 +179,12 @@ pub fn init_trivial_static_config() -> FractalConfig {
         palette: Nothing,
         palette_zero: Nothing,
 
-        width_x: 2,
-        height_y: 2,
+        // same as stupid Cartesian coordinates
+        // [0.0, 0.0] at the center
+        width_xl: 2,
+        width_xp: 3, // [0, 1, 2] with [-0.5, 0.0, 0.5]
+        height_yl: 2,
+        height_yp: 3, // [0, 1, 2] with [0.5, 0.0, -0.5]
         width_re: 1.0,
         center_re: 0.0,
         center_im: 0.0,
@@ -188,7 +194,7 @@ pub fn init_trivial_static_config() -> FractalConfig {
     }
 }
 
-pub const fn init_trivial_dynamic_config() -> FractalConfig {
+pub const fn init_trivial_dynamic_config(domain_side: usize) -> FractalConfig {
     FractalConfig {
         name: "Dynamic",
         fractal_calc_type: DynamicSequenceNebula,
@@ -199,8 +205,12 @@ pub const fn init_trivial_dynamic_config() -> FractalConfig {
         palette: Nothing,
         palette_zero: Nothing,
 
-        width_x: 2,
-        height_y: 2,
+        // same as stupid Cartesian coordinates
+        // [0.0, 0.0] at the center
+        width_xl: domain_side - 1,
+        width_xp: domain_side,
+        height_yl: domain_side - 1,
+        height_yp: domain_side,
         width_re: 1.0,
         center_re: 0.0,
         center_im: 0.0,

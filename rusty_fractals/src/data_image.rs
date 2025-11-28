@@ -10,18 +10,20 @@ use crate::pixel_states::DomainElementState::{
     HibernatedDeepBlack,
 };
 use crate::pixel_states::{
-    ACTIVE_NEW, DomainElementState, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST, FINISHED_TOO_LONG,
-    FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK, is_finished_success_past,
+    is_finished_success_past, DomainElementState, ACTIVE_NEW, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST,
+    FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK,
 };
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Square2;
-use ResolutionMultiplier::{Single, Square3, Square5, Square9, Square11, Square51, Square101};
 use image::Rgb;
 use std::sync::{Arc, RwLock};
+use ResolutionMultiplier::{Single, Square101, Square11, Square3, Square5, Square51, Square9};
 
 pub struct DataImage {
-    pub width_x: usize,
-    pub height_y: usize,
+    pub width_xl: usize,
+    pub width_xp: usize,
+    pub height_yl: usize,
+    pub height_yp: usize,
     pub is_dynamic: bool,
     pub is_mandelbrot: bool,
     /*
@@ -102,8 +104,8 @@ impl DataImage {
     }
 
     pub fn clear_all_px_data(&self) {
-        for y in 0..self.height_y {
-            for x in 0..self.width_x {
+        for y in 0..self.height_yp {
+            for x in 0..self.width_xp {
                 self.px_at(x, y).set_v(0);
             }
         }
@@ -118,13 +120,13 @@ impl DataImage {
      */
     pub(crate) fn px_at(&self, x: usize, y: usize) -> &DataPx {
         self.pixels
-            .get(x + y * self.width_x)
+            .get(x + y * self.width_xp)
             .expect(&format!("[{}, {}] out of bounds", x, y))
     }
 
     fn px_at3(&self, x: usize, y: usize) -> &DataPx3 {
         self.pixels3
-            .get(x + y * self.width_x)
+            .get(x + y * self.width_xp)
             .expect(&format!("[{}, {}] out of bounds", x, y))
     }
 
@@ -212,8 +214,8 @@ impl DataImage {
 
     pub fn recalculate_pixels_states(&self) {
         println!("recalculate_pixels_states()");
-        for y in 0..self.height_y {
-            for x in 0..self.width_x {
+        for y in 0..self.height_yp {
+            for x in 0..self.width_xp {
                 self.px_at(x, y).past();
             }
         }
@@ -228,7 +230,7 @@ impl DataImage {
             for b in -neigh..(neigh + 1) {
                 let xx = x as i32 + a;
                 let yy = y as i32 + b;
-                if check_domain(xx, yy, self.width_x, self.height_y) {
+                if check_domain(xx, yy, self.width_xp, self.height_yp) {
                     let (_, state) = self.value_state_at(xx as usize, yy as usize);
                     if is_finished_success_past(state) {
                         return true;
@@ -241,8 +243,8 @@ impl DataImage {
 
     pub fn best_four_chunks_value(&self) -> u32 {
         println!("best_four_chunks_value()");
-        let chunk_size_x = self.width_x / 20;
-        let chunk_size_y = self.height_y / 20;
+        let chunk_size_x = self.width_xl / 20;
+        let chunk_size_y = self.height_yl / 20;
         let mut values: Vec<u32> = Vec::new();
         for x in 0..20 {
             for y in 0..20 {
@@ -338,8 +340,8 @@ impl DataImage {
         let mut c_moved = 0;
         let mut c_created = 0;
 
-        for y in 0..self.height_y {
-            for x in 0..self.width_x {
+        for y in 0..self.height_yp {
+            for x in 0..self.width_xp {
                 let mo_px = self.px_at(x, y);
                 if !mo_px.is_alive() {
                     c_created += 1;
@@ -372,7 +374,7 @@ impl DataImage {
                 let xx = x as i32 + a;
                 let yy = y as i32 + b;
 
-                if (a != 0 || b != 0) && check_domain(xx, yy, self.width_x, self.height_y) {
+                if (a != 0 || b != 0) && check_domain(xx, yy, self.width_xp, self.height_yp) {
                     let px = self.px_at(xx as usize, yy as usize);
 
                     if self.is_mandelbrot {
@@ -398,8 +400,8 @@ impl DataImage {
      * expect 99 most
      */
     pub fn print_data_values(&self) {
-        for y in 0..self.height_y {
-            for x in 0..self.width_x {
+        for y in 0..self.height_yp {
+            for x in 0..self.width_xp {
                 let v = self.px_at(x, y).get_v();
                 print!("{:3}", v);
             }
@@ -417,11 +419,11 @@ pub fn init(conf: &FractalConfig, area: &Area) -> DataImage {
 }
 
 pub fn init_o(conf: &FractalConfig, area: &Area, oo: Option<Optimizer>) -> DataImage {
-    let wx = area.width_x();
-    let hy = area.height_y();
     DataImage {
-        width_x: wx,
-        height_y: hy,
+        width_xl: area.width_xl(),
+        width_xp: area.width_xp(),
+        height_yl: area.height_yl(),
+        height_yp: area.height_yp(),
         is_dynamic: conf.is_dynamic(),
         is_mandelbrot: conf.is_mandelbrot(),
         pixels: init_domain(area, oo),
@@ -437,16 +439,13 @@ fn init_domain(area: &Area, oo: Option<Optimizer>) -> Vec<DataPx> {
     println!("init_domain()");
     let mut ret = Vec::new();
 
-    let wx = area.width_x();
-    let hy = area.height_y();
-
     let res = area.screen_to_domain_re_copy();
     let ims = area.screen_to_domain_im_copy();
 
     let optimizer = oo.unwrap_or_else(Optimizer::trivial);
 
-    for y in 0..hy {
-        for x in 0..wx {
+    for y in 0..area.height_yp() {
+        for x in 0..area.width_xp() {
             let origin_re = res[x];
             let origin_im = ims[y];
             let state = (optimizer.initial_state_for)(origin_re, origin_im);
@@ -490,22 +489,34 @@ fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
 mod tests {
     use crate::area;
     use crate::data_image::{check_domain, color_for_state, init};
-    use crate::fractal::{FractalConfig, init_trivial_dynamic_config};
+    use crate::fractal::{init_trivial_dynamic_config, FractalConfig};
     use crate::pixel_states::DomainElementState::ActiveNew;
     use crate::resolution_multiplier::ResolutionMultiplier::{
-        Square3, Square5, Square9, Square11, Square51, Square101,
+        Square101, Square11, Square3, Square5, Square51, Square9,
     };
 
     use crate::area::Area;
     use image::Pixel;
     use std::sync::LazyLock;
 
-    static CONF: FractalConfig = init_trivial_dynamic_config();
+    static CONF: FractalConfig = init_trivial_dynamic_config(3);
     static AREA: LazyLock<Area> = LazyLock::new(|| area::init(&CONF));
 
-    fn element_at(w: &Vec<[f64; 2]>, index: usize) -> (f64, f64) {
-        let a = w.get(index).unwrap();
-        (a[0], a[1])
+    #[test]
+    fn test_px_at() {
+        let di = init(&CONF, &AREA);
+
+        assert_eq!(di.px_at(0, 0).get_ri(), (-0.5, 0.5));
+        assert_eq!(di.px_at(1, 0).get_ri(), (0.0, 0.5));
+        assert_eq!(di.px_at(2, 0).get_ri(), (0.5, 0.5));
+
+        assert_eq!(di.px_at(0, 1).get_ri(), (-0.5, 0.0));
+        assert_eq!(di.px_at(1, 1).get_ri(), (0.0, 0.0));
+        assert_eq!(di.px_at(2, 1).get_ri(), (0.5, 0.0));
+
+        assert_eq!(di.px_at(0, 2).get_ri(), (-0.5, -0.5));
+        assert_eq!(di.px_at(1, 2).get_ri(), (0.0, -0.5));
+        assert_eq!(di.px_at(2, 2).get_ri(), (0.5, -0.5));
     }
 
     #[test]
@@ -558,11 +569,8 @@ mod tests {
     fn test_mo_px_at() {
         let data = init(&CONF, &AREA);
 
-        let px1 = data.px_at(0, 0);
-        let px2 = data.px_at(19, 19);
-
-        assert_eq!(px1.get_s(), ActiveNew);
-        assert_eq!(px2.get_s(), ActiveNew);
+        assert_eq!(data.px_at(0, 0).get_s(), ActiveNew);
+        assert_eq!(data.px_at(2, 2).get_s(), ActiveNew);
     }
 
     #[test]
@@ -575,9 +583,6 @@ mod tests {
         let (o_re, o_im) = data.origin_at(0, 0);
         let w = data.wrap(o_re, o_im, Square3, area_plank);
         assert_eq!(w.len(), 8);
-        let (re, im) = element_at(&w, 0);
-        assert_eq!(re, -0.49166666666666664);
-        assert_eq!(im, -0.49166666666666664);
     }
 
     #[test]
@@ -657,7 +662,7 @@ mod tests {
         let a = area::init(&CONF);
         let di = init(&CONF, &a);
 
-        di.set(14, 5, 22);
+        di.set(2, 2, 22);
         a.zoom_in_by(0.5);
 
         di.move_to_new_position(14, 5, &a);
@@ -670,11 +675,11 @@ mod tests {
     #[test]
     fn test_move_px_to_new_position() {
         let di = init(&CONF, &AREA);
-        di.set(14, 5, 11);
+        di.set(2, 2, 11);
 
-        di.move_px_to_new_position(1, 1, di.px_at(14, 5));
+        di.move_px_to_new_position(1, 1, di.px_at(2, 2));
 
-        assert_eq!(di.px_at(14, 5).is_alive(), false);
+        assert_eq!(di.px_at(2, 2).is_alive(), false);
         assert_eq!(di.px_at(1, 1).is_alive(), true);
         assert_eq!(di.px_at(1, 1).get_v(), 11);
     }
@@ -682,9 +687,18 @@ mod tests {
     #[test]
     fn test_init_domain() {
         let di = init(&CONF, &AREA);
-        assert_eq!(di.origin_at(0, 0), (-0.475, 0.475));
-        assert_eq!(di.origin_at(19, 0), (0.475, 0.475));
-        assert_eq!(di.origin_at(0, 19), (-0.475, -0.475));
-        assert_eq!(di.origin_at(19, 19), (0.475, -0.475));
+        assert_eq!(di.origin_at(0, 0), (-0.5, 0.5));
+        assert_eq!(di.origin_at(1, 0), (0.0, 0.5));
+        assert_eq!(di.origin_at(2, 0), (0.5, 0.5));
+
+        assert_eq!(di.origin_at(0, 1), (-0.5, 0.0));
+        assert_eq!(di.origin_at(1, 1), (0.0, 0.0));
+        assert_eq!(di.origin_at(2, 1), (0.5, 0.0));
+
+        assert_eq!(di.origin_at(0, 2), (-0.5, -0.5));
+        assert_eq!(di.origin_at(1, 2), (0.0, -0.5));
+        assert_eq!(di.origin_at(2, 2), (0.5, -0.5));
+
+        assert_eq!(di.pixels.len(), 9);
     }
 }

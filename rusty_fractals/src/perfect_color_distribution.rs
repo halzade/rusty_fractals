@@ -24,8 +24,8 @@ pub fn perfectly_color_mandelbrot_values(
 ) {
     println!("perfectly_color_mandelbrot_values()");
 
-    let width = data.width_x;
-    let height = data.height_y;
+    let width = data.width_xp;
+    let height = data.height_yp;
 
     // Result pixels, order by value
     let mut pixels: Vec<Mix> = Vec::new();

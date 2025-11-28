@@ -17,8 +17,8 @@ struct Pix {
 
 pub fn perfectly_color_nebula_values(data: &DataImage, palette: &Palette) {
     println!("perfectly_color_nebula_values()");
-    let width = data.width_x;
-    let height = data.height_y;
+    let width = data.width_xp;
+    let height = data.height_yp;
 
     // Result pixels, order by value
     let mut pixels: Vec<Pix> = Vec::new();

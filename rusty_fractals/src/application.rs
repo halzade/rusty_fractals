@@ -34,19 +34,20 @@ struct ApplicationData {
     pub last_max_value: u32,
 }
 
-fn init_o<'lt, F, M>(config: &FractalConfig, fractal: F, oo: Option<Optimizer>) -> Arc<RwLock<Application<F, M>>>
+fn init_o<'lt, F, M>(
+    config: &FractalConfig,
+    fractal: F,
+    oo: Option<Optimizer>,
+) -> Arc<RwLock<Application<F, M>>>
 where
     F: FractalMath<M> + 'static,
     M: MemType<M> + 'static,
 {
     let mut window = Window::default();
-
-    let width = config.width_x as i32;
-    let height = config.height_y as i32;
     let name = config.name;
 
     window.set_label(name);
-    window.set_size(width, height);
+    window.set_size(config.width_xl as i32, config.height_yl as i32);
 
     window.end();
     window.show();
@@ -200,8 +201,8 @@ where
     pub fn paint_final_calculation_result_colors(&self, data_image: &DataImage) {
         match app::lock() {
             Ok(_) => {
-                let width = data_image.width_x;
-                let height = data_image.height_y;
+                let width = data_image.width_xp;
+                let height = data_image.height_yp;
 
                 let pixel_colors: Vec<Option<Rgb<u8>>> = (0..height)
                     .flat_map(|y| (0..width).map(move |x| data_image.color_at(x, y)))
@@ -245,8 +246,8 @@ where
     pub fn paint_partial_calculation_result_states(&self, data_image: &DataImage) {
         match app::lock() {
             Ok(_) => {
-                let width = data_image.width_x;
-                let height = data_image.height_y;
+                let width = data_image.width_xp;
+                let height = data_image.height_yp;
 
                 // pixel states and image colors
                 let pixel_states: Vec<(u32, DomainElementState, Option<Rgb<u8>>)> = (0..height)
@@ -323,8 +324,8 @@ where
     pub fn paint_pixel_states(&self, data_image: &DataImage) {
         match app::lock() {
             Ok(_) => {
-                let width = data_image.width_x;
-                let height = data_image.height_y;
+                let width = data_image.width_xp;
+                let height = data_image.height_yp;
 
                 // pixel states and image colors
                 let pixel_states: Vec<DomainElementState> = (0..height)

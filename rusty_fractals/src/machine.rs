@@ -47,8 +47,10 @@ where
     pub fractal_calc_type: FractalCalculationType,
     // area config
     pub area: Area,
-    pub width_x: usize,  // width x in pixels
-    pub height_y: usize, // with y in pixels
+    pub width_xp: usize, // width x in pixels, including right and bottom edge
+    pub width_xl: usize,
+    pub height_yp: usize, // with y in pixels, ...
+    pub height_yl: usize,
     pub width_re: f64,
     pub center_re: f64,
     pub center_im: f64,
@@ -103,8 +105,10 @@ where
         fractal_calc_type: config.fractal_calc_type,
         data_image: data_image::init_o(config, &area, oo),
         area,
-        width_x: config.width_x,
-        height_y: config.height_y,
+        width_xl: config.width_xl,
+        width_xp: config.width_xp,
+        height_yl: config.height_yl,
+        height_yp: config.height_yp,
         width_re: config.width_re,
         center_re: config.center_re,
         center_im: config.center_im,
@@ -136,7 +140,7 @@ pub fn init_trivial_static() -> Machine<'static, TrivialFractal, Mem> {
 }
 
 pub fn init_trivial_dynamic() -> Machine<'static, TrivialFractal, Mem> {
-    let conf = init_trivial_dynamic_config();
+    let conf = init_trivial_dynamic_config(3);
     let fractal = fractal::init_trivial_fractal();
 
     init(&conf, fractal)
@@ -382,19 +386,19 @@ where
         }
         // 2. move top right to center
         for y in 0..cy {
-            for x in (cx..self.width_x).rev() {
+            for x in (cx..self.width_xp).rev() {
                 self.data_image.move_to_new_position(x, y, area);
             }
         }
         // 3. move bottom left to center
-        for y in (cy..self.height_y).rev() {
+        for y in (cy..self.height_yp).rev() {
             for x in 0..cx {
                 self.data_image.move_to_new_position(x, y, area);
             }
         }
         // 4. move bottom right to center
-        for y in (cy..self.height_y).rev() {
-            for x in (cx..self.width_x).rev() {
+        for y in (cy..self.height_yp).rev() {
+            for x in (cx..self.width_xp).rev() {
                 self.data_image.move_to_new_position(x, y, area);
             }
         }
@@ -413,8 +417,8 @@ where
      * this method returns numbers from 0 to 20
      */
     pub fn chunk_boundaries(&self, xy: &[u32; 2]) -> (usize, usize, usize, usize) {
-        let chunk_size_x = (self.width_x / 20) as u32;
-        let chunk_size_y = (self.height_y / 20) as u32;
+        let chunk_size_x = (self.width_xl / 20) as u32;
+        let chunk_size_y = (self.height_yl / 20) as u32;
         (
             (xy[0] * chunk_size_x) as usize,
             ((xy[0] + 1) * chunk_size_x) as usize,

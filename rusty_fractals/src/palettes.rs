@@ -22,6 +22,7 @@ pub enum Function {
     CircleUp,
 }
 
+#[derive(Clone, Copy, Debug)]
 pub enum PaletteName {
     Nothing,
     BlackToWhiteExp2,
