@@ -1,10 +1,10 @@
 use rusty_fractals::application;
+use rusty_fractals::config::NebulaImage;
 use rusty_fractals::constants::{PHOENIX_INIT_C, PHOENIX_INIT_P};
-use rusty_fractals::fractal::FractalCalculationType::StaticImageNebula;
+use rusty_fractals::fractal::FractalMath;
 use rusty_fractals::fractal::OrbitType::Finite;
-use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem_phoenix::MemPhoenix;
-use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
+use rusty_fractals::palettes::PaletteName::BlueToWhiteCircleUp;
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square9;
 
 pub struct Head {}
@@ -25,15 +25,13 @@ impl FractalMath<MemPhoenix> for Head {
 }
 
 fn main() {
-    let fractal_config = FractalConfig {
+    let fractal_config = NebulaImage {
         name: "Head",
         iteration_min: 8,
         iteration_max: 25000,
-        fractal_calc_type: StaticImageNebula,
         resolution_multiplier: Square9,
         palette: BlueToWhiteCircleUp,
 
-        palette_zero: Nothing,
         width_x: 1280,
         height_y: 720,
         width_re: 5.0,
@@ -41,34 +39,23 @@ fn main() {
         center_im: -0.37573460559804,
 
         orbits: Finite,
-        update_max: 150,
-        update_min: 0,
     };
 
-    application::execute(fractal_config, Head {});
+    application::execute(fractal_config.init(), Head {});
 }
 
 #[cfg(test)]
 mod tests {
     use crate::Head;
-    use rusty_fractals::constants::PHOENIX_INITIALIZER;
     use rusty_fractals::fractal::FractalMath;
-    use rusty_fractals::mem::Mem;
     use rusty_fractals::mem_phoenix::MemPhoenix;
 
     #[test]
     fn test_math() {
         let head = Head {};
-        let mut mp = MemPhoenix {
-            m: Mem { re: 0.0, im: 0.0 },
-            prev_prev_re: PHOENIX_INITIALIZER,
-            prev_prev_im: PHOENIX_INITIALIZER,
-            prev_re: PHOENIX_INITIALIZER,
-            prev_im: PHOENIX_INITIALIZER,
-        };
+        let mut mp = MemPhoenix::new(0.0, 0.0);
 
         head.math(&mut mp, 1.0, 0.1);
-
         assert_eq!(mp.m.re, 1.1);
         assert_eq!(mp.m.im, -0.15);
     }

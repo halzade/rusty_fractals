@@ -1,10 +1,8 @@
 use rusty_fractals::application;
-use rusty_fractals::fractal::FractalCalculationType::StaticSequenceMandelbrot;
-use rusty_fractals::fractal::OrbitType::Ignore;
-use rusty_fractals::fractal::{FractalConfig, FractalMath};
+use rusty_fractals::config::MandelbrotVideo;
+use rusty_fractals::fractal::FractalMath;
 use rusty_fractals::mem_collatz::MemCollatz;
 use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, LinearGray};
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
 
 pub struct CollatzConjecture {}
 
@@ -17,13 +15,10 @@ impl FractalMath<MemCollatz> for CollatzConjecture {
 }
 
 fn main() {
-    let fractal_config = FractalConfig {
+    let fractal_config = MandelbrotVideo {
         name: "Collatz Conjecture",
-        fractal_calc_type: StaticSequenceMandelbrot,
 
-        iteration_min: 0,
         iteration_max: 1348,
-        resolution_multiplier: Single,
         palette: BlueToWhiteCircleUp,
         palette_zero: LinearGray,
 
@@ -32,32 +27,23 @@ fn main() {
         width_re: 3.5,
         center_re: -0.088485445553580480,
         center_im: -0.200679435068532800,
-
-        orbits: Ignore,
-        update_max: 0,
-        update_min: 0,
     };
 
-    application::execute(fractal_config, CollatzConjecture {});
+    application::execute(fractal_config.init(), CollatzConjecture {});
 }
 
 #[cfg(test)]
 mod tests {
     use crate::CollatzConjecture;
-    use rusty_fractals::fractal::FractalMath;
-    use rusty_fractals::mem::Mem;
+    use rusty_fractals::fractal::{FractalMath, MemType};
     use rusty_fractals::mem_collatz::MemCollatz;
 
     #[test]
     fn test_math() {
         let collatz = CollatzConjecture {};
-        let mut mc = MemCollatz {
-            m: Mem { re: 0.0, im: 0.0 },
-            num: 7,
-        };
+        let mut mc = MemCollatz::new(0.0, 0.0);
 
         collatz.math(&mut mc, 1.0, 0.1);
-
         assert_eq!(mc.m.re, 2.0);
         assert_eq!(mc.m.im, 1.1);
     }

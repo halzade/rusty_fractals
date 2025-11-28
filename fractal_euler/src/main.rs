@@ -1,9 +1,8 @@
 use rusty_fractals::application;
-use rusty_fractals::fractal::FractalCalculationType::StaticSpectralImageEuler;
+use rusty_fractals::config::EulerImage;
+use rusty_fractals::fractal::FractalMath;
 use rusty_fractals::fractal::OrbitType::Infinite;
-use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem_euler::MemEuler;
-use rusty_fractals::palettes::PaletteName::Nothing;
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
 
 /** Fractal Euler type uses three color spectra for better mathematical analysis and better coloring results.
@@ -26,15 +25,12 @@ impl FractalMath<MemEuler> for Euler {
 }
 
 fn main() {
-    let fractal_config = FractalConfig {
+    let fractal_config = EulerImage {
         name: "Euler",
-        fractal_calc_type: StaticSpectralImageEuler,
 
         iteration_min: 42,
         iteration_max: 80000,
         resolution_multiplier: Single,
-        palette: Nothing,
-        palette_zero: Nothing,
 
         // area
         width_x: 400,
@@ -45,11 +41,9 @@ fn main() {
 
         // calculation config
         orbits: Infinite,
-        update_max: 150,
-        update_min: 0,
     };
 
-    application::execute(fractal_config, Euler {});
+    application::execute(fractal_config.init(), Euler {});
 }
 
 #[cfg(test)]

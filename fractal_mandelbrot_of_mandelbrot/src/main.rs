@@ -1,10 +1,8 @@
 use rusty_fractals::application;
-use rusty_fractals::fractal::FractalCalculationType::StaticImageMandelbrot;
-use rusty_fractals::fractal::OrbitType::Finite;
-use rusty_fractals::fractal::{FractalConfig, FractalMath};
+use rusty_fractals::config::MandelbrotImage;
+use rusty_fractals::fractal::FractalMath;
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, LinearRed};
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
 
 pub struct MandelbrotOfMandelbrot {}
 
@@ -31,13 +29,9 @@ impl FractalMath<Mem> for MandelbrotOfMandelbrot {
 }
 
 fn main() {
-    let fractal_config = FractalConfig {
+    let fractal_config = MandelbrotImage {
         name: "Mandelbrot of Mandelbrot",
-        fractal_calc_type: StaticImageMandelbrot,
-
-        iteration_min: 0,
         iteration_max: 2500,
-        resolution_multiplier: Single,
 
         palette: BlueToWhiteCircleUp,
         palette_zero: LinearRed,
@@ -47,28 +41,23 @@ fn main() {
         width_re: 3.5,
         center_re: -0.5,
         center_im: 0.0,
-
-        orbits: Finite,
-        update_max: 150,
-        update_min: 0,
     };
 
-    application::execute(fractal_config, MandelbrotOfMandelbrot {});
+    application::execute(fractal_config.init(), MandelbrotOfMandelbrot {});
 }
 
 #[cfg(test)]
 mod tests {
     use crate::MandelbrotOfMandelbrot;
-    use rusty_fractals::fractal::FractalMath;
+    use rusty_fractals::fractal::{FractalMath, MemType};
     use rusty_fractals::mem::Mem;
 
     #[test]
     fn test_math() {
         let mandelbrot = MandelbrotOfMandelbrot {};
-        let mut m = Mem { re: 0.0, im: 0.0 };
+        let mut m = Mem::new(0.0, 0.0);
 
         mandelbrot.math(&mut m, 1.0, 1.0);
-
         assert_eq!(m.re, 1.0);
         assert_eq!(m.im, 3.0);
     }

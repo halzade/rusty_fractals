@@ -1,10 +1,8 @@
 use rusty_fractals::application;
-use rusty_fractals::fractal::FractalCalculationType::StaticSequenceMandelbrot;
-use rusty_fractals::fractal::OrbitType::Infinite;
-use rusty_fractals::fractal::{FractalConfig, FractalMath};
+use rusty_fractals::config::MandelbrotVideo;
+use rusty_fractals::fractal::FractalMath;
 use rusty_fractals::mem_collatz::MemCollatz;
 use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, LinearBlue};
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
 
 pub struct CollatzConjectureMandelbrot {}
 
@@ -16,13 +14,10 @@ impl FractalMath<MemCollatz> for CollatzConjectureMandelbrot {
 }
 
 fn main() {
-    let fractal_config = FractalConfig {
+    let fractal_config = MandelbrotVideo {
         name: "Collatz Conjecture Mandelbrot",
-        fractal_calc_type: StaticSequenceMandelbrot,
 
-        iteration_min: 0,
         iteration_max: 14800,
-        resolution_multiplier: Single,
         palette: BlueToWhiteCircleUp,
         palette_zero: LinearBlue,
 
@@ -31,32 +26,23 @@ fn main() {
         width_re: 3.0,
         center_re: -0.882952991714172300,
         center_im: -0.214699221335319460,
-
-        orbits: Infinite,
-        update_max: 150,
-        update_min: 0,
     };
 
-    application::execute(fractal_config, CollatzConjectureMandelbrot {});
+    application::execute(fractal_config.init(), CollatzConjectureMandelbrot {});
 }
 
 #[cfg(test)]
 mod tests {
     use crate::CollatzConjectureMandelbrot;
-    use rusty_fractals::fractal::FractalMath;
-    use rusty_fractals::mem::Mem;
+    use rusty_fractals::fractal::{FractalMath, MemType};
     use rusty_fractals::mem_collatz::MemCollatz;
 
     #[test]
     fn test_math() {
         let collatz = CollatzConjectureMandelbrot {};
-        let mut mc = MemCollatz {
-            m: Mem { re: 0.0, im: 0.0 },
-            num: 0,
-        };
+        let mut mc = MemCollatz::new(0.0, 0.0);
 
         collatz.math(&mut mc, 1.0, 0.1);
-
         assert_eq!(mc.m.re, 2.0);
         assert_eq!(mc.m.im, 0.65);
     }

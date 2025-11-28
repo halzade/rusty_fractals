@@ -28,8 +28,11 @@ fn main() {
         palette: BlueToWhiteCircleUp,
         palette_zero: Nothing,
 
-        width_x: 400,
-        height_y: 400,
+        width_xl: 400,
+        width_xp: 401,
+        height_yl: 400,
+        height_yp: 401,
+
         width_re: 3.0,
         center_re: -0.5,
         center_im: 0.0,

@@ -1,9 +1,9 @@
 use rusty_fractals::application;
-use rusty_fractals::fractal::FractalCalculationType::StaticImageNebula;
+use rusty_fractals::config::NebulaImage;
+use rusty_fractals::fractal::FractalMath;
 use rusty_fractals::fractal::OrbitType::Finite;
-use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem::Mem;
-use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
+use rusty_fractals::palettes::PaletteName::BlueToWhiteCircleUp;
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square3;
 
 pub struct NebulaOfNebula;
@@ -31,16 +31,14 @@ impl FractalMath<Mem> for NebulaOfNebula {
 }
 
 fn main() {
-    let fractal_config = FractalConfig {
+    let fractal_config = NebulaImage {
         name: "Nebula of Nebula",
-        fractal_calc_type: StaticImageNebula,
 
         iteration_min: 42,
         iteration_max: 8000,
         resolution_multiplier: Square3,
 
         palette: BlueToWhiteCircleUp,
-        palette_zero: Nothing,
 
         width_x: 1000,
         height_y: 1000,
@@ -49,11 +47,9 @@ fn main() {
         center_im: 0.0,
 
         orbits: Finite,
-        update_max: 150,
-        update_min: 0,
     };
 
-    application::execute(fractal_config, NebulaOfNebula {});
+    application::execute(fractal_config.init(), NebulaOfNebula {});
 }
 
 #[cfg(test)]
