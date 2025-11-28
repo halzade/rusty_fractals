@@ -133,10 +133,10 @@ where
 }
 
 pub fn init_trivial_static() -> Machine<'static, TrivialFractal, Mem> {
-    let conf = init_trivial_static_config();
-    let fractal = fractal::init_trivial_fractal();
+    let co = init_trivial_static_config();
+    let fr = fractal::init_trivial_fractal();
 
-    init(&conf, fractal)
+    init(&co, fr)
 }
 
 pub fn init_trivial_dynamic() -> Machine<'static, TrivialFractal, Mem> {
@@ -730,8 +730,10 @@ pub fn shuffled_calculation_coordinates() -> Vec<[u32; 2]> {
 
 #[cfg(test)]
 mod tests {
+    use crate::fractal::init_trivial_dynamic_config;
+    use crate::machine::init;
     use crate::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong};
-    use crate::{machine, pixel_states};
+    use crate::{fractal, machine, pixel_states};
     use pixel_states::DomainElementState::FinishedTooShort;
 
     #[test]
@@ -765,9 +767,11 @@ mod tests {
 
     #[test]
     fn test_chunk_boundaries() {
-        let machine = machine::init_trivial_static();
+        let co = init_trivial_dynamic_config(21);
+        let fr = fractal::init_trivial_fractal();
+        let ma = init(&co, fr);
 
-        let (re_left, re_right, im_top, im_bot) = machine.chunk_boundaries(&[0, 0]);
+        let (re_left, re_right, im_top, im_bot) = ma.chunk_boundaries(&[0, 0]);
 
         assert_eq!(re_left, 0);
         assert_eq!(re_right, 1);
@@ -793,14 +797,15 @@ mod tests {
     }
 
     #[test]
-    fn test_chunk_calculation_mandelbrot<'lt>() {
-        let machine = machine::init_trivial_static();
+    fn test_chunk_calculation_mandelbrot() {
+        let co = init_trivial_dynamic_config(21);
+        let fr = fractal::init_trivial_fractal();
+        let ma = init(&co, fr);
 
         let xy = [0, 0];
+        ma.chunk_calculation_mandelbrot(&xy);
 
-        machine.chunk_calculation_mandelbrot(&xy);
-        let (s, _, _) = machine.data_image.state_origin_at(0, 0);
-
+        let (s, _, _) = ma.data_image.state_origin_at(0, 0);
         assert_eq!(pixel_states::is_active_new(s), false);
         assert_eq!(pixel_states::is_finished_any(s), true);
     }
@@ -819,33 +824,40 @@ mod tests {
 
     #[test]
     fn test_recalculate_pixels_positions_for_next_calculation() {
-        let machine = machine::init_trivial_dynamic();
-        let d = &machine.data_image;
+        let co = init_trivial_dynamic_config(7);
+        let fr = fractal::init_trivial_fractal();
+        let ma = init(&co, fr);
+
+        let di = &ma.data_image;
 
         // top left
-        d.set(2, 2, 1);
-        d.set(0, 0, 6);
+        di.set(2, 2, 1);
+        di.set(0, 0, 6);
 
         // top right
-        d.set(17, 2, 2);
-        d.set(19, 0, 7);
+        di.set(4, 2, 2);
+        di.set(6, 0, 7);
 
         // bottom left
-        d.set(2, 17, 3);
-        d.set(0, 19, 8);
+        di.set(2, 4, 3);
+        di.set(0, 6, 8);
 
         // bottom right
-        d.set(17, 17, 4);
-        d.set(19, 19, 9);
+        di.set(4, 4, 4);
+        di.set(6, 6, 9);
 
-        d.print_data_values();
+        ma.zoom_in_by(0.5);
+        ma.recalculate_pixels_positions_for_next_calculation();
 
-        machine.zoom_in_by(0.5);
-        machine.recalculate_pixels_positions_for_next_calculation();
+        assert_eq!(di.px_at(1, 1).get_v(), 1);
+        assert_eq!(di.px_at(5, 1).get_v(), 2);
+        assert_eq!(di.px_at(1, 5).get_v(), 3);
+        assert_eq!(di.px_at(5, 5).get_v(), 4);
 
-        d.print_data_values();
-
-        assert!(machine.data_image.is_dynamic());
+        assert_eq!(di.px_at(0, 0).get_v(), 0);
+        assert_eq!(di.px_at(6, 0).get_v(), 0);
+        assert_eq!(di.px_at(0, 6).get_v(), 0);
+        assert_eq!(di.px_at(6, 6).get_v(), 0);
     }
 
     #[test]

@@ -205,7 +205,6 @@ impl<'lt> Area {
  * that is x + 1 points, considering both sides, left and right, with zero at the center
  */
 pub fn init<'lt>(config: &FractalConfig) -> Area {
-    println!("init()");
     let width_re = config.width_re;
     let center_re = config.center_re;
     let center_im = config.center_im;

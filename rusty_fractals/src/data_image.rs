@@ -436,7 +436,6 @@ pub fn init_o(conf: &FractalConfig, area: &Area, oo: Option<Optimizer>) -> DataI
  * [0,0] is at the top left
  */
 fn init_domain(area: &Area, oo: Option<Optimizer>) -> Vec<DataPx> {
-    println!("init_domain()");
     let mut ret = Vec::new();
 
     let res = area.screen_to_domain_re_copy();
