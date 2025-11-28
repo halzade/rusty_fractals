@@ -22,7 +22,6 @@ use crate::{area, data_image, fractal, fractal_stats, pixel_states};
 use rand::rng;
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
-use std::marker::PhantomData;
 use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
 use FractalCalculationType::{
@@ -77,8 +76,7 @@ where
     /*
      * Machine (Self) related values
      */
-    last_partial_refresh: Arc<RwLock<Option<Instant>>>,
-    phantom_m_type: PhantomData<M>, // need to use M so compiler won't complain
+    last_partial_refresh: RwLock<Instant>,
 }
 
 pub fn init<F, M>(config: &FractalConfig, fractal: F) -> Machine<'static, F, M>
@@ -127,8 +125,7 @@ where
         // application reference
         app_ref: None,
         // machine values
-        last_partial_refresh: Arc::new(RwLock::new(None)),
-        phantom_m_type: PhantomData::default(),
+        last_partial_refresh: RwLock::new(Instant::now()),
     }
 }
 
@@ -273,7 +270,7 @@ where
         self.paint_final_calculation_result_colors();
     }
 
-    /* ------------------------------------
+    /* -------------------------------------
      * Methods for Euler fractal calculation
      * ---------------------------------- */
 
@@ -507,7 +504,7 @@ where
 
     /* --------------------------------------------
      * Methods for infinite zoom video calculations
-     * ------------------------------------------ */
+     * ----------------------------------------- */
 
     pub fn calculate_nebula_zoom(&self) {
         println!("calculate_nebula_zoom()");
@@ -667,18 +664,11 @@ where
     pub fn paint_partial_calculation_results_states(&self, paint_now: bool) {
         // ms_min have serious impact on parallelization and speed of calculation,
         // don't use less than 100
-        let ms_min = 250;
-
-        let mut last_called = self
-            .last_partial_refresh
-            .write()
-            .expect("Failed to lock last_called");
+        const MS_MIN: u64 = 250;
 
         let now = Instant::now();
-
-        let called_in_past_enough = last_called.map_or(true, |last| {
-            now.duration_since(last) >= Duration::from_millis(ms_min)
-        });
+        let called_in_past_enough = now.duration_since(*self.last_partial_refresh.read().unwrap())
+            >= Duration::from_millis(MS_MIN);
 
         if called_in_past_enough || paint_now {
             println!("paint_partial_calculation_results_states() condition");
@@ -692,7 +682,7 @@ where
             app.paint_partial_calculation_result_states(&self.data_image);
         }
 
-        *last_called = Some(now);
+        *self.last_partial_refresh.write().unwrap() = now;
     }
 
     pub fn paint_pixel_states_now(&self) {

@@ -4,14 +4,16 @@ use palettes::Function;
 use crate::palettes;
 
 fn max(r: i32, g: i32, b: i32) -> i32 {
-    if a(r) >= a(g) && a(r) >= a(b) {
-        return r;
-    } else if a(g) >= a(r) && a(g) >= a(b) {
-        return g;
-    } else if a(b) >= a(r) && a(b) >= a(g) {
-        return b;
+    let ar = r.abs();
+    let ag = g.abs();
+    let ab = b.abs();
+    if ar >= ag && ar >= ab {
+        r
+    } else if ag >= ab {
+        g
+    } else {
+        b
     }
-    panic!()
 }
 
 fn a(v: i32) -> u8 {
@@ -153,7 +155,7 @@ fn function_result(d: f64, function: &Function) -> f64 {
         Function::Quadratic => d * d,
         Function::Exp => d.exp() - 1.0,
         Function::Exp2 => (d * d).exp() - 1.0,
-        Function::CircleDown => (1.0 - (d * d)).sqrt(), // TODO not ok
+        Function::CircleDown => (1.0 - (d * d)).sqrt(),
         Function::CircleUp => 1.0 - (1.0 - (d * d)).sqrt(),
     }
 }
