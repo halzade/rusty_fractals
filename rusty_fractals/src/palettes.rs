@@ -2,7 +2,7 @@ use crate::palette::Palette;
 use crate::palette::Palette3;
 use crate::palette_utils::make_spectrum;
 use crate::palettes::Function::{CircleUp, Exp2, Linear1};
-use image::Rgb;
+use image::{Pixel, Rgb};
 
 const WHITE: Rgb<u8> = Rgb([255, 255, 255]);
 const BLACK: Rgb<u8> = Rgb([0, 0, 0]);
@@ -118,16 +118,22 @@ pub fn init_trivial<'lt>() -> Palette {
 
 pub fn palette_3_rgb() -> Palette3 {
     Palette3 {
-        spectrum_red: make_spectrum(CircleUp, BLACK, RED),
-        spectrum_green: make_spectrum(CircleUp, BLACK, GREEN),
-        spectrum_blue: make_spectrum(CircleUp, BLACK, BLUE),
+        spectrum_red: strip_spectrum(make_spectrum(CircleUp, BLACK, RED), 0),
+        spectrum_green: strip_spectrum(make_spectrum(CircleUp, BLACK, GREEN), 1),
+        spectrum_blue: strip_spectrum(make_spectrum(CircleUp, BLACK, BLUE), 2),
     }
+}
+fn strip_spectrum(spectrum: Vec<Rgb<u8>>, channel: usize) -> Vec<u8> {
+    spectrum
+        .into_iter()
+        .map(|pixel| pixel.channels()[channel])
+        .collect()
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::palettes::new;
     use crate::palettes::Function::Linear1;
+    use crate::palettes::new;
     use image::Rgb;
 
     #[test]

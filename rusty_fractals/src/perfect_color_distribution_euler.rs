@@ -107,7 +107,7 @@ pub fn perfectly_color_euler_values(data: &DataImage) {
     let mut pi_red = 0;
     while pi_red < (left_red + zero_value_elements_red) as usize {
         let sp = pixels_red.get(pi_red).unwrap();
-        data.color_r(sp.x, sp.y, 0);
+        data.color_r(sp.x, sp.y, palette3.spectrum_value_red(0));
         pi_red += 1;
     }
     // color all remaining pixels, these are order by value
@@ -117,18 +117,18 @@ pub fn perfectly_color_euler_values(data: &DataImage) {
             pi_red += 1;
             let sp = pixels_red.get(pi_red).unwrap();
             if sp.value() <= threshold {
-                data.color_r(sp.x, sp.y, 0);
+                data.color_r(sp.x, sp.y, palette3.spectrum_value_red(0));
             } else {
                 // perfect-color all significant pixels
-                data.color_r(sp.x, sp.y, palette_color_index);
+                data.color_r(sp.x, sp.y, palette3.spectrum_value_red(palette_color_index));
             }
         }
     }
 
     let mut pi_green = 0;
     while pi_green < (left_green + zero_value_elements_green) as usize {
-        let _sp = pixels_green.get(pi_green).unwrap();
-        // data.color_g(sp.x, sp.y, palette3.spectrum_value_green(0));
+        let sp = pixels_green.get(pi_green).unwrap();
+        data.color_g(sp.x, sp.y, palette3.spectrum_value_green(0));
 
         pi_green += 1;
     }
@@ -140,10 +140,10 @@ pub fn perfectly_color_euler_values(data: &DataImage) {
             let sp = pixels_green.get(pi_green).unwrap();
             if sp.value() <= threshold {
                 // color zero-value elements and low-value-noise with the darkest color
-                data.color_g(sp.x, sp.y, 0);
+                data.color_g(sp.x, sp.y, palette3.spectrum_value_green(0));
             } else {
                 // perfect-color all significant pixels
-                data.color_g(sp.x, sp.y, palette_color_index);
+                data.color_g(sp.x, sp.y, palette3.spectrum_value_green(palette_color_index));
             }
         }
     }
@@ -151,23 +151,22 @@ pub fn perfectly_color_euler_values(data: &DataImage) {
     let mut pi_blue = 0;
     while pi_blue < (left_blue + zero_value_elements_blue) as usize {
         let sp = pixels_blue.get(pi_blue).unwrap();
-        data.color_b(sp.x, sp.y, 0);
+        data.color_b(sp.x, sp.y, palette3.spectrum_value_blue(0));
 
         pi_blue += 1;
     }
     // color all remaining pixels, these are order by value
-    for _palette_color_index in 0..palette_color_count as usize {
+    for palette_color_index in 0..palette_color_count as usize {
         for _ in 0..single_color_use_blue {
             // color all these pixels with same color
             pi_blue += 1;
             let sp = pixels_blue.get(pi_blue).unwrap();
             if sp.value() <= threshold {
                 // color zero-value elements and low-value-noise with the darkest color
-                // todo
-                // data.color_b(sp.x, sp.y, palette3.spectrum_value_blue(0));
+                data.color_b(sp.x, sp.y, palette3.spectrum_value_blue(0));
             } else {
                 // perfect-color all significant pixels
-                // data.color_b(sp.x, sp.y, palette3.spectrum_value_blue(palette_color_index));
+                data.color_b(sp.x, sp.y, palette3.spectrum_value_blue(palette_color_index));
             }
         }
     }
@@ -175,7 +174,7 @@ pub fn perfectly_color_euler_values(data: &DataImage) {
     // read 3 euler spectra colors and write image colors
     for y in 0..height {
         for x in 0..width {
-            data.color_at3(x, y);
+            data.define_color_at3(x, y);
         }
     }
     // Behold, the coloring is perfect!
@@ -183,7 +182,6 @@ pub fn perfectly_color_euler_values(data: &DataImage) {
 
 #[cfg(test)]
 mod tests {
-
     #[test]
     fn test_perfectly_color_euler_values() {
         // TODO

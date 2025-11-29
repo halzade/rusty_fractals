@@ -45,13 +45,13 @@ impl DataImage {
         self.px_at(x, y).set_c(palette_color);
     }
 
-    pub fn color_r(&self, x: usize, y: usize, cr: usize) {
+    pub fn color_r(&self, x: usize, y: usize, cr: u8) {
         self.px_at3(x, y).set_c(Red, cr);
     }
-    pub fn color_g(&self, x: usize, y: usize, c: usize) {
+    pub fn color_g(&self, x: usize, y: usize, c: u8) {
         self.px_at3(x, y).set_c(Green, c);
     }
-    pub fn color_b(&self, x: usize, y: usize, c: usize) {
+    pub fn color_b(&self, x: usize, y: usize, c: u8) {
         self.px_at3(x, y).set_c(Blue, c);
     }
 
@@ -174,8 +174,8 @@ impl DataImage {
         self.px_at3(x, y).get_v3()
     }
 
-    pub fn color_at3(&self, x: usize, y: usize) {
-        self.px_at3(x, y).set_c3()
+    pub fn define_color_at3(&self, x: usize, y: usize) {
+        self.px_at3(x, y).define_color3()
     }
 
     pub fn state_origin_at(&self, x: usize, y: usize) -> (DomainElementState, f64, f64) {

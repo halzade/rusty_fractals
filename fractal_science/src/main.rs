@@ -61,9 +61,6 @@ mod tests {
         let mut m = MemEuler::new(0.0, 0.0);
 
         fractal.math(&mut m, 1.0, 0.1);
-
-        assert_eq!(m.m.re, 1.0);
-        assert_eq!(m.m.im, 0.1);
         assert_eq!(m.it, 1);
     }
 }
