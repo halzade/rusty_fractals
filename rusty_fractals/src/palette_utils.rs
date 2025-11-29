@@ -160,7 +160,7 @@ fn function_result(d: f64, function: &Function) -> f64 {
     }
 }
 
-pub fn init_default() -> Vec<Rgb<u8>> {
+pub fn init_trivial() -> Vec<Rgb<u8>> {
     let mut spectrum: Vec<Rgb<u8>> = Vec::new();
     spectrum.push(Rgb([255, 0, 0]));
     spectrum.push(Rgb([0, 255, 0]));

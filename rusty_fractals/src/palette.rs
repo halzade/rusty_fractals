@@ -33,26 +33,26 @@ impl Palette3 {
     }
 }
 
-pub fn init_default() -> Palette {
+pub fn init_trivial() -> Palette {
     Palette {
-        spectrum: palette_utils::init_default(),
+        spectrum: palette_utils::init_trivial(),
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::palette::init_default;
+    use crate::palette::init_trivial;
     use image::Pixel;
 
     #[test]
     fn test_init_default() {
-        let p = init_default();
+        let p = init_trivial();
         assert_eq!(p.spectrum.len(), 3);
     }
 
     #[test]
     fn test_spectrum_value() {
-        let p = init_default();
+        let p = init_trivial();
 
         let rgb = p.spectrum_value(2);
         assert_eq!(rgb.channels()[0], 0);

@@ -10,15 +10,15 @@ pub struct DataPx3 {
 
 #[derive(Clone, Copy)]
 struct Data3 {
-    origin_re: f64,
-    origin_im: f64,
+    _origin_re: f64, // TODO
+    _origin_im: f64, // TODO
     value_r: u32,
     value_g: u32,
     value_b: u32,
     // Element state is decided by calculation result.
     // Alternatively: If all it's neighbours finished too long,
     // it is going to be created as HibernatedBlack and its origin won't seed any calculation path.
-    state: DomainElementState,
+    _state: DomainElementState, // TODO
     color_r: u8,
     color_g: u8,
     color_b: u8,

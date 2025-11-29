@@ -221,7 +221,7 @@ where
 
         self.paint_final_calculation_result_colors();
 
-        save_image(&self.data_image);
+        save_image(&self.data_image, self.name, 0);
     }
 
     /**
