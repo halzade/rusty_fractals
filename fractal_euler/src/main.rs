@@ -1,9 +1,9 @@
-use rusty_fractals::application;
 use rusty_fractals::config::EulerImage;
 use rusty_fractals::fractal::FractalMath;
 use rusty_fractals::fractal::OrbitType::Infinite;
 use rusty_fractals::mem_euler::MemEuler;
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
+use rusty_fractals::{application, mathematician};
 
 /** Fractal Euler type uses three color spectra for better mathematical analysis and better coloring results.
  *  Possible use as:
@@ -43,6 +43,7 @@ fn main() {
         orbits: Infinite,
     };
 
+    mathematician::init_primes(fractal_config.iteration_max);
     application::execute(fractal_config.init(), Euler {});
 }
 

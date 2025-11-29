@@ -15,6 +15,7 @@ All these **calculation paths together** are what makes the **Nebula fractal**.
 
 ![nebula](images/nebula.jpg)
 ![fat star](images/fat_star.jpg)
+![euler](fractal_euler/euler_bw.jpg)
 
 ## Nebula calculation
 

@@ -671,7 +671,6 @@ where
             >= Duration::from_millis(MS_MIN);
 
         if called_in_past_enough || paint_now {
-            println!("paint_partial_calculation_results_states() condition");
             let app = self
                 .app_ref
                 .as_ref()
