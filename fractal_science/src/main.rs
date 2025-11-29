@@ -3,7 +3,6 @@ use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::fractal::{FractalConfig, FractalMath};
 use rusty_fractals::mem_euler::MemEuler;
 use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, Nothing};
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::{Square2, Square3};
 use rusty_fractals::{application, mathematician};
 
 pub struct Science;
@@ -13,9 +12,7 @@ impl FractalMath<MemEuler> for Science {
         me.square();
         me.plus(origin_re, origin_im);
         me.euler();
-        if mathematician::is_prime(me.it) {
-            mathematician::circle_inversion(&mut me.m, 1.0, 1.0);
-        }
+        me.square();
         me.plus(origin_re, origin_im);
     }
 }
@@ -38,8 +35,8 @@ fn main() {
         height_yl: 800,
         height_yp: 801,
 
-        width_re: 3.5,
-        center_re: 0.0,
+        width_re: 3.0,
+        center_re: -0.5,
         center_im: 0.0,
 
         update_max: 150,

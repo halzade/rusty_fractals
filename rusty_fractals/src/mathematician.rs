@@ -5,10 +5,17 @@ use std::collections::HashSet;
 use std::sync::RwLock;
 
 struct Mathematician {
-    primes: RwLock<HashSet<u32>>,
-    fibonacci: RwLock<HashSet<u32>>,
-    perfect: RwLock<HashSet<u32>>,
-    square: RwLock<HashSet<u32>>,
+    primes: RwLock<HashSet<u64>>,
+    fibonacci: RwLock<HashSet<u64>>,
+    perfect: RwLock<HashSet<u64>>,
+    square: RwLock<HashSet<u64>>,
+
+    triangular: RwLock<HashSet<u64>>,
+    pell: RwLock<HashSet<u64>>,
+    lucas: RwLock<HashSet<u64>>,
+    catalan: RwLock<HashSet<u64>>,
+    lazy: RwLock<HashSet<u64>>,
+    happy: RwLock<HashSet<u64>>,
 }
 
 static MATHEMATICIAN: Lazy<Mathematician> = Lazy::new(|| Mathematician::new());
@@ -20,6 +27,12 @@ impl Mathematician {
             fibonacci: RwLock::new(HashSet::new()),
             perfect: RwLock::new(HashSet::new()),
             square: RwLock::new(HashSet::new()),
+            triangular: RwLock::new(HashSet::new()),
+            pell: RwLock::new(HashSet::new()),
+            lucas: RwLock::new(HashSet::new()),
+            catalan: RwLock::new(HashSet::new()),
+            lazy: RwLock::new(HashSet::new()),
+            happy: RwLock::new(HashSet::new()),
         }
     }
 }
@@ -51,20 +64,44 @@ pub fn rotate_by(m: &mut Mem, t: f64) {
     m.re = temp;
 }
 
-pub fn is_prime(n: u32) -> bool {
+pub fn is_prime(n: u64) -> bool {
     MATHEMATICIAN.primes.read().unwrap().contains(&n)
 }
 
-pub fn is_fibonacci(n: u32) -> bool {
+pub fn is_fibonacci(n: u64) -> bool {
     MATHEMATICIAN.fibonacci.read().unwrap().contains(&n)
 }
 
-pub fn is_perfect(n: u32) -> bool {
+pub fn is_perfect(n: u64) -> bool {
     MATHEMATICIAN.perfect.read().unwrap().contains(&n)
 }
 
-pub fn is_square(n: u32) -> bool {
+pub fn is_square(n: u64) -> bool {
     MATHEMATICIAN.square.read().unwrap().contains(&n)
+}
+
+pub fn is_triangular(n: u64) -> bool {
+    MATHEMATICIAN.triangular.read().unwrap().contains(&n)
+}
+
+pub fn is_pell(n: u64) -> bool {
+    MATHEMATICIAN.pell.read().unwrap().contains(&n)
+}
+
+pub fn is_lucas(n: u64) -> bool {
+    MATHEMATICIAN.lucas.read().unwrap().contains(&n)
+}
+
+pub fn is_catalan(n: u64) -> bool {
+    MATHEMATICIAN.catalan.read().unwrap().contains(&n)
+}
+
+pub fn is_lazy(n: u64) -> bool {
+    MATHEMATICIAN.lazy.read().unwrap().contains(&n)
+}
+
+pub fn is_happy(n: u64) -> bool {
+    MATHEMATICIAN.happy.read().unwrap().contains(&n)
 }
 
 pub fn multiply_by(m: &mut Mem, re: f64, im: f64) {
@@ -125,12 +162,6 @@ pub fn binomial5(m: &mut Mem) {
     m.re = temp;
 }
 
-pub fn reciprocal(m: &mut Mem) {
-    let scale = m.re * m.re + m.im * m.im;
-    m.re = m.re / scale;
-    m.im = -m.im / scale;
-}
-
 pub fn circle_inversion(m: &mut Mem, re: f64, im: f64) {
     let d = (re * re) + (im * im);
     m.re = re / d;
@@ -141,7 +172,7 @@ pub fn circle_inversion(m: &mut Mem, re: f64, im: f64) {
  * Fibonacci
  */
 
-pub fn init_fibonacci(max: u32) {
+pub fn init_fibonacci(max: u64) {
     println!("init_fibonacci()");
     let mut a = 0;
     let mut b = 1;
@@ -158,8 +189,8 @@ pub fn init_fibonacci(max: u32) {
  * Perfect
  */
 
-pub fn init_perfect_numbers(max: u32) {
-    println!("init_perfect_numbers()");
+pub fn init_perfect(max: u64) {
+    println!("init_perfect()");
     for i in 1..(max + 1) {
         if is_perfect_init(i) {
             MATHEMATICIAN.perfect.write().unwrap().insert(i);
@@ -167,11 +198,22 @@ pub fn init_perfect_numbers(max: u32) {
     }
 }
 
+pub fn is_perfect_init(num: u64) -> bool {
+    let mut temp = 0;
+    let max = (num as f64 / 2.0) as u64;
+    for i in 1..(max + 1) {
+        if num % i == 0 {
+            temp += i;
+        }
+    }
+    temp == num
+}
+
 /**
  * Primes
  */
 
-pub fn init_primes(max: u32) {
+pub fn init_primes(max: u64) {
     println!("init_primes()");
     // smallest prime
     MATHEMATICIAN.primes.write().unwrap().insert(2);
@@ -182,36 +224,11 @@ pub fn init_primes(max: u32) {
     }
 }
 
-/**
- * Squares
- */
-
-pub fn init_squares(max: u32) {
-    println!("init_squares()");
-    let mut sq;
-    let investigate_to = f64::sqrt(max as f64) as u32 + 1;
-    for i in 0..investigate_to {
-        sq = i * i;
-        MATHEMATICIAN.square.write().unwrap().insert(sq);
-    }
-}
-
-pub fn is_perfect_init(num: u32) -> bool {
-    let mut temp = 0;
-    let max = (num as f64 / 2.0) as u32;
-    for i in 1..(max + 1) {
-        if num % i == 0 {
-            temp += i;
-        }
-    }
-    temp == num
-}
-
-fn is_prime_init(n: u32) -> bool {
+fn is_prime_init(n: u64) -> bool {
     if n % 2 == 0 {
         return false;
     }
-    let investigate_to = f64::sqrt(n as f64) as u32 + 1;
+    let investigate_to = f64::sqrt(n as f64) as u64 + 1;
     for i in (3..investigate_to).step_by(2) {
         if n % i == 0 {
             return false;
@@ -220,11 +237,119 @@ fn is_prime_init(n: u32) -> bool {
     true
 }
 
+/**
+ * Squares
+ */
+
+pub fn init_squares(max: u64) {
+    println!("init_squares()");
+    let mut sq;
+    let investigate_to = f64::sqrt(max as f64) as u64 + 1;
+    for i in 0..investigate_to {
+        sq = i * i;
+        MATHEMATICIAN.square.write().unwrap().insert(sq);
+    }
+}
+
+/**
+ *
+ */
+pub fn init_triangular(max: u64) {
+    println!("init_triangular()");
+    let mut n = 1;
+    while n * (n + 1) / 2 <= max {
+        MATHEMATICIAN
+            .triangular
+            .write()
+            .unwrap()
+            .insert(n * (n + 1) / 2);
+        n += 1;
+    }
+}
+
+/**
+ *
+ */
+pub fn init_pell(max: u64) {
+    println!("init_pell()");
+    let (mut a, mut b) = (0u64, 1u64);
+    while a <= max {
+        MATHEMATICIAN.pell.write().unwrap().insert(a);
+        (a, b) = (b, 2 * b + a);
+    }
+}
+
+/**
+ *
+ */
+pub fn init_lucas(max: u64) {
+    println!("init_lucas()");
+    let (mut a, mut b) = (2u64, 1u64);
+    while a <= max {
+        MATHEMATICIAN.lucas.write().unwrap().insert(a);
+        (a, b) = (b, a + b);
+    }
+}
+
+/**
+ * Catalan numbers: 1, 2, 5, 14, 42, 132,
+ */
+pub fn init_catalan(max: u64) {
+    println!("init_catalan()");
+    let mut c: u64 = 1;
+    let mut n = 0;
+    while c <= max {
+        MATHEMATICIAN.catalan.write().unwrap().insert(c);
+        n += 1;
+        c = c * (4 * n + 2) / (n + 2);
+    }
+}
+
+/**
+ * Happy numbers: 1, 7, 10, 13, 19, 23,
+ */
+pub fn init_happy(max: u64) {
+    println!("init_happy()");
+    fn is_happy(mut n: u64) -> bool {
+        while n != 1 && n != 4 {
+            n = n
+                .to_string()
+                .chars()
+                .map(|c| (c.to_digit(10).unwrap() as u64).pow(2))
+                .sum();
+        }
+        n == 1
+    }
+    for i in 1..=max {
+        if is_happy(i) {
+            MATHEMATICIAN.happy.write().unwrap().insert(i);
+        }
+    }
+}
+
+/**
+ * Lazy (pancake) numbers: 1, 2, 4, 7, 11, 16,
+ */
+pub fn init_lazy(max: u64) {
+    println!("init_lazy()");
+    let mut n = 0;
+    loop {
+        let val = n * (n + 1) / 2 + 1;
+        if val > max {
+            break;
+        }
+        MATHEMATICIAN.lazy.write().unwrap().insert(val);
+        n += 1;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::mathematician::{
-        init_fibonacci, init_perfect_numbers, init_primes, init_squares, is_fibonacci,
-        is_outside_cardioid, is_outside_circle, is_perfect, is_prime, is_square,
+        init_catalan, init_fibonacci, init_happy, init_lazy, init_lucas, init_pell, init_perfect,
+        init_primes, init_squares, init_triangular, is_catalan, is_fibonacci, is_happy, is_lazy,
+        is_lucas, is_outside_cardioid, is_outside_circle, is_pell, is_perfect, is_prime, is_square,
+        is_triangular,
     };
 
     #[test]
@@ -244,6 +369,7 @@ mod tests {
         init_primes(5);
         assert_eq!(is_prime(1), false);
         assert_eq!(is_prime(2), true);
+        assert_eq!(is_prime(3), true);
         assert_eq!(is_prime(4), false);
         assert_eq!(is_prime(5), true);
     }
@@ -260,7 +386,11 @@ mod tests {
 
     #[test]
     fn test_is_perfect() {
-        init_perfect_numbers(6);
+        init_perfect(6);
+        assert_eq!(is_perfect(1), false);
+        assert_eq!(is_perfect(2), false);
+        assert_eq!(is_perfect(3), false);
+        assert_eq!(is_perfect(4), false);
         assert_eq!(is_perfect(5), false);
         assert_eq!(is_perfect(6), true);
     }
@@ -268,7 +398,76 @@ mod tests {
     #[test]
     fn test_is_square() {
         init_squares(4);
+        assert_eq!(is_square(1), true);
+        assert_eq!(is_square(2), false);
         assert_eq!(is_square(3), false);
         assert_eq!(is_square(4), true);
+    }
+
+    #[test]
+    pub fn test_is_triangular() {
+        init_triangular(6);
+        assert_eq!(is_triangular(1), true);
+        assert_eq!(is_triangular(2), false);
+        assert_eq!(is_triangular(3), true);
+        assert_eq!(is_triangular(4), false);
+        assert_eq!(is_triangular(5), false);
+        assert_eq!(is_triangular(6), true);
+    }
+
+    #[test]
+    pub fn test_is_pell() {
+        init_pell(5);
+        assert_eq!(is_pell(1), true);
+        assert_eq!(is_pell(2), true);
+        assert_eq!(is_pell(3), false);
+        assert_eq!(is_pell(4), false);
+        assert_eq!(is_pell(5), true);
+    }
+
+    #[test]
+    pub fn test_is_lucas() {
+        init_lucas(7);
+        assert_eq!(is_lucas(1), true);
+        assert_eq!(is_lucas(2), true);
+        assert_eq!(is_lucas(3), true);
+        assert_eq!(is_lucas(4), true);
+        assert_eq!(is_lucas(5), false);
+        assert_eq!(is_lucas(5), false);
+        assert_eq!(is_lucas(7), true);
+    }
+
+    #[test]
+    pub fn test_is_catalan() {
+        init_catalan(5);
+        assert_eq!(is_catalan(1), true);
+        assert_eq!(is_catalan(2), true);
+        assert_eq!(is_catalan(3), false);
+        assert_eq!(is_catalan(4), false);
+        assert_eq!(is_catalan(5), true);
+    }
+
+    #[test]
+    pub fn test_is_lazy() {
+        init_lazy(4);
+        assert_eq!(is_lazy(1), true);
+        assert_eq!(is_lazy(2), true);
+        assert_eq!(is_lazy(3), false);
+        assert_eq!(is_lazy(4), true);
+    }
+
+    #[test]
+    pub fn test_is_happy() {
+        init_happy(10);
+        assert_eq!(is_happy(1), true);
+        assert_eq!(is_happy(2), false);
+        assert_eq!(is_happy(3), false);
+        assert_eq!(is_happy(4), false);
+        assert_eq!(is_happy(5), false);
+        assert_eq!(is_happy(6), false);
+        assert_eq!(is_happy(7), true);
+        assert_eq!(is_happy(8), false);
+        assert_eq!(is_happy(9), false);
+        assert_eq!(is_happy(10), true);
     }
 }
