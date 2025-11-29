@@ -12,9 +12,9 @@ pub struct DataPx3 {
 struct Data3 {
     _origin_re: f64, // TODO
     _origin_im: f64, // TODO
-    value_r: u32,
-    value_g: u32,
-    value_b: u32,
+    value_r: u64,
+    value_g: u64,
+    value_b: u64,
     // Element state is decided by calculation result.
     // Alternatively: If all it's neighbours finished too long,
     // it is going to be created as HibernatedBlack and its origin won't seed any calculation path.
@@ -26,7 +26,7 @@ struct Data3 {
 }
 
 impl DataPx3 {
-    pub fn get_v3(&self) -> (u32, u32, u32) {
+    pub fn get_v3(&self) -> (u64, u64, u64) {
         let d = self.data3.read().unwrap();
         (d.value_r, d.value_g, d.value_b)
     }

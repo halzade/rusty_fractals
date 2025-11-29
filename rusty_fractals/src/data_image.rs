@@ -100,7 +100,7 @@ impl DataImage {
         self.paths
             .write()
             .unwrap()
-            .retain(|path| path.len() as u32 > MINIMUM_PATH_LENGTH);
+            .retain(|path| path.len() as u64 > MINIMUM_PATH_LENGTH);
     }
 
     pub fn clear_all_px_data(&self) {
@@ -142,7 +142,7 @@ impl DataImage {
         &self,
         x: usize,
         y: usize,
-    ) -> (u32, DomainElementState, f64, Option<Rgb<u8>>) {
+    ) -> (u64, DomainElementState, f64, Option<Rgb<u8>>) {
         self.px_at(x, y).get_vsqc()
     }
 
@@ -150,7 +150,7 @@ impl DataImage {
         &self,
         x: usize,
         y: usize,
-    ) -> (u32, DomainElementState, Option<Rgb<u8>>) {
+    ) -> (u64, DomainElementState, Option<Rgb<u8>>) {
         self.px_at(x, y).get_vsc()
     }
 
@@ -162,15 +162,15 @@ impl DataImage {
         self.px_at(x, y).get_c()
     }
 
-    pub fn value_state_at(&self, x: usize, y: usize) -> (u32, DomainElementState) {
+    pub fn value_state_at(&self, x: usize, y: usize) -> (u64, DomainElementState) {
         self.px_at(x, y).get_vs()
     }
 
-    pub fn value_at(&self, x: usize, y: usize) -> u32 {
+    pub fn value_at(&self, x: usize, y: usize) -> u64 {
         self.px_at(x, y).get_v()
     }
 
-    pub fn value_at3(&self, x: usize, y: usize) -> (u32, u32, u32) {
+    pub fn value_at3(&self, x: usize, y: usize) -> (u64, u64, u64) {
         self.px_at3(x, y).get_v3()
     }
 
@@ -190,10 +190,10 @@ impl DataImage {
         &self,
         x: usize,
         y: usize,
-        iterator: u32,
+        iterator: u64,
         quad: f64,
         state: DomainElementState,
-        max: u32,
+        max: u64,
     ) {
         let value = {
             if iterator < 1 {
@@ -241,11 +241,11 @@ impl DataImage {
         false
     }
 
-    pub fn best_four_chunks_value(&self) -> u32 {
+    pub fn best_four_chunks_value(&self) -> u64 {
         println!("best_four_chunks_value()");
         let chunk_size_x = self.width_xl / 20;
         let chunk_size_y = self.height_yl / 20;
-        let mut values: Vec<u32> = Vec::new();
+        let mut values: Vec<u64> = Vec::new();
         for x in 0..20 {
             for y in 0..20 {
                 values.push(self.chunk_value(
@@ -270,8 +270,8 @@ impl DataImage {
         sum
     }
 
-    fn chunk_value(&self, x_from: usize, x_to: usize, y_from: usize, y_to: usize) -> u32 {
-        let mut sum = 0;
+    fn chunk_value(&self, x_from: usize, x_to: usize, y_from: usize, y_to: usize) -> u64 {
+        let mut sum : u64 = 0;
         for x in x_from..x_to {
             for y in y_from..y_to {
                 sum += self.px_at(x, y).get_v();
@@ -333,7 +333,7 @@ impl DataImage {
         }
     }
 
-    pub fn fill_the_gaps(&self, area: &Area) -> (u32, u32) {
+    pub fn fill_the_gaps(&self, area: &Area) -> (u64, u64) {
         let res = area.screen_to_domain_re_copy();
         let ims = area.screen_to_domain_im_copy();
 
@@ -409,7 +409,7 @@ impl DataImage {
         }
     }
 
-    pub fn set(&self, x: usize, y: usize, value: u32) {
+    pub fn set(&self, x: usize, y: usize, value: u64) {
         self.px_at(x, y).set_v(value);
     }
 }

@@ -61,10 +61,10 @@ where
     pub palette_zero: Palette,
     // calculation config
     pub orbits: OrbitType, // fractal::finite_orbits / infinite_orbits
-    pub iteration_min: u32,
-    pub iteration_max: u32,
-    pub update_max: u32,
-    pub update_min: u32,
+    pub iteration_min: u64,
+    pub iteration_max: u64,
+    pub update_max: u64,
+    pub update_min: u64,
     // calculation statistics for video zoom
     pub stats: Stats,
     //  nebula specific - use multiple numbers for each screen pixel
@@ -298,7 +298,7 @@ where
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
-    fn chunk_calculation(&self, xy: &[u32; 2]) {
+    fn chunk_calculation(&self, xy: &[u64; 2]) {
         let (x_from, x_to, y_from, y_to) = self.chunk_boundaries(xy);
         for x in x_from..x_to {
             for y in y_from..y_to {
@@ -307,7 +307,7 @@ where
         }
     }
 
-    fn chunk_calculation_with_wrap(&self, xy: &[u32; 2]) {
+    fn chunk_calculation_with_wrap(&self, xy: &[u64; 2]) {
         if self.resolution_multiplier == ResolutionMultiplier::Single {
             panic!()
         }
@@ -415,9 +415,9 @@ where
      * domain on which the image is calculate is split to 20 x 20 = 400 chunks
      * this method returns numbers from 0 to 20
      */
-    pub fn chunk_boundaries(&self, xy: &[u32; 2]) -> (usize, usize, usize, usize) {
-        let chunk_size_x = (self.width_xl / 20) as u32;
-        let chunk_size_y = (self.height_yl / 20) as u32;
+    pub fn chunk_boundaries(&self, xy: &[u64; 2]) -> (usize, usize, usize, usize) {
+        let chunk_size_x = (self.width_xl / 20) as u64;
+        let chunk_size_y = (self.height_yl / 20) as u64;
         (
             (xy[0] * chunk_size_x) as usize,
             ((xy[0] + 1) * chunk_size_x) as usize,
@@ -426,7 +426,7 @@ where
         )
     }
 
-    pub fn path_test(&self, length: u32, iterator: u32) -> bool {
+    pub fn path_test(&self, length: u64, iterator: u64) -> bool {
         if self.orbits == OrbitType::Finite {
             // only the edges of mandelbrot set
             length > self.iteration_min && iterator < self.iteration_max
@@ -436,7 +436,7 @@ where
         }
     }
 
-    pub fn calculate_path(&self, origin_re: f64, origin_im: f64) -> (u32, u32) {
+    pub fn calculate_path(&self, origin_re: f64, origin_im: f64) -> (u64, u64) {
         let cb = CALCULATION_BOUNDARY as f64;
 
         let mut m = M::new(origin_re, origin_im);
@@ -489,7 +489,7 @@ where
         (iterator, length)
     }
 
-    pub fn state_from_path_length(&self, iterator: u32, path_length: u32) -> DomainElementState {
+    pub fn state_from_path_length(&self, iterator: u64, path_length: u64) -> DomainElementState {
         // path length considered only within Area
         if path_length < self.iteration_min {
             // 0 to min-1
@@ -554,9 +554,9 @@ where
     /**
      * Whole Mandelbrot calculation
      */
-    pub fn calculate_mandelbrot(&self, it: u32) {
+    pub fn calculate_mandelbrot(&self, it: u64) {
         println!("calculate_mandelbrot()");
-        let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
+        let coordinates_xy: Vec<[u64; 2]> = shuffled_calculation_coordinates();
 
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
@@ -571,7 +571,7 @@ where
         save_image(&self.data_image, self.name, it);
     }
 
-    fn chunk_calculation_mandelbrot(&self, xy: &[u32; 2]) {
+    fn chunk_calculation_mandelbrot(&self, xy: &[u64; 2]) {
         let (x_from, x_to, y_from, y_to) = self.chunk_boundaries(xy);
         for x in x_from..x_to {
             for y in y_from..y_to {
@@ -598,7 +598,7 @@ where
         }
     }
 
-    pub fn calculate_mandelbrot_path(&self, origin_re: f64, origin_im: f64) -> (u32, f64) {
+    pub fn calculate_mandelbrot_path(&self, origin_re: f64, origin_im: f64) -> (u64, f64) {
         let cb = CALCULATION_BOUNDARY as f64;
 
         let mut m = M::new(origin_re, origin_im);
@@ -669,34 +669,29 @@ where
         // ms_min have serious impact on parallelization and speed of calculation,
         // don't use less than 100
         const MS_MIN: u64 = 250;
-
-        let now = Instant::now();
-        let called_in_past_enough = now.duration_since(*self.last_partial_refresh.read().unwrap())
+        let called_in_past_enough = Instant::now()
+            .duration_since(*self.last_partial_refresh.read().unwrap())
             >= Duration::from_millis(MS_MIN);
 
         if called_in_past_enough || paint_now {
-            let app = self
-                .app_ref
+            self.app_ref
                 .as_ref()
                 .unwrap()
                 .read()
-                .expect("Failed to lock application reference");
+                .expect("Failed to lock application reference")
+                .paint_partial_calculation_result_states(&self.data_image);
 
-            app.paint_partial_calculation_result_states(&self.data_image);
-
-            *self.last_partial_refresh.write().unwrap() = now;
+            *self.last_partial_refresh.write().unwrap() = Instant::now();
         }
     }
 
     pub fn paint_pixel_states_now(&self) {
-        let app = self
-            .app_ref
+        self.app_ref
             .as_ref()
             .unwrap()
             .read()
-            .expect("Failed to lock application reference");
-
-        app.paint_pixel_states(&self.data_image);
+            .expect("Failed to lock application reference")
+            .paint_pixel_states(&self.data_image);
     }
 }
 
@@ -708,8 +703,8 @@ where
  * Creates x,y pairs for calculation.
  * Then shuffles them, it looks better when rendering
  */
-pub fn shuffled_calculation_coordinates() -> Vec<[u32; 2]> {
-    let mut coordinates_xy: Vec<[u32; 2]> = Vec::new();
+pub fn shuffled_calculation_coordinates() -> Vec<[u64; 2]> {
+    let mut coordinates_xy: Vec<[u64; 2]> = Vec::new();
 
     // 400 little subdivisions of the screen
     for x in 0..20 {

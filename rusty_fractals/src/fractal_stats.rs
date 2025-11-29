@@ -8,22 +8,22 @@ pub struct Stats {
 
 impl Stats {
     pub fn paths_new_points_amount_add(&self, path_length: usize) {
-        self.data.write().unwrap().paths_new_points_amount += path_length as u32;
+        self.data.write().unwrap().paths_new_points_amount += path_length as u64;
     }
 }
 
 pub struct StatsData {
-    new_elements_too_long: u32,
-    new_elements_too_short: u32,
-    new_elements_long: u32,
+    new_elements_too_long: u64,
+    new_elements_too_short: u64,
+    new_elements_long: u64,
 
     // All paths including previous calculations
     // The amount of newly added paths is not the same as the amount of red elementLong
-    paths_total_amount: u32,
+    paths_total_amount: u64,
 
-    paths_new_points_amount: u32,
-    pixels_value_total: u32,
-    pixels_value_best: u32,
+    paths_new_points_amount: u64,
+    pixels_value_total: u64,
+    pixels_value_best: u64,
 
     not_enough_pixels_total_value: bool,
     less_pixels_total_value: bool,
@@ -34,15 +34,15 @@ pub struct StatsData {
     pub too_many_paths_total: bool,
     not_enough_long_elements: bool,
 
-    new_elements_long_measure: u32,
-    new_elements_long_tolerance: u32,
-    paths_total_amount_measure: u32,
-    paths_total_amount_tolerance: u32,
-    pixels_value_total_measure: u32,
-    pixels_value_total_tolerance: u32,
-    pixels_value_best_measure: u32,
-    pixels_value_best_tolerance: u32,
-    average_path_length_measure: u32,
+    new_elements_long_measure: u64,
+    new_elements_long_tolerance: u64,
+    paths_total_amount_measure: u64,
+    paths_total_amount_tolerance: u64,
+    pixels_value_total_measure: u64,
+    pixels_value_total_tolerance: u64,
+    pixels_value_best_measure: u64,
+    pixels_value_best_tolerance: u64,
+    average_path_length_measure: u64,
 }
 
 impl Stats {
@@ -58,15 +58,15 @@ impl Stats {
         data.pixels_value_total_measure = data.pixels_value_total;
         data.paths_total_amount_measure = data.paths_total_amount;
         data.average_path_length_measure =
-            (data.pixels_value_total as f64 / data.paths_total_amount as f64) as u32;
+            (data.pixels_value_total as f64 / data.paths_total_amount as f64) as u64;
 
         // from data image
         data.pixels_value_best_measure = data_image.best_four_chunks_value();
 
-        data.new_elements_long_tolerance = (data.new_elements_long_measure as f64 * 0.5) as u32;
-        data.pixels_value_total_tolerance = (data.pixels_value_total_measure as f64 * 0.5) as u32;
-        data.paths_total_amount_tolerance = (data.paths_total_amount_measure as f64 * 0.5) as u32;
-        data.pixels_value_best_tolerance = (data.pixels_value_best_measure as f64 * 0.5) as u32;
+        data.new_elements_long_tolerance = (data.new_elements_long_measure as f64 * 0.5) as u64;
+        data.pixels_value_total_tolerance = (data.pixels_value_total_measure as f64 * 0.5) as u64;
+        data.paths_total_amount_tolerance = (data.paths_total_amount_measure as f64 * 0.5) as u64;
+        data.pixels_value_best_tolerance = (data.pixels_value_best_measure as f64 * 0.5) as u64;
 
         println!("elementsLong_measure        {} ", data.new_elements_long_measure);
         println!("pixels_value_total_measure  {} ", data.pixels_value_total_measure);
@@ -76,7 +76,7 @@ impl Stats {
     }
 
     #[rustfmt::skip]
-    pub fn update(&self, data_image: &DataImage, it: u32) {
+    pub fn update(&self, data_image: &DataImage, it: u64) {
         // Check if Stats should remember this iteration data for subsequent comparison
         if it == TAKE_MEASURES_AT_FRAME {
             self.remember_this(data_image);

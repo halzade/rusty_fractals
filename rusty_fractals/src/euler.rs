@@ -19,7 +19,7 @@ fn _translate_paths_to_pixel_grid() {
      */
 }
 
-fn _colors_for(element_index: u32, path_length: u32) -> Spectra {
+fn _colors_for(element_index: u64, path_length: u64) -> Spectra {
     if mathematician::is_prime(element_index) {
         return Red;
     }

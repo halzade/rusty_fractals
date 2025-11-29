@@ -8,8 +8,8 @@ use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{ActiveNew, HibernatedDeepBlack};
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Single;
-use FractalCalculationType::StaticImageMandelbrot;
 use std::cmp::PartialEq;
+use FractalCalculationType::StaticImageMandelbrot;
 
 pub struct FractalConfig {
     // fractal config
@@ -17,8 +17,8 @@ pub struct FractalConfig {
     pub orbits: OrbitType, // fractal::finite_orbits / infinite_orbits
     pub fractal_calc_type: FractalCalculationType,
     // calculation config
-    pub iteration_min: u32,
-    pub iteration_max: u32,
+    pub iteration_min: u64,
+    pub iteration_max: u64,
     pub resolution_multiplier: ResolutionMultiplier,
     pub palette: PaletteName,
     pub palette_zero: PaletteName,
@@ -31,8 +31,8 @@ pub struct FractalConfig {
     pub center_re: f64,
     pub center_im: f64,
     // calculation update config
-    pub update_max: u32,
-    pub update_min: u32,
+    pub update_max: u64,
+    pub update_min: u64,
 }
 
 impl FractalConfig {
@@ -223,7 +223,7 @@ pub const fn init_trivial_dynamic_config(domain_side: usize) -> FractalConfig {
 
 #[cfg(test)]
 mod tests {
-    use crate::fractal::{FractalMath, Optimizer, init_trivial_fractal};
+    use crate::fractal::{init_trivial_fractal, FractalMath, Optimizer};
     use crate::mem::Mem;
     use crate::pixel_states::DomainElementState::{ActiveNew, HibernatedDeepBlack};
 

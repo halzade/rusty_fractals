@@ -1,7 +1,7 @@
 use crate::data_image::DataImage;
 use image::{ImageBuffer, RgbImage};
 
-pub fn save_image(data_image: &DataImage, name: &str, index: u32) {
+pub fn save_image(data_image: &DataImage, name: &str, index: u64) {
     println!("save_image()");
 
     let width = data_image.width_xp;

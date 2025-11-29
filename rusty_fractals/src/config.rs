@@ -10,8 +10,8 @@ pub struct NebulaImage {
     pub name: &'static str,
     pub orbits: OrbitType,
     // calculation config
-    pub iteration_min: u32,
-    pub iteration_max: u32,
+    pub iteration_min: u64,
+    pub iteration_max: u64,
     pub resolution_multiplier: ResolutionMultiplier,
     pub palette: PaletteName,
     // area config
@@ -26,8 +26,8 @@ pub struct NebulaVideo {
     pub name: &'static str,
     pub orbits: OrbitType,
     // calculation config
-    pub iteration_min: u32,
-    pub iteration_max: u32,
+    pub iteration_min: u64,
+    pub iteration_max: u64,
     pub resolution_multiplier: ResolutionMultiplier,
     pub palette: PaletteName,
     // area config
@@ -37,15 +37,15 @@ pub struct NebulaVideo {
     pub center_re: f64,
     pub center_im: f64,
     // calculation update config
-    pub update_max: u32,
-    pub update_min: u32,
+    pub update_max: u64,
+    pub update_min: u64,
 }
 
 pub struct MandelbrotImage {
     // fractal config
     pub name: &'static str,
     // calculation config
-    pub iteration_max: u32,
+    pub iteration_max: u64,
     pub palette: PaletteName,
     pub palette_zero: PaletteName,
     // area config
@@ -60,7 +60,7 @@ pub struct MandelbrotVideo {
     // fractal config
     pub name: &'static str,
     // calculation config
-    pub iteration_max: u32,
+    pub iteration_max: u64,
     pub palette: PaletteName,
     pub palette_zero: PaletteName,
     // area config
@@ -76,8 +76,8 @@ pub struct EulerImage {
     pub name: &'static str,
     pub orbits: OrbitType,
     // calculation config
-    pub iteration_min: u32,
-    pub iteration_max: u32,
+    pub iteration_min: u64,
+    pub iteration_max: u64,
     pub resolution_multiplier: ResolutionMultiplier,
     // area config
     pub width_x: usize,

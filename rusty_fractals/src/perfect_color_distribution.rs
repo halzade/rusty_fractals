@@ -12,7 +12,7 @@ use std::cmp::Ordering::Equal;
 struct Mix {
     x: usize,
     y: usize,
-    value: u32,
+    value: u64,
     // the black interior of set
     quad: f64,
 }
@@ -57,10 +57,10 @@ pub fn perfectly_color_mandelbrot_values(
     // inverted order
     pixels_zero.sort_by(|first, second| second.quad.total_cmp(&first.quad));
 
-    let all_pixels_total: u32 = (width * height) as u32;
-    let all_pixels_non_zero: u32 = all_pixels_total - zero_value_elements;
-    let palette_color_count: u32 = palette.spectrum.len() as u32;
-    let single_color_use: u32 = (all_pixels_non_zero as f64 / palette_color_count as f64) as u32;
+    let all_pixels_total: u64 = (width * height) as u64;
+    let all_pixels_non_zero: u64 = all_pixels_total - zero_value_elements;
+    let palette_color_count: u64 = palette.spectrum.len() as u64;
+    let single_color_use: u64 = (all_pixels_non_zero as f64 / palette_color_count as f64) as u64;
 
     let left = all_pixels_non_zero - (palette_color_count * single_color_use);
 
@@ -99,9 +99,9 @@ pub fn perfectly_color_mandelbrot_values(
     assert_eq!(pixels.len(), pi);
 
     // Paint insides of Mandelbrot set
-    let zero_palette_color_count = palette_zero.spectrum.len() as u32;
+    let zero_palette_color_count = palette_zero.spectrum.len() as u64;
     let zero_single_color_use =
-        (zero_value_elements as f64 / zero_palette_color_count as f64) as u32;
+        (zero_value_elements as f64 / zero_palette_color_count as f64) as u64;
     let zero_left = zero_value_elements - (zero_palette_color_count * zero_single_color_use);
 
     println!("zero_palette_color_count:   {:8}", zero_palette_color_count);

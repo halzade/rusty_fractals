@@ -15,7 +15,7 @@ pub struct DataPx {
 struct Data {
     origin_re: f64,
     origin_im: f64,
-    value: u32,
+    value: u64,
     /* Element state is decided by calculation result.
      * Alternatively: If all it's neighbours finished too long, it is going to be
      * created as HibernatedBlack and its origin won't seed any calculation path.
@@ -30,11 +30,11 @@ impl DataPx {
         self.data.write().unwrap().value += 1;
     }
 
-    pub fn set_v(&self, value: u32) {
+    pub fn set_v(&self, value: u64) {
         self.data.write().unwrap().value = value;
     }
 
-    pub fn set_qsv(&self, quad: f64, state: DomainElementState, value: u32) {
+    pub fn set_qsv(&self, quad: f64, state: DomainElementState, value: u64) {
         let mut d = self.data.write().unwrap();
         d.quad = quad;
         d.state = state;
@@ -51,17 +51,17 @@ impl DataPx {
         self.data.write().unwrap().color = Some(color);
     }
 
-    pub fn get_vsqc(&self) -> (u32, DomainElementState, f64, Option<Rgb<u8>>) {
+    pub fn get_vsqc(&self) -> (u64, DomainElementState, f64, Option<Rgb<u8>>) {
         let d = self.data.read().unwrap();
         (d.value, d.state, d.quad, d.color)
     }
 
-    pub fn get_vsc(&self) -> (u32, DomainElementState, Option<Rgb<u8>>) {
+    pub fn get_vsc(&self) -> (u64, DomainElementState, Option<Rgb<u8>>) {
         let d = self.data.read().unwrap();
         (d.value, d.state, d.color)
     }
 
-    pub fn get_vs(&self) -> (u32, DomainElementState) {
+    pub fn get_vs(&self) -> (u64, DomainElementState) {
         let d = self.data.read().unwrap();
         (d.value, d.state)
     }
@@ -76,7 +76,7 @@ impl DataPx {
         (d.origin_re, d.origin_im)
     }
 
-    pub fn get_v(&self) -> u32 {
+    pub fn get_v(&self) -> u64 {
         self.data.read().unwrap().value
     }
 

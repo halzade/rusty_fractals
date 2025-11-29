@@ -12,7 +12,7 @@ use crate::palette::Palette;
 struct Pix {
     x: usize,
     y: usize,
-    value: u32,
+    value: u64,
 }
 
 pub fn perfectly_color_nebula_values(data: &DataImage, palette: &Palette) {
@@ -38,11 +38,11 @@ pub fn perfectly_color_nebula_values(data: &DataImage, palette: &Palette) {
     //  order pixels from the smallest to the highest value
     pixels.sort_by(|first, second| first.value.cmp(&second.value));
 
-    let all_pixels_total: u32 = (width * height) as u32;
-    let all_pixels_non_zero: u32 = all_pixels_total - zero_value_elements;
-    let palette_color_count: u32 = palette.spectrum.len() as u32;
-    let single_color_use: u32 = (all_pixels_non_zero as f64 / palette_color_count as f64) as u32;
-    let left: u32 = all_pixels_non_zero - (palette_color_count * single_color_use);
+    let all_pixels_total: u64 = (width * height) as u64;
+    let all_pixels_non_zero: u64 = all_pixels_total - zero_value_elements;
+    let palette_color_count: u64 = palette.spectrum.len() as u64;
+    let single_color_use: u64 = (all_pixels_non_zero as f64 / palette_color_count as f64) as u64;
+    let left: u64 = all_pixels_non_zero - (palette_color_count * single_color_use);
 
     println!("------------------------------------");
     println!("All pixels to paint:        {:8}", all_pixels_total);

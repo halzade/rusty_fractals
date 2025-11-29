@@ -12,11 +12,11 @@ use crate::palettes::palette_3_rgb;
 struct Pix {
     x: usize,
     y: usize,
-    value: u32,
+    value: u64,
 }
 
 impl Pix {
-    pub fn value(&self) -> u32 {
+    pub fn value(&self) -> u64 {
         self.value
     }
 }
@@ -67,21 +67,21 @@ pub fn perfectly_color_euler_values(data: &DataImage) {
     pixels_green.sort_by(|first, second| first.value.cmp(&second.value));
     pixels_blue.sort_by(|first, second| first.value.cmp(&second.value));
 
-    let all_pixels_total: u32 = width as u32 * height as u32;
-    let all_pixels_non_zero_red: u32 = all_pixels_total - zero_value_elements_red;
-    let all_pixels_non_zero_green: u32 = all_pixels_total - zero_value_elements_green;
-    let all_pixels_non_zero_blue: u32 = all_pixels_total - zero_value_elements_blue;
+    let all_pixels_total: u64 = width as u64 * height as u64;
+    let all_pixels_non_zero_red: u64 = all_pixels_total - zero_value_elements_red;
+    let all_pixels_non_zero_green: u64 = all_pixels_total - zero_value_elements_green;
+    let all_pixels_non_zero_blue: u64 = all_pixels_total - zero_value_elements_blue;
 
-    let palette_color_count: u32 = palette3.spectrum_red.len() as u32;
+    let palette_color_count: u64 = palette3.spectrum_red.len() as u64;
     assert_eq!(palette3.spectrum_red.len(), palette3.spectrum_blue.len());
     assert_eq!(palette3.spectrum_red.len(), palette3.spectrum_green.len());
 
-    let single_color_use_red: u32 = all_pixels_non_zero_red / palette_color_count;
-    let single_color_use_green: u32 = all_pixels_non_zero_green / palette_color_count;
-    let single_color_use_blue: u32 = all_pixels_non_zero_blue / palette_color_count;
-    let left_red: u32 = all_pixels_non_zero_red - (palette_color_count * single_color_use_red);
-    let left_green: u32 = all_pixels_non_zero_green - (palette_color_count * single_color_use_green);
-    let left_blue: u32 = all_pixels_non_zero_blue - (palette_color_count * single_color_use_blue);
+    let single_color_use_red: u64 = all_pixels_non_zero_red / palette_color_count;
+    let single_color_use_green: u64 = all_pixels_non_zero_green / palette_color_count;
+    let single_color_use_blue: u64 = all_pixels_non_zero_blue / palette_color_count;
+    let left_red: u64 = all_pixels_non_zero_red - (palette_color_count * single_color_use_red);
+    let left_green: u64 = all_pixels_non_zero_green - (palette_color_count * single_color_use_green);
+    let left_blue: u64 = all_pixels_non_zero_blue - (palette_color_count * single_color_use_blue);
 
     println!("------------------------------------");
     println!("All pixels to paint:        {:8}", all_pixels_total);

@@ -7,7 +7,7 @@ use crate::mem::Mem;
  */
 pub struct MemEuler {
     pub m: Mem,
-    pub it: u32,
+    pub it: u64,
 }
 
 impl MemType<MemEuler> for MemEuler {
@@ -41,6 +41,30 @@ impl MemEuler {
     pub fn euler(&mut self) {
         self.it += 1;
         if mathematician::is_prime(self.it) {
+            self.m.re = 0.01 / self.m.re;
+            self.m.im = 0.01 / self.m.im;
+        }
+    }
+
+    pub fn leonardo(&mut self) {
+        self.it += 1;
+        if mathematician::is_fibonacci(self.it) {
+            self.m.re = 0.01 / self.m.re;
+            self.m.im = 0.01 / self.m.im;
+        }
+    }
+
+    pub fn lukas(&mut self) {
+        self.it += 1;
+        if mathematician::is_perfect(self.it) {
+            self.m.re = 0.01 / self.m.re;
+            self.m.im = 0.01 / self.m.im;
+        }
+    }
+
+    pub fn prague(&mut self) {
+        self.it += 1;
+        if mathematician::is_square(self.it) {
             self.m.re = 0.01 / self.m.re;
             self.m.im = 0.01 / self.m.im;
         }

@@ -31,7 +31,7 @@ where
 }
 
 struct ApplicationData {
-    pub last_max_value: u32,
+    pub last_max_value: u64,
 }
 
 fn init_o<'lt, F, M>(
@@ -250,7 +250,7 @@ where
                 let height = data_image.height_yp;
 
                 // pixel states and image colors
-                let pixel_states: Vec<(u32, DomainElementState, Option<Rgb<u8>>)> = (0..height)
+                let pixel_states: Vec<(u64, DomainElementState, Option<Rgb<u8>>)> = (0..height)
                     .flat_map(|y| {
                         (0..width).map(move |x| {
                             let (value, state, color_opt) = data_image.values_state_color_at(x, y);
