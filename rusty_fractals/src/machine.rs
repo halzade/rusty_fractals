@@ -168,7 +168,7 @@ where
             }
             StaticImageMandelbrot => {
                 // Hard fractal image
-                self.calculate_mandelbrot();
+                self.calculate_mandelbrot(0);
             }
             StaticSequenceMandelbrot => {
                 // Hard fractal video
@@ -293,6 +293,8 @@ where
         perfectly_color_euler_values(&self.data_image);
 
         self.paint_final_calculation_result_colors();
+
+        save_image(&self.data_image, self.name, 0);
     }
 
     // in sequence executes as 20x20 parallel for each image part/chunk
@@ -512,6 +514,8 @@ where
             println!("{}:", it);
             self.calculate_nebula_dynamic_data();
 
+            save_image(&self.data_image, self.name, it);
+
             // prepare next frame
             self.zoom_in();
 
@@ -530,7 +534,7 @@ where
         println!("calculate_mandelbrot_zoom()");
         for it in 1.. {
             println!("{}:", it);
-            self.calculate_mandelbrot();
+            self.calculate_mandelbrot(it);
 
             // prepare next frame
             self.zoom_in();
@@ -550,7 +554,7 @@ where
     /**
      * Whole Mandelbrot calculation
      */
-    pub fn calculate_mandelbrot(&self) {
+    pub fn calculate_mandelbrot(&self, it: u32) {
         println!("calculate_mandelbrot()");
         let coordinates_xy: Vec<[u32; 2]> = shuffled_calculation_coordinates();
 
@@ -564,7 +568,7 @@ where
         perfectly_color_mandelbrot_values(&self.data_image, &self.palette, &self.palette_zero);
         self.paint_final_calculation_result_colors();
 
-        // save_image(&self.data_image);
+        save_image(&self.data_image, self.name, it);
     }
 
     fn chunk_calculation_mandelbrot(&self, xy: &[u32; 2]) {
@@ -679,9 +683,9 @@ where
                 .expect("Failed to lock application reference");
 
             app.paint_partial_calculation_result_states(&self.data_image);
-        }
 
-        *self.last_partial_refresh.write().unwrap() = now;
+            *self.last_partial_refresh.write().unwrap() = now;
+        }
     }
 
     pub fn paint_pixel_states_now(&self) {

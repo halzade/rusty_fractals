@@ -7,7 +7,7 @@ pub fn save_image(data_image: &DataImage, name: &str, index: u32) {
     let width = data_image.width_xp;
     let height = data_image.height_yp;
 
-    if (width <= 800) || (height <= 800) {
+    if width <= 600 {
         println!("save_image() {} {} skip", width, height);
         return;
     }
@@ -44,7 +44,7 @@ mod tests {
     fn test_save_image() {
         let fractal_name = "Fractal Snake";
 
-        let c = init_trivial_dynamic_config(801);
+        let c = init_trivial_dynamic_config(601);
         let a = area::init(&c);
         save_image(&data_image::init(&c, &a), fractal_name, 0);
 

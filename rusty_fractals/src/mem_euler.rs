@@ -45,14 +45,6 @@ impl MemEuler {
             self.m.im = 0.01 / self.m.im;
         }
     }
-
-    pub fn euler2(&mut self) {
-        self.it += 1;
-        if mathematician::is_fibonacci(self.it) {
-            self.m.re = 0.01 / self.m.re;
-            self.m.im = 0.01 / self.m.im;
-        }
-    }
 }
 
 #[cfg(test)]

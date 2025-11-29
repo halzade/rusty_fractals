@@ -45,7 +45,7 @@ pub fn is_outside_circle(re: f64, im: f64) -> bool {
     ((re + 1.0) * (re + 1.0)) + (im * im) > 0.062
 }
 
-pub fn rotate_by(mut m: Mem, t: f64) {
+pub fn rotate_by(m: &mut Mem, t: f64) {
     let temp = (1.0 - t * t) / (1.0 + t * t);
     m.im = (2.0 * t) / (1.0 + t * t);
     m.re = temp;
@@ -67,13 +67,13 @@ pub fn is_square(n: u32) -> bool {
     MATHEMATICIAN.square.read().unwrap().contains(&n)
 }
 
-pub fn multiply_by(mut m: Mem, re: f64, im: f64) {
+pub fn multiply_by(m: &mut Mem, re: f64, im: f64) {
     let temp = (m.re * re) - (m.im * im);
     m.im = (m.re * im) + (re * m.im);
     m.re = temp;
 }
 
-pub fn plus_invert(mut m: Mem) {
+pub fn plus_invert(m: &mut Mem) {
     let a = m.re;
     let b = m.im;
     let quad = (a * a) + (b * b);
@@ -81,7 +81,7 @@ pub fn plus_invert(mut m: Mem) {
     m.im = m.im - (b / quad);
 }
 
-pub fn minus_invert(mut m: Mem) {
+pub fn minus_invert(m: &mut Mem) {
     let a = m.re;
     let b = m.im;
     let quad = (a * a) + (b * b);
@@ -89,12 +89,12 @@ pub fn minus_invert(mut m: Mem) {
     m.im = m.im + (b / quad);
 }
 
-pub fn inner_product(mut m: Mem, re: f64, im: f64) {
+pub fn inner_product(m: &mut Mem, re: f64, im: f64) {
     m.re = m.re * re;
     m.im = m.im * im;
 }
 
-pub fn inverse(mut m: Mem) {
+pub fn inverse(m: &mut Mem) {
     let q = m.quad();
     m.conjugation();
     m.re /= q;
@@ -102,14 +102,14 @@ pub fn inverse(mut m: Mem) {
 }
 
 /** (a + ib)^3 */
-pub fn binomial3(mut m: Mem) {
+pub fn binomial3(m: &mut Mem) {
     let temp = (m.re * m.re * m.re) - (3.0 * m.re * m.im * m.im);
     m.im = (3.0 * m.re * m.re * m.im) - (m.im * m.im * m.im);
     m.re = temp;
 }
 
 /** (a + ib)^4 */
-pub fn binomial4(mut m: Mem) {
+pub fn binomial4(m: &mut Mem) {
     let temp = (m.re * m.re * m.re * m.re) - (6.0 * m.re * m.re * m.re * m.im)
         + (m.im * m.re * m.im * m.im);
     m.im = (4.0 * m.re * m.re * m.re * m.im) - (4.0 * m.re * m.im * m.im * m.im);
@@ -117,7 +117,7 @@ pub fn binomial4(mut m: Mem) {
 }
 
 /** (a + ib)^5 */
-pub fn binomial5(mut m: Mem) {
+pub fn binomial5(m: &mut Mem) {
     let temp = (m.re * m.re * m.re * m.re * m.re) - (10.0 * m.re * m.re * m.re * m.im * m.im)
         + (5.0 * m.re * m.im * m.im * m.im * m.im);
     m.im = (5.0 * m.re * m.re * m.re * m.re * m.im) - (10.0 * m.re * m.re * m.im * m.im * m.im)
@@ -125,13 +125,13 @@ pub fn binomial5(mut m: Mem) {
     m.re = temp;
 }
 
-pub fn reciprocal(mut m: Mem) {
+pub fn reciprocal(m: &mut Mem) {
     let scale = m.re * m.re + m.im * m.im;
     m.re = m.re / scale;
     m.im = -m.im / scale;
 }
 
-pub fn circle_inversion(mut m: Mem, re: f64, im: f64) {
+pub fn circle_inversion(m: &mut Mem, re: f64, im: f64) {
     let d = (re * re) + (im * im);
     m.re = re / d;
     m.im = im / d;
