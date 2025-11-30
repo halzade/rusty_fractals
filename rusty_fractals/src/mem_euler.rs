@@ -54,7 +54,7 @@ impl MemEuler {
         }
     }
 
-    pub fn lukas(&mut self) {
+    pub fn czech(&mut self) {
         self.it += 1;
         if mathematician::is_perfect(self.it) {
             self.m.re = 0.01 / self.m.re;
@@ -62,9 +62,57 @@ impl MemEuler {
         }
     }
 
-    pub fn prague(&mut self) {
+    pub fn chess(&mut self) {
         self.it += 1;
         if mathematician::is_square(self.it) {
+            self.m.re = 0.01 / self.m.re;
+            self.m.im = 0.01 / self.m.im;
+        }
+    }
+
+    pub fn pythagoras(&mut self) {
+        self.it += 1;
+        if mathematician::is_triangular(self.it) {
+            self.m.re = 0.01 / self.m.re;
+            self.m.im = 0.01 / self.m.im;
+        }
+    }
+
+    pub fn bee(&mut self) {
+        self.it += 1;
+        if mathematician::is_pell(self.it) {
+            self.m.re = 0.01 / self.m.re;
+            self.m.im = 0.01 / self.m.im;
+        }
+    }
+
+    pub fn taco(&mut self) {
+        self.it += 1;
+        if mathematician::is_lucas(self.it) {
+            self.m.re = 0.01 / self.m.re;
+            self.m.im = 0.01 / self.m.im;
+        }
+    }
+
+    pub fn manana(&mut self) {
+        self.it += 1;
+        if mathematician::is_catalan(self.it) {
+            self.m.re = 0.01 / self.m.re;
+            self.m.im = 0.01 / self.m.im;
+        }
+    }
+
+    pub fn potato(&mut self) {
+        self.it += 1;
+        if mathematician::is_lazy(self.it) {
+            self.m.re = 0.01 / self.m.re;
+            self.m.im = 0.01 / self.m.im;
+        }
+    }
+
+    pub fn lukas(&mut self) {
+        self.it += 1;
+        if mathematician::is_happy(self.it) {
             self.m.re = 0.01 / self.m.re;
             self.m.im = 0.01 / self.m.im;
         }

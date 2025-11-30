@@ -252,7 +252,7 @@ pub fn init_squares(max: u64) {
 }
 
 /**
- *
+ * Triangular numbers: 1, 3, 6, 10, 15
  */
 pub fn init_triangular(max: u64) {
     println!("init_triangular()");
@@ -268,7 +268,7 @@ pub fn init_triangular(max: u64) {
 }
 
 /**
- *
+ * Pell numbers: 0, 1, 2, 5, 12, 29,
  */
 pub fn init_pell(max: u64) {
     println!("init_pell()");
@@ -280,7 +280,7 @@ pub fn init_pell(max: u64) {
 }
 
 /**
- *
+ * Lucas numbers: 2, 1, 3, 4, 7, 11
  */
 pub fn init_lucas(max: u64) {
     println!("init_lucas()");
