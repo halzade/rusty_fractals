@@ -24,6 +24,47 @@ impl Mem {
         self.im *= -1.0;
     }
 
+    pub fn inverse(&mut self) {
+        let q = self.quad();
+        self.conjugation();
+        self.re /= q;
+        self.im /= q;
+    }
+
+    /** (a + ib)^3 */
+    pub fn binomial3(&mut self) {
+        let temp = (self.re * self.re * self.re) - (3.0 * self.re * self.im * self.im);
+        self.im = (3.0 * self.re * self.re * self.im) - (self.im * self.im * self.im);
+        self.re = temp;
+    }
+
+    /** (a + ib)^4 */
+    pub fn binomial4(&mut self) {
+        let temp = (self.re * self.re * self.re * self.re)
+            - (6.0 * self.re * self.re * self.re * self.im)
+            + (self.im * self.re * self.im * self.im);
+        self.im = (4.0 * self.re * self.re * self.re * self.im)
+            - (4.0 * self.re * self.im * self.im * self.im);
+        self.re = temp;
+    }
+
+    /** (a + ib)^5 */
+    pub fn binomial5(&mut self) {
+        let temp = (self.re * self.re * self.re * self.re * self.re)
+            - (10.0 * self.re * self.re * self.re * self.im * self.im)
+            + (5.0 * self.re * self.im * self.im * self.im * self.im);
+        self.im = (5.0 * self.re * self.re * self.re * self.re * self.im)
+            - (10.0 * self.re * self.re * self.im * self.im * self.im)
+            + (self.im * self.im * self.im * self.im * self.im);
+        self.re = temp;
+    }
+
+    pub fn circle_inversion(&mut self, re: f64, im: f64) {
+        let d = (re * re) + (im * im);
+        self.re = re / d;
+        self.im = im / d;
+    }
+
     pub fn euler(&mut self) {
         self.it += 1;
         if mathematician::is_prime(self.it) {
@@ -160,6 +201,49 @@ mod tests {
         m.conjugation();
         assert_eq!(m.re, 3.0);
         assert_eq!(m.im, -2.0);
+    }
+
+    #[test]
+    fn test_inverse() {
+        let mut m = Mem::new(0.5, 0.5);
+
+        m.inverse();
+        assert_eq!(m.re, 1.0);
+        assert_eq!(m.im, -1.0);
+    }
+    #[test]
+    fn test_binomial3() {
+        let mut m = Mem::new(0.5, 0.5);
+
+        m.binomial3();
+        assert_eq!(m.re, -0.25);
+        assert_eq!(m.im, 0.25);
+    }
+
+    #[test]
+    fn test_binomial4() {
+        let mut m = Mem::new(0.5, 0.5);
+
+        m.binomial4();
+        assert_eq!(m.re, -0.25);
+        assert_eq!(m.im, 0.0);
+    }
+
+    #[test]
+    fn test_binomial5() {
+        let mut m = Mem::new(0.5, 0.5);
+
+        m.binomial5();
+        assert_eq!(m.re, -0.125);
+        assert_eq!(m.im, -0.125);
+    }
+    #[test]
+    fn test_circle_inversion() {
+        let mut m = Mem::new(0.5, 0.5);
+
+        m.circle_inversion(0.2, 0.3);
+        assert_eq!(m.re, 1.5384615384615385);
+        assert_eq!(m.im, 2.3076923076923075);
     }
 
     #[test]

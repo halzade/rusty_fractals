@@ -4,7 +4,7 @@ use rusty_fractals::fractal::FractalMath;
 use rusty_fractals::fractal::OrbitType::Infinite;
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::PaletteName;
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::{Square2, Square3};
+use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square3;
 use rusty_fractals::{application, mathematician};
 
 struct Czech {}

@@ -1,4 +1,3 @@
-use crate::fractal::MemType;
 use crate::mem::Mem;
 use fltk::utils::oncelock::Lazy;
 use std::collections::HashSet;
@@ -129,43 +128,6 @@ pub fn minus_invert(m: &mut Mem) {
 pub fn inner_product(m: &mut Mem, re: f64, im: f64) {
     m.re = m.re * re;
     m.im = m.im * im;
-}
-
-pub fn inverse(m: &mut Mem) {
-    let q = m.quad();
-    m.conjugation();
-    m.re /= q;
-    m.im /= q;
-}
-
-/** (a + ib)^3 */
-pub fn binomial3(m: &mut Mem) {
-    let temp = (m.re * m.re * m.re) - (3.0 * m.re * m.im * m.im);
-    m.im = (3.0 * m.re * m.re * m.im) - (m.im * m.im * m.im);
-    m.re = temp;
-}
-
-/** (a + ib)^4 */
-pub fn binomial4(m: &mut Mem) {
-    let temp = (m.re * m.re * m.re * m.re) - (6.0 * m.re * m.re * m.re * m.im)
-        + (m.im * m.re * m.im * m.im);
-    m.im = (4.0 * m.re * m.re * m.re * m.im) - (4.0 * m.re * m.im * m.im * m.im);
-    m.re = temp;
-}
-
-/** (a + ib)^5 */
-pub fn binomial5(m: &mut Mem) {
-    let temp = (m.re * m.re * m.re * m.re * m.re) - (10.0 * m.re * m.re * m.re * m.im * m.im)
-        + (5.0 * m.re * m.im * m.im * m.im * m.im);
-    m.im = (5.0 * m.re * m.re * m.re * m.re * m.im) - (10.0 * m.re * m.re * m.im * m.im * m.im)
-        + (m.im * m.im * m.im * m.im * m.im);
-    m.re = temp;
-}
-
-pub fn circle_inversion(m: &mut Mem, re: f64, im: f64) {
-    let d = (re * re) + (im * im);
-    m.re = re / d;
-    m.im = im / d;
 }
 
 /**
