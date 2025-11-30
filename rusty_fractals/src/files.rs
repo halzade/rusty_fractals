@@ -4,8 +4,8 @@ use image::{ImageBuffer, RgbImage};
 pub fn save_image(data_image: &DataImage, name: &str, index: u64) {
     println!("save_image()");
 
-    let width = data_image.width_xp;
-    let height = data_image.height_yp;
+    let width = data_image.width_xl;
+    let height = data_image.height_yl;
 
     if width <= 600 {
         println!("save_image() {} {} skip", width, height);
@@ -39,17 +39,22 @@ mod tests {
     use crate::files::{save_image, to_snake};
     use crate::fractal::init_trivial_dynamic_config;
     use crate::{area, data_image};
+    use image::DynamicImage;
 
     #[test]
     fn test_save_image() {
         let fractal_name = "Fractal Snake";
-
-        let c = init_trivial_dynamic_config(601);
+        let c = init_trivial_dynamic_config(621);
         let a = area::init(&c);
+
         save_image(&data_image::init(&c, &a), fractal_name, 0);
 
         let file_name = "fractal_snake_0.jpg";
         assert!(std::fs::metadata(file_name).unwrap().is_file());
+
+        let img: DynamicImage = image::open(file_name).unwrap();
+        assert_eq!(img.width(), 620);
+        assert_eq!(img.height(), 620);
 
         std::fs::remove_file(file_name).unwrap();
     }

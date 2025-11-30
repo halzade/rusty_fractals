@@ -99,7 +99,7 @@ impl NebulaImage {
             palette: self.palette,
             palette_zero: PaletteName::Nothing,
             width_xl: self.width_x,
-            width_xp: self.width_x + 1,
+            width_xp: self.width_x + 1, // for x = 1, two borders left and right
             height_yl: self.height_y,
             height_yp: self.height_y + 1,
             width_re: self.width_re,

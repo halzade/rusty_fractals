@@ -194,7 +194,7 @@ pub fn init_trivial_static_config() -> FractalConfig {
     }
 }
 
-pub const fn init_trivial_dynamic_config(domain_side: usize) -> FractalConfig {
+pub const fn init_trivial_dynamic_config(domain_side_points: usize) -> FractalConfig {
     FractalConfig {
         name: "Dynamic",
         fractal_calc_type: DynamicSequenceNebula,
@@ -207,10 +207,10 @@ pub const fn init_trivial_dynamic_config(domain_side: usize) -> FractalConfig {
 
         // same as stupid Cartesian coordinates
         // [0.0, 0.0] at the center
-        width_xl: domain_side - 1,
-        width_xp: domain_side,
-        height_yl: domain_side - 1,
-        height_yp: domain_side,
+        width_xl: domain_side_points - 1,
+        width_xp: domain_side_points,
+        height_yl: domain_side_points - 1,
+        height_yp: domain_side_points,
         width_re: 1.0,
         center_re: 0.0,
         center_im: 0.0,
