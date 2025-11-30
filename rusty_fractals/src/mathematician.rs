@@ -343,6 +343,20 @@ pub fn init_lazy(max: u64) {
     }
 }
 
+pub fn clear() {
+    println!("clear()");
+    MATHEMATICIAN.primes.write().unwrap().clear();
+    MATHEMATICIAN.fibonacci.write().unwrap().clear();
+    MATHEMATICIAN.perfect.write().unwrap().clear();
+    MATHEMATICIAN.square.write().unwrap().clear();
+    MATHEMATICIAN.triangular.write().unwrap().clear();
+    MATHEMATICIAN.pell.write().unwrap().clear();
+    MATHEMATICIAN.lucas.write().unwrap().clear();
+    MATHEMATICIAN.catalan.write().unwrap().clear();
+    MATHEMATICIAN.lazy.write().unwrap().clear();
+    MATHEMATICIAN.happy.write().unwrap().clear();
+}
+
 #[cfg(test)]
 mod tests {
     use crate::mathematician::{

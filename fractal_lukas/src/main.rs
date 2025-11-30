@@ -44,15 +44,17 @@ fn main() {
 mod tests {
     use crate::Lukas;
     use rusty_fractals::fractal::{FractalMath, MemType};
+    use rusty_fractals::mathematician;
     use rusty_fractals::mem::Mem;
 
     #[test]
     fn test_math() {
         let lukas = Lukas {};
-        let mut m = Mem::new(0.0, 0.0);
+        let mut m = Mem::new(0.5, 0.5);
+        mathematician::init_happy(2);
 
         lukas.math(&mut m, 1.0, 0.0);
-        assert_eq!(m.re, 2.00);
-        assert_eq!(m.im, 0.0);
+        assert_eq!(m.re, 0.9997);
+        assert_eq!(m.im, 0.0004);
     }
 }

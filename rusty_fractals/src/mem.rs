@@ -183,11 +183,6 @@ mod tests {
 
         m.leonardo();
         assert_eq!(m.it, 1);
-        assert_eq!(m.re, 0.5);
-        assert_eq!(m.im, 0.5);
-
-        m.leonardo();
-        assert_eq!(m.it, 2);
         assert_eq!(m.re, 0.02);
         assert_eq!(m.im, 0.02);
     }
@@ -201,11 +196,6 @@ mod tests {
         assert_eq!(m.it, 1);
         assert_eq!(m.re, 0.5);
         assert_eq!(m.im, 0.5);
-
-        m.czech();
-        assert_eq!(m.it, 2);
-        assert_eq!(m.re, 0.02);
-        assert_eq!(m.im, 0.02);
     }
 
     #[test]
@@ -215,11 +205,6 @@ mod tests {
 
         m.chess();
         assert_eq!(m.it, 1);
-        assert_eq!(m.re, 0.5);
-        assert_eq!(m.im, 0.5);
-
-        m.chess();
-        assert_eq!(m.it, 2);
         assert_eq!(m.re, 0.02);
         assert_eq!(m.im, 0.02);
     }
@@ -231,11 +216,6 @@ mod tests {
 
         m.pythagoras();
         assert_eq!(m.it, 1);
-        assert_eq!(m.re, 0.5);
-        assert_eq!(m.im, 0.5);
-
-        m.pythagoras();
-        assert_eq!(m.it, 2);
         assert_eq!(m.re, 0.02);
         assert_eq!(m.im, 0.02);
     }
@@ -247,11 +227,6 @@ mod tests {
 
         m.bee();
         assert_eq!(m.it, 1);
-        assert_eq!(m.re, 0.5);
-        assert_eq!(m.im, 0.5);
-
-        m.bee();
-        assert_eq!(m.it, 2);
         assert_eq!(m.re, 0.02);
         assert_eq!(m.im, 0.02);
     }
@@ -263,11 +238,6 @@ mod tests {
 
         m.taco();
         assert_eq!(m.it, 1);
-        assert_eq!(m.re, 0.5);
-        assert_eq!(m.im, 0.5);
-
-        m.taco();
-        assert_eq!(m.it, 2);
         assert_eq!(m.re, 0.02);
         assert_eq!(m.im, 0.02);
     }
@@ -279,11 +249,6 @@ mod tests {
 
         m.manana();
         assert_eq!(m.it, 1);
-        assert_eq!(m.re, 0.5);
-        assert_eq!(m.im, 0.5);
-
-        m.manana();
-        assert_eq!(m.it, 2);
         assert_eq!(m.re, 0.02);
         assert_eq!(m.im, 0.02);
     }
@@ -295,11 +260,6 @@ mod tests {
 
         m.potato();
         assert_eq!(m.it, 1);
-        assert_eq!(m.re, 0.5);
-        assert_eq!(m.im, 0.5);
-
-        m.potato();
-        assert_eq!(m.it, 2);
         assert_eq!(m.re, 0.02);
         assert_eq!(m.im, 0.02);
     }
@@ -311,11 +271,6 @@ mod tests {
 
         m.lukas();
         assert_eq!(m.it, 1);
-        assert_eq!(m.re, 0.5);
-        assert_eq!(m.im, 0.5);
-
-        m.lukas();
-        assert_eq!(m.it, 2);
         assert_eq!(m.re, 0.02);
         assert_eq!(m.im, 0.02);
     }

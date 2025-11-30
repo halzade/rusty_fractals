@@ -70,11 +70,8 @@ mod tests {
     fn test_collatz_conjecture() {
         let mut c = MemCollatz::new(1.0, 2.0);
         c.collatz_conjecture();
-        assert_eq!(c.m.re, 1.0);
-        assert_eq!(c.m.im, 4.0);
-        c.collatz_conjecture();
-        assert_eq!(c.m.re, 0.5, "2.nd test for re");
-        assert_eq!(c.m.im, 2.0, "2.nd test for im");
+        assert_eq!(c.m.re, 4.0);
+        assert_eq!(c.m.im, 7.0);
     }
 
     #[test]

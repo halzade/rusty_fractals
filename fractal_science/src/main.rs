@@ -3,7 +3,7 @@ use rusty_fractals::fractal::FractalMath;
 use rusty_fractals::fractal::OrbitType::Finite;
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::PaletteName::BlueToWhiteCircleUp;
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square3;
+use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square2;
 use rusty_fractals::{application, mathematician};
 
 pub struct Science;
@@ -31,8 +31,8 @@ fn main() {
         orbits: Finite,
 
         iteration_min: 42,
-        iteration_max: 800,
-        resolution_multiplier: Square3,
+        iteration_max: 2000,
+        resolution_multiplier: Square2,
         palette: BlueToWhiteCircleUp,
 
         width_x: 600,

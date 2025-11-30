@@ -51,13 +51,15 @@ fn main() {
 mod tests {
     use crate::Euler;
     use rusty_fractals::fractal::{FractalMath, MemType};
+    use rusty_fractals::mathematician;
     use rusty_fractals::mem::Mem;
 
     #[test]
     fn test_math() {
         let euler = Euler {};
         let mut m = Mem::new(0.0, 0.0);
-
+        mathematician::init_primes(2);
+        
         euler.math(&mut m, 1.0, 0.0);
         assert_eq!(m.re, 2.00);
         assert_eq!(m.im, 0.0);
