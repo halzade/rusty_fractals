@@ -1,0 +1,9 @@
+[package]
+name = "fractal_lukas"
+version = "0.1.0"
+edition = "2024"
+authors = ["lukas"]
+keywords = ["fractal"]
+
+[dependencies]
+rusty_fractals = { path = "../rusty_fractals" }

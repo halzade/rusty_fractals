@@ -17,6 +17,7 @@ members = [
     "fractal_fat_star_magnific",
     "fractal_fat_star_tentacle",
     "fractal_euler",
+    "fractal_lukas",
     "fractal_collatz_mandelbrot",
     "fractal_collatz_conjecture",
     "fractal_collatz_conjecture_orbits",

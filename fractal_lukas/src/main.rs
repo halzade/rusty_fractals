@@ -1,0 +1,58 @@
+use PaletteName::BlueToWhiteCircleUp;
+use rusty_fractals::config::NebulaImage;
+use rusty_fractals::fractal::FractalMath;
+use rusty_fractals::fractal::OrbitType::Infinite;
+use rusty_fractals::mem::Mem;
+use rusty_fractals::palettes::PaletteName;
+use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
+use rusty_fractals::{application, mathematician};
+
+struct Lukas {}
+
+impl FractalMath<Mem> for Lukas {
+    fn math(&self, me: &mut Mem, origin_re: f64, origin_im: f64) {
+        me.square();
+        me.plus(origin_re, origin_im);
+
+        me.lukas();
+        me.square();
+        me.plus(origin_re, origin_im);
+    }
+}
+
+fn main() {
+    let fractal_config = NebulaImage {
+        name: "Lukas",
+        iteration_min: 42,
+        iteration_max: 80000,
+        resolution_multiplier: Single,
+        palette: BlueToWhiteCircleUp,
+
+        width_x: 400,
+        height_y: 400,
+        width_re: 4.0,
+        center_re: 0.0,
+        center_im: 0.0,
+        orbits: Infinite,
+    };
+
+    mathematician::init_primes(fractal_config.iteration_max);
+    application::execute(fractal_config.init(), Lukas {});
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::Lukas;
+    use rusty_fractals::fractal::{FractalMath, MemType};
+    use rusty_fractals::mem::Mem;
+
+    #[test]
+    fn test_math() {
+        let lukas = Lukas {};
+        let mut m = Mem::new(0.0, 0.0);
+
+        lukas.math(&mut m, 1.0, 0.0);
+        assert_eq!(m.re, 2.00);
+        assert_eq!(m.im, 0.0);
+    }
+}
