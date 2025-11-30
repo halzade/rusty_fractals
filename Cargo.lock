@@ -498,6 +498,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "fractal_lukas"
+version = "0.1.0"
+dependencies = [
+ "rusty_fractals",
+]
+
+[[package]]
 name = "fractal_mandelbrot"
 version = "0.1.0"
 dependencies = [
