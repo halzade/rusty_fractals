@@ -43,8 +43,10 @@ impl Mem {
     pub fn czech(&mut self) {
         self.it += 1;
         if mathematician::is_perfect(self.it) {
-            self.re = 0.01 / self.re;
-            self.im = 0.01 / self.im;
+            // coordinates switch
+            let te = self.re;
+            self.re = 0.01 / self.im;
+            self.im = 0.01 / te;
         }
     }
 

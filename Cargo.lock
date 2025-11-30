@@ -435,6 +435,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "fractal_czech"
+version = "0.1.0"
+dependencies = [
+ "rusty_fractals",
+]
+
+[[package]]
 name = "fractal_euler"
 version = "0.1.0"
 dependencies = [
