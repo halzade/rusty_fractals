@@ -1,7 +1,7 @@
 use rusty_fractals::config::EulerImage;
 use rusty_fractals::fractal::FractalMath;
 use rusty_fractals::fractal::OrbitType::Infinite;
-use rusty_fractals::mem_euler::MemEuler;
+use rusty_fractals::mem::Mem;
 use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
 use rusty_fractals::{application, mathematician};
 
@@ -14,8 +14,8 @@ use rusty_fractals::{application, mathematician};
 
 struct Euler {}
 
-impl FractalMath<MemEuler> for Euler {
-    fn math(&self, me: &mut MemEuler, origin_re: f64, origin_im: f64) {
+impl FractalMath<Mem> for Euler {
+    fn math(&self, me: &mut Mem, origin_re: f64, origin_im: f64) {
         me.square();
         me.plus(origin_re, origin_im);
         me.euler();
@@ -51,15 +51,15 @@ fn main() {
 mod tests {
     use crate::Euler;
     use rusty_fractals::fractal::{FractalMath, MemType};
-    use rusty_fractals::mem_euler::MemEuler;
+    use rusty_fractals::mem::Mem;
 
     #[test]
     fn test_math() {
         let euler = Euler {};
-        let mut me = MemEuler::new(0.0, 0.0);
+        let mut m = Mem::new(0.0, 0.0);
 
-        euler.math(&mut me, 1.0, 0.0);
-        assert_eq!(me.m.re, 2.00);
-        assert_eq!(me.m.im, 0.0);
+        euler.math(&mut m, 1.0, 0.0);
+        assert_eq!(m.re, 2.00);
+        assert_eq!(m.im, 0.0);
     }
 }

@@ -25,7 +25,7 @@ impl MemPhoenix {
 
     pub fn new(re: f64, im: f64) -> MemPhoenix {
         MemPhoenix {
-            m: Mem { re, im },
+            m: Mem { re, im, it: 0 },
             prev_prev_re: PHOENIX_INITIALIZER,
             prev_prev_im: PHOENIX_INITIALIZER,
             prev_re: PHOENIX_INITIALIZER,

@@ -37,10 +37,9 @@ impl MemCollatz {
 impl MemType<MemCollatz> for MemCollatz {
     fn new(re: f64, im: f64) -> MemCollatz {
         MemCollatz {
-            m: Mem { re, im },
+            m: Mem { re, im, it: 0 },
             // 1348 steps
             num: 989_345_275_647,
-            
             // 1563 steps
             // num: 7_887_663_552_367,
 
@@ -64,15 +63,12 @@ impl MemType<MemCollatz> for MemCollatz {
 
 #[cfg(test)]
 mod tests {
-    use crate::mem::Mem;
+    use crate::fractal::MemType;
     use crate::mem_collatz::MemCollatz;
 
     #[test]
     fn test_collatz_conjecture() {
-        let mut c = MemCollatz {
-            m: Mem { re: 0.0, im: 1.0 },
-            num: 1,
-        };
+        let mut c = MemCollatz::new(1.0, 2.0);
         c.collatz_conjecture();
         assert_eq!(c.m.re, 1.0);
         assert_eq!(c.m.im, 4.0);
@@ -83,10 +79,7 @@ mod tests {
 
     #[test]
     fn test_plus_collatz() {
-        let mut c = MemCollatz {
-            m: Mem { re: 0.0, im: 1.0 },
-            num: 1,
-        };
+        let mut c = MemCollatz::new(0.0, 1.0);
         c.plus_collatz(0.0, 0.0);
         assert_eq!(c.m.re, 0.5);
         assert_eq!(c.m.im, 1.5);

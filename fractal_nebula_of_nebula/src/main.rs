@@ -55,13 +55,13 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use crate::NebulaOfNebula;
-    use rusty_fractals::fractal::FractalMath;
+    use rusty_fractals::fractal::{FractalMath, MemType};
     use rusty_fractals::mem::Mem;
 
     #[test]
     fn test_math() {
         let nebula_of_nebula = NebulaOfNebula {};
-        let mut m = Mem { re: 0.0, im: 0.0 };
+        let mut m = Mem::new(0.0, 0.0);
         nebula_of_nebula.math(&mut m, 0.0, 0.0);
         assert_eq!(m.re, 0.0);
         assert_eq!(m.im, 0.0);

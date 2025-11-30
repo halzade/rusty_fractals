@@ -8,8 +8,8 @@ use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{ActiveNew, HibernatedDeepBlack};
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Single;
-use std::cmp::PartialEq;
 use FractalCalculationType::StaticImageMandelbrot;
+use std::cmp::PartialEq;
 
 pub struct FractalConfig {
     // fractal config
@@ -223,17 +223,16 @@ pub const fn init_trivial_dynamic_config(domain_side_points: usize) -> FractalCo
 
 #[cfg(test)]
 mod tests {
-    use crate::fractal::{init_trivial_fractal, FractalMath, Optimizer};
+    use crate::fractal::{FractalMath, MemType, Optimizer, init_trivial_fractal};
     use crate::mem::Mem;
     use crate::pixel_states::DomainElementState::{ActiveNew, HibernatedDeepBlack};
 
     #[test]
     fn test_math() {
         let f = init_trivial_fractal();
-        let mut m = Mem { re: 0.0, im: 0.0 };
+        let mut m = Mem::new(0.0, 0.0);
 
         f.math(&mut m, 0.0, 0.0);
-
         assert_eq!(m.re, 0.0);
         assert_eq!(m.im, 0.0);
     }
