@@ -4,7 +4,7 @@ use rusty_fractals::fractal::FractalMath;
 use rusty_fractals::fractal::OrbitType::Infinite;
 use rusty_fractals::mem::Mem;
 use rusty_fractals::palettes::PaletteName;
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Single;
+use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square3;
 use rusty_fractals::{application, mathematician};
 
 struct Lukas {}
@@ -24,19 +24,19 @@ fn main() {
     let fractal_config = NebulaImage {
         name: "Lukas",
         iteration_min: 42,
-        iteration_max: 80000,
-        resolution_multiplier: Single,
+        iteration_max: 8000,
+        resolution_multiplier: Square3,
         palette: BlueToWhiteCircleUp,
 
-        width_x: 400,
-        height_y: 400,
-        width_re: 4.0,
-        center_re: 0.0,
+        width_x: 1000,
+        height_y: 1000,
+        width_re: 3.0,
+        center_re: -0.5,
         center_im: 0.0,
         orbits: Infinite,
     };
 
-    mathematician::init_primes(fractal_config.iteration_max);
+    mathematician::init_happy(fractal_config.iteration_max);
     application::execute(fractal_config.init(), Lukas {});
 }
 

@@ -42,6 +42,17 @@ and wouldn't add any points to displayed image.
 
 All the interesting points (origins) which seeded a successful calculation path are at the horizon of Mandelbrot set.
 
+## Fractal projects
+
+Head [README.md](fractal_head/README.md)  
+Euler [README.md](fractal_euler/README.md)  
+Lukas [README.md](fractal_lukas/README.md)  
+Lotus [README.md](fractal_lotus/README.md)  
+Mandelbrot [README.md](fractal_mandelbrot/README.md)    
+Mandelbrot of Mandelbrot [README.md](fractal_mandelbrot_of_mandelbrot/README.md)  
+Nebula [README.md](fractal_nebula/README.md)  
+Nebula of Nebula [README.md](fractal_nebula_of_nebula/README.md)
+
 ## Classic image of Mandelbrot set
 
 Count how many iteration it took, for the calculation to diverge.
@@ -81,6 +92,8 @@ Path elements `re im` which move out of the image boundary are removed.
 ```
 git clone https://github.com/halzade/rusty_fractals.git
 ```
+
+see [DEV.md](DEV.md) for issues.
 
 ## How to use
 
