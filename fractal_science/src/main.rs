@@ -9,19 +9,12 @@ use rusty_fractals::{application, mathematician};
 pub struct Science;
 
 impl FractalMath<Mem> for Science {
-    fn math(&self, me: &mut Mem, origin_re: f64, origin_im: f64) {
-        me.square();
-        me.plus(origin_re, origin_im);
-        me.czech();
-        // me.czech();
-        // me.chess();
-        // me.pythagoras();
-        // me.bee();
-        // me.taco();
-        // me.manana();
-        // me.potato();
-        me.square();
-        me.plus(origin_re, origin_im);
+    fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
+        m.square();
+        m.plus(origin_re, origin_im);
+        m.chess();
+        m.square();
+        m.plus(origin_re, origin_im);
     }
 }
 
@@ -42,7 +35,7 @@ fn main() {
         center_im: 0.0,
     };
 
-    mathematician::init_perfect(fractal_config.iteration_max);
+    mathematician::init_lazy(fractal_config.iteration_max);
 
     application::execute(fractal_config.init(), Science {});
 }

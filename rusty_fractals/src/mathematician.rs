@@ -10,9 +10,7 @@ struct Mathematician {
     square: RwLock<HashSet<u64>>,
 
     triangular: RwLock<HashSet<u64>>,
-    pell: RwLock<HashSet<u64>>,
     lucas: RwLock<HashSet<u64>>,
-    catalan: RwLock<HashSet<u64>>,
     lazy: RwLock<HashSet<u64>>,
     happy: RwLock<HashSet<u64>>,
 }
@@ -27,9 +25,7 @@ impl Mathematician {
             perfect: RwLock::new(HashSet::new()),
             square: RwLock::new(HashSet::new()),
             triangular: RwLock::new(HashSet::new()),
-            pell: RwLock::new(HashSet::new()),
             lucas: RwLock::new(HashSet::new()),
-            catalan: RwLock::new(HashSet::new()),
             lazy: RwLock::new(HashSet::new()),
             happy: RwLock::new(HashSet::new()),
         }
@@ -83,16 +79,8 @@ pub fn is_triangular(n: u64) -> bool {
     MATHEMATICIAN.triangular.read().unwrap().contains(&n)
 }
 
-pub fn is_pell(n: u64) -> bool {
-    MATHEMATICIAN.pell.read().unwrap().contains(&n)
-}
-
 pub fn is_lucas(n: u64) -> bool {
     MATHEMATICIAN.lucas.read().unwrap().contains(&n)
-}
-
-pub fn is_catalan(n: u64) -> bool {
-    MATHEMATICIAN.catalan.read().unwrap().contains(&n)
 }
 
 pub fn is_lazy(n: u64) -> bool {
@@ -230,18 +218,6 @@ pub fn init_triangular(max: u64) {
 }
 
 /**
- * Pell numbers: 0, 1, 2, 5, 12, 29,
- */
-pub fn init_pell(max: u64) {
-    println!("init_pell()");
-    let (mut a, mut b) = (0u64, 1u64);
-    while a <= max {
-        MATHEMATICIAN.pell.write().unwrap().insert(a);
-        (a, b) = (b, 2 * b + a);
-    }
-}
-
-/**
  * Lucas numbers: 2, 1, 3, 4, 7, 11
  */
 pub fn init_lucas(max: u64) {
@@ -250,20 +226,6 @@ pub fn init_lucas(max: u64) {
     while a <= max {
         MATHEMATICIAN.lucas.write().unwrap().insert(a);
         (a, b) = (b, a + b);
-    }
-}
-
-/**
- * Catalan numbers: 1, 2, 5, 14, 42, 132,
- */
-pub fn init_catalan(max: u64) {
-    println!("init_catalan()");
-    let mut c: u64 = 1;
-    let mut n = 0;
-    while c <= max {
-        MATHEMATICIAN.catalan.write().unwrap().insert(c);
-        n += 1;
-        c = c * (4 * n + 2) / (n + 2);
     }
 }
 
@@ -312,9 +274,7 @@ pub fn clear() {
     MATHEMATICIAN.perfect.write().unwrap().clear();
     MATHEMATICIAN.square.write().unwrap().clear();
     MATHEMATICIAN.triangular.write().unwrap().clear();
-    MATHEMATICIAN.pell.write().unwrap().clear();
     MATHEMATICIAN.lucas.write().unwrap().clear();
-    MATHEMATICIAN.catalan.write().unwrap().clear();
     MATHEMATICIAN.lazy.write().unwrap().clear();
     MATHEMATICIAN.happy.write().unwrap().clear();
 }
@@ -322,10 +282,9 @@ pub fn clear() {
 #[cfg(test)]
 mod tests {
     use crate::mathematician::{
-        init_catalan, init_fibonacci, init_happy, init_lazy, init_lucas, init_pell, init_perfect,
-        init_primes, init_squares, init_triangular, is_catalan, is_fibonacci, is_happy, is_lazy,
-        is_lucas, is_outside_cardioid, is_outside_circle, is_pell, is_perfect, is_prime, is_square,
-        is_triangular,
+        init_fibonacci, init_happy, init_lazy, init_lucas, init_perfect, init_primes, init_squares,
+        init_triangular, is_fibonacci, is_happy, is_lazy, is_lucas, is_outside_cardioid,
+        is_outside_circle, is_perfect, is_prime, is_square, is_triangular,
     };
 
     #[test]
@@ -392,16 +351,6 @@ mod tests {
     }
 
     #[test]
-    pub fn test_is_pell() {
-        init_pell(5);
-        assert_eq!(is_pell(1), true);
-        assert_eq!(is_pell(2), true);
-        assert_eq!(is_pell(3), false);
-        assert_eq!(is_pell(4), false);
-        assert_eq!(is_pell(5), true);
-    }
-
-    #[test]
     pub fn test_is_lucas() {
         init_lucas(7);
         assert_eq!(is_lucas(1), true);
@@ -411,16 +360,6 @@ mod tests {
         assert_eq!(is_lucas(5), false);
         assert_eq!(is_lucas(5), false);
         assert_eq!(is_lucas(7), true);
-    }
-
-    #[test]
-    pub fn test_is_catalan() {
-        init_catalan(5);
-        assert_eq!(is_catalan(1), true);
-        assert_eq!(is_catalan(2), true);
-        assert_eq!(is_catalan(3), false);
-        assert_eq!(is_catalan(4), false);
-        assert_eq!(is_catalan(5), true);
     }
 
     #[test]

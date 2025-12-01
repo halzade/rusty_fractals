@@ -10,13 +10,13 @@ use rusty_fractals::{application, mathematician};
 struct Lukas {}
 
 impl FractalMath<Mem> for Lukas {
-    fn math(&self, me: &mut Mem, origin_re: f64, origin_im: f64) {
-        me.square();
-        me.plus(origin_re, origin_im);
+    fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
+        m.square();
+        m.plus(origin_re, origin_im);
 
-        me.lukas();
-        me.square();
-        me.plus(origin_re, origin_im);
+        m.lukas();
+        m.square();
+        m.plus(origin_re, origin_im);
     }
 }
 

@@ -15,12 +15,12 @@ use rusty_fractals::{application, mathematician};
 struct Euler {}
 
 impl FractalMath<Mem> for Euler {
-    fn math(&self, me: &mut Mem, origin_re: f64, origin_im: f64) {
-        me.square();
-        me.plus(origin_re, origin_im);
-        me.euler();
-        me.square();
-        me.plus(origin_re, origin_im);
+    fn math(&self, m: &mut Mem, origin_re: f64, origin_im: f64) {
+        m.square();
+        m.plus(origin_re, origin_im);
+        m.euler();
+        m.square();
+        m.plus(origin_re, origin_im);
     }
 }
 

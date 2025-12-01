@@ -24,11 +24,13 @@ impl Mem {
         self.im *= -1.0;
     }
 
-    pub fn inverse(&mut self) {
-        let q = self.quad();
-        self.conjugation();
-        self.re /= q;
-        self.im /= q;
+    pub fn inverse(&mut self, every: u64) {
+        if self.it % every == 0 {
+            let q = self.quad();
+            self.conjugation();
+            self.re /= q;
+            self.im /= q;
+        }
     }
 
     /** (a + ib)^3 */
@@ -107,14 +109,6 @@ impl Mem {
         }
     }
 
-    pub fn bee(&mut self) {
-        self.it += 1;
-        if mathematician::is_pell(self.it) {
-            self.re = 0.01 / self.re;
-            self.im = 0.01 / self.im;
-        }
-    }
-
     pub fn taco(&mut self) {
         self.it += 1;
         if mathematician::is_lucas(self.it) {
@@ -122,15 +116,7 @@ impl Mem {
             self.im = 0.01 / self.im;
         }
     }
-
-    pub fn manana(&mut self) {
-        self.it += 1;
-        if mathematician::is_catalan(self.it) {
-            self.re = 0.01 / self.re;
-            self.im = 0.01 / self.im;
-        }
-    }
-
+    
     pub fn potato(&mut self) {
         self.it += 1;
         if mathematician::is_lazy(self.it) {
@@ -207,7 +193,7 @@ mod tests {
     fn test_inverse() {
         let mut m = Mem::new(0.5, 0.5);
 
-        m.inverse();
+        m.inverse(1);
         assert_eq!(m.re, 1.0);
         assert_eq!(m.im, -1.0);
     }
@@ -307,17 +293,6 @@ mod tests {
     }
 
     #[test]
-    fn test_bee() {
-        let mut m = Mem::new(0.5, 0.5);
-        mathematician::init_pell(2);
-
-        m.bee();
-        assert_eq!(m.it, 1);
-        assert_eq!(m.re, 0.02);
-        assert_eq!(m.im, 0.02);
-    }
-
-    #[test]
     fn test_taco() {
         let mut m = Mem::new(0.5, 0.5);
         mathematician::init_lucas(2);
@@ -327,18 +302,7 @@ mod tests {
         assert_eq!(m.re, 0.02);
         assert_eq!(m.im, 0.02);
     }
-
-    #[test]
-    fn test_manana() {
-        let mut m = Mem::new(0.5, 0.5);
-        mathematician::init_catalan(2);
-
-        m.manana();
-        assert_eq!(m.it, 1);
-        assert_eq!(m.re, 0.02);
-        assert_eq!(m.im, 0.02);
-    }
-
+    
     #[test]
     fn test_potato() {
         let mut m = Mem::new(0.5, 0.5);
