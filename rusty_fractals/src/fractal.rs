@@ -8,8 +8,8 @@ use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{ActiveNew, HibernatedDeepBlack};
 use crate::resolution_multiplier::ResolutionMultiplier;
 use crate::resolution_multiplier::ResolutionMultiplier::Single;
-use FractalCalculationType::StaticImageMandelbrot;
 use std::cmp::PartialEq;
+use FractalCalculationType::StaticImageMandelbrot;
 
 pub struct FractalConfig {
     // fractal config
@@ -60,7 +60,10 @@ impl Optimizer {
      */
     pub fn nebula_optimization() -> Self {
         fn fn_ok(re: f64, im: f64) -> bool {
-            mathematician::is_outside_cardioid(re, im) && mathematician::is_outside_circle(re, im)
+            mathematician::is_outside_cardioid(re, im)
+                && mathematician::is_outside_circle(re, im)
+                && mathematician::is_outside_top_circle(re, im)
+                && mathematician::is_outside_bottom_circle(re, im)
         }
         fn fn_state(re: f64, im: f64) -> DomainElementState {
             if fn_ok(re, im) {
@@ -223,7 +226,7 @@ pub const fn init_trivial_dynamic_config(domain_side_points: usize) -> FractalCo
 
 #[cfg(test)]
 mod tests {
-    use crate::fractal::{FractalMath, MemType, Optimizer, init_trivial_fractal};
+    use crate::fractal::{init_trivial_fractal, FractalMath, MemType, Optimizer};
     use crate::mem::Mem;
     use crate::pixel_states::DomainElementState::{ActiveNew, HibernatedDeepBlack};
 

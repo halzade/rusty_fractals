@@ -53,6 +53,29 @@ pub fn is_outside_circle(re: f64, im: f64) -> bool {
     ((re + 1.0) * (re + 1.0)) + (im * im) > 0.062
 }
 
+pub fn is_outside_top_circle(re: f64, im: f64) -> bool {
+    let cx = -0.122561166876;
+    let cy = 0.744861766619;
+    // 0.015045^2
+    let r2 = 0.000226352025;
+
+    let dx = re - cx;
+    let dy = im - cy;
+
+    dx * dx + dy * dy > r2
+}
+
+pub fn is_outside_bottom_circle(re: f64, im: f64) -> bool {
+    let cx = -0.122561166876;
+    let cy = -0.744861766619;
+    let r2 = 0.000226352025;
+
+    let dx = re - cx;
+    let dy = im - cy;
+
+    dx * dx + dy * dy > r2
+}
+
 pub fn rotate_by(m: &mut Mem, t: f64) {
     let temp = (1.0 - t * t) / (1.0 + t * t);
     m.im = (2.0 * t) / (1.0 + t * t);
