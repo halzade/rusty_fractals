@@ -35,6 +35,7 @@ pub enum PaletteName {
     LinearRed,
     LinearBlue,
     LinearGray,
+    NonlinearVolt,
 }
 
 pub fn new<'lt>(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Palette {
@@ -55,6 +56,7 @@ pub fn new_palette_by_name<'lt>(palette_name: &PaletteName) -> Palette {
         PaletteName::LinearRed => palette_linear_red(),
         PaletteName::LinearBlue => palette_linear_blue(),
         PaletteName::LinearGray => palette_linear_gray(),
+        PaletteName::NonlinearVolt => palette_nonlinear_volt(),
         PaletteName::Nothing => init_trivial(),
     }
 }
@@ -98,6 +100,10 @@ pub fn palette_linear_gray<'lt>() -> Palette {
     new(Linear1, Rgb([100, 100, 100]), Rgb([0, 0, 0]))
 }
 
+pub fn palette_nonlinear_volt<'lt>() -> Palette {
+    new(CircleUp, Rgb([32, 15, 48]), WHITE)
+}
+
 pub fn palette_purple_to_white<'lt>() -> Palette {
     new(CircleUp, Rgb([20, 3, 30]), WHITE)
 }
@@ -132,8 +138,8 @@ fn strip_spectrum(spectrum: Vec<Rgb<u8>>, channel: usize) -> Vec<u8> {
 
 #[cfg(test)]
 mod tests {
-    use crate::palettes::Function::Linear1;
     use crate::palettes::new;
+    use crate::palettes::Function::Linear1;
     use image::Rgb;
 
     #[test]
