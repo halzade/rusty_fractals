@@ -2,6 +2,7 @@ use crate::pixel_states::DomainElementState::{
     ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
     HibernatedDeepBlack,
 };
+use bincode::{Decode, Encode};
 use image::Rgb;
 
 pub const FINISHED_SUCCESS_PAST: Rgb<u8> = Rgb([130, 100, 130]);
@@ -11,7 +12,7 @@ pub const FINISHED_TOO_SHORT: Rgb<u8> = Rgb([220, 220, 240]);
 pub const FINISHED_TOO_LONG: Rgb<u8> = Rgb([20, 20, 20]);
 pub const HIBERNATED_DEEP_BLACK: Rgb<u8> = Rgb([90, 90, 90]);
 
-#[derive(PartialOrd, Ord, PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(PartialOrd, Ord, PartialEq, Eq, Clone, Copy, Debug, Encode, Decode)]
 pub enum DomainElementState {
     /**
      * Calculation path Finished with success in previous calculation iteration (zoom).

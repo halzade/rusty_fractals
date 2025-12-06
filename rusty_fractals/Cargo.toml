@@ -6,11 +6,12 @@ authors = ["lukas"]
 keywords = ["fractal"]
 
 [dependencies]
-rayon = "1.11.0"
-image = "0.25.9"
 rand = "0.10.0-rc.5"
 fltk = "1.5.22"
+rayon = "1.11.0"
 chrono = "0.4.42"
+bincode = { version = "2.0.1", features = ["serde"] }
+image = { version = "0.25.9", features = ["serde"] }
 
 [badges]
 maintenance = { status = "actively-developed" }
