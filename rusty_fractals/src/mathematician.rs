@@ -56,8 +56,7 @@ pub fn is_outside_circle(re: f64, im: f64) -> bool {
 pub fn is_outside_top_circle(re: f64, im: f64) -> bool {
     let cx = -0.122561166876;
     let cy = 0.744861766619;
-    // 0.015045^2
-    let r2 = 0.000226352025;
+    let r2 = 0.00909;
 
     let dx = re - cx;
     let dy = im - cy;
@@ -68,7 +67,7 @@ pub fn is_outside_top_circle(re: f64, im: f64) -> bool {
 pub fn is_outside_bottom_circle(re: f64, im: f64) -> bool {
     let cx = -0.122561166876;
     let cy = -0.744861766619;
-    let r2 = 0.000226352025;
+    let r2 = 0.00909;
 
     let dx = re - cx;
     let dy = im - cy;
