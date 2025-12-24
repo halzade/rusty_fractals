@@ -96,8 +96,8 @@ impl Mem {
     pub fn chess(&mut self) {
         self.it += 1;
         if mathematician::is_square(self.it) {
-            self.re = 0.01 / self.re;
-            self.im = 0.01 / self.im;
+            self.re = 0.02 / self.re;
+            self.im = 0.02 / self.im;
         }
     }
 
@@ -277,8 +277,8 @@ mod tests {
 
         m.chess();
         assert_eq!(m.it, 1);
-        assert_eq!(m.re, 0.02);
-        assert_eq!(m.im, 0.02);
+        assert_eq!(m.re, 0.04);
+        assert_eq!(m.im, 0.04);
     }
 
     #[test]
