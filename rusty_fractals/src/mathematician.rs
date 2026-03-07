@@ -15,7 +15,7 @@ struct Mathematician {
     happy: RwLock<HashSet<u64>>,
 }
 
-static MATHEMATICIAN: Lazy<Mathematician> = Lazy::new(|| Mathematician::new());
+static MATHEMATICIAN: Lazy<Mathematician> = Lazy::new(Mathematician::new);
 
 impl Mathematician {
     fn new() -> Self {
@@ -123,27 +123,26 @@ pub fn plus_invert(m: &mut Mem) {
     let a = m.re;
     let b = m.im;
     let quad = (a * a) + (b * b);
-    m.re = m.re + (a / quad);
-    m.im = m.im - (b / quad);
+    m.re += a / quad;
+    m.im -= b / quad;
 }
 
 pub fn minus_invert(m: &mut Mem) {
     let a = m.re;
     let b = m.im;
     let quad = (a * a) + (b * b);
-    m.re = m.re - (a / quad);
-    m.im = m.im + (b / quad);
+    m.re -= a / quad;
+    m.im += b / quad;
 }
 
 pub fn inner_product(m: &mut Mem, re: f64, im: f64) {
-    m.re = m.re * re;
-    m.im = m.im * im;
+    m.re *= re;
+    m.im *= im;
 }
 
 /**
  * Fibonacci
  */
-
 pub fn init_fibonacci(max: u64) {
     println!("init_fibonacci()");
     let mut a = 0;
@@ -160,7 +159,6 @@ pub fn init_fibonacci(max: u64) {
 /**
  * Perfect
  */
-
 pub fn init_perfect(max: u64) {
     println!("init_perfect()");
     for i in 1..(max + 1) {
@@ -174,7 +172,7 @@ pub fn is_perfect_init(num: u64) -> bool {
     let mut temp = 0;
     let max = (num as f64 / 2.0) as u64;
     for i in 1..(max + 1) {
-        if num % i == 0 {
+        if num.is_multiple_of(i) {
             temp += i;
         }
     }
@@ -184,7 +182,6 @@ pub fn is_perfect_init(num: u64) -> bool {
 /**
  * Primes
  */
-
 pub fn init_primes(max: u64) {
     println!("init_primes()");
     // smallest prime
@@ -197,12 +194,12 @@ pub fn init_primes(max: u64) {
 }
 
 fn is_prime_init(n: u64) -> bool {
-    if n % 2 == 0 {
+    if n.is_multiple_of(2) {
         return false;
     }
     let investigate_to = f64::sqrt(n as f64) as u64 + 1;
     for i in (3..investigate_to).step_by(2) {
-        if n % i == 0 {
+        if n.is_multiple_of(i) {
             return false;
         }
     }
@@ -212,7 +209,6 @@ fn is_prime_init(n: u64) -> bool {
 /**
  * Squares
  */
-
 pub fn init_squares(max: u64) {
     println!("init_squares()");
     let mut sq;
@@ -311,100 +307,100 @@ mod tests {
 
     #[test]
     fn test_is_outside_cardioid() {
-        assert_eq!(is_outside_cardioid(0.0, 0.0), false);
-        assert_eq!(is_outside_cardioid(2.0, 1.0), true);
+        assert!(!is_outside_cardioid(0.0, 0.0));
+        assert!(is_outside_cardioid(2.0, 1.0));
     }
 
     #[test]
     fn test_is_outside_circle() {
-        assert_eq!(is_outside_circle(-1.0, 0.0), false);
-        assert_eq!(is_outside_circle(2.0, 1.0), true);
+        assert!(!is_outside_circle(-1.0, 0.0));
+        assert!(is_outside_circle(2.0, 1.0));
     }
 
     #[test]
     fn test_is_prime() {
         init_primes(5);
-        assert_eq!(is_prime(1), false);
-        assert_eq!(is_prime(2), true);
-        assert_eq!(is_prime(3), true);
-        assert_eq!(is_prime(4), false);
-        assert_eq!(is_prime(5), true);
+        assert!(!is_prime(1));
+        assert!(is_prime(2));
+        assert!(is_prime(3));
+        assert!(!is_prime(4));
+        assert!(is_prime(5));
     }
 
     #[test]
     fn test_is_fibonacci() {
         init_fibonacci(5);
-        assert_eq!(is_fibonacci(1), true);
-        assert_eq!(is_fibonacci(2), true);
-        assert_eq!(is_fibonacci(3), true);
-        assert_eq!(is_fibonacci(4), false);
-        assert_eq!(is_fibonacci(5), true);
+        assert!(is_fibonacci(1));
+        assert!(is_fibonacci(2));
+        assert!(is_fibonacci(3));
+        assert!(!is_fibonacci(4));
+        assert!(is_fibonacci(5));
     }
 
     #[test]
     fn test_is_perfect() {
         init_perfect(6);
-        assert_eq!(is_perfect(1), false);
-        assert_eq!(is_perfect(2), false);
-        assert_eq!(is_perfect(3), false);
-        assert_eq!(is_perfect(4), false);
-        assert_eq!(is_perfect(5), false);
-        assert_eq!(is_perfect(6), true);
+        assert!(!is_perfect(1));
+        assert!(!is_perfect(2));
+        assert!(!is_perfect(3));
+        assert!(!is_perfect(4));
+        assert!(!is_perfect(5));
+        assert!(is_perfect(6));
     }
 
     #[test]
     fn test_is_square() {
         init_squares(4);
-        assert_eq!(is_square(1), true);
-        assert_eq!(is_square(2), false);
-        assert_eq!(is_square(3), false);
-        assert_eq!(is_square(4), true);
+        assert!(is_square(1));
+        assert!(!is_square(2));
+        assert!(!is_square(3));
+        assert!(is_square(4));
     }
 
     #[test]
     pub fn test_is_triangular() {
         init_triangular(6);
-        assert_eq!(is_triangular(1), true);
-        assert_eq!(is_triangular(2), false);
-        assert_eq!(is_triangular(3), true);
-        assert_eq!(is_triangular(4), false);
-        assert_eq!(is_triangular(5), false);
-        assert_eq!(is_triangular(6), true);
+        assert!(is_triangular(1));
+        assert!(!is_triangular(2));
+        assert!(is_triangular(3));
+        assert!(!is_triangular(4));
+        assert!(!is_triangular(5));
+        assert!(is_triangular(6));
     }
 
     #[test]
     pub fn test_is_lucas() {
         init_lucas(7);
-        assert_eq!(is_lucas(1), true);
-        assert_eq!(is_lucas(2), true);
-        assert_eq!(is_lucas(3), true);
-        assert_eq!(is_lucas(4), true);
-        assert_eq!(is_lucas(5), false);
-        assert_eq!(is_lucas(5), false);
-        assert_eq!(is_lucas(7), true);
+        assert!(is_lucas(1));
+        assert!(is_lucas(2));
+        assert!(is_lucas(3));
+        assert!(is_lucas(4));
+        assert!(!is_lucas(5));
+        assert!(!is_lucas(5));
+        assert!(is_lucas(7));
     }
 
     #[test]
     pub fn test_is_lazy() {
         init_lazy(4);
-        assert_eq!(is_lazy(1), true);
-        assert_eq!(is_lazy(2), true);
-        assert_eq!(is_lazy(3), false);
-        assert_eq!(is_lazy(4), true);
+        assert!(is_lazy(1));
+        assert!(is_lazy(2));
+        assert!(!is_lazy(3));
+        assert!(is_lazy(4));
     }
 
     #[test]
     pub fn test_is_happy() {
         init_happy(10);
-        assert_eq!(is_happy(1), true);
-        assert_eq!(is_happy(2), false);
-        assert_eq!(is_happy(3), false);
-        assert_eq!(is_happy(4), false);
-        assert_eq!(is_happy(5), false);
-        assert_eq!(is_happy(6), false);
-        assert_eq!(is_happy(7), true);
-        assert_eq!(is_happy(8), false);
-        assert_eq!(is_happy(9), false);
-        assert_eq!(is_happy(10), true);
+        assert!(is_happy(1));
+        assert!(!is_happy(2));
+        assert!(!is_happy(3));
+        assert!(!is_happy(4));
+        assert!(!is_happy(5));
+        assert!(!is_happy(6));
+        assert!(is_happy(7));
+        assert!(!is_happy(8));
+        assert!(!is_happy(9));
+        assert!(is_happy(10));
     }
 }

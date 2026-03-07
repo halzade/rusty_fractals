@@ -195,7 +195,7 @@ where
         // calculation for a center of each pixel
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
-            self.chunk_calculation(&xy);
+            self.chunk_calculation(xy);
             // window refresh
             // need to paint full image to show progress from other unfinished chunks
             self.paint_partial_calculation_results_states_maybe();
@@ -211,7 +211,7 @@ where
             // previous calculation completed, calculate more elements
             coordinates_xy.par_iter().for_each(|xy| {
                 // calculation
-                self.chunk_calculation_with_wrap(&xy);
+                self.chunk_calculation_with_wrap(xy);
                 // window refresh
                 // need to paint full image to show progress from other unfinished chunks
                 self.paint_partial_calculation_results_states_with_paths(); // only every 100+ ms
@@ -237,7 +237,7 @@ where
         // calculation for a center of each pixel
         coordinates_xy.par_iter().for_each(|xy| {
             // calculation
-            self.chunk_calculation(&xy);
+            self.chunk_calculation(xy);
             // window refresh
             // need to paint full image to show progress from other unfinished chunks
             self.paint_partial_calculation_results_states_maybe();
@@ -253,7 +253,7 @@ where
             // previous calculation completed, calculate more elements
             coordinates_xy.par_iter().for_each(|xy| {
                 // calculation
-                self.chunk_calculation_with_wrap(&xy);
+                self.chunk_calculation_with_wrap(xy);
                 // window refresh
                 // need to paint full image to show progress from other unfinished chunks
                 self.paint_partial_calculation_results_states_with_paths();
@@ -283,7 +283,7 @@ where
         let coordinates_xy = shuffled_calculation_coordinates();
         coordinates_xy.par_iter().for_each(|xy| {
             // TODO
-            self.chunk_calculation(&xy);
+            self.chunk_calculation(xy);
             self.paint_partial_calculation_results_states_maybe();
         });
 
@@ -475,7 +475,7 @@ where
             // path elements are going to migrate out of the screen very soon
             // removed last_iteration, last_visited_re, last_visited_im
 
-            self.stats.paths_new_points_amount_add(*&path.len());
+            self.stats.paths_new_points_amount_add(path.len());
 
             // save path only for wrap calculation of static image, when data are static, so I can't just get the longest path
             if self.data_image.is_dynamic() {
@@ -774,14 +774,14 @@ mod tests {
 
         // test condition
         let (s, _, _) = machine.data_image.state_origin_at(0, 0);
-        assert_eq!(pixel_states::is_active_new(s), true);
+        assert!(pixel_states::is_active_new(s));
 
         // test result
         machine.calculate_path_xy(0, 0);
         let (s, _, _) = machine.data_image.state_origin_at(0, 0);
 
-        assert_eq!(pixel_states::is_active_new(s), false);
-        assert_eq!(pixel_states::is_finished_any(s), true);
+        assert!(!pixel_states::is_active_new(s));
+        assert!(pixel_states::is_finished_any(s));
     }
 
     #[test]
@@ -794,8 +794,8 @@ mod tests {
         ma.chunk_calculation_mandelbrot(&xy);
 
         let (s, _, _) = ma.data_image.state_origin_at(0, 0);
-        assert_eq!(pixel_states::is_active_new(s), false);
-        assert_eq!(pixel_states::is_finished_any(s), true);
+        assert!(!pixel_states::is_active_new(s));
+        assert!(pixel_states::is_finished_any(s));
     }
 
     #[test]

@@ -34,7 +34,7 @@ struct AreaData {
     plank: f64,
 }
 
-impl<'lt> Area {
+impl Area {
     pub fn width_xl(&self) -> usize {
         self.data.read().unwrap().width_xl
     }
@@ -100,7 +100,7 @@ impl<'lt> Area {
         println!("zoom_in()");
         let mut d = self.data.write().unwrap();
 
-        d.width_re = d.width_re * zoom;
+        d.width_re *= zoom;
         d.height_im = d.width_re * ((d.height_yl as f64) / (d.width_xl as f64));
 
         d.plank = d.width_re / d.width_xl as f64;
@@ -204,7 +204,7 @@ impl<'lt> Area {
  * width_x sets up length x
  * that is x + 1 points, considering both sides, left and right, with zero at the center
  */
-pub fn init<'lt>(config: &FractalConfig) -> Area {
+pub fn init(config: &FractalConfig) -> Area {
     let width_re = config.width_re;
     let center_re = config.center_re;
     let center_im = config.center_im;
@@ -277,11 +277,11 @@ mod tests {
         assert_eq!(d.border_high_im, 0.5);
 
         // coordinates [0, 0] are at the top left
-        assert_eq!(*d.numbers_re.get(0).unwrap(), -0.5);
+        assert_eq!(*d.numbers_re.first().unwrap(), -0.5);
         assert_eq!(*d.numbers_re.get(1).unwrap(), 0.0);
         assert_eq!(*d.numbers_re.get(2).unwrap(), 0.5);
 
-        assert_eq!(*d.numbers_im.get(0).unwrap(), 0.5);
+        assert_eq!(*d.numbers_im.first().unwrap(), 0.5);
         assert_eq!(*d.numbers_im.get(1).unwrap(), 0.0);
         assert_eq!(*d.numbers_im.get(2).unwrap(), -0.5);
     }
@@ -292,29 +292,29 @@ mod tests {
         let area = init(&conf);
 
         // top right
-        assert_eq!(area.contains(0.4, 0.4), true);
-        assert_eq!(area.contains(0.4, 0.6), false);
-        assert_eq!(area.contains(0.6, 0.4), false);
+        assert!(area.contains(0.4, 0.4));
+        assert!(!area.contains(0.4, 0.6));
+        assert!(!area.contains(0.6, 0.4));
 
         // bottom left
-        assert_eq!(area.contains(-0.4, -0.4), true);
-        assert_eq!(area.contains(-0.4, -0.6), false);
-        assert_eq!(area.contains(-0.6, -0.4), false);
+        assert!(area.contains(-0.4, -0.4));
+        assert!(!area.contains(-0.4, -0.6));
+        assert!(!area.contains(-0.6, -0.4));
 
         // top left
-        assert_eq!(area.contains(-0.4, 0.4), true);
-        assert_eq!(area.contains(-0.6, 0.4), false);
-        assert_eq!(area.contains(-0.4, 0.6), false);
+        assert!(area.contains(-0.4, 0.4));
+        assert!(!area.contains(-0.6, 0.4));
+        assert!(!area.contains(-0.4, 0.6));
 
         // bottom right
-        assert_eq!(area.contains(0.4, -0.4), true);
-        assert_eq!(area.contains(0.4, -0.6), false);
-        assert_eq!(area.contains(0.6, -0.4), false);
+        assert!(area.contains(0.4, -0.4));
+        assert!(!area.contains(0.4, -0.6));
+        assert!(!area.contains(0.6, -0.4));
 
         // precision
-        assert_eq!(area.contains(0.4999999999999, -0.4), true);
-        assert_eq!(area.contains(0.5000000000001, -0.4), false);
-        assert_eq!(area.contains(0.5, -0.4), false);
+        assert!(area.contains(0.4999999999999, -0.4));
+        assert!(!area.contains(0.5000000000001, -0.4));
+        assert!(!area.contains(0.5, -0.4));
     }
 
     #[test]

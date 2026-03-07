@@ -34,7 +34,7 @@ struct ApplicationData {
     pub last_max_value: u64,
 }
 
-fn init_o<'lt, F, M>(
+fn init_o<F, M>(
     config: &FractalConfig,
     fractal: F,
     oo: Option<Optimizer>,
@@ -52,7 +52,7 @@ where
     window.end();
     window.show();
 
-    let machine = machine::init_o(&config, fractal, oo);
+    let machine = machine::init_o(config, fractal, oo);
     let machine_arc = Arc::new(RwLock::new(machine));
 
     let application = Application {
@@ -139,13 +139,10 @@ where
             .handle(move |_, event| match event {
                 Event::KeyDown => {
                     let ek = event_key();
-                    match ek {
-                        Key::Escape => {
-                            println!("exit");
-                            shutdown_flag.store(true, Ordering::Relaxed); // Signal shutdown
-                            app::awake(); // Wake the app so it can break the event loop
-                        }
-                        _ => {}
+                    if ek == Key::Escape {
+                        println!("exit");
+                        shutdown_flag.store(true, Ordering::Relaxed); // Signal shutdown
+                        app::awake(); // Wake the app so it can break the event loop
                     }
                     match ek.to_char().unwrap() {
                         'i' => {
@@ -367,7 +364,7 @@ where
 
 // called only from main thread within window.show() method
 fn draw_colored_point(x: usize, y: usize, color: &Rgb<u8>) {
-    let r = *color.channels().get(0).unwrap();
+    let r = *color.channels().first().unwrap();
     let g = *color.channels().get(1).unwrap();
     let b = *color.channels().get(2).unwrap();
 

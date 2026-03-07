@@ -121,13 +121,13 @@ impl DataImage {
     pub(crate) fn px_at(&self, x: usize, y: usize) -> &DataPx {
         self.pixels
             .get(x + y * self.width_xp)
-            .expect(&format!("[{}, {}] out of bounds", x, y))
+            .unwrap_or_else(|| panic!("[{}, {}] out of bounds", x, y))
     }
 
     fn px_at3(&self, x: usize, y: usize) -> &DataPx3 {
         self.pixels3
             .get(x + y * self.width_xp)
-            .expect(&format!("[{}, {}] out of bounds", x, y))
+            .unwrap_or_else(|| panic!("[{}, {}] out of bounds", x, y))
     }
 
     fn move_px_to_new_position(&self, x: usize, y: usize, px: &DataPx) {
@@ -340,14 +340,11 @@ impl DataImage {
         let mut c_moved = 0;
         let mut c_created = 0;
 
-        for y in 0..self.height_yp {
-            for x in 0..self.width_xp {
+        for (y, &im) in ims.iter().enumerate() {
+            for (x, &re) in res.iter().enumerate() {
                 let mo_px = self.px_at(x, y);
                 if !mo_px.is_alive() {
                     c_created += 1;
-
-                    let re = res[x];
-                    let im = ims[y];
 
                     if self.all_neighbors_finished_bad(x, y) {
                         // Calculation for some positions should be skipped as they are too far away form any long successful divergent position
@@ -381,10 +378,8 @@ impl DataImage {
                         if px.is_finished_too_long() || px.is_hibernated() {
                             return false;
                         }
-                    } else {
-                        if px.is_finished_success_any() || px.is_finished_too_short() {
-                            return false;
-                        }
+                    } else if px.is_finished_success_any() || px.is_finished_too_short() {
+                        return false;
                     }
                 }
             }
@@ -443,10 +438,8 @@ fn init_domain(area: &Area, oo: Option<Optimizer>) -> Vec<DataPx> {
 
     let optimizer = oo.unwrap_or_else(Optimizer::trivial);
 
-    for y in 0..area.height_yp() {
-        for x in 0..area.width_xp() {
-            let origin_re = res[x];
-            let origin_im = ims[y];
+    for &origin_im in ims.iter() {
+        for &origin_re in res.iter() {
             let state = (optimizer.initial_state_for)(origin_re, origin_im);
 
             ret.push(data_px::init(origin_re, origin_im, state));
@@ -560,7 +553,7 @@ mod tests {
         let result_all = dynamic.paths.read().unwrap();
         assert_eq!(result_all.len(), 1);
 
-        let remaining_path = result_all.get(0).unwrap();
+        let remaining_path = result_all.first().unwrap();
         assert_eq!(remaining_path.len(), 8);
     }
 
@@ -642,12 +635,12 @@ mod tests {
 
     #[test]
     fn test_check_domain() {
-        assert_eq!(check_domain(0, 0, 0, 0), false);
-        assert_eq!(check_domain(0, 0, 1, 1), true);
-        assert_eq!(check_domain(-1, 0, 1, 1), false);
-        assert_eq!(check_domain(0, -1, 1, 1), false);
-        assert_eq!(check_domain(2, 0, 1, 1), false);
-        assert_eq!(check_domain(0, 2, 1, 1), false);
+        assert!(!check_domain(0, 0, 0, 0));
+        assert!(check_domain(0, 0, 1, 1));
+        assert!(!check_domain(-1, 0, 1, 1));
+        assert!(!check_domain(0, -1, 1, 1));
+        assert!(!check_domain(2, 0, 1, 1));
+        assert!(!check_domain(0, 2, 1, 1));
     }
 
     #[test]
@@ -679,16 +672,16 @@ mod tests {
         di.move_to_new_position(4, 4, &ar);
 
         // original position
-        assert_eq!(di.px_at(2, 2).is_alive(), false);
-        assert_eq!(di.px_at(4, 2).is_alive(), false);
-        assert_eq!(di.px_at(2, 4).is_alive(), false);
-        assert_eq!(di.px_at(4, 4).is_alive(), false);
+        assert!(!di.px_at(2, 2).is_alive());
+        assert!(!di.px_at(4, 2).is_alive());
+        assert!(!di.px_at(2, 4).is_alive());
+        assert!(!di.px_at(4, 4).is_alive());
 
         // moved after zoom in
-        assert_eq!(di.px_at(1, 1).is_alive(), true);
-        assert_eq!(di.px_at(5, 1).is_alive(), true);
-        assert_eq!(di.px_at(1, 5).is_alive(), true);
-        assert_eq!(di.px_at(5, 5).is_alive(), true);
+        assert!(di.px_at(1, 1).is_alive());
+        assert!(di.px_at(5, 1).is_alive());
+        assert!(di.px_at(1, 5).is_alive());
+        assert!(di.px_at(5, 5).is_alive());
 
         assert_eq!(di.px_at(1, 1).get_v(), 13);
         assert_eq!(di.px_at(5, 1).get_v(), 14);
@@ -703,8 +696,8 @@ mod tests {
 
         di.move_px_to_new_position(1, 1, di.px_at(2, 2));
 
-        assert_eq!(di.px_at(2, 2).is_alive(), false);
-        assert_eq!(di.px_at(1, 1).is_alive(), true);
+        assert!(!di.px_at(2, 2).is_alive());
+        assert!(di.px_at(1, 1).is_alive());
         assert_eq!(di.px_at(1, 1).get_v(), 11);
     }
 

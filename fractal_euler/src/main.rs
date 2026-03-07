@@ -11,7 +11,6 @@ use rusty_fractals::{application, mathematician};
  *  - Fibonacci path lengths & el. order -> Green spectrum
  *  - other path lengths & el. order     -> Blue spectrum
  */
-
 struct Euler {}
 
 impl FractalMath<Mem> for Euler {

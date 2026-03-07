@@ -19,8 +19,8 @@ impl MemCollatz {
         // all other math methods ignore num
         if (self.num % 2) == 0 {
             self.num /= 2;
-            self.m.re = self.m.re / 2.0;
-            self.m.im = self.m.im / 2.0;
+            self.m.re /= 2.0;
+            self.m.im /= 2.0;
         } else {
             self.num = 3 * self.num + 1;
             self.m.re = 3.0 * self.m.re + 1.0;

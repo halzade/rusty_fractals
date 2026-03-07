@@ -144,7 +144,7 @@ pub trait FractalMath<M>: Sync + Send {
 }
 
 pub trait MemType<M>: Sync + Send {
-    fn new(re: f64, im: f64) -> M;
+    fn new(re: f64, im: f64) -> Self;
     fn quad(&self) -> f64;
     fn re(&self) -> f64;
     fn im(&self) -> f64;

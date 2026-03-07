@@ -17,7 +17,7 @@ fn max(r: i32, g: i32, b: i32) -> i32 {
 }
 
 fn a(v: i32) -> u8 {
-    v.abs() as u8
+    v.unsigned_abs() as u8
 }
 
 // Fill color spectrum with colors between colors:
@@ -60,7 +60,7 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
     let mut spectrum: Vec<Rgb<u8>> = Vec::new();
 
     // first color
-    spectrum.push(from.clone());
+    spectrum.push(from);
 
     for i in 1..max_dif_abs {
         // if from i=0, then d could be -0
@@ -139,7 +139,7 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
     }
 
     // last color
-    spectrum.push(to.clone());
+    spectrum.push(to);
 
     spectrum
 }
@@ -161,11 +161,7 @@ fn function_result(d: f64, function: &Function) -> f64 {
 }
 
 pub fn init_trivial() -> Vec<Rgb<u8>> {
-    let mut spectrum: Vec<Rgb<u8>> = Vec::new();
-    spectrum.push(Rgb([255, 0, 0]));
-    spectrum.push(Rgb([0, 255, 0]));
-    spectrum.push(Rgb([0, 0, 255]));
-    spectrum
+    vec![Rgb([255, 0, 0]), Rgb([0, 255, 0]), Rgb([0, 0, 255])]
 }
 
 #[cfg(test)]
@@ -194,7 +190,7 @@ mod tests {
         // light to dark
         let res = make_spectrum(Linear1, b1, b2);
 
-        let r1 = res.get(0).unwrap().channels()[0];
+        let r1 = res.first().unwrap().channels()[0];
         let r2 = res.get(1).unwrap().channels()[0];
         let r3 = res.get(2).unwrap().channels()[0];
         assert_eq!(r1, 0);
@@ -225,7 +221,7 @@ mod tests {
         let b1: Rgb<u8> = Rgb([0, 0, 0]);
         // dark to light
         let res = make_spectrum(Linear1, b2, b1);
-        let r1 = res.get(0).unwrap().channels()[0];
+        let r1 = res.first().unwrap().channels()[0];
         let r2 = res.get(1).unwrap().channels()[0];
         let r3 = res.get(2).unwrap().channels()[0];
         assert_eq!(r1, 2);
@@ -240,9 +236,9 @@ mod tests {
         let b1: Rgb<u8> = Rgb([0, 0, 4]);
         // dark to light
         let res = make_spectrum(Linear1, b2, b1);
-        let r1 = res.get(0).unwrap().channels()[0];
-        let g1 = res.get(0).unwrap().channels()[1];
-        let b1 = res.get(0).unwrap().channels()[2];
+        let r1 = res.first().unwrap().channels()[0];
+        let g1 = res.first().unwrap().channels()[1];
+        let b1 = res.first().unwrap().channels()[2];
         assert_eq!(r1, 4);
         assert_eq!(g1, 2);
         assert_eq!(b1, 0);

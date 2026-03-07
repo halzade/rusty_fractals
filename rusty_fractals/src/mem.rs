@@ -16,7 +16,7 @@ impl Mem {
 
     pub fn square(&mut self) {
         let temp = (self.re * self.re) - (self.im * self.im);
-        self.im = 2.0 * self.re * self.im;
+        self.im *= 2.0 * self.re;
         self.re = temp;
     }
 
@@ -25,7 +25,7 @@ impl Mem {
     }
 
     pub fn inverse(&mut self, every: u64) {
-        if self.it % every == 0 {
+        if self.it.is_multiple_of(every) {
             let q = self.quad();
             self.conjugation();
             self.re /= q;

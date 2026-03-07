@@ -28,8 +28,8 @@ fn main() {
         width_x: 1280,
         height_y: 720,
         width_re: 5.0,
-        center_re: -0.088485445553580480,
-        center_im: -0.200679435068532800,
+        center_re: -0.088_485_445_553_580_48,
+        center_im: -0.200_679_435_068_532_8,
 
         orbits: Infinite,
         update_max: 150,

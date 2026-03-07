@@ -32,7 +32,7 @@ pub fn init_from_data(file_name: &str) -> Vec<DataPx> {
         .collect()
 }
 
-pub fn save_data(file_name: &str, data: &Vec<DataPx>) {
+pub fn save_data(file_name: &str, data: &[DataPx]) {
     let mut writer = BufWriter::new(File::create(file_name).unwrap());
 
     let write_serializable: Vec<DataPxSer> = data.iter().map(|px| px.to_serializable()).collect();

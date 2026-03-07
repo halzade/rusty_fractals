@@ -189,7 +189,7 @@ impl DataPx {
         let d = self.data.read().unwrap();
 
         DataPxSer {
-            is_alive: self.is_alive.read().unwrap().clone(),
+            is_alive: *self.is_alive.read().unwrap(),
             data: DataSer {
                 origin_re: d.origin_re,
                 origin_im: d.origin_im,
@@ -349,31 +349,31 @@ mod tests {
     #[test]
     fn test_is_finished_too_short() {
         let p = init_trivial();
-        assert_eq!(p.is_finished_too_short(), false);
+        assert!(!p.is_finished_too_short());
     }
 
     #[test]
     fn test_is_finished_too_long() {
         let p = init_trivial();
-        assert_eq!(p.is_finished_too_long(), false);
+        assert!(!p.is_finished_too_long());
     }
 
     #[test]
     fn test_is_hibernated() {
         let p = init_trivial();
-        assert_eq!(p.is_hibernated(), false);
+        assert!(!p.is_hibernated());
     }
 
     #[test]
     fn test_is_finished_success_any() {
         let p = init_trivial();
-        assert_eq!(p.is_finished_success_any(), false);
+        assert!(!p.is_finished_success_any());
     }
 
     #[test]
     fn test_is_finished_success_past() {
         let p = init_trivial();
-        assert_eq!(p.is_finished_success_past(), false);
+        assert!(!p.is_finished_success_past());
     }
 
     #[test]
@@ -390,7 +390,7 @@ mod tests {
         let p = init_trivial();
         let q = init_trivial();
 
-        assert_eq!(p.has_worse_state_then(&q), false);
+        assert!(!p.has_worse_state_then(&q));
     }
 
     #[test]
@@ -417,14 +417,14 @@ mod tests {
         let p = init_trivial();
         let q = init_trivial();
         p.override_by(&q);
-        assert_eq!(p.is_alive(), true);
-        assert_eq!(q.is_alive(), false);
+        assert!(p.is_alive());
+        assert!(!q.is_alive());
     }
 
     #[test]
     fn test_kill() {
         let p = init_trivial();
         p.kill();
-        assert_eq!(p.is_alive(), false);
+        assert!(!p.is_alive());
     }
 }

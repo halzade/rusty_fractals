@@ -24,8 +24,8 @@ fn main() {
         width_x: 1280,
         height_y: 720,
         width_re: 3.0,
-        center_re: -0.882952991714172300,
-        center_im: -0.214699221335319460,
+        center_re: -0.882_952_991_714_172_3,
+        center_im: -0.214_699_221_335_319_46,
     };
 
     application::execute(fractal_config.init(), CollatzConjectureMandelbrot {});
