@@ -1,4 +1,3 @@
-use crate::data::{DataPxSer, DataSer};
 use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{
     ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
@@ -27,19 +26,6 @@ struct Data {
 }
 
 impl DataPx {
-    pub const fn new(is_alive: bool, data: DataSer) -> Self {
-        Self {
-            is_alive: RwLock::new(is_alive),
-            data: RwLock::new(Data {
-                origin_re: data.origin_re,
-                origin_im: data.origin_im,
-                value: data.value,
-                state: data.state,
-                quad: data.quad,
-                color: None,
-            }),
-        }
-    }
 
     pub fn add_v1(&self) {
         if let Ok(mut d) = self.data.write() {
@@ -201,35 +187,6 @@ impl DataPx {
     pub fn kill(&self) {
         if let Ok(mut alive) = self.is_alive.write() {
             *alive = false;
-        }
-    }
-
-    pub fn to_serializable(&self) -> DataPxSer {
-        if let (Ok(d), Ok(alive)) = (self.data.read(), self.is_alive.read()) {
-            let result = DataPxSer {
-                is_alive: *alive,
-                data: DataSer {
-                    origin_re: d.origin_re,
-                    origin_im: d.origin_im,
-                    value: d.value,
-                    state: d.state,
-                    quad: d.quad,
-                },
-            };
-            drop(d);
-            drop(alive);
-            result
-        } else {
-            DataPxSer {
-                is_alive: false,
-                data: DataSer {
-                    origin_re: 0.0,
-                    origin_im: 0.0,
-                    value: 0,
-                    state: ActiveNew,
-                    quad: 0.0,
-                },
-            }
         }
     }
 }

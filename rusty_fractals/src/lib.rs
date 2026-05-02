@@ -41,4 +41,3 @@ pub mod resolution_multiplier;
 pub mod euler;
 pub mod pixel;
 pub mod config;
-pub mod data;

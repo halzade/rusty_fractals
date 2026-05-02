@@ -7,7 +7,6 @@ authors = ["Lukáš Halža"]
 keywords = ["fractal"]
 
 [dependencies]
-bincode = "3.0"
 chrono = "0.4"
 fltk = "1.5"
 image = "0.25"
