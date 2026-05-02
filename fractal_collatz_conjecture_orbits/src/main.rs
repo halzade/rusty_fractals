@@ -1,10 +1,10 @@
 use rusty_fractals::application;
-use rusty_fractals::config::NebulaVideo;
-use rusty_fractals::fractal::FractalMath;
-use rusty_fractals::fractal::OrbitType::Infinite;
+use rusty_fractals::infra::config::NebulaVideo;
+use rusty_fractals::rusty::fractal::FractalMath;
+use rusty_fractals::rusty::fractal::OrbitType::Infinite;
 use rusty_fractals::mem_collatz::MemCollatz;
-use rusty_fractals::palettes::PaletteName::BlueToWhiteCircleUp;
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square11;
+use rusty_fractals::color::palettes::PaletteName::BlueToWhiteCircleUp;
+use rusty_fractals::domain::resolution_multiplier::ResolutionMultiplier::Square11;
 
 pub struct CollatzConjectureOrbits {}
 
@@ -42,7 +42,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use crate::CollatzConjectureOrbits;
-    use rusty_fractals::fractal::{FractalMath, MemType};
+    use rusty_fractals::rusty::fractal::{FractalMath, MemType};
     use rusty_fractals::mem_collatz::MemCollatz;
 
     #[test]

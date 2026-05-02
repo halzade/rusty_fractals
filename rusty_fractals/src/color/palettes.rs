@@ -1,7 +1,7 @@
-use crate::palette::Palette;
-use crate::palette::Palette3;
-use crate::palette_utils::make_spectrum;
-use crate::palettes::Function::{CircleUp, Exp2, Linear1};
+use crate::color::palette::Palette;
+use crate::color::palette::Palette3;
+use crate::color::palette_utils::make_spectrum;
+use crate::color::palettes::Function::{CircleUp, Exp2, Linear1};
 use image::{Pixel, Rgb};
 
 const WHITE: Rgb<u8> = Rgb([255, 255, 255]);
@@ -138,8 +138,8 @@ fn strip_spectrum(spectrum: Vec<Rgb<u8>>, channel: usize) -> Vec<u8> {
 
 #[cfg(test)]
 mod tests {
-    use crate::palettes::new;
-    use crate::palettes::Function::Linear1;
+    use crate::color::palettes::new;
+    use crate::color::palettes::Function::Linear1;
     use image::Rgb;
 
     #[test]

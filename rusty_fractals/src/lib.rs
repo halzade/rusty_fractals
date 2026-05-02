@@ -10,34 +10,45 @@
 #![forbid(clippy::unimplemented)]
 #![deny(warnings)]
 #![deny(clippy::all)]
-#![deny(clippy::nursery)]
 /*
  * Implementation
  */
 extern crate core;
-pub mod application;
-pub mod area;
-pub mod constants;
-pub mod data_image;
-pub mod data_px;
-pub mod data_px3;
-pub mod files;
-pub mod fractal;
-pub mod fractal_log;
-pub mod fractal_stats;
-pub mod machine;
-pub mod mathematician;
-pub mod mem;
-pub mod mem_collatz;
-pub mod mem_phoenix;
-pub mod palette;
-pub mod palette_utils;
-pub mod palettes;
-pub mod perfect_color_distribution;
-pub mod perfect_color_distribution_euler;
-pub mod perfect_color_distribution_nebula;
-pub mod pixel_states;
-pub mod resolution_multiplier;
-pub mod euler;
-pub mod pixel;
-pub mod config;
+pub mod calc {
+    pub mod mathematician;
+    pub mod mem;
+    pub mod mem_collatz;
+    pub mod mem_phoenix;
+}
+pub mod color {
+    pub mod palette;
+    pub mod palette_utils;
+    pub mod palettes;
+    pub mod perfect_color_distribution;
+    pub mod perfect_color_distribution_euler;
+    pub mod perfect_color_distribution_nebula;
+}
+pub mod domain {
+    pub mod area;
+    pub mod data_px;
+    pub mod data_px3;
+    pub mod resolution_multiplier;
+}
+pub mod image {
+    pub mod data_image;
+    pub mod pixel;
+    pub mod pixel_states;
+}
+pub mod infra {
+    pub mod config;
+    pub mod constants;
+    pub mod euler;
+    pub mod files;
+    pub mod fractal_log;
+    pub mod fractal_stats;
+}
+pub mod rusty {
+    pub mod application;
+    pub mod fractal;
+    pub mod machine;
+}

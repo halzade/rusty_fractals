@@ -1,4 +1,4 @@
-use crate::constants::TAKE_MEASURES_AT_FRAME;
+use crate::infra::constants::TAKE_MEASURES_AT_FRAME;
 use crate::data_image::DataImage;
 use std::sync::RwLock;
 
@@ -211,8 +211,10 @@ pub const fn init() -> Stats {
 
 #[cfg(test)]
 mod tests {
-    use crate::fractal::init_trivial_static_config;
-    use crate::{area, data_image, fractal_stats};
+    use crate::rusty::fractal::init_trivial_static_config;
+    use crate::data_image;
+    use crate::domain::area;
+    use crate::infra::fractal_stats;
 
     #[test]
     fn test_paths_new_points_amount() {

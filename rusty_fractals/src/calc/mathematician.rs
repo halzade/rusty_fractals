@@ -1,4 +1,4 @@
-use crate::mem::Mem;
+use crate::calc::mem::Mem;
 use fltk::utils::oncelock::Lazy;
 use std::collections::HashSet;
 use std::sync::RwLock;
@@ -312,7 +312,7 @@ pub fn clear() {
 
 #[cfg(test)]
 mod tests {
-    use crate::mathematician::{
+    use crate::calc::mathematician::{
         init_fibonacci, init_happy, init_lazy, init_lucas, init_perfect, init_primes, init_squares,
         init_triangular, is_fibonacci, is_happy, is_lazy, is_lucas, is_outside_cardioid,
         is_outside_circle, is_perfect, is_prime, is_square, is_triangular,

@@ -5,8 +5,8 @@
 // - color all significant pixels ordered by value
 
 use crate::data_image::DataImage;
-use crate::palette::Palette3;
-use crate::palettes::palette_3_rgb;
+use crate::color::palette::Palette3;
+use crate::color::palettes::palette_3_rgb;
 
 // for Nebula like fractals
 struct Pix {

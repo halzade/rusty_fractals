@@ -1,5 +1,5 @@
-use crate::constants::ZOOM;
-use crate::fractal::FractalConfig;
+use crate::infra::constants::ZOOM;
+use crate::rusty::fractal::FractalConfig;
 use std::sync::RwLock;
 
 /**
@@ -268,8 +268,8 @@ pub fn init(config: &FractalConfig) -> Area {
 
 #[cfg(test)]
 mod tests {
-    use crate::area::init;
-    use crate::fractal;
+    use crate::domain::area::init;
+    use crate::rusty::fractal;
 
     #[test]
     fn test_init() {

@@ -1,7 +1,7 @@
 use crate::data_image::{color_for_state, DataImage};
-use crate::fractal::{FractalConfig, FractalMath, MemType, Optimizer};
-use crate::machine;
-use crate::machine::Machine;
+use crate::rusty::fractal::{FractalConfig, FractalMath, MemType, Optimizer};
+use crate::rusty::machine;
+use crate::rusty::machine::Machine;
 use crate::pixel_states::{is_active_new, DomainElementState};
 use fltk::app::{event_button, event_coords, event_key};
 use fltk::enums::{Color, Event, Key};

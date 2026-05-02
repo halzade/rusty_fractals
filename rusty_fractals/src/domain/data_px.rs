@@ -211,7 +211,7 @@ pub const fn init_trivial() -> DataPx {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_px::init_trivial;
+    use crate::domain::data_px::init_trivial;
     use crate::pixel_states::DomainElementState::{
         ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
     };

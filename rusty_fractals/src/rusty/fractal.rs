@@ -1,13 +1,13 @@
-use crate::fractal::FractalCalculationType::{DynamicSequenceNebula, StaticSequenceMandelbrot};
-use crate::fractal::OrbitType::Finite;
-use crate::mathematician;
-use crate::mem::Mem;
-use crate::palettes::PaletteName;
-use crate::palettes::PaletteName::Nothing;
+use crate::rusty::fractal::FractalCalculationType::{DynamicSequenceNebula, StaticSequenceMandelbrot};
+use crate::rusty::fractal::OrbitType::Finite;
+use crate::calc::mathematician;
+use crate::calc::mem::Mem;
+use crate::color::palettes::PaletteName;
+use crate::color::palettes::PaletteName::Nothing;
 use crate::pixel_states::DomainElementState;
 use crate::pixel_states::DomainElementState::{ActiveNew, HibernatedDeepBlack};
-use crate::resolution_multiplier::ResolutionMultiplier;
-use crate::resolution_multiplier::ResolutionMultiplier::Single;
+use crate::domain::resolution_multiplier::ResolutionMultiplier;
+use crate::domain::resolution_multiplier::ResolutionMultiplier::Single;
 use std::cmp::PartialEq;
 use FractalCalculationType::StaticImageMandelbrot;
 
@@ -226,7 +226,7 @@ pub const fn init_trivial_dynamic_config(domain_side_points: usize) -> FractalCo
 
 #[cfg(test)]
 mod tests {
-    use crate::fractal::{init_trivial_fractal, FractalMath, MemType, Optimizer};
+    use crate::rusty::fractal::{init_trivial_fractal, FractalMath, MemType, Optimizer};
     use crate::mem::Mem;
     use crate::pixel_states::DomainElementState::{ActiveNew, HibernatedDeepBlack};
 

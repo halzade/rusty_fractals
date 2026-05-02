@@ -1,4 +1,4 @@
-use crate::mathematician;
+use crate::calc::mathematician;
 use crate::pixel::Spectra;
 use crate::pixel::Spectra::{Blue, Green, Red};
 

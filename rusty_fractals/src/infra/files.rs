@@ -38,9 +38,10 @@ fn to_snake(s: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::files::{save_image, to_snake};
-    use crate::fractal::init_trivial_dynamic_config;
-    use crate::{area, data_image};
+    use crate::infra::files::{save_image, to_snake};
+    use crate::rusty::fractal::init_trivial_dynamic_config;
+    use crate::data_image;
+    use crate::domain::area;
 
     #[test]
     fn test_save_image() {

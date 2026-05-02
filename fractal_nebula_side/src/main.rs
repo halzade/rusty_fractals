@@ -1,10 +1,10 @@
 use rusty_fractals::application;
-use rusty_fractals::config::NebulaVideo;
-use rusty_fractals::fractal::OrbitType::Finite;
-use rusty_fractals::fractal::{FractalMath, Optimizer};
+use rusty_fractals::infra::config::NebulaVideo;
+use rusty_fractals::rusty::fractal::OrbitType::Finite;
+use rusty_fractals::rusty::fractal::{FractalMath, Optimizer};
 use rusty_fractals::mem::Mem;
-use rusty_fractals::palettes::PaletteName::BlueToWhiteCircleUp;
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square2;
+use rusty_fractals::color::palettes::PaletteName::BlueToWhiteCircleUp;
+use rusty_fractals::domain::resolution_multiplier::ResolutionMultiplier::Square2;
 
 pub struct NebulaSide;
 
@@ -44,7 +44,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use crate::NebulaSide;
-    use rusty_fractals::fractal::{FractalMath, MemType};
+    use rusty_fractals::rusty::fractal::{FractalMath, MemType};
     use rusty_fractals::mem::Mem;
 
     #[test]

@@ -1,8 +1,8 @@
 use rusty_fractals::application;
-use rusty_fractals::config::MandelbrotVideo;
-use rusty_fractals::fractal::FractalMath;
+use rusty_fractals::infra::config::MandelbrotVideo;
+use rusty_fractals::rusty::fractal::FractalMath;
 use rusty_fractals::mem_collatz::MemCollatz;
-use rusty_fractals::palettes::PaletteName::{BlueToWhiteCircleUp, LinearBlue};
+use rusty_fractals::color::palettes::PaletteName::{BlueToWhiteCircleUp, LinearBlue};
 
 pub struct CollatzConjectureMandelbrot {}
 
@@ -34,7 +34,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use crate::CollatzConjectureMandelbrot;
-    use rusty_fractals::fractal::{FractalMath, MemType};
+    use rusty_fractals::rusty::fractal::{FractalMath, MemType};
     use rusty_fractals::mem_collatz::MemCollatz;
 
     #[test]

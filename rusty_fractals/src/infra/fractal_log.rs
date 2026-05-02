@@ -12,7 +12,7 @@ fn no() -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::fractal_log::no;
+    use crate::infra::fractal_log::no;
 
     #[test]
     fn test_no() {

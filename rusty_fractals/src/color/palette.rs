@@ -1,4 +1,4 @@
-use crate::palette_utils;
+use crate::color::palette_utils;
 use image::Rgb;
 
 
@@ -40,7 +40,7 @@ pub fn init_trivial() -> Palette {
 
 #[cfg(test)]
 mod tests {
-    use crate::palette::init_trivial;
+    use crate::color::palette::init_trivial;
     use image::Pixel;
 
     #[test]

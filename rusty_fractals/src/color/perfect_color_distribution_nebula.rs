@@ -4,9 +4,9 @@
 // - Zero elements and noise color by the lowest color
 // - color all significant pixels ordered by value
 
-use crate::constants::COLORING_THRESHOLD;
+use crate::infra::constants::COLORING_THRESHOLD;
 use crate::data_image::DataImage;
-use crate::palette::Palette;
+use crate::color::palette::Palette;
 
 // for Nebula like fractals
 struct Pix {

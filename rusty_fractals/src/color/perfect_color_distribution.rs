@@ -5,7 +5,7 @@
 // - color all significant pixels ordered by value
 
 use crate::data_image::DataImage;
-use crate::palette::Palette;
+use crate::color::palette::Palette;
 use std::cmp::Ordering::Equal;
 
 // for Mandelbrot like fractals

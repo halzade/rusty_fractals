@@ -1,10 +1,10 @@
 use PaletteName::BlueToWhiteCircleUp;
-use rusty_fractals::config::NebulaImage;
-use rusty_fractals::fractal::FractalMath;
-use rusty_fractals::fractal::OrbitType::Infinite;
+use rusty_fractals::infra::config::NebulaImage;
+use rusty_fractals::rusty::fractal::FractalMath;
+use rusty_fractals::rusty::fractal::OrbitType::Infinite;
 use rusty_fractals::mem::Mem;
-use rusty_fractals::palettes::PaletteName;
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square3;
+use rusty_fractals::color::palettes::PaletteName;
+use rusty_fractals::domain::resolution_multiplier::ResolutionMultiplier::Square3;
 use rusty_fractals::{application, mathematician};
 
 struct Lukas {}
@@ -43,7 +43,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use crate::Lukas;
-    use rusty_fractals::fractal::{FractalMath, MemType};
+    use rusty_fractals::rusty::fractal::{FractalMath, MemType};
     use rusty_fractals::mathematician;
     use rusty_fractals::mem::Mem;
 

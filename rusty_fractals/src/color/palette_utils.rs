@@ -1,7 +1,5 @@
+use crate::color::palettes::Function;
 use image::{Pixel, Rgb};
-use palettes::Function;
-
-use crate::palettes;
 
 const fn max(r: i32, g: i32, b: i32) -> i32 {
     let ar = if r < 0 { -r } else { r };
@@ -166,8 +164,8 @@ pub fn init_trivial() -> Vec<Rgb<u8>> {
 
 #[cfg(test)]
 mod tests {
-    use crate::palette_utils::{function_result, make_spectrum};
-    use crate::palettes::Function::{CircleDown, CircleUp, Linear1};
+    use crate::color::palette_utils::{function_result, make_spectrum};
+    use crate::color::palettes::Function::{CircleDown, CircleUp, Linear1};
     use image::{Pixel, Rgb};
 
     #[test]

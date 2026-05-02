@@ -1,10 +1,10 @@
 use rusty_fractals::application;
-use rusty_fractals::config::NebulaImage;
-use rusty_fractals::fractal::FractalMath;
-use rusty_fractals::fractal::OrbitType::Finite;
+use rusty_fractals::infra::config::NebulaImage;
+use rusty_fractals::rusty::fractal::FractalMath;
+use rusty_fractals::rusty::fractal::OrbitType::Finite;
 use rusty_fractals::mem::Mem;
-use rusty_fractals::palettes::PaletteName::BlueToWhiteCircleUp;
-use rusty_fractals::resolution_multiplier::ResolutionMultiplier::Square5;
+use rusty_fractals::color::palettes::PaletteName::BlueToWhiteCircleUp;
+use rusty_fractals::domain::resolution_multiplier::ResolutionMultiplier::Square5;
 
 pub struct Lotus {}
 
@@ -43,7 +43,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use crate::Lotus;
-    use rusty_fractals::fractal::{FractalMath, MemType};
+    use rusty_fractals::rusty::fractal::{FractalMath, MemType};
     use rusty_fractals::mem::Mem;
 
     #[test]

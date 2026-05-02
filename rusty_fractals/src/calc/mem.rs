@@ -1,5 +1,5 @@
-use crate::fractal::MemType;
-use crate::mathematician;
+use crate::rusty::fractal::MemType;
+use crate::calc::mathematician;
 
 // Memory object to carry calculation results
 pub struct Mem {
@@ -148,9 +148,9 @@ impl MemType<Self> for Mem {
 
 #[cfg(test)]
 mod tests {
-    use crate::fractal::MemType;
-    use crate::mathematician;
-    use crate::mem::Mem;
+    use crate::rusty::fractal::MemType;
+    use crate::calc::mathematician;
+    use crate::calc::mem::Mem;
 
     #[test]
     fn test_plus() {

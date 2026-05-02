@@ -1,9 +1,9 @@
-use crate::fractal::FractalCalculationType::{DynamicSequenceNebula, StaticImageMandelbrot, StaticImageNebula, StaticSequenceMandelbrot, StaticSpectralImageEuler};
-use crate::fractal::OrbitType::Ignore;
-use crate::fractal::{FractalConfig, OrbitType};
-use crate::palettes::PaletteName;
-use crate::resolution_multiplier::ResolutionMultiplier;
-use crate::resolution_multiplier::ResolutionMultiplier::Single;
+use crate::rusty::fractal::FractalCalculationType::{DynamicSequenceNebula, StaticImageMandelbrot, StaticImageNebula, StaticSequenceMandelbrot, StaticSpectralImageEuler};
+use crate::rusty::fractal::OrbitType::Ignore;
+use crate::rusty::fractal::{FractalConfig, OrbitType};
+use crate::color::palettes::PaletteName;
+use crate::domain::resolution_multiplier::ResolutionMultiplier;
+use crate::domain::resolution_multiplier::ResolutionMultiplier::Single;
 
 pub struct NebulaImage {
     // fractal config

@@ -1,6 +1,6 @@
-use crate::constants::PHOENIX_INITIALIZER;
-use crate::fractal::MemType;
-use crate::mem::Mem;
+use crate::infra::constants::PHOENIX_INITIALIZER;
+use crate::rusty::fractal::MemType;
+use crate::calc::mem::Mem;
 
 /**
  * Memory object for Phoenix fractal
@@ -54,7 +54,7 @@ impl MemType<Self> for MemPhoenix {
 
 #[cfg(test)]
 mod tests {
-    use crate::mem_phoenix::MemPhoenix;
+    use crate::calc::mem_phoenix::MemPhoenix;
 
     #[test]
     fn test_plus() {

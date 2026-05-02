@@ -1,5 +1,5 @@
-use crate::fractal::MemType;
-use crate::mem::Mem;
+use crate::rusty::fractal::MemType;
+use crate::calc::mem::Mem;
 
 pub struct MemCollatz {
     pub m: Mem,
@@ -63,7 +63,7 @@ impl MemType<Self> for MemCollatz {
 
 #[cfg(test)]
 mod tests {
-    use crate::fractal::MemType;
+    use crate::rusty::fractal::MemType;
     use crate::mem_collatz::MemCollatz;
 
     #[test]
