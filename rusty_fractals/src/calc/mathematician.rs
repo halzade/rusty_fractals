@@ -1,5 +1,5 @@
 use crate::calc::mem::Mem;
-use fltk::utils::oncelock::Lazy;
+use lazy_static::lazy_static;
 use std::collections::HashSet;
 use std::sync::RwLock;
 
@@ -15,7 +15,9 @@ struct Mathematician {
     happy: RwLock<HashSet<u64>>,
 }
 
-static MATHEMATICIAN: Lazy<Mathematician> = Lazy::new(Mathematician::new);
+lazy_static! {
+    static ref MATHEMATICIAN: Mathematician = Mathematician::new();
+}
 
 impl Mathematician {
     fn new() -> Self {
@@ -318,20 +320,20 @@ mod tests {
         is_outside_circle, is_perfect, is_prime, is_square, is_triangular,
     };
 
-    #[test]
-    fn test_is_outside_cardioid() {
+    #[tokio::test]
+    async fn test_is_outside_cardioid() {
         assert!(!is_outside_cardioid(0.0, 0.0));
         assert!(is_outside_cardioid(2.0, 1.0));
     }
 
-    #[test]
-    fn test_is_outside_circle() {
+    #[tokio::test]
+    async fn test_is_outside_circle() {
         assert!(!is_outside_circle(-1.0, 0.0));
         assert!(is_outside_circle(2.0, 1.0));
     }
 
-    #[test]
-    fn test_is_prime() {
+    #[tokio::test]
+    async fn test_is_prime() {
         init_primes(5);
         assert!(!is_prime(1));
         assert!(is_prime(2));
@@ -340,8 +342,8 @@ mod tests {
         assert!(is_prime(5));
     }
 
-    #[test]
-    fn test_is_fibonacci() {
+    #[tokio::test]
+    async fn test_is_fibonacci() {
         init_fibonacci(5);
         assert!(is_fibonacci(1));
         assert!(is_fibonacci(2));
@@ -350,8 +352,8 @@ mod tests {
         assert!(is_fibonacci(5));
     }
 
-    #[test]
-    fn test_is_perfect() {
+    #[tokio::test]
+    async fn test_is_perfect() {
         init_perfect(6);
         assert!(!is_perfect(1));
         assert!(!is_perfect(2));
@@ -361,8 +363,8 @@ mod tests {
         assert!(is_perfect(6));
     }
 
-    #[test]
-    fn test_is_square() {
+    #[tokio::test]
+    async fn test_is_square() {
         init_squares(4);
         assert!(is_square(1));
         assert!(!is_square(2));
@@ -370,8 +372,8 @@ mod tests {
         assert!(is_square(4));
     }
 
-    #[test]
-    pub fn test_is_triangular() {
+    #[tokio::test]
+    async fn test_is_triangular() {
         init_triangular(6);
         assert!(is_triangular(1));
         assert!(!is_triangular(2));
@@ -381,8 +383,8 @@ mod tests {
         assert!(is_triangular(6));
     }
 
-    #[test]
-    pub fn test_is_lucas() {
+    #[tokio::test]
+    async fn test_is_lucas() {
         init_lucas(7);
         assert!(is_lucas(1));
         assert!(is_lucas(2));
@@ -393,8 +395,8 @@ mod tests {
         assert!(is_lucas(7));
     }
 
-    #[test]
-    pub fn test_is_lazy() {
+    #[tokio::test]
+    async fn test_is_lazy() {
         init_lazy(4);
         assert!(is_lazy(1));
         assert!(is_lazy(2));
@@ -402,8 +404,8 @@ mod tests {
         assert!(is_lazy(4));
     }
 
-    #[test]
-    pub fn test_is_happy() {
+    #[tokio::test]
+    async fn test_is_happy() {
         init_happy(10);
         assert!(is_happy(1));
         assert!(!is_happy(2));

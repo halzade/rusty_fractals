@@ -91,8 +91,8 @@ pub fn perfectly_color_nebula_values(data: &DataImage, palette: &Palette) {
 #[cfg(test)]
 mod tests {
 
-    #[test]
-    fn test_perfectly_color_nebula_values() {
+    #[tokio::test]
+    async fn test_perfectly_color_nebula_values() {
         // TODO
     }
 }

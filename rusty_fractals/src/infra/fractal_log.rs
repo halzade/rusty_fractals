@@ -14,8 +14,8 @@ fn no() -> String {
 mod tests {
     use crate::infra::fractal_log::no;
 
-    #[test]
-    fn test_no() {
+    #[tokio::test]
+    async fn test_no() {
         let n = no();
         assert_ne!(n.len(), 0);
     }

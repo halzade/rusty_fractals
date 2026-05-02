@@ -722,8 +722,8 @@ mod tests {
     use pixel_states::DomainElementState::FinishedTooShort;
     use crate::rusty::{fractal, machine};
 
-    #[test]
-    fn test_state_from_path_length() {
+    #[tokio::test]
+    async fn test_state_from_path_length() {
         let machine = machine::init_trivial_static();
 
         let zero = machine.state_from_path_length(0, 0);
@@ -751,8 +751,8 @@ mod tests {
         assert_eq!(divergent_in3, FinishedTooLong);
     }
 
-    #[test]
-    fn test_chunk_boundaries() {
+    #[tokio::test]
+    async fn test_chunk_boundaries() {
         let co = init_trivial_dynamic_config(21);
         let fr = fractal::init_trivial_fractal();
         let ma = init(&co, fr);
@@ -766,8 +766,8 @@ mod tests {
         assert_eq!(im_bot, 1);
     }
 
-    #[test]
-    fn test_calculate_path_xy() {
+    #[tokio::test]
+    async fn test_calculate_path_xy() {
         let machine = machine::init_trivial_static();
 
         // test condition
@@ -782,8 +782,8 @@ mod tests {
         assert!(pixel_states::is_finished_any(s));
     }
 
-    #[test]
-    fn test_chunk_calculation_mandelbrot() {
+    #[tokio::test]
+    async fn test_chunk_calculation_mandelbrot() {
         let co = init_trivial_dynamic_config(21);
         let fr = fractal::init_trivial_fractal();
         let ma = init(&co, fr);
@@ -796,8 +796,8 @@ mod tests {
         assert!(pixel_states::is_finished_any(s));
     }
 
-    #[test]
-    fn test_calculate_path() {
+    #[tokio::test]
+    async fn test_calculate_path() {
         // prepare test data
         let machine = machine::init_trivial_static();
 
@@ -808,8 +808,8 @@ mod tests {
         assert_eq!(length, 0);
     }
 
-    #[test]
-    fn test_recalculate_pixels_positions_for_next_calculation() {
+    #[tokio::test]
+    async fn test_recalculate_pixels_positions_for_next_calculation() {
         let co = init_trivial_dynamic_config(7);
         let fr = fractal::init_trivial_fractal();
         let ma = init(&co, fr);
@@ -846,8 +846,8 @@ mod tests {
         assert_eq!(di.px_at(6, 6).get_v(), 0);
     }
 
-    #[test]
-    fn test_shuffled_calculation_coordinates() {
+    #[tokio::test]
+    async fn test_shuffled_calculation_coordinates() {
         let co = machine::shuffled_calculation_coordinates();
         assert_eq!(co.len(), 400);
     }

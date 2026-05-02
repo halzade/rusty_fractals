@@ -218,24 +218,24 @@ mod tests {
     use image::Rgb;
     const GOLD: Rgb<u8> = Rgb([255, 215, 0]);
 
-    #[test]
-    fn test_add_v1() {
+    #[tokio::test]
+    async fn test_add_v1() {
         let p = init_trivial();
 
         p.add_v1();
         assert_eq!(p.get_v(), 1);
     }
 
-    #[test]
-    fn test_set_v() {
+    #[tokio::test]
+    async fn test_set_v() {
         let p = init_trivial();
 
         p.set_v(7);
         assert_eq!(p.get_v(), 7);
     }
 
-    #[test]
-    fn test_set_qsv() {
+    #[tokio::test]
+    async fn test_set_qsv() {
         let p = init_trivial();
 
         p.set_qsv(2.2, FinishedSuccessPast, 8);
@@ -245,8 +245,8 @@ mod tests {
         assert_eq!(p.get_v(), 8);
     }
 
-    #[test]
-    fn test_set_qs() {
+    #[tokio::test]
+    async fn test_set_qs() {
         let p = init_trivial();
 
         p.set_qs(3.1, FinishedTooShort);
@@ -255,16 +255,16 @@ mod tests {
         assert_eq!(rs, FinishedTooShort);
     }
 
-    #[test]
-    fn test_set_c() {
+    #[tokio::test]
+    async fn test_set_c() {
         let p = init_trivial();
 
         p.set_c(GOLD);
         assert_eq!(p.get_c(), Some(GOLD))
     }
 
-    #[test]
-    fn test_get_vsqc() {
+    #[tokio::test]
+    async fn test_get_vsqc() {
         let p = init_trivial();
 
         let (rv, rs, rq, rc) = p.get_vsqc();
@@ -274,8 +274,8 @@ mod tests {
         assert_eq!(rc, None);
     }
 
-    #[test]
-    fn test_get_vsc() {
+    #[tokio::test]
+    async fn test_get_vsc() {
         let p = init_trivial();
 
         let (rv, rs, rc) = p.get_vsc();
@@ -284,8 +284,8 @@ mod tests {
         assert_eq!(rc, None);
     }
 
-    #[test]
-    fn test_get_vs() {
+    #[tokio::test]
+    async fn test_get_vs() {
         let p = init_trivial();
 
         let (rv, rs) = p.get_vs();
@@ -293,8 +293,8 @@ mod tests {
         assert_eq!(rs, ActiveNew);
     }
 
-    #[test]
-    fn test_get_sri() {
+    #[tokio::test]
+    async fn test_get_sri() {
         let p = init_trivial();
 
         let (rs, rr, ri) = p.get_sri();
@@ -303,8 +303,8 @@ mod tests {
         assert_eq!(ri, 0.0);
     }
 
-    #[test]
-    fn test_get_ri() {
+    #[tokio::test]
+    async fn test_get_ri() {
         let p = init_trivial();
 
         let (rr, ri) = p.get_ri();
@@ -312,62 +312,62 @@ mod tests {
         assert_eq!(ri, 0.0);
     }
 
-    #[test]
-    fn test_get_v() {
+    #[tokio::test]
+    async fn test_get_v() {
         let p = init_trivial();
         assert_eq!(p.get_v(), 0);
     }
 
-    #[test]
-    fn test_get_s() {
+    #[tokio::test]
+    async fn test_get_s() {
         let p = init_trivial();
         assert_eq!(p.get_s(), ActiveNew);
     }
 
-    #[test]
-    fn test_is_alive() {
+    #[tokio::test]
+    async fn test_is_alive() {
         let p = init_trivial();
         assert!(p.is_alive());
     }
 
-    #[test]
-    fn test_is_active_new() {
+    #[tokio::test]
+    async fn test_is_active_new() {
         let p = init_trivial();
         assert!(p.is_active_new());
     }
 
-    #[test]
-    fn test_is_finished_too_short() {
+    #[tokio::test]
+    async fn test_is_finished_too_short() {
         let p = init_trivial();
         assert!(!p.is_finished_too_short());
     }
 
-    #[test]
-    fn test_is_finished_too_long() {
+    #[tokio::test]
+    async fn test_is_finished_too_long() {
         let p = init_trivial();
         assert!(!p.is_finished_too_long());
     }
 
-    #[test]
-    fn test_is_hibernated() {
+    #[tokio::test]
+    async fn test_is_hibernated() {
         let p = init_trivial();
         assert!(!p.is_hibernated());
     }
 
-    #[test]
-    fn test_is_finished_success_any() {
+    #[tokio::test]
+    async fn test_is_finished_success_any() {
         let p = init_trivial();
         assert!(!p.is_finished_success_any());
     }
 
-    #[test]
-    fn test_is_finished_success_past() {
+    #[tokio::test]
+    async fn test_is_finished_success_past() {
         let p = init_trivial();
         assert!(!p.is_finished_success_past());
     }
 
-    #[test]
-    fn test_past() {
+    #[tokio::test]
+    async fn test_past() {
         let p = init_trivial();
         if let Ok(mut d) = p.data.write() {
             d.state = FinishedSuccess;
@@ -377,24 +377,24 @@ mod tests {
         assert_eq!(p.get_s(), FinishedSuccessPast);
     }
 
-    #[test]
-    fn test_has_worse_state_then() {
+    #[tokio::test]
+    async fn test_has_worse_state_then() {
         let p = init_trivial();
         let q = init_trivial();
 
         assert!(!p.has_worse_state_then(&q));
     }
 
-    #[test]
-    fn test_set_finished_state() {
+    #[tokio::test]
+    async fn test_set_finished_state() {
         let mut p = init_trivial();
 
         p.set_finished_state(FinishedTooLong);
         assert_eq!(p.get_s(), FinishedTooLong);
     }
 
-    #[test]
-    fn test_reset() {
+    #[tokio::test]
+    async fn test_reset() {
         let p = init_trivial();
 
         p.reset(1.1, 2.2, FinishedSuccessPast);
@@ -404,8 +404,8 @@ mod tests {
         assert_eq!(rs, FinishedSuccessPast);
     }
 
-    #[test]
-    fn test_override_by() {
+    #[tokio::test]
+    async fn test_override_by() {
         let p = init_trivial();
         let q = init_trivial();
         p.override_by(&q);
@@ -413,8 +413,8 @@ mod tests {
         assert!(!q.is_alive());
     }
 
-    #[test]
-    fn test_kill() {
+    #[tokio::test]
+    async fn test_kill() {
         let p = init_trivial();
         p.kill();
         assert!(!p.is_alive());

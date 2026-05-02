@@ -488,8 +488,8 @@ mod tests {
     static CONF: FractalConfig = init_trivial_dynamic_config(3);
     static AREA: LazyLock<Area> = LazyLock::new(|| area::init(&CONF));
 
-    #[test]
-    fn test_px_at() {
+    #[tokio::test]
+    async fn test_px_at() {
         let di = init(&CONF, &AREA);
 
         assert_eq!(di.px_at(0, 0).get_ri(), (-0.5, 0.5));
@@ -505,8 +505,8 @@ mod tests {
         assert_eq!(di.px_at(2, 2).get_ri(), (0.5, -0.5));
     }
 
-    #[test]
-    fn test_add() {
+    #[tokio::test]
+    async fn test_add() {
         let dynamic = init(&CONF, &AREA);
 
         dynamic.add(0, 0);
@@ -515,8 +515,8 @@ mod tests {
         assert_eq!(v.get_v(), 1);
     }
 
-    #[test]
-    fn test_remove_elements_outside() {
+    #[tokio::test]
+    async fn test_remove_elements_outside() {
         let dynamic = init(&CONF, &AREA);
 
         // test data
@@ -553,16 +553,16 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_mo_px_at() {
+    #[tokio::test]
+    async fn test_mo_px_at() {
         let data = init(&CONF, &AREA);
 
         assert_eq!(data.px_at(0, 0).get_s(), ActiveNew);
         assert_eq!(data.px_at(2, 2).get_s(), ActiveNew);
     }
 
-    #[test]
-    fn test_wrap_3() {
+    #[tokio::test]
+    async fn test_wrap_3() {
         // prepare test
         let data = init(&CONF, &AREA);
         let area_plank = AREA.plank();
@@ -573,8 +573,8 @@ mod tests {
         assert_eq!(w.len(), 8);
     }
 
-    #[test]
-    fn test_wrap_5() {
+    #[tokio::test]
+    async fn test_wrap_5() {
         let data = init(&CONF, &AREA);
         let area_plank = AREA.plank();
 
@@ -583,8 +583,8 @@ mod tests {
         assert_eq!(w.len(), 24);
     }
 
-    #[test]
-    fn test_wrap_9() {
+    #[tokio::test]
+    async fn test_wrap_9() {
         let data = init(&CONF, &AREA);
         let area_plank = AREA.plank();
 
@@ -593,8 +593,8 @@ mod tests {
         assert_eq!(w.len(), 80);
     }
 
-    #[test]
-    fn test_wrap_11() {
+    #[tokio::test]
+    async fn test_wrap_11() {
         let data = init(&CONF, &AREA);
         let area_plank = AREA.plank();
 
@@ -603,8 +603,8 @@ mod tests {
         assert_eq!(w.len(), 120);
     }
 
-    #[test]
-    fn test_wrap_51() {
+    #[tokio::test]
+    async fn test_wrap_51() {
         let data = init(&CONF, &AREA);
         let area_plank = AREA.plank();
 
@@ -613,8 +613,8 @@ mod tests {
         assert_eq!(w.len(), 2600);
     }
 
-    #[test]
-    fn test_wrap_101() {
+    #[tokio::test]
+    async fn test_wrap_101() {
         let data = init(&CONF, &AREA);
         let area_plank = AREA.plank();
 
@@ -623,14 +623,14 @@ mod tests {
         assert_eq!(w.len(), 10_200);
     }
 
-    #[test]
-    fn test_color_for_state() {
+    #[tokio::test]
+    async fn test_color_for_state() {
         let red = color_for_state(ActiveNew).channels()[0];
         assert_eq!(red, 40);
     }
 
-    #[test]
-    fn test_check_domain() {
+    #[tokio::test]
+    async fn test_check_domain() {
         assert!(!check_domain(0, 0, 0, 0));
         assert!(check_domain(0, 0, 1, 1));
         assert!(!check_domain(-1, 0, 1, 1));
@@ -639,8 +639,8 @@ mod tests {
         assert!(!check_domain(0, 2, 1, 1));
     }
 
-    #[test]
-    fn test_print_data_values() {
+    #[tokio::test]
+    async fn test_print_data_values() {
         let di = init(&CONF, &AREA);
         di.print_data_values();
     }
@@ -648,8 +648,8 @@ mod tests {
     /**
      * :)
      */
-    #[test]
-    fn test_move_to_new_position() {
+    #[tokio::test]
+    async fn test_move_to_new_position() {
         let dc = init_trivial_dynamic_config(7);
         let ar = area::init(&dc);
         let di = init(&dc, &ar);
@@ -685,8 +685,8 @@ mod tests {
         assert_eq!(di.px_at(5, 5).get_v(), 16);
     }
 
-    #[test]
-    fn test_move_px_to_new_position() {
+    #[tokio::test]
+    async fn test_move_px_to_new_position() {
         let di = init(&CONF, &AREA);
         di.set(2, 2, 11);
 
@@ -697,8 +697,8 @@ mod tests {
         assert_eq!(di.px_at(1, 1).get_v(), 11);
     }
 
-    #[test]
-    fn test_init_domain() {
+    #[tokio::test]
+    async fn test_init_domain() {
         let di = init(&CONF, &AREA);
         assert_eq!(di.origin_at(0, 0), (-0.5, 0.5));
         assert_eq!(di.origin_at(1, 0), (0.0, 0.5));

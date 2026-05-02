@@ -3,6 +3,7 @@ use crate::color::palette::Palette3;
 use crate::color::palette_utils::make_spectrum;
 use crate::color::palettes::Function::{CircleUp, Exp2, Linear1};
 use image::{Pixel, Rgb};
+use lazy_static::lazy_static;
 
 const WHITE: Rgb<u8> = Rgb([255, 255, 255]);
 const BLACK: Rgb<u8> = Rgb([0, 0, 0]);
@@ -122,12 +123,16 @@ pub const fn init_trivial() -> Palette {
     }
 }
 
-pub fn palette_3_rgb() -> Palette3 {
-    Palette3 {
+lazy_static! {
+    static ref PALETTE_3_RGB: Palette3 = Palette3 {
         spectrum_red: strip_spectrum(make_spectrum(CircleUp, BLACK, RED), 0),
         spectrum_green: strip_spectrum(make_spectrum(CircleUp, BLACK, GREEN), 1),
         spectrum_blue: strip_spectrum(make_spectrum(CircleUp, BLACK, BLUE), 2),
-    }
+    };
+}
+
+pub fn palette_3_rgb() -> &'static Palette3 {
+    &PALETTE_3_RGB
 }
 fn strip_spectrum(spectrum: Vec<Rgb<u8>>, channel: usize) -> Vec<u8> {
     spectrum
@@ -142,8 +147,8 @@ mod tests {
     use crate::color::palettes::Function::Linear1;
     use image::Rgb;
 
-    #[test]
-    fn test_new() {
+    #[tokio::test]
+    async fn test_new() {
         let n = new(Linear1, Rgb([100, 100, 100]), Rgb([103, 103, 103]));
         assert_eq!(n.spectrum.len(), 4);
     }

@@ -139,8 +139,8 @@ pub fn perfectly_color_mandelbrot_values(
 #[cfg(test)]
 mod tests {
 
-    #[test]
-    fn test_perfectly_color_mandelbrot_values() {
+    #[tokio::test]
+    async fn test_perfectly_color_mandelbrot_values() {
         // TODO
     }
 }

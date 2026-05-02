@@ -168,8 +168,8 @@ mod tests {
     use crate::color::palettes::Function::{CircleDown, CircleUp, Linear1};
     use image::{Pixel, Rgb};
 
-    #[test]
-    fn test_function_result() {
+    #[tokio::test]
+    async fn test_function_result() {
         assert_eq!(function_result(0.0, &Linear1), 0.0);
         assert_eq!(function_result(0.5, &Linear1), 0.5);
         assert_eq!(function_result(1.0, &Linear1), 1.0);
@@ -181,8 +181,8 @@ mod tests {
         assert_eq!(function_result(1.0, &CircleDown), 0.0);
     }
 
-    #[test]
-    fn test_make_spectrum() {
+    #[tokio::test]
+    async fn test_make_spectrum() {
         let b1: Rgb<u8> = Rgb([0, 0, 0]);
         let b2: Rgb<u8> = Rgb([2, 2, 2]);
         // light to dark
@@ -197,8 +197,8 @@ mod tests {
         assert_eq!(res.len(), 3);
     }
 
-    #[test]
-    fn test_make_spectrum_5() {
+    #[tokio::test]
+    async fn test_make_spectrum_5() {
         let b1: Rgb<u8> = Rgb([0, 4, 2]);
         let b2: Rgb<u8> = Rgb([4, 1, 4]);
         // light to dark
@@ -214,8 +214,8 @@ mod tests {
         assert_eq!(res.len(), 5);
     }
 
-    #[test]
-    fn test_make_spectrum_inv() {
+    #[tokio::test]
+    async fn test_make_spectrum_inv() {
         let b2: Rgb<u8> = Rgb([2, 2, 2]);
         let b1: Rgb<u8> = Rgb([0, 0, 0]);
         // dark to light
@@ -229,8 +229,8 @@ mod tests {
         assert_eq!(res.len(), 3);
     }
 
-    #[test]
-    fn test_make_spectrum_inv_5() {
+    #[tokio::test]
+    async fn test_make_spectrum_inv_5() {
         let b2: Rgb<u8> = Rgb([4, 2, 0]);
         let b1: Rgb<u8> = Rgb([0, 0, 4]);
         // dark to light

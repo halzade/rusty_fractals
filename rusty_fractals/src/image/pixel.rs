@@ -70,8 +70,8 @@ mod tests {
     use super::{PixelsEuler, Spectra};
     use Spectra::Red;
 
-    #[test]
-    fn test_add() {
+    #[tokio::test]
+    async fn test_add() {
         let mut p = PixelsEuler::init(1, 1);
 
         p.add(0, 0, Blue);
@@ -82,8 +82,8 @@ mod tests {
         assert_eq!(r, 0);
     }
 
-    #[test]
-    fn test_set() {
+    #[tokio::test]
+    async fn test_set() {
         let mut p = PixelsEuler::init(1, 1);
 
         p._set(0, 0, Green, 5);

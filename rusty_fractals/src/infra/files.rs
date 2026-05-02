@@ -43,8 +43,8 @@ mod tests {
     use crate::image::data_image;
     use crate::domain::area;
 
-    #[test]
-    fn test_save_image() {
+    #[tokio::test]
+    async fn test_save_image() {
         let fractal_name = "Fractal Snake";
         let c = init_trivial_dynamic_config(621);
         let a = area::init(&c);
@@ -64,8 +64,8 @@ mod tests {
         let _ = std::fs::remove_file(file_name);
     }
 
-    #[test]
-    fn test_to_snake() {
+    #[tokio::test]
+    async fn test_to_snake() {
         let s = to_snake("Collatz Conjecture");
         assert_eq!(s, "collatz_conjecture");
     }

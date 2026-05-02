@@ -66,16 +66,16 @@ mod tests {
     use crate::rusty::fractal::MemType;
     use crate::calc::mem_collatz::MemCollatz;
 
-    #[test]
-    fn test_collatz_conjecture() {
+    #[tokio::test]
+    async fn test_collatz_conjecture() {
         let mut c = MemCollatz::new(1.0, 2.0);
         c.collatz_conjecture();
         assert_eq!(c.m.re, 4.0);
         assert_eq!(c.m.im, 7.0);
     }
 
-    #[test]
-    fn test_plus_collatz() {
+    #[tokio::test]
+    async fn test_plus_collatz() {
         let mut c = MemCollatz::new(0.0, 1.0);
         c.plus_collatz(0.0, 0.0);
         assert_eq!(c.m.re, 0.5);

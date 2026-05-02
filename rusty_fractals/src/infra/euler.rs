@@ -31,6 +31,6 @@ fn _colors_for(element_index: u64, path_length: u64) -> Spectra {
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn test_it() {}
+    #[tokio::test]
+    async fn test_it() {}
 }

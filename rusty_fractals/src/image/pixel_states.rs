@@ -68,8 +68,8 @@ mod tests {
     use super::DomainElementState::{FinishedSuccessPast, FinishedTooShort};
     use std::cmp::Ordering::Less;
 
-    #[test]
-    fn test_pixel_state() {
+    #[tokio::test]
+    async fn test_pixel_state() {
         assert_eq!(FinishedSuccessPast.cmp(&FinishedTooShort), Less);
     }
 }

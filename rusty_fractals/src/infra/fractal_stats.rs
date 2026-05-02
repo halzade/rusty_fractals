@@ -216,8 +216,8 @@ mod tests {
     use crate::domain::area;
     use crate::infra::fractal_stats;
 
-    #[test]
-    fn test_paths_new_points_amount() {
+    #[tokio::test]
+    async fn test_paths_new_points_amount() {
         let mut fs = fractal_stats::init();
 
         fs.paths_new_points_amount_add(1);
@@ -231,8 +231,8 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_update() {
+    #[tokio::test]
+    async fn test_update() {
         let fs = fractal_stats::init();
         let fc = init_trivial_static_config();
         let a = area::init(&fc);

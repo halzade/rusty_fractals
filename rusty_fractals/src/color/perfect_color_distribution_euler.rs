@@ -5,7 +5,6 @@
 // - color all significant pixels ordered by value
 
 use crate::image::data_image::DataImage;
-use crate::color::palette::Palette3;
 use crate::color::palettes::palette_3_rgb;
 
 // for Nebula like fractals
@@ -28,7 +27,7 @@ pub fn perfectly_color_euler_values(data: &DataImage) {
     let width = data.width_xp;
     let height = data.height_yp;
 
-    let palette3: Palette3 = palette_3_rgb();
+    let palette3 = palette_3_rgb();
 
     // Result pixels, order by value
     let mut pixels_red: Vec<Pix> = Vec::new();
@@ -186,8 +185,8 @@ pub fn perfectly_color_euler_values(data: &DataImage) {
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn test_perfectly_color_euler_values() {
+    #[tokio::test]
+    async fn test_perfectly_color_euler_values() {
         // TODO
     }
 }

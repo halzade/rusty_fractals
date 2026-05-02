@@ -43,14 +43,14 @@ mod tests {
     use crate::color::palette::init_trivial;
     use image::Pixel;
 
-    #[test]
-    fn test_init_default() {
+    #[tokio::test]
+    async fn test_init_default() {
         let p = init_trivial();
         assert_eq!(p.spectrum.len(), 3);
     }
 
-    #[test]
-    fn test_spectrum_value() {
+    #[tokio::test]
+    async fn test_spectrum_value() {
         let p = init_trivial();
 
         let rgb = p.spectrum_value(2);

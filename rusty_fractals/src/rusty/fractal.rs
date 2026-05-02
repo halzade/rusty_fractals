@@ -230,8 +230,8 @@ mod tests {
     use crate::calc::mem::Mem;
     use crate::image::pixel_states::DomainElementState::{ActiveNew, HibernatedDeepBlack};
 
-    #[test]
-    fn test_math() {
+    #[tokio::test]
+    async fn test_math() {
         let f = init_trivial_fractal();
         let mut m = Mem::new(0.0, 0.0);
 
@@ -240,14 +240,14 @@ mod tests {
         assert_eq!(m.im, 0.0);
     }
 
-    #[test]
-    fn test_optimizer_trivial() {
+    #[tokio::test]
+    async fn test_optimizer_trivial() {
         let o = Optimizer::trivial();
         assert_eq!((o.initial_state_for)(0.0, 0.0), ActiveNew);
     }
 
-    #[test]
-    fn test_optimizer_nebula() {
+    #[tokio::test]
+    async fn test_optimizer_nebula() {
         let o = Optimizer::nebula_optimization();
         assert_eq!((o.initial_state_for)(0.0, 0.0), HibernatedDeepBlack);
         assert_eq!((o.initial_state_for)(1.0, 1.0), ActiveNew);

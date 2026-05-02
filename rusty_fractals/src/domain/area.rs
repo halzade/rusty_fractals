@@ -271,8 +271,8 @@ mod tests {
     use crate::domain::area::init;
     use crate::rusty::fractal;
 
-    #[test]
-    fn test_init() {
+    #[tokio::test]
+    async fn test_init() {
         let c = fractal::init_trivial_static_config();
         let a = init(&c);
         if let Ok(d) = a.data.read() {
@@ -292,8 +292,8 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_contains() {
+    #[tokio::test]
+    async fn test_contains() {
         let conf = fractal::init_trivial_static_config();
         let area = init(&conf);
 
@@ -323,8 +323,8 @@ mod tests {
         assert!(!area.contains(0.5, -0.4));
     }
 
-    #[test]
-    fn test_point_to_pixel() {
+    #[tokio::test]
+    async fn test_point_to_pixel() {
         let conf = fractal::init_trivial_static_config();
         let area = init(&conf);
 
@@ -350,8 +350,8 @@ mod tests {
         assert_eq!(a, (2, 2));
     }
 
-    #[test]
-    fn test_screen_to_domain_re_copy() {
+    #[tokio::test]
+    async fn test_screen_to_domain_re_copy() {
         let conf = fractal::init_trivial_static_config();
         let area = init(&conf);
 
@@ -362,8 +362,8 @@ mod tests {
         assert_eq!(res[2], 0.5);
     }
 
-    #[test]
-    fn test_screen_to_domain_im_copy() {
+    #[tokio::test]
+    async fn test_screen_to_domain_im_copy() {
         let conf = fractal::init_trivial_static_config();
         let area = init(&conf);
 
@@ -374,24 +374,24 @@ mod tests {
         assert_eq!(ims[2], -0.5);
     }
 
-    #[test]
-    fn test_print_info() {
+    #[tokio::test]
+    async fn test_print_info() {
         let c = fractal::init_trivial_dynamic_config(3);
         let a = init(&c);
 
         a.print_info();
     }
 
-    #[test]
-    fn test_print_more() {
+    #[tokio::test]
+    async fn test_print_more() {
         let c = fractal::init_trivial_dynamic_config(3);
         let a = init(&c);
 
         a.print_more();
     }
 
-    #[test]
-    fn test_zoom_in_by() {
+    #[tokio::test]
+    async fn test_zoom_in_by() {
         let c = fractal::init_trivial_dynamic_config(3);
         let a = init(&c);
 
@@ -411,8 +411,8 @@ mod tests {
         // TODO test numbers re & im
     }
 
-    #[test]
-    fn test_zoom_in() {
+    #[tokio::test]
+    async fn test_zoom_in() {
         let c = fractal::init_trivial_dynamic_config(3);
         let a = init(&c);
 

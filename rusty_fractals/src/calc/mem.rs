@@ -152,47 +152,47 @@ mod tests {
     use crate::calc::mathematician;
     use crate::calc::mem::Mem;
 
-    #[test]
-    fn test_plus() {
+    #[tokio::test]
+    async fn test_plus() {
         let mut m = Mem::new(2.0, 3.0);
         m.plus(0.5, 0.4);
         assert_eq!(m.re, 2.5);
         assert_eq!(m.im, 3.4);
     }
 
-    #[test]
-    fn test_square() {
+    #[tokio::test]
+    async fn test_square() {
         let mut m = Mem::new(3.0, 2.0);
         m.square();
         assert_eq!(m.re, 5.0);
         assert_eq!(m.im, 12.0);
     }
 
-    #[test]
-    fn test_quad() {
+    #[tokio::test]
+    async fn test_quad() {
         let m = Mem::new(3.0, 2.0);
         let q = m.quad();
         assert_eq!(q, 13.0);
     }
 
-    #[test]
-    fn test_conjugation() {
+    #[tokio::test]
+    async fn test_conjugation() {
         let mut m = Mem::new(3.0, 2.0);
         m.conjugation();
         assert_eq!(m.re, 3.0);
         assert_eq!(m.im, -2.0);
     }
 
-    #[test]
-    fn test_inverse() {
+    #[tokio::test]
+    async fn test_inverse() {
         let mut m = Mem::new(0.5, 0.5);
 
         m.inverse(1);
         assert_eq!(m.re, 1.0);
         assert_eq!(m.im, -1.0);
     }
-    #[test]
-    fn test_binomial3() {
+    #[tokio::test]
+    async fn test_binomial3() {
         let mut m = Mem::new(0.5, 0.5);
 
         m.binomial3();
@@ -200,8 +200,8 @@ mod tests {
         assert_eq!(m.im, 0.25);
     }
 
-    #[test]
-    fn test_binomial4() {
+    #[tokio::test]
+    async fn test_binomial4() {
         let mut m = Mem::new(0.5, 0.5);
 
         m.binomial4();
@@ -209,16 +209,16 @@ mod tests {
         assert_eq!(m.im, 0.0);
     }
 
-    #[test]
-    fn test_binomial5() {
+    #[tokio::test]
+    async fn test_binomial5() {
         let mut m = Mem::new(0.5, 0.5);
 
         m.binomial5();
         assert_eq!(m.re, -0.125);
         assert_eq!(m.im, -0.125);
     }
-    #[test]
-    fn test_circle_inversion() {
+    #[tokio::test]
+    async fn test_circle_inversion() {
         let mut m = Mem::new(0.5, 0.5);
 
         m.circle_inversion(0.2, 0.3);
@@ -226,8 +226,8 @@ mod tests {
         assert_eq!(m.im, 2.3076923076923075);
     }
 
-    #[test]
-    fn test_euler() {
+    #[tokio::test]
+    async fn test_euler() {
         let mut m = Mem::new(0.5, 0.5);
         mathematician::init_primes(2);
 
@@ -242,8 +242,8 @@ mod tests {
         assert_eq!(m.im, 0.02);
     }
 
-    #[test]
-    fn test_leonardo() {
+    #[tokio::test]
+    async fn test_leonardo() {
         let mut m = Mem::new(0.5, 0.5);
         mathematician::init_fibonacci(2);
 
@@ -253,8 +253,8 @@ mod tests {
         assert_eq!(m.im, 0.02);
     }
 
-    #[test]
-    fn test_czech() {
+    #[tokio::test]
+    async fn test_czech() {
         let mut m = Mem::new(0.5, 0.5);
         mathematician::init_perfect(2);
 
@@ -264,8 +264,8 @@ mod tests {
         assert_eq!(m.im, 0.5);
     }
 
-    #[test]
-    fn test_chess() {
+    #[tokio::test]
+    async fn test_chess() {
         let mut m = Mem::new(0.5, 0.5);
         mathematician::init_squares(2);
 
@@ -275,8 +275,8 @@ mod tests {
         assert_eq!(m.im, 0.04);
     }
 
-    #[test]
-    fn test_pythagoras() {
+    #[tokio::test]
+    async fn test_pythagoras() {
         let mut m = Mem::new(0.5, 0.5);
         mathematician::init_triangular(2);
 
@@ -286,8 +286,8 @@ mod tests {
         assert_eq!(m.im, 0.02);
     }
 
-    #[test]
-    fn test_taco() {
+    #[tokio::test]
+    async fn test_taco() {
         let mut m = Mem::new(0.5, 0.5);
         mathematician::init_lucas(2);
 
@@ -297,8 +297,8 @@ mod tests {
         assert_eq!(m.im, 0.02);
     }
     
-    #[test]
-    fn test_potato() {
+    #[tokio::test]
+    async fn test_potato() {
         let mut m = Mem::new(0.5, 0.5);
         mathematician::init_lazy(2);
 
@@ -308,8 +308,8 @@ mod tests {
         assert_eq!(m.im, 0.02);
     }
 
-    #[test]
-    fn test_lukas() {
+    #[tokio::test]
+    async fn test_lukas() {
         let mut m = Mem::new(0.5, 0.5);
         mathematician::init_happy(2);
 

@@ -56,8 +56,8 @@ impl MemType<Self> for MemPhoenix {
 mod tests {
     use crate::calc::mem_phoenix::MemPhoenix;
 
-    #[test]
-    fn test_plus() {
+    #[tokio::test]
+    async fn test_plus() {
         let mut mp = MemPhoenix::new(0.02, 0.1);
         mp.plus(1.1, 1.2);
         assert_eq!(mp.m.re, 1.12);
