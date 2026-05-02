@@ -37,8 +37,8 @@ mod tests {
     use rusty_fractals::rusty::fractal::{FractalMath, MemType};
     use rusty_fractals::calc::mem_collatz::MemCollatz;
 
-    #[test]
-    fn test_math() {
+    #[tokio::test]
+    async fn test_math() {
         let collatz = CollatzConjectureMandelbrot {};
         let mut mc = MemCollatz::new(0.0, 0.0);
 

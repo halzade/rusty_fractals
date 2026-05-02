@@ -44,8 +44,8 @@ mod tests {
     use rusty_fractals::rusty::fractal::{FractalMath, MemType};
     use rusty_fractals::calc::mem::Mem;
 
-    #[test]
-    fn test_math() {
+    #[tokio::test]
+    async fn test_math() {
         let fat_star = FatStarTentacle {};
         let mut m = Mem::new(0.0, 0.0);
 

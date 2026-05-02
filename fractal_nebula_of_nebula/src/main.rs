@@ -58,8 +58,8 @@ mod tests {
     use rusty_fractals::rusty::fractal::{FractalMath, MemType};
     use rusty_fractals::calc::mem::Mem;
 
-    #[test]
-    fn test_math() {
+    #[tokio::test]
+    async fn test_math() {
         let nebula_of_nebula = NebulaOfNebula {};
         let mut m = Mem::new(0.0, 0.0);
         nebula_of_nebula.math(&mut m, 0.0, 0.0);

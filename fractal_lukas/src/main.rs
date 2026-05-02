@@ -48,8 +48,8 @@ mod tests {
     use rusty_fractals::calc::mathematician;
     use rusty_fractals::calc::mem::Mem;
 
-    #[test]
-    fn test_math() {
+    #[tokio::test]
+    async fn test_math() {
         let lukas = Lukas {};
         let mut m = Mem::new(0.5, 0.5);
         mathematician::init_happy(2);

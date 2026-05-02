@@ -50,8 +50,8 @@ mod tests {
     use rusty_fractals::rusty::fractal::FractalMath;
     use rusty_fractals::calc::mem_phoenix::MemPhoenix;
 
-    #[test]
-    fn test_math() {
+    #[tokio::test]
+    async fn test_math() {
         let head = Head {};
         let mut mp = MemPhoenix::new(0.0, 0.0);
 

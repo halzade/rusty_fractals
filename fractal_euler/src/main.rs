@@ -54,8 +54,8 @@ mod tests {
     use rusty_fractals::calc::mathematician;
     use rusty_fractals::calc::mem::Mem;
 
-    #[test]
-    fn test_math() {
+    #[tokio::test]
+    async fn test_math() {
         let euler = Euler {};
         let mut m = Mem::new(0.0, 0.0);
         mathematician::init_primes(2);

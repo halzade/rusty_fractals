@@ -455,6 +455,7 @@ name = "fractal_collatz_conjecture"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -462,6 +463,7 @@ name = "fractal_collatz_conjecture_orbits"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -469,6 +471,7 @@ name = "fractal_collatz_mandelbrot"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -476,6 +479,7 @@ name = "fractal_czech"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -483,6 +487,7 @@ name = "fractal_euler"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -490,6 +495,7 @@ name = "fractal_fat_star"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -497,6 +503,7 @@ name = "fractal_fat_star_magnific"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -504,6 +511,7 @@ name = "fractal_fat_star_tentacle"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -511,6 +519,7 @@ name = "fractal_head"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -518,6 +527,7 @@ name = "fractal_infinity"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -525,6 +535,7 @@ name = "fractal_infinity_perfection"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -532,6 +543,7 @@ name = "fractal_infinity_top"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -539,6 +551,7 @@ name = "fractal_lotus"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -546,6 +559,7 @@ name = "fractal_lukas"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -553,6 +567,7 @@ name = "fractal_mandelbrot"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -560,6 +575,7 @@ name = "fractal_mandelbrot_of_mandelbrot"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -567,6 +583,7 @@ name = "fractal_nebula"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -574,6 +591,7 @@ name = "fractal_nebula_of_nebula"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -581,6 +599,7 @@ name = "fractal_nebula_side"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -588,6 +607,7 @@ name = "fractal_nebula_top"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
@@ -595,6 +615,7 @@ name = "fractal_science"
 version = "0.1.0"
 dependencies = [
  "rusty_fractals",
+ "tokio",
 ]
 
 [[package]]
