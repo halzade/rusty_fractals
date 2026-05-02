@@ -1,6 +1,6 @@
 use crate::infra::constants::TAKE_MEASURES_AT_FRAME;
 use crate::image::data_image::DataImage;
-use std::sync::RwLock;
+use parking_lot::RwLock;
 
 pub struct Stats {
     data: RwLock<StatsData>,
@@ -8,9 +8,7 @@ pub struct Stats {
 
 impl Stats {
     pub fn paths_new_points_amount_add(&self, path_length: usize) {
-        if let Ok(mut data) = self.data.write() {
-            data.paths_new_points_amount += path_length as u64;
-        }
+        self.data.write().paths_new_points_amount += path_length as u64;
     }
 }
 
@@ -50,35 +48,33 @@ pub struct StatsData {
 impl Stats {
     #[rustfmt::skip]
     fn remember_this(&self, data_image: &DataImage) {
-        if let Ok(mut data) = self.data.write() {
-            println!("new_elements_long  {}", data.new_elements_long);
-            println!("pixels_value_total {}", data.pixels_value_total);
-            println!("paths_total_amount {}", data.paths_total_amount);
+        let mut data = self.data.write();
+        println!("new_elements_long  {}", data.new_elements_long);
+        println!("pixels_value_total {}", data.pixels_value_total);
+        println!("paths_total_amount {}", data.paths_total_amount);
 
-            data.new_elements_long_measure = data.new_elements_long;
-            data.pixels_value_total_measure = data.pixels_value_total;
-            data.paths_total_amount_measure = data.paths_total_amount;
-            data.average_path_length_measure = if data.paths_total_amount > 0 {
-                (data.pixels_value_total as f64 / data.paths_total_amount as f64) as u64
-            } else {
-                0
-            };
+        data.new_elements_long_measure = data.new_elements_long;
+        data.pixels_value_total_measure = data.pixels_value_total;
+        data.paths_total_amount_measure = data.paths_total_amount;
+        data.average_path_length_measure = if data.paths_total_amount > 0 {
+            (data.pixels_value_total as f64 / data.paths_total_amount as f64) as u64
+        } else {
+            0
+        };
 
-            // from data image
-            data.pixels_value_best_measure = data_image.best_four_chunks_value();
+        // from data image
+        data.pixels_value_best_measure = data_image.best_four_chunks_value();
 
-            data.new_elements_long_tolerance = (data.new_elements_long_measure as f64 * 0.5) as u64;
-            data.pixels_value_total_tolerance = (data.pixels_value_total_measure as f64 * 0.5) as u64;
-            data.paths_total_amount_tolerance = (data.paths_total_amount_measure as f64 * 0.5) as u64;
-            data.pixels_value_best_tolerance = (data.pixels_value_best_measure as f64 * 0.5) as u64;
+        data.new_elements_long_tolerance = (data.new_elements_long_measure as f64 * 0.5) as u64;
+        data.pixels_value_total_tolerance = (data.pixels_value_total_measure as f64 * 0.5) as u64;
+        data.paths_total_amount_tolerance = (data.paths_total_amount_measure as f64 * 0.5) as u64;
+        data.pixels_value_best_tolerance = (data.pixels_value_best_measure as f64 * 0.5) as u64;
 
-            println!("elementsLong_measure        {} ", data.new_elements_long_measure);
-            println!("pixels_value_total_measure  {} ", data.pixels_value_total_measure);
-            println!("pixels_value_best_measure   {} ", data.pixels_value_best_measure);
-            println!("paths_total_amount_measure  {} ", data.paths_total_amount_measure);
-            println!("average_path_length_measure {} ", data.average_path_length_measure);
-            drop(data);
-        }
+        println!("elementsLong_measure        {} ", data.new_elements_long_measure);
+        println!("pixels_value_total_measure  {} ", data.pixels_value_total_measure);
+        println!("pixels_value_best_measure   {} ", data.pixels_value_best_measure);
+        println!("paths_total_amount_measure  {} ", data.paths_total_amount_measure);
+        println!("average_path_length_measure {} ", data.average_path_length_measure);
     }
 
     #[rustfmt::skip]
@@ -89,93 +85,89 @@ impl Stats {
         }
 
         /* Subsequent comparison */
-        if it > TAKE_MEASURES_AT_FRAME
-            && let Ok(mut data) = self.data.write() {
-                // Total value
-                data.not_enough_pixels_total_value = false;
-                if data.pixels_value_total < data.pixels_value_total_measure {
-                    data.not_enough_pixels_total_value = data.pixels_value_total_measure
-                        - data.pixels_value_total
-                        > data.pixels_value_total_tolerance;
-                }
-                data.too_many_pixels_total_value = false;
-                if data.pixels_value_total > data.pixels_value_total_measure {
-                    data.too_many_pixels_total_value = data.pixels_value_total
-                        - data.pixels_value_total_measure
-                        > data.pixels_value_total_tolerance;
-                }
-                data.less_pixels_total_value =
-                    data.pixels_value_total < data.pixels_value_total_measure;
-
-                // Best domain chunks, chunks with most image points
-                data.not_enough_pixels_best_value = false;
-                data.pixels_value_best = data_image.best_four_chunks_value();
-                if data.pixels_value_best < data.pixels_value_best_measure {
-                    data.not_enough_pixels_best_value = data.pixels_value_best_measure
-                        - data.pixels_value_best
-                        > data.pixels_value_best_tolerance;
-                }
-                data.less_pixels_best_value = data.pixels_value_best < data.pixels_value_best_measure;
-
-                // Paths
-                data.too_many_paths_total = false;
-                if data.paths_total_amount > data.paths_total_amount_measure {
-                    data.too_many_paths_total = data.paths_total_amount
-                        - data.paths_total_amount_measure
-                        > data.paths_total_amount_tolerance;
-                }
-
-                // Mandelbrot long successful elements
-                data.not_enough_long_elements = false;
-                if data.new_elements_long < data.new_elements_long_measure {
-                    data.not_enough_long_elements = data.new_elements_long_measure
-                        - data.new_elements_long
-                        > data.new_elements_long_tolerance;
-                }
-
-                println!("not_enough_pixels_total_value {}", data.not_enough_pixels_total_value);
-                println!("less_pixels_total_value       {}", data.less_pixels_total_value);
-                println!("less_pixels_best_value        {} ({} < {})", data.less_pixels_best_value, data.pixels_value_best, data.pixels_value_best_measure);
-                println!("too_many_pixels_total_value   {}", data.too_many_pixels_total_value);
-                println!("too_many_paths_total          {}", data.too_many_paths_total);
-                println!("not_enough_long_elements      {}", data.not_enough_long_elements);
-
-                let average_path_length =
-                    data.pixels_value_total as f64 / data.paths_total_amount as f64;
-                let new_elements_all =
-                    data.new_elements_long + data.new_elements_too_short + data.new_elements_too_long;
-                let domain_elements_to_new_calculation_path_points =
-                    data.paths_new_points_amount as f64 / new_elements_all as f64;
-
-                println!("average_path_length                             {} ({})", average_path_length, data.average_path_length_measure);
-                println!("domain_elements_to_new_calculation_path_points: {}", domain_elements_to_new_calculation_path_points);
-                drop(data);
+        if it > TAKE_MEASURES_AT_FRAME {
+            let mut data = self.data.write();
+            // Total value
+            data.not_enough_pixels_total_value = false;
+            if data.pixels_value_total < data.pixels_value_total_measure {
+                data.not_enough_pixels_total_value = data.pixels_value_total_measure
+                    - data.pixels_value_total
+                    > data.pixels_value_total_tolerance;
             }
+            data.too_many_pixels_total_value = false;
+            if data.pixels_value_total > data.pixels_value_total_measure {
+                data.too_many_pixels_total_value = data.pixels_value_total
+                    - data.pixels_value_total_measure
+                    > data.pixels_value_total_tolerance;
+            }
+            data.less_pixels_total_value =
+                data.pixels_value_total < data.pixels_value_total_measure;
+
+            // Best domain chunks, chunks with most image points
+            data.not_enough_pixels_best_value = false;
+            data.pixels_value_best = data_image.best_four_chunks_value();
+            if data.pixels_value_best < data.pixels_value_best_measure {
+                data.not_enough_pixels_best_value = data.pixels_value_best_measure
+                    - data.pixels_value_best
+                    > data.pixels_value_best_tolerance;
+            }
+            data.less_pixels_best_value = data.pixels_value_best < data.pixels_value_best_measure;
+
+            // Paths
+            data.too_many_paths_total = false;
+            if data.paths_total_amount > data.paths_total_amount_measure {
+                data.too_many_paths_total = data.paths_total_amount
+                    - data.paths_total_amount_measure
+                    > data.paths_total_amount_tolerance;
+            }
+
+            // Mandelbrot long successful elements
+            data.not_enough_long_elements = false;
+            if data.new_elements_long < data.new_elements_long_measure {
+                data.not_enough_long_elements = data.new_elements_long_measure
+                    - data.new_elements_long
+                    > data.new_elements_long_tolerance;
+            }
+
+            println!("not_enough_pixels_total_value {}", data.not_enough_pixels_total_value);
+            println!("less_pixels_total_value       {}", data.less_pixels_total_value);
+            println!("less_pixels_best_value        {} ({} < {})", data.less_pixels_best_value, data.pixels_value_best, data.pixels_value_best_measure);
+            println!("too_many_pixels_total_value   {}", data.too_many_pixels_total_value);
+            println!("too_many_paths_total          {}", data.too_many_paths_total);
+            println!("not_enough_long_elements      {}", data.not_enough_long_elements);
+
+            let average_path_length =
+                data.pixels_value_total as f64 / data.paths_total_amount as f64;
+            let new_elements_all =
+                data.new_elements_long + data.new_elements_too_short + data.new_elements_too_long;
+            let domain_elements_to_new_calculation_path_points =
+                data.paths_new_points_amount as f64 / new_elements_all as f64;
+
+            println!("average_path_length                             {} ({})", average_path_length, data.average_path_length_measure);
+            println!("domain_elements_to_new_calculation_path_points: {}", domain_elements_to_new_calculation_path_points);
+        }
     }
 
     pub fn clean(&mut self) {
-        if let Ok(mut data) = self.data.write() {
-            data.new_elements_too_long = 0;
-            data.new_elements_too_short = 0;
-            data.new_elements_long = 0;
-            data.paths_total_amount = 0;
-            data.pixels_value_total = 0;
-            data.pixels_value_best = 0;
-            data.paths_new_points_amount = 0;
-        }
+        let mut data = self.data.write();
+        data.new_elements_too_long = 0;
+        data.new_elements_too_short = 0;
+        data.new_elements_long = 0;
+        data.paths_total_amount = 0;
+        data.pixels_value_total = 0;
+        data.pixels_value_best = 0;
+        data.paths_new_points_amount = 0;
     }
 
     pub fn print(&self) {
-        if let Ok(data) = self.data.read() {
-            println!("new_elements_too_long   {}", data.new_elements_too_long);
-            println!("new_elements_too_short  {}", data.new_elements_too_short);
-            println!("new_elements_long       {}", data.new_elements_long);
-            println!("paths_total_amount      {}", data.paths_total_amount);
-            println!("pixels_value_total      {}", data.pixels_value_total);
-            println!("pixels_value_best       {}", data.pixels_value_best);
-            println!("paths_new_points_amount {}", data.paths_new_points_amount);
-            drop(data);
-        }
+        let data = self.data.read();
+        println!("new_elements_too_long   {}", data.new_elements_too_long);
+        println!("new_elements_too_short  {}", data.new_elements_too_short);
+        println!("new_elements_long       {}", data.new_elements_long);
+        println!("paths_total_amount      {}", data.paths_total_amount);
+        println!("pixels_value_total      {}", data.pixels_value_total);
+        println!("pixels_value_best       {}", data.pixels_value_best);
+        println!("paths_new_points_amount {}", data.paths_new_points_amount);
     }
 }
 
@@ -221,14 +213,13 @@ mod tests {
         let mut fs = fractal_stats::init();
 
         fs.paths_new_points_amount_add(1);
-        if let Ok(d) = fs.data.read() {
-            assert_eq!(d.paths_new_points_amount, 1);
-        }
+        let d = fs.data.read();
+        assert_eq!(d.paths_new_points_amount, 1);
+        drop(d);
 
         fs.clean();
-        if let Ok(d) = fs.data.read() {
-            assert_eq!(d.paths_new_points_amount, 0);
-        }
+        let d = fs.data.read();
+        assert_eq!(d.paths_new_points_amount, 0);
     }
 
     #[tokio::test]
@@ -239,8 +230,7 @@ mod tests {
         let di = data_image::init(&fc, &a);
 
         fs.update(&di, 1);
-        if let Ok(d) = fs.data.read() {
-            assert_eq!(d.paths_new_points_amount, 0);
-        }
+        let d = fs.data.read();
+        assert_eq!(d.paths_new_points_amount, 0);
     }
 }

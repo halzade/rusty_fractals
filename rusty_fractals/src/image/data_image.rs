@@ -16,7 +16,8 @@ use crate::image::pixel_states::{
 use crate::domain::resolution_multiplier::ResolutionMultiplier;
 use crate::domain::resolution_multiplier::ResolutionMultiplier::Square2;
 use image::Rgb;
-use std::sync::{Arc, RwLock};
+use parking_lot::RwLock;
+use std::sync::Arc;
 use ResolutionMultiplier::{Single, Square101, Square11, Square3, Square5, Square51, Square9};
 
 pub struct DataImage {
@@ -64,13 +65,11 @@ impl DataImage {
 
     pub fn translate_all_paths_to_point_grid(&self, area: &Area) {
         println!("translate_all_paths_to_point_grid()");
-        if let Ok(paths) = self.paths.read() {
-            let all = paths.to_owned();
-            for path in all {
-                for [re, im] in path {
-                    let (x, y) = area.point_to_pixel(re, im);
-                    self.add(x, y);
-                }
+        let all = self.paths.read().clone();
+        for path in all {
+            for [re, im] in path {
+                let (x, y) = area.point_to_pixel(re, im);
+                self.add(x, y);
             }
         }
     }
@@ -80,23 +79,19 @@ impl DataImage {
      * verify path length before saving
      */
     pub fn save_path(&self, path: Vec<[f64; 2]>) {
-        if let Ok(mut paths) = self.paths.write() {
-            paths.push(path);
-        }
+        self.paths.write().push(path);
     }
 
     pub fn remove_elements_outside(&self, area: &Area) {
         println!("remove_elements_outside()");
-        // all paths
-        if let Ok(mut paths) = self.paths.write() {
-            // remove elements outside Area
-            for path in paths.iter_mut() {
-                path.retain(|el| area.contains(el[0], el[1]));
-            }
-
-            // remove short paths
-            paths.retain(|path| path.len() as u64 > MINIMUM_PATH_LENGTH);
+        let mut paths = self.paths.write();
+        // remove elements outside Area
+        for path in paths.iter_mut() {
+            path.retain(|el| area.contains(el[0], el[1]));
         }
+
+        // remove short paths
+        paths.retain(|path| path.len() as u64 > MINIMUM_PATH_LENGTH);
     }
 
     pub fn clear_all_px_data(&self) {
@@ -544,12 +539,11 @@ mod tests {
         dynamic.remove_elements_outside(&AREA);
 
         // get test data
-        if let Ok(result_all) = dynamic.paths.read() {
-            assert_eq!(result_all.len(), 1);
+        let result_all = dynamic.paths.read();
+        assert_eq!(result_all.len(), 1);
 
-            if let Some(remaining_path) = result_all.first() {
-                assert_eq!(remaining_path.len(), 8);
-            }
+        if let Some(remaining_path) = result_all.first() {
+            assert_eq!(remaining_path.len(), 8);
         }
     }
 

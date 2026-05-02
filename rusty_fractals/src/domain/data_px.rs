@@ -4,7 +4,7 @@ use crate::image::pixel_states::DomainElementState::{
     HibernatedDeepBlack,
 };
 use image::Rgb;
-use std::sync::RwLock;
+use parking_lot::RwLock;
 
 pub struct DataPx {
     is_alive: RwLock<bool>,
@@ -28,166 +28,141 @@ struct Data {
 impl DataPx {
 
     pub fn add_v1(&self) {
-        if let Ok(mut d) = self.data.write() {
-            d.value += 1;
-        }
+        self.data.write().value += 1;
     }
 
     pub fn set_v(&self, value: u64) {
-        if let Ok(mut d) = self.data.write() {
-            d.value = value;
-        }
+        self.data.write().value = value;
     }
 
     pub fn set_qsv(&self, quad: f64, state: DomainElementState, value: u64) {
-        if let Ok(mut d) = self.data.write() {
-            d.quad = quad;
-            d.state = state;
-            d.value = value;
-        }
+        let mut d = self.data.write();
+        d.quad = quad;
+        d.state = state;
+        d.value = value;
     }
 
     pub fn set_qs(&self, quad: f64, state: DomainElementState) {
-        if let Ok(mut d) = self.data.write() {
-            d.quad = quad;
-            d.state = state;
-        }
+        let mut d = self.data.write();
+        d.quad = quad;
+        d.state = state;
     }
 
     pub fn set_c(&self, color: Rgb<u8>) {
-        if let Ok(mut d) = self.data.write() {
-            d.color = Some(color);
-        }
+        self.data.write().color = Some(color);
     }
 
     pub fn get_vsqc(&self) -> (u64, DomainElementState, f64, Option<Rgb<u8>>) {
-        self.data.read().map_or((0, ActiveNew, 0.0, None), |d| (d.value, d.state, d.quad, d.color))
+        let d = self.data.read();
+        (d.value, d.state, d.quad, d.color)
     }
 
     pub fn get_vsc(&self) -> (u64, DomainElementState, Option<Rgb<u8>>) {
-        self.data.read().map_or((0, ActiveNew, None), |d| (d.value, d.state, d.color))
+        let d = self.data.read();
+        (d.value, d.state, d.color)
     }
 
     pub fn get_vs(&self) -> (u64, DomainElementState) {
-
-        // TODO thes must be always set, throw instead
-        self.data.read().map_or((0, ActiveNew), |d| (d.value, d.state))
+        // TODO these must be always set, throw instead
+        let d = self.data.read();
+        (d.value, d.state)
     }
 
     pub fn get_sri(&self) -> (DomainElementState, f64, f64) {
-        self.data.read().map_or((ActiveNew, 0.0, 0.0), |d| (d.state, d.origin_re, d.origin_im))
+        let d = self.data.read();
+        (d.state, d.origin_re, d.origin_im)
     }
 
     pub fn get_ri(&self) -> (f64, f64) {
-        self.data.read().map_or((0.0, 0.0), |d| (d.origin_re, d.origin_im))
+        let d = self.data.read();
+        (d.origin_re, d.origin_im)
     }
 
     pub fn get_v(&self) -> u64 {
-        self.data.read().map(|d| d.value).unwrap_or(0)
+        self.data.read().value
     }
 
     pub fn get_s(&self) -> DomainElementState {
-        self.data.read().map(|d| d.state).unwrap_or(ActiveNew)
+        self.data.read().state
     }
 
     pub fn get_c(&self) -> Option<Rgb<u8>> {
-        self.data.read().map(|d| d.color).unwrap_or(None)
+        self.data.read().color
     }
 
     pub fn is_alive(&self) -> bool {
-        self.is_alive.read().map(|a| *a).unwrap_or(false)
+        *self.is_alive.read()
     }
 
     pub fn is_active_new(&self) -> bool {
-        self.data.read().map(|d| d.state == ActiveNew).unwrap_or(false)
+        self.data.read().state == ActiveNew
     }
 
     pub fn is_finished_too_short(&self) -> bool {
-        self.data.read().map(|d| d.state == FinishedTooShort).unwrap_or(false)
+        self.data.read().state == FinishedTooShort
     }
 
     pub fn is_finished_too_long(&self) -> bool {
-        self.data.read().map(|d| d.state == FinishedTooLong).unwrap_or(false)
+        self.data.read().state == FinishedTooLong
     }
 
     pub fn is_hibernated(&self) -> bool {
-        self.data.read().is_ok_and(|d| d.state == FinishedTooShort || d.state == HibernatedDeepBlack)
+        let d = self.data.read();
+        d.state == FinishedTooShort || d.state == HibernatedDeepBlack
     }
 
     pub fn is_finished_success_any(&self) -> bool {
-        self.data.read().is_ok_and(|d| d.state == FinishedSuccessPast || d.state == FinishedSuccess)
+        let d = self.data.read();
+        d.state == FinishedSuccessPast || d.state == FinishedSuccess
     }
 
     pub fn is_finished_success_past(&self) -> bool {
-        self.data.read().map(|d| d.state == FinishedSuccessPast).unwrap_or(false)
+        self.data.read().state == FinishedSuccessPast
     }
 
     pub fn past(&self) {
-        if let Ok(d) = self.data.read()
-            && d.state == FinishedSuccess {
-            drop(d);
-            if let Ok(mut d_write) = self.data.write() {
-                d_write.state = FinishedSuccessPast;
-            }
+        let should_change = self.data.read().state == FinishedSuccess;
+        if should_change {
+            self.data.write().state = FinishedSuccessPast;
         }
     }
 
     pub fn has_worse_state_then(&self, other: &Self) -> bool {
-        if let (Ok(d1), Ok(d2)) = (self.data.read(), other.data.read()) {
-            d1.state.cmp(&d2.state).is_gt()
-        } else {
-            false
-        }
+        self.data.read().state.cmp(&other.data.read().state).is_gt()
     }
 
     pub fn set_finished_state(&mut self, state: DomainElementState) {
-        if let Ok(mut d) = self.data.write() {
-            d.state = state;
-        }
+        self.data.write().state = state;
     }
 
     pub fn reset(&self, origin_re: f64, origin_im: f64, state: DomainElementState) {
-        // is alive
-        if let Ok(mut alive) = self.is_alive.write() {
-            *alive = true;
-        }
-        // data
-        if let Ok(mut d) = self.data.write() {
-            d.origin_re = origin_re;
-            d.origin_im = origin_im;
-            d.value = 0;
-            d.state = state;
-            d.quad = 0.0;
-            d.color = None;
-        }
+        *self.is_alive.write() = true;
+        let mut d = self.data.write();
+        d.origin_re = origin_re;
+        d.origin_im = origin_im;
+        d.value = 0;
+        d.state = state;
+        d.quad = 0.0;
+        d.color = None;
     }
 
     pub fn override_by(&self, master: &Self) {
-        // data
-        if let (Ok(m), Ok(mut s)) = (master.data.read(), self.data.write()) {
-            s.origin_re = m.origin_re;
-            s.origin_im = m.origin_im;
-            s.value = m.value;
-            s.state = m.state;
-            s.quad = m.quad;
-            s.color = m.color;
-            drop(m);
-            drop(s);
-
-            // is alive
-            if let Ok(mut alive) = self.is_alive.write() {
-                *alive = true;
-            }
-            if let Ok(mut m_alive) = master.is_alive.write() {
-                *m_alive = false;
-            }
-        }
+        let m = master.data.read();
+        let mut s = self.data.write();
+        s.origin_re = m.origin_re;
+        s.origin_im = m.origin_im;
+        s.value = m.value;
+        s.state = m.state;
+        s.quad = m.quad;
+        s.color = m.color;
+        drop(m);
+        drop(s);
+        *self.is_alive.write() = true;
+        *master.is_alive.write() = false;
     }
 
     pub fn kill(&self) {
-        if let Ok(mut alive) = self.is_alive.write() {
-            *alive = false;
-        }
+        *self.is_alive.write() = false;
     }
 }
 
@@ -369,9 +344,7 @@ mod tests {
     #[tokio::test]
     async fn test_past() {
         let p = init_trivial();
-        if let Ok(mut d) = p.data.write() {
-            d.state = FinishedSuccess;
-        }
+        p.data.write().state = FinishedSuccess;
 
         p.past();
         assert_eq!(p.get_s(), FinishedSuccessPast);

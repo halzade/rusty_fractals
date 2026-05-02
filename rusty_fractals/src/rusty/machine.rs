@@ -19,10 +19,11 @@ use crate::image::pixel_states::DomainElementState;
 use crate::image::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong, FinishedTooShort};
 use crate::domain::resolution_multiplier::ResolutionMultiplier;
 use crate::image::{data_image, pixel_states};
+use parking_lot::RwLock;
 use rand::rng;
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 use FractalCalculationType::{
     DynamicSequenceNebula, StaticImageMandelbrot, StaticSequenceMandelbrot,
@@ -632,9 +633,7 @@ where
      */
     pub fn paint_final_calculation_result_colors(&self) {
         if let Some(app_arc) = self.app_ref.as_ref() {
-            if let Ok(app) = app_arc.read() {
-                app.paint_final_calculation_result_colors(&self.data_image);
-            }
+            app_arc.read().paint_final_calculation_result_colors(&self.data_image);
         }
     }
 
@@ -669,25 +668,22 @@ where
         // ms_min have serious impact on parallelization and speed of calculation,
         // don't use less than 100
         const MS_MIN: u64 = 250;
-        let called_in_past_enough = self.last_partial_refresh.read().is_ok_and(|last_refresh| Instant::now().duration_since(*last_refresh) >= Duration::from_millis(MS_MIN));
+        let called_in_past_enough = Instant::now()
+            .duration_since(*self.last_partial_refresh.read())
+            >= Duration::from_millis(MS_MIN);
 
         if called_in_past_enough || paint_now {
             if let Some(app_arc) = self.app_ref.as_ref() {
-                if let Ok(app) = app_arc.read() {
-                    app.paint_partial_calculation_result_states(&self.data_image);
-                }
+                app_arc.read().paint_partial_calculation_result_states(&self.data_image);
             }
 
-            if let Ok(mut last_refresh) = self.last_partial_refresh.write() {
-                *last_refresh = Instant::now();
-            }
+            *self.last_partial_refresh.write() = Instant::now();
         }
     }
 
     pub fn paint_pixel_states_now(&self) {
-        if let Some(app_arc) = self.app_ref.as_ref()
-            && let Ok(app) = app_arc.read() {
-            app.paint_pixel_states(&self.data_image);
+        if let Some(app_arc) = self.app_ref.as_ref() {
+            app_arc.read().paint_pixel_states(&self.data_image);
         }
     }
 }

@@ -1,7 +1,7 @@
 use crate::calc::mem::Mem;
 use lazy_static::lazy_static;
+use parking_lot::RwLock;
 use std::collections::HashSet;
-use std::sync::RwLock;
 
 struct Mathematician {
     primes: RwLock<HashSet<u64>>,
@@ -86,35 +86,35 @@ pub fn rotate_by(m: &mut Mem, t: f64) {
 }
 
 pub fn is_prime(n: u64) -> bool {
-    MATHEMATICIAN.primes.read().map(|p| p.contains(&n)).unwrap_or(false)
+    MATHEMATICIAN.primes.read().contains(&n)
 }
 
 pub fn is_fibonacci(n: u64) -> bool {
-    MATHEMATICIAN.fibonacci.read().map(|f| f.contains(&n)).unwrap_or(false)
+    MATHEMATICIAN.fibonacci.read().contains(&n)
 }
 
 pub fn is_perfect(n: u64) -> bool {
-    MATHEMATICIAN.perfect.read().map(|p| p.contains(&n)).unwrap_or(false)
+    MATHEMATICIAN.perfect.read().contains(&n)
 }
 
 pub fn is_square(n: u64) -> bool {
-    MATHEMATICIAN.square.read().map(|s| s.contains(&n)).unwrap_or(false)
+    MATHEMATICIAN.square.read().contains(&n)
 }
 
 pub fn is_triangular(n: u64) -> bool {
-    MATHEMATICIAN.triangular.read().map(|t| t.contains(&n)).unwrap_or(false)
+    MATHEMATICIAN.triangular.read().contains(&n)
 }
 
 pub fn is_lucas(n: u64) -> bool {
-    MATHEMATICIAN.lucas.read().map(|l| l.contains(&n)).unwrap_or(false)
+    MATHEMATICIAN.lucas.read().contains(&n)
 }
 
 pub fn is_lazy(n: u64) -> bool {
-    MATHEMATICIAN.lazy.read().map(|l| l.contains(&n)).unwrap_or(false)
+    MATHEMATICIAN.lazy.read().contains(&n)
 }
 
 pub fn is_happy(n: u64) -> bool {
-    MATHEMATICIAN.happy.read().map(|h| h.contains(&n)).unwrap_or(false)
+    MATHEMATICIAN.happy.read().contains(&n)
 }
 
 pub fn multiply_by(m: &mut Mem, re: f64, im: f64) {
@@ -154,9 +154,7 @@ pub fn init_fibonacci(max: u64) {
     let mut sum;
     while b <= max {
         sum = a + b;
-        if let Ok(mut fib) = MATHEMATICIAN.fibonacci.write() {
-            fib.insert(sum);
-        }
+        MATHEMATICIAN.fibonacci.write().insert(sum);
         a = b;
         b = sum;
     }
@@ -168,9 +166,8 @@ pub fn init_fibonacci(max: u64) {
 pub fn init_perfect(max: u64) {
     println!("init_perfect()");
     for i in 1..(max + 1) {
-        if is_perfect_init(i)
-            && let Ok(mut perf) = MATHEMATICIAN.perfect.write() {
-            perf.insert(i);
+        if is_perfect_init(i) {
+            MATHEMATICIAN.perfect.write().insert(i);
         }
     }
 }
@@ -192,13 +189,10 @@ pub fn is_perfect_init(num: u64) -> bool {
 pub fn init_primes(max: u64) {
     println!("init_primes()");
     // smallest prime
-    if let Ok(mut primes) = MATHEMATICIAN.primes.write() {
-        primes.insert(2);
-    }
+    MATHEMATICIAN.primes.write().insert(2);
     for i in 3..(max + 1) {
-        if is_prime_init(i)
-            && let Ok(mut primes) = MATHEMATICIAN.primes.write() {
-            primes.insert(i);
+        if is_prime_init(i) {
+            MATHEMATICIAN.primes.write().insert(i);
         }
     }
 }
@@ -221,13 +215,9 @@ fn is_prime_init(n: u64) -> bool {
  */
 pub fn init_squares(max: u64) {
     println!("init_squares()");
-    let mut sq;
     let investigate_to = f64::sqrt(max as f64) as u64 + 1;
     for i in 0..investigate_to {
-        sq = i * i;
-        if let Ok(mut squares) = MATHEMATICIAN.square.write() {
-            squares.insert(sq);
-        }
+        MATHEMATICIAN.square.write().insert(i * i);
     }
 }
 
@@ -238,9 +228,7 @@ pub fn init_triangular(max: u64) {
     println!("init_triangular()");
     let mut n = 1;
     while n * (n + 1) / 2 <= max {
-        if let Ok(mut tri) = MATHEMATICIAN.triangular.write() {
-            tri.insert(n * (n + 1) / 2);
-        }
+        MATHEMATICIAN.triangular.write().insert(n * (n + 1) / 2);
         n += 1;
     }
 }
@@ -252,9 +240,7 @@ pub fn init_lucas(max: u64) {
     println!("init_lucas()");
     let (mut a, mut b) = (2u64, 1u64);
     while a <= max {
-        if let Ok(mut lucas) = MATHEMATICIAN.lucas.write() {
-            lucas.insert(a);
-        }
+        MATHEMATICIAN.lucas.write().insert(a);
         (a, b) = (b, a + b);
     }
 }
@@ -275,9 +261,8 @@ pub fn init_happy(max: u64) {
         n == 1
     }
     for i in 1..=max {
-        if is_happy(i)
-            && let Ok(mut happy) = MATHEMATICIAN.happy.write() {
-            happy.insert(i);
+        if is_happy(i) {
+            MATHEMATICIAN.happy.write().insert(i);
         }
     }
 }
@@ -293,23 +278,21 @@ pub fn init_lazy(max: u64) {
         if val > max {
             break;
         }
-        if let Ok(mut lazy) = MATHEMATICIAN.lazy.write() {
-            lazy.insert(val);
-        }
+        MATHEMATICIAN.lazy.write().insert(val);
         n += 1;
     }
 }
 
 pub fn clear() {
     println!("clear()");
-    if let Ok(mut primes) = MATHEMATICIAN.primes.write() { primes.clear(); }
-    if let Ok(mut fib) = MATHEMATICIAN.fibonacci.write() { fib.clear(); }
-    if let Ok(mut perf) = MATHEMATICIAN.perfect.write() { perf.clear(); }
-    if let Ok(mut sq) = MATHEMATICIAN.square.write() { sq.clear(); }
-    if let Ok(mut tri) = MATHEMATICIAN.triangular.write() { tri.clear(); }
-    if let Ok(mut lucas) = MATHEMATICIAN.lucas.write() { lucas.clear(); }
-    if let Ok(mut lazy) = MATHEMATICIAN.lazy.write() { lazy.clear(); }
-    if let Ok(mut happy) = MATHEMATICIAN.happy.write() { happy.clear(); }
+    MATHEMATICIAN.primes.write().clear();
+    MATHEMATICIAN.fibonacci.write().clear();
+    MATHEMATICIAN.perfect.write().clear();
+    MATHEMATICIAN.square.write().clear();
+    MATHEMATICIAN.triangular.write().clear();
+    MATHEMATICIAN.lucas.write().clear();
+    MATHEMATICIAN.lazy.write().clear();
+    MATHEMATICIAN.happy.write().clear();
 }
 
 #[cfg(test)]

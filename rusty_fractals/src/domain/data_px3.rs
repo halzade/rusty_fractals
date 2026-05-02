@@ -1,7 +1,7 @@
 use crate::image::pixel::Spectra;
 use crate::image::pixel_states::DomainElementState;
 use image::Rgb;
-use std::sync::RwLock;
+use parking_lot::RwLock;
 
 pub struct DataPx3 {
     _is_alive: RwLock<bool>, // TODO
@@ -27,34 +27,31 @@ struct Data3 {
 
 impl DataPx3 {
     pub fn get_v3(&self) -> (u64, u64, u64) {
-
         // TODO throw instead
-        self.data3.read().map_or((0, 0, 0), |d| (d.value_r, d.value_g, d.value_b))
+        let d = self.data3.read();
+        (d.value_r, d.value_g, d.value_b)
     }
 
     pub fn set_c(&self, sp: Spectra, spectra_color_index: u8) {
-        if let Ok(mut d) = self.data3.write() {
-            match sp {
-                Spectra::Red => {
-                    d.color_r = spectra_color_index;
-                }
-                Spectra::Green => {
-                    d.color_g = spectra_color_index;
-                }
-                Spectra::Blue => {
-                    d.color_b = spectra_color_index;
-                }
+        let mut d = self.data3.write();
+        match sp {
+            Spectra::Red => {
+                d.color_r = spectra_color_index;
+            }
+            Spectra::Green => {
+                d.color_g = spectra_color_index;
+            }
+            Spectra::Blue => {
+                d.color_b = spectra_color_index;
             }
         }
     }
 
     pub fn define_color3(&self) {
-        if let Ok(d) = self.data3.read() {
-            let color = Rgb([d.color_r, d.color_g, d.color_b]);
-            drop(d);
-            if let Ok(mut d_write) = self.data3.write() {
-                d_write.color = color;
-            }
-        }
+        let color = {
+            let d = self.data3.read();
+            Rgb([d.color_r, d.color_g, d.color_b])
+        };
+        self.data3.write().color = color;
     }
 }
