@@ -2,16 +2,23 @@
 name = "rusty_fractals"
 version = "0.2.0"
 edition = "2024"
-authors = ["lukas"]
+description = "Fine Fractals with Rust"
+authors = ["Lukáš Halža"]
 keywords = ["fractal"]
 
 [dependencies]
-rand = "0.10.0-rc.5"
-fltk = "1.5.22"
-rayon = "1.11.0"
-chrono = "0.4.42"
-bincode = { version = "2.0.1", features = ["serde"] }
-image = { version = "0.25.9", features = ["serde"] }
+bincode = "3.0"
+chrono = "0.4"
+fltk = "1.5"
+image = "0.25"
+lazy_static = "1.5"
+parking_lot = "0.12"
+rand = "0.10"
+rayon = "1.11"
+thiserror = "2.0"
+tokio = { version = "1.49", features = ["full"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.22", features = ["env-filter", "chrono"] }
 
 [badges]
 maintenance = { status = "actively-developed" }
