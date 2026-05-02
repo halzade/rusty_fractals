@@ -1,9 +1,10 @@
 use rusty_fractals::infra::config::EulerImage;
 use rusty_fractals::rusty::fractal::FractalMath;
 use rusty_fractals::rusty::fractal::OrbitType::Infinite;
-use rusty_fractals::mem::Mem;
+use rusty_fractals::calc::mem::Mem;
 use rusty_fractals::domain::resolution_multiplier::ResolutionMultiplier::Single;
-use rusty_fractals::{application, mathematician};
+use rusty_fractals::rusty::application;
+use rusty_fractals::calc::mathematician;
 
 /** Fractal Euler type uses three color spectra for better mathematical analysis and better coloring results.
  *  Possible use as:
@@ -50,8 +51,8 @@ fn main() {
 mod tests {
     use crate::Euler;
     use rusty_fractals::rusty::fractal::{FractalMath, MemType};
-    use rusty_fractals::mathematician;
-    use rusty_fractals::mem::Mem;
+    use rusty_fractals::calc::mathematician;
+    use rusty_fractals::calc::mem::Mem;
 
     #[test]
     fn test_math() {

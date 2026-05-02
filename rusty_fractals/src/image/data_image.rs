@@ -4,12 +4,12 @@ use crate::domain::data_px;
 use crate::domain::data_px::DataPx;
 use crate::domain::data_px3::DataPx3;
 use crate::rusty::fractal::{FractalConfig, Optimizer};
-use crate::pixel::Spectra::{Blue, Green, Red};
-use crate::pixel_states::DomainElementState::{
+use crate::image::pixel::Spectra::{Blue, Green, Red};
+use crate::image::pixel_states::DomainElementState::{
     ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
     HibernatedDeepBlack,
 };
-use crate::pixel_states::{
+use crate::image::pixel_states::{
     is_finished_success_past, DomainElementState, ACTIVE_NEW, FINISHED_SUCCESS, FINISHED_SUCCESS_PAST,
     FINISHED_TOO_LONG, FINISHED_TOO_SHORT, HIBERNATED_DEEP_BLACK,
 };
@@ -474,9 +474,9 @@ const fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::domain::area;
-    use crate::data_image::{check_domain, color_for_state, init};
+    use crate::image::data_image::{check_domain, color_for_state, init};
     use crate::rusty::fractal::{init_trivial_dynamic_config, FractalConfig};
-    use crate::pixel_states::DomainElementState::ActiveNew;
+    use crate::image::pixel_states::DomainElementState::ActiveNew;
     use crate::domain::resolution_multiplier::ResolutionMultiplier::{
         Square101, Square11, Square3, Square5, Square51, Square9,
     };

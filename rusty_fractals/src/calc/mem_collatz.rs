@@ -64,7 +64,7 @@ impl MemType<Self> for MemCollatz {
 #[cfg(test)]
 mod tests {
     use crate::rusty::fractal::MemType;
-    use crate::mem_collatz::MemCollatz;
+    use crate::calc::mem_collatz::MemCollatz;
 
     #[test]
     fn test_collatz_conjecture() {

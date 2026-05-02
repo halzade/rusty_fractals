@@ -1,5 +1,5 @@
-use crate::pixel::Spectra;
-use crate::pixel_states::DomainElementState;
+use crate::image::pixel::Spectra;
+use crate::image::pixel_states::DomainElementState;
 use image::Rgb;
 use std::sync::RwLock;
 

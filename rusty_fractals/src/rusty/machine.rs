@@ -1,7 +1,7 @@
 use crate::rusty::application::Application;
 use crate::domain::area::Area;
 use crate::infra::constants::CALCULATION_BOUNDARY;
-use crate::data_image::DataImage;
+use crate::image::data_image::DataImage;
 use crate::infra::files::save_image;
 use crate::rusty::fractal::FractalCalculationType::StaticImageNebula;
 use crate::rusty::fractal::{
@@ -15,10 +15,10 @@ use crate::color::palettes::new_palette_by_name;
 use crate::color::perfect_color_distribution::perfectly_color_mandelbrot_values;
 use crate::color::perfect_color_distribution_euler::perfectly_color_euler_values;
 use crate::color::perfect_color_distribution_nebula::perfectly_color_nebula_values;
-use crate::pixel_states::DomainElementState;
-use crate::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong, FinishedTooShort};
+use crate::image::pixel_states::DomainElementState;
+use crate::image::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong, FinishedTooShort};
 use crate::domain::resolution_multiplier::ResolutionMultiplier;
-use crate::{data_image, pixel_states};
+use crate::image::{data_image, pixel_states};
 use rand::rng;
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
@@ -717,8 +717,8 @@ pub fn shuffled_calculation_coordinates() -> Vec<[u64; 2]> {
 mod tests {
     use crate::rusty::fractal::init_trivial_dynamic_config;
     use crate::rusty::machine::init;
-    use crate::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong};
-    use crate::pixel_states;
+    use crate::image::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong};
+    use crate::image::pixel_states;
     use pixel_states::DomainElementState::FinishedTooShort;
     use crate::rusty::{fractal, machine};
 

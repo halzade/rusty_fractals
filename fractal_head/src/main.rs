@@ -1,9 +1,9 @@
-use rusty_fractals::application;
+use rusty_fractals::rusty::application;
 use rusty_fractals::infra::config::NebulaImage;
 use rusty_fractals::infra::constants::{PHOENIX_INIT_C, PHOENIX_INIT_P};
 use rusty_fractals::rusty::fractal::FractalMath;
 use rusty_fractals::rusty::fractal::OrbitType::Finite;
-use rusty_fractals::mem_phoenix::MemPhoenix;
+use rusty_fractals::calc::mem_phoenix::MemPhoenix;
 use rusty_fractals::color::palettes::PaletteName::BlueToWhiteCircleUp;
 use rusty_fractals::domain::resolution_multiplier::ResolutionMultiplier::Square9;
 
@@ -48,7 +48,7 @@ fn main() {
 mod tests {
     use crate::Head;
     use rusty_fractals::rusty::fractal::FractalMath;
-    use rusty_fractals::mem_phoenix::MemPhoenix;
+    use rusty_fractals::calc::mem_phoenix::MemPhoenix;
 
     #[test]
     fn test_math() {

@@ -66,8 +66,8 @@ impl PixelsEuler {
 
 #[cfg(test)]
 mod tests {
-    use crate::pixel::Spectra::{Blue, Green};
-    use crate::pixel::{PixelsEuler, Spectra};
+    use super::Spectra::{Blue, Green};
+    use super::{PixelsEuler, Spectra};
     use Spectra::Red;
 
     #[test]

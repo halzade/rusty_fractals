@@ -1,4 +1,4 @@
-use crate::data_image::DataImage;
+use crate::image::data_image::DataImage;
 use image::{ImageBuffer, RgbImage};
 
 pub fn save_image(data_image: &DataImage, name: &str, index: u64) {
@@ -40,7 +40,7 @@ fn to_snake(s: &str) -> String {
 mod tests {
     use crate::infra::files::{save_image, to_snake};
     use crate::rusty::fractal::init_trivial_dynamic_config;
-    use crate::data_image;
+    use crate::image::data_image;
     use crate::domain::area;
 
     #[test]

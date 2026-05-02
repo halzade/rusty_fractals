@@ -1,8 +1,8 @@
-use rusty_fractals::application;
+use rusty_fractals::rusty::application;
 use rusty_fractals::infra::config::NebulaImage;
 use rusty_fractals::rusty::fractal::FractalMath;
 use rusty_fractals::rusty::fractal::OrbitType::Infinite;
-use rusty_fractals::mem::Mem;
+use rusty_fractals::calc::mem::Mem;
 use rusty_fractals::color::palettes::PaletteName::BlueToWhiteCircleUp;
 use rusty_fractals::domain::resolution_multiplier::ResolutionMultiplier::Single;
 
@@ -41,7 +41,7 @@ fn main() {
 mod tests {
     use crate::InfinityTop;
     use rusty_fractals::rusty::fractal::{FractalMath, MemType};
-    use rusty_fractals::mem::Mem;
+    use rusty_fractals::calc::mem::Mem;
 
     #[test]
     fn test_math() {

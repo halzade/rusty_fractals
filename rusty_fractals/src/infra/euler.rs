@@ -1,6 +1,6 @@
 use crate::calc::mathematician;
-use crate::pixel::Spectra;
-use crate::pixel::Spectra::{Blue, Green, Red};
+use crate::image::pixel::Spectra;
+use crate::image::pixel::Spectra::{Blue, Green, Red};
 
 const fn _translate_paths_to_pixel_grid() {
     /*

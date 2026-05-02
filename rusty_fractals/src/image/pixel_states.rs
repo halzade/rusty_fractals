@@ -1,4 +1,4 @@
-use crate::pixel_states::DomainElementState::{
+use DomainElementState::{
     ActiveNew, FinishedSuccess, FinishedSuccessPast, FinishedTooLong, FinishedTooShort,
     HibernatedDeepBlack,
 };
@@ -65,7 +65,7 @@ pub fn is_hibernated(state: DomainElementState) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use crate::pixel_states::DomainElementState::{FinishedSuccessPast, FinishedTooShort};
+    use super::DomainElementState::{FinishedSuccessPast, FinishedTooShort};
     use std::cmp::Ordering::Less;
 
     #[test]

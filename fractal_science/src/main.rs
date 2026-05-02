@@ -1,10 +1,11 @@
 use rusty_fractals::infra::config::NebulaImage;
 use rusty_fractals::rusty::fractal::FractalMath;
 use rusty_fractals::rusty::fractal::OrbitType::Finite;
-use rusty_fractals::mem::Mem;
+use rusty_fractals::calc::mem::Mem;
 use rusty_fractals::color::palettes::PaletteName::BlueToWhiteCircleUp;
 use rusty_fractals::domain::resolution_multiplier::ResolutionMultiplier::Square2;
-use rusty_fractals::{application, mathematician};
+use rusty_fractals::rusty::application;
+use rusty_fractals::calc::mathematician;
 
 pub struct Science;
 
@@ -44,7 +45,7 @@ fn main() {
 mod tests {
     use crate::Science;
     use rusty_fractals::rusty::fractal::{FractalMath, MemType};
-    use rusty_fractals::mem::Mem;
+    use rusty_fractals::calc::mem::Mem;
 
     #[test]
     fn test_math() {

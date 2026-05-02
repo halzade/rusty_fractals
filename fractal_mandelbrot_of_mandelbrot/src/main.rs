@@ -1,7 +1,7 @@
-use rusty_fractals::application;
+use rusty_fractals::rusty::application;
 use rusty_fractals::infra::config::MandelbrotImage;
 use rusty_fractals::rusty::fractal::FractalMath;
-use rusty_fractals::mem::Mem;
+use rusty_fractals::calc::mem::Mem;
 use rusty_fractals::color::palettes::PaletteName::{BlueToWhiteCircleUp, LinearRed};
 
 pub struct MandelbrotOfMandelbrot {}
@@ -50,7 +50,7 @@ fn main() {
 mod tests {
     use crate::MandelbrotOfMandelbrot;
     use rusty_fractals::rusty::fractal::{FractalMath, MemType};
-    use rusty_fractals::mem::Mem;
+    use rusty_fractals::calc::mem::Mem;
 
     #[test]
     fn test_math() {

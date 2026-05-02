@@ -5,7 +5,7 @@
 // - color all significant pixels ordered by value
 
 use crate::infra::constants::COLORING_THRESHOLD;
-use crate::data_image::DataImage;
+use crate::image::data_image::DataImage;
 use crate::color::palette::Palette;
 
 // for Nebula like fractals

@@ -4,7 +4,7 @@
 // - Zero elements and noise color by the lowest color
 // - color all significant pixels ordered by value
 
-use crate::data_image::DataImage;
+use crate::image::data_image::DataImage;
 use crate::color::palette::Palette3;
 use crate::color::palettes::palette_3_rgb;
 
