@@ -1,4 +1,5 @@
 use crate::infra::constants::ZOOM;
+use crate::infra::error::FractalError;
 use crate::rusty::fractal::FractalConfig;
 use parking_lot::RwLock;
 
@@ -81,12 +82,15 @@ impl Area {
     /**
      * Check first, if element can convert, only then call this method
      */
-    pub fn point_to_pixel(&self, re: f64, im: f64) -> (usize, usize) {
-        // TODO throw instead
+    pub fn point_to_pixel(&self, re: f64, im: f64) -> Result<(usize, usize), FractalError> {
         let d = self.data.read();
         let px = (d.width_xlf64 * (re - d.center_re) / d.width_re) + d.width_half_xlf64;
         let py = d.height_half_ylf64 - (d.height_ylf64 * (im - d.center_im) / d.height_im);
-        (px as usize, py as usize)
+        if px < 0.0 || py < 0.0 || px as usize >= d.width_xp || py as usize >= d.height_yp {
+            Err(FractalError::PointOutOfBounds { re, im })
+        } else {
+            Ok((px as usize, py as usize))
+        }
     }
 
     pub fn zoom_in(&self) {
@@ -139,12 +143,11 @@ impl Area {
         self.data.read().plank
     }
 
-    // TODO
-    pub fn move_target(&self, x: usize, y: usize) {
+    pub fn move_target(&self, x: usize, y: usize) -> Result<(), FractalError> {
         println!("move_target({}, {})", x, y);
         let mut d = self.data.write();
-        let re = d.numbers_re[x];
-        let im = d.numbers_im[y];
+        let re = *d.numbers_re.get(x).ok_or(FractalError::PixelOutOfBounds { x, y })?;
+        let im = *d.numbers_im.get(y).ok_or(FractalError::PixelOutOfBounds { x, y })?;
         println!("move_target({}, {})", re, im);
         d.center_re = re;
         d.center_im = im;
@@ -162,15 +165,16 @@ impl Area {
         d.numbers_re.clear();
         d.numbers_im.clear();
 
-        for x in 0..d.width_xp {
-            let v = d.plank.mul_add(x as f64, d.border_low_re);
+        for xi in 0..d.width_xp {
+            let v = d.plank.mul_add(xi as f64, d.border_low_re);
             d.numbers_re.push(v);
         }
-        for y in 0..d.height_yp {
-            let v = d.plank.mul_add(-(y as f64), d.border_high_im);
+        for yi in 0..d.height_yp {
+            let v = d.plank.mul_add(-(yi as f64), d.border_high_im);
             d.numbers_im.push(v);
         }
         println!("recalculated");
+        Ok(())
     }
 
     pub fn print_info(&self) {
@@ -259,6 +263,7 @@ pub fn init(config: &FractalConfig) -> Area {
 #[cfg(test)]
 mod tests {
     use crate::domain::area::init;
+    use crate::infra::error::FractalError;
     use crate::rusty::fractal;
 
     #[tokio::test]
@@ -272,13 +277,13 @@ mod tests {
         assert_eq!(d.border_high_im, 0.5);
 
         // coordinates [0, 0] are at the top left
-        assert_eq!(d.numbers_re.first().copied().unwrap_or(0.0), -0.5);
-        assert_eq!(d.numbers_re.get(1).copied().unwrap_or(0.0), 0.0);
-        assert_eq!(d.numbers_re.get(2).copied().unwrap_or(0.0), 0.5);
+        assert_eq!(d.numbers_re[0], -0.5);
+        assert_eq!(d.numbers_re[1], 0.0);
+        assert_eq!(d.numbers_re[2], 0.5);
 
-        assert_eq!(d.numbers_im.first().copied().unwrap_or(0.0), 0.5);
-        assert_eq!(d.numbers_im.get(1).copied().unwrap_or(0.0), 0.0);
-        assert_eq!(d.numbers_im.get(2).copied().unwrap_or(0.0), -0.5);
+        assert_eq!(d.numbers_im[0], 0.5);
+        assert_eq!(d.numbers_im[1], 0.0);
+        assert_eq!(d.numbers_im[2], -0.5);
     }
 
     #[tokio::test]
@@ -313,30 +318,23 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_point_to_pixel() {
+    async fn test_point_to_pixel() -> Result<(), FractalError> {
         let conf = fractal::init_trivial_static_config();
         let area = init(&conf);
 
-        let a = area.point_to_pixel(-0.5, 0.5);
-        assert_eq!(a, (0, 0));
-        let a = area.point_to_pixel(0.0, 0.5);
-        assert_eq!(a, (1, 0));
-        let a = area.point_to_pixel(0.5, 0.5);
-        assert_eq!(a, (2, 0));
+        assert_eq!(area.point_to_pixel(-0.5, 0.5)?, (0, 0));
+        assert_eq!(area.point_to_pixel(0.0, 0.5)?, (1, 0));
+        assert_eq!(area.point_to_pixel(0.5, 0.5)?, (2, 0));
 
-        let a = area.point_to_pixel(-0.5, 0.0);
-        assert_eq!(a, (0, 1));
-        let a = area.point_to_pixel(0.0, 0.0);
-        assert_eq!(a, (1, 1));
-        let a = area.point_to_pixel(0.5, 0.0);
-        assert_eq!(a, (2, 1));
+        assert_eq!(area.point_to_pixel(-0.5, 0.0)?, (0, 1));
+        assert_eq!(area.point_to_pixel(0.0, 0.0)?, (1, 1));
+        assert_eq!(area.point_to_pixel(0.5, 0.0)?, (2, 1));
 
-        let a = area.point_to_pixel(-0.5, -0.5);
-        assert_eq!(a, (0, 2));
-        let a = area.point_to_pixel(0.0, -0.5);
-        assert_eq!(a, (1, 2));
-        let a = area.point_to_pixel(0.5, -0.5);
-        assert_eq!(a, (2, 2));
+        assert_eq!(area.point_to_pixel(-0.5, -0.5)?, (0, 2));
+        assert_eq!(area.point_to_pixel(0.0, -0.5)?, (1, 2));
+        assert_eq!(area.point_to_pixel(0.5, -0.5)?, (2, 2));
+
+        Ok(())
     }
 
     #[tokio::test]

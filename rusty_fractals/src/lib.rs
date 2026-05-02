@@ -42,6 +42,7 @@ pub mod image {
 pub mod infra {
     pub mod config;
     pub mod constants;
+    pub mod error;
     pub mod euler;
     pub mod files;
     pub mod fractal_log;

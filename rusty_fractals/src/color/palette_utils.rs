@@ -204,10 +204,7 @@ mod tests {
         // light to dark
         let res = make_spectrum(Linear1, b1, b2);
 
-        // TODO throw instead
-        let r3 = res.get(2).map_or(0, |c| c.channels()[0]);
-        let g3 = res.get(2).map_or(0, |c| c.channels()[1]);
-        let b3 = res.get(2).map_or(0, |c| c.channels()[2]);
+        let [r3, g3, b3] = res[2].0;
         assert_eq!(r3, 2);
         assert_eq!(g3, 2);
         assert_eq!(b3, 3);

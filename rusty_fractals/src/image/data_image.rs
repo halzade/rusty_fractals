@@ -58,7 +58,7 @@ impl DataImage {
 
     pub fn translate_one_path_to_point_grid_now(&self, path: Vec<[f64; 2]>, area: &Area) {
         for [re, im] in path {
-            let (x, y) = area.point_to_pixel(re, im);
+            let Ok((x, y)) = area.point_to_pixel(re, im) else { continue; };
             self.add(x, y);
         }
     }
@@ -68,7 +68,7 @@ impl DataImage {
         let all = self.paths.read().clone();
         for path in all {
             for [re, im] in path {
-                let (x, y) = area.point_to_pixel(re, im);
+                let Ok((x, y)) = area.point_to_pixel(re, im) else { continue; };
                 self.add(x, y);
             }
         }
@@ -309,7 +309,7 @@ impl DataImage {
         if area.contains(ore, oim) {
             // Element didn't move out of the smaller area
             // new pixel position
-            let (nx, ny) = area.point_to_pixel(ore, oim);
+            let Ok((nx, ny)) = area.point_to_pixel(ore, oim) else { return; };
             if (x == nx) && (y == ny) {
                 // insignificant move within the same pixel
             } else {

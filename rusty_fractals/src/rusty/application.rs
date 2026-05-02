@@ -7,7 +7,7 @@ use fltk::app::{event_button, event_coords, event_key};
 use fltk::enums::{Color, Event, Key};
 use fltk::window::DoubleWindow;
 use fltk::{app, draw, prelude::*, window::Window};
-use image::{Pixel, Rgb};
+use image::Rgb;
 use parking_lot::RwLock;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -166,7 +166,7 @@ where
                     println!("c: {} {}", x, y);
 
                     let machine_locked = machine_ref.read();
-                    machine_locked.move_target(x as usize, y as usize);
+                    let Ok(()) = machine_locked.move_target(x as usize, y as usize) else { return false; };
                     machine_locked.zoom_in_recalculate_pixel_positions();
                 }
                 false
@@ -352,13 +352,7 @@ where
 
 // this can be called only from the main thread within window.show() method
 fn draw_colored_point(x: usize, y: usize, color: &Rgb<u8>) {
-    let channels = color.channels();
-
-    // TODO throw instead
-    let r = channels.first().copied().unwrap_or(0);
-    let g = channels.get(1).copied().unwrap_or(0);
-    let b = channels.get(2).copied().unwrap_or(0);
-
+    let [r, g, b] = color.0;
     draw::set_draw_color(Color::from_rgb(r, g, b));
     draw::draw_point(x as i32, y as i32);
 }

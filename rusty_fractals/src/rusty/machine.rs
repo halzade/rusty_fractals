@@ -19,6 +19,7 @@ use crate::image::pixel_states::DomainElementState;
 use crate::image::pixel_states::DomainElementState::{FinishedSuccess, FinishedTooLong, FinishedTooShort};
 use crate::domain::resolution_multiplier::ResolutionMultiplier;
 use crate::image::{data_image, pixel_states};
+use crate::infra::error::FractalError;
 use parking_lot::RwLock;
 use rand::rng;
 use rand::seq::SliceRandom;
@@ -347,8 +348,8 @@ where
         }
     }
 
-    pub fn move_target(&self, x: usize, y: usize) {
-        self.area.move_target(x, y);
+    pub fn move_target(&self, x: usize, y: usize) -> Result<(), FractalError> {
+        self.area.move_target(x, y)
     }
 
     pub fn zoom_in_recalculate_pixel_positions(&self) {
@@ -379,7 +380,7 @@ where
         let cre = area.center_re();
         let cim = area.center_im();
 
-        let (cx, cy) = area.point_to_pixel(cre, cim);
+        let Ok((cx, cy)) = area.point_to_pixel(cre, cim) else { return; };
 
         // 1. move top left to center
         for y in 0..cy {
