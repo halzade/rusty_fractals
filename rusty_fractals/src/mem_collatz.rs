@@ -23,20 +23,20 @@ impl MemCollatz {
             self.m.im /= 2.0;
         } else {
             self.num = 3 * self.num + 1;
-            self.m.re = 3.0 * self.m.re + 1.0;
-            self.m.im = 3.0 * self.m.im + 1.0;
+            self.m.re = 3.0f64.mul_add(self.m.re, 1.0);
+            self.m.im = 3.0f64.mul_add(self.m.im, 1.0);
         }
     }
 
     pub fn plus_collatz(&mut self, r: f64, i: f64) {
-        self.m.re += (3.0 * r + 1.0) / 2.0;
-        self.m.im += (3.0 * i + 1.0) / 2.0;
+        self.m.re += 3.0f64.mul_add(r, 1.0) / 2.0;
+        self.m.im += 3.0f64.mul_add(i, 1.0) / 2.0;
     }
 }
 
-impl MemType<MemCollatz> for MemCollatz {
-    fn new(re: f64, im: f64) -> MemCollatz {
-        MemCollatz {
+impl MemType<Self> for MemCollatz {
+    fn new(re: f64, im: f64) -> Self {
+        Self {
             m: Mem { re, im, it: 0 },
             // 1348 steps
             num: 989_345_275_647,

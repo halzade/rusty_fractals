@@ -23,7 +23,7 @@ where
     - In double buffering:
     - All drawing operations are first performed in an **off-screen buffer**.
     - Once the drawing is complete, the off-screen buffer is copied (or "flipped") onto the screen in a single operation.
-    - This eliminates flickering during redraws, as the user only sees the final, fully-drawn frame.*/
+    - This removes flickering during redrawing, as the user only sees the final, fully drawn frame.*/
     pub window: Arc<RwLock<DoubleWindow>>, // Shared ownership of the GUI Window
     application_data: Arc<RwLock<ApplicationData>>,
     pub machine_arc: Arc<RwLock<Machine<'static, F, M>>>,
@@ -64,14 +64,11 @@ where
 
     let application_arc = Arc::new(RwLock::new(application));
 
-    // Set Application ref for Machine
-    application_arc
-        .write()
-        .unwrap()
-        .machine_arc
-        .write()
-        .unwrap()
-        .set_application_ref(application_arc.clone());
+    if let Ok(app_locked) = application_arc.write() {
+        if let Ok(mut machine_locked) = app_locked.machine_arc.write() {
+            machine_locked.set_application_ref(application_arc.clone());
+        }
+    }
 
     application_arc
 }
@@ -97,22 +94,33 @@ where
     let application_arc = init_o(&config, fractal, oo);
 
     // Window actions
-    application_arc.read().unwrap().init_window_actions();
+    if let Ok(app_locked) = application_arc.read() {
+        app_locked.init_window_actions();
+    }
 
-    let machine_arc_clone = application_arc.read().unwrap().machine_arc.clone();
+    let machine_arc_clone = if let Ok(app_locked) = application_arc.read() {
+        app_locked.machine_arc.clone()
+    } else {
+        // Fallback or handle error
+        return;
+    };
 
     println!("calculation - new thread ");
     let task = move || {
         /*
          * execute fractal calculation
          */
-        machine_arc_clone.read().unwrap().execute_calculation();
+        if let Ok(machine_locked) = machine_arc_clone.read() {
+            machine_locked.execute_calculation();
+        }
     };
     rayon::spawn_fifo(task);
 
     println!("run().unwrap()");
     // The last line of the program
-    app.run().unwrap();
+    if let Err(e) = app.run() {
+        eprintln!("Application run failed: {:?}", e);
+    }
 
     println!("execute() end.");
 }
@@ -133,10 +141,8 @@ where
         // clone Arc, not Machine
         let machine_ref = self.machine_arc.clone();
 
-        self.window
-            .write()
-            .unwrap()
-            .handle(move |_, event| match event {
+        if let Ok(mut window_locked) = self.window.write() {
+            window_locked.handle(move |_, event| match event {
                 Event::KeyDown => {
                     let ek = event_key();
                     if ek == Key::Escape {
@@ -144,21 +150,20 @@ where
                         shutdown_flag.store(true, Ordering::Relaxed); // Signal shutdown
                         app::awake(); // Wake the app so it can break the event loop
                     }
-                    match ek.to_char().unwrap() {
-                        'i' => {
+                    match ek.to_char() {
+                        Some('i') => {
                             println!("i");
                             true
                         }
-                        's' => {
+                        Some('s') => {
                             println!("s");
                             true
                         }
-                        ' ' => {
+                        Some(' ') => {
                             println!("space bar");
-                            machine_ref
-                                .read()
-                                .unwrap()
-                                .zoom_in_recalculate_pixel_positions();
+                            if let Ok(machine_locked) = machine_ref.read() {
+                                machine_locked.zoom_in_recalculate_pixel_positions();
+                            }
                             true
                         }
                         _ => false,
@@ -171,20 +176,16 @@ where
                         let (x, y) = event_coords();
                         println!("c: {} {}", x, y);
 
-                        machine_ref
-                            .read()
-                            .unwrap()
-                            .move_target(x as usize, y as usize);
-
-                        machine_ref
-                            .read()
-                            .unwrap()
-                            .zoom_in_recalculate_pixel_positions();
+                        if let Ok(machine_locked) = machine_ref.read() {
+                            machine_locked.move_target(x as usize, y as usize);
+                            machine_locked.zoom_in_recalculate_pixel_positions();
+                        }
                     }
                     false
                 }
                 _ => false,
             });
+        }
     }
 
     /**
@@ -205,25 +206,27 @@ where
                     .flat_map(|y| (0..width).map(move |x| data_image.color_at(x, y)))
                     .collect();
 
-                let mut window = self.window.write().unwrap();
-                window.draw(move |_| {
-                    // never use self in here
-                    // locking / unlocking app for draw is not necessary, says so AI
-                    // redraw() can't be called from draw()
+                if let Ok(mut window) = self.window.write() {
+                    window.draw(move |_| {
+                        // never use self in here
+                        // locking / unlocking app for draw is not necessary, says so AI
+                        // redraw() can't be called from draw()
 
-                    for y in 0..height {
-                        for x in 0..width {
-                            let color_index = pixel_colors[y * width + x];
-                            if let Some(color) = color_index {
-                                draw_colored_point(x, y, &color);
+                        for y in 0..height {
+                            for x in 0..width {
+                                let color_index = pixel_colors[y * width + x];
+                                if let Some(color) = color_index {
+                                    draw_colored_point(x, y, &color);
+                                }
                             }
                         }
-                    }
-                });
+                    });
 
-                // Trigger redraw events from the main thread
-                window.redraw();
-                app::awake();
+                    // Trigger redraw events from the main thread
+                    window.redraw();
+                    drop(window);
+                    app::awake();
+                }
             }
             Err(_) => {
                 println!("paint_final_calculation_result_colors(): app::lock() failed");
@@ -260,53 +263,54 @@ where
                 // clone Arc
                 let app_data = self.application_data.clone();
 
-                let mut window = self.window.write().unwrap();
+                if let Ok(mut window) = self.window.write() {
+                    window.draw(move |_| {
+                        /* --------------------------------------------------------------------------------
+                         * All painting must be done within draw() method. Otherwise it doesn't do anything
+                         * ----------------------------------------------------------------------------- */
 
-                window.draw(move |_| {
-                    /* --------------------------------------------------------------------------------
-                     * All painting must be done within draw() method. Otherwise it doesn't do anything
-                     * ----------------------------------------------------------------------------- */
-
-                    for y in 0..height {
-                        for x in 0..width {
-
-                            // read data
-                            let (value, state, color_index_o) = pixel_states[y * width + x];
-                            let color: Rgb<u8>;
-                            if is_active_new(state) {
-
-                                // paint state
-                                color = color_for_state(state);
-                            } else {
-
-                                // finished, use color
-                                match color_index_o {
-                                    Some(ci) => {
-                                        color = ci;
-                                    }
-                                    None => {
-                                        let mv = app_data.read().unwrap().last_max_value;
-                                        if value > mv {
-                                            app_data.write().unwrap().last_max_value = value;
+                        for y in 0..height {
+                            for x in 0..width {
+                                // read data
+                                let (value, state, color_index_o) = pixel_states[y * width + x];
+                                let color: Rgb<u8>;
+                                if is_active_new(state) {
+                                    // paint state
+                                    color = color_for_state(state);
+                                } else {
+                                    // states coloring finished, use color
+                                    match color_index_o {
+                                        Some(ci) => {
+                                            color = ci;
                                         }
-                                        // make color 3x brighter
-                                        // (0-1) * 255
-                                        let mut cv = (value as f64 * 3.0 / mv as f64) * 255.0;
-                                        if cv > 255.0 {
-                                            cv = 255.0;
+                                        None => {
+                                            let mv = app_data.read().map_or(0, |data| data.last_max_value);
+                                            if value > mv {
+                                                #[allow(clippy::collapsible_if)]
+                                                if let Ok(mut data) = app_data.write() {
+                                                    data.last_max_value = value;
+                                                }
+                                            }
+                                            // make color 3x brighter
+                                            // (0-1) * 255
+                                            let mut cv = (value as f64 * 3.0 / mv as f64) * 255.0;
+                                            if cv > 255.0 {
+                                                cv = 255.0;
+                                            }
+                                            let c = cv as u8;
+                                            color = Rgb([c, c, c]);
                                         }
-                                        let c = cv as u8;
-                                        color = Rgb([c, c, c]);
                                     }
                                 }
+                                draw_colored_point(x, y, &color);
                             }
-                            draw_colored_point(x, y, &color);
                         }
-                    }
-                });
-                // Trigger redraw events from the main thread
-                window.redraw();
-                app::awake();
+                    });
+                    // Trigger redraw events from the main thread
+                    window.redraw();
+                    drop(window);
+                    app::awake();
+                }
             }
             Err(_) => {
                 println!("paint_partial_calculation_result_states(): app::lock() failed");
@@ -316,7 +320,7 @@ where
     }
 
     /**
-     * paint only pixel states
+     * paint only the pixel states
      */
     pub fn paint_pixel_states(&self, data_image: &DataImage) {
         match app::lock() {
@@ -329,26 +333,26 @@ where
                     .flat_map(|y| (0..width).map(move |x| data_image.state_at(x, y)))
                     .collect();
 
-                let mut window = self.window.write().unwrap();
+                if let Ok(mut window) = self.window.write() {
+                    window.draw(move |_| {
+                        /* --------------------------------------------------------------------------------
+                         * All painting must be done within draw() method. Otherwise it doesn't do anything
+                         * ----------------------------------------------------------------------------- */
 
-                window.draw(move |_| {
-                    /* --------------------------------------------------------------------------------
-                     * All painting must be done within draw() method. Otherwise it doesn't do anything
-                     * ----------------------------------------------------------------------------- */
-
-                    for y in 0..height {
-                        for x in 0..width {
-
-                            // read data
-                            let state = pixel_states[y * width + x];
-                            let color = color_for_state(state);
-                            draw_colored_point(x, y, &color);
+                        for y in 0..height {
+                            for x in 0..width {
+                                // read data
+                                let state = pixel_states[y * width + x];
+                                let color = color_for_state(state);
+                                draw_colored_point(x, y, &color);
+                            }
                         }
-                    }
-                });
-                // Trigger redraw events from the main thread
-                window.redraw();
-                app::awake();
+                    });
+                    // Trigger redraw events from the main thread
+                    window.redraw();
+                    drop(window);
+                    app::awake();
+                }
             }
             Err(_) => {
                 println!("paint_pixel_states(): app::lock() failed");
@@ -362,11 +366,14 @@ where
  * static methods
  * ----------- */
 
-// called only from main thread within window.show() method
+// this can be called only from the main thread within window.show() method
 fn draw_colored_point(x: usize, y: usize, color: &Rgb<u8>) {
-    let r = *color.channels().first().unwrap();
-    let g = *color.channels().get(1).unwrap();
-    let b = *color.channels().get(2).unwrap();
+    let channels = color.channels();
+
+    // TODO throw instead
+    let r = channels.first().copied().unwrap_or(0);
+    let g = channels.get(1).copied().unwrap_or(0);
+    let b = channels.get(2).copied().unwrap_or(0);
 
     draw::set_draw_color(Color::from_rgb(r, g, b));
     draw::draw_point(x as i32, y as i32);

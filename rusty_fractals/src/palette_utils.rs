@@ -3,10 +3,10 @@ use palettes::Function;
 
 use crate::palettes;
 
-fn max(r: i32, g: i32, b: i32) -> i32 {
-    let ar = r.abs();
-    let ag = g.abs();
-    let ab = b.abs();
+const fn max(r: i32, g: i32, b: i32) -> i32 {
+    let ar = if r < 0 { -r } else { r };
+    let ag = if g < 0 { -g } else { g };
+    let ab = if b < 0 { -b } else { b };
     if ar >= ag && ar >= ab {
         r
     } else if ag >= ab {
@@ -16,8 +16,8 @@ fn max(r: i32, g: i32, b: i32) -> i32 {
     }
 }
 
-fn a(v: i32) -> u8 {
-    v.unsigned_abs() as u8
+const fn a(v: i32) -> u8 {
+    if v < 0 { (-v) as u8 } else { v as u8 }
 }
 
 // Fill color spectrum with colors between colors:
@@ -71,9 +71,9 @@ pub fn make_spectrum(function: Function, from: Rgb<u8>, to: Rgb<u8>) -> Vec<Rgb<
         let v: f64 = function_result(d, &function);
         let value = v * max_dif_abs as f64;
 
-        let mut r_new = r_from as f64 + (value * r_step);
-        let mut g_new = g_from as f64 + (value * g_step);
-        let mut b_new = b_from as f64 + (value * b_step);
+        let mut r_new = (value).mul_add(r_step, r_from as f64);
+        let mut g_new = (value).mul_add(g_step, g_from as f64);
+        let mut b_new = (value).mul_add(b_step, b_from as f64);
 
         if r_new > rgb255 {
             r_new = rgb255;
@@ -153,10 +153,10 @@ fn function_result(d: f64, function: &Function) -> f64 {
         Function::Linear3 => d * 3.0,
         Function::Linear7 => d * 7.0,
         Function::Quadratic => d * d,
-        Function::Exp => d.exp() - 1.0,
-        Function::Exp2 => (d * d).exp() - 1.0,
-        Function::CircleDown => (1.0 - (d * d)).sqrt(),
-        Function::CircleUp => 1.0 - (1.0 - (d * d)).sqrt(),
+        Function::Exp => d.exp_m1(),
+        Function::Exp2 => (d * d).exp_m1(),
+        Function::CircleDown => d.mul_add(-d, 1.0).sqrt(),
+        Function::CircleUp => 1.0 - d.mul_add(-d, 1.0).sqrt(),
     }
 }
 
@@ -190,9 +190,9 @@ mod tests {
         // light to dark
         let res = make_spectrum(Linear1, b1, b2);
 
-        let r1 = res.first().unwrap().channels()[0];
-        let r2 = res.get(1).unwrap().channels()[0];
-        let r3 = res.get(2).unwrap().channels()[0];
+        let r1 = res.first().map_or(0, |c| c.channels()[0]);
+        let r2 = res.get(1).map_or(0, |c| c.channels()[0]);
+        let r3 = res.get(2).map_or(0, |c| c.channels()[0]);
         assert_eq!(r1, 0);
         assert_eq!(r2, 1);
         assert_eq!(r3, 2);
@@ -206,9 +206,10 @@ mod tests {
         // light to dark
         let res = make_spectrum(Linear1, b1, b2);
 
-        let r3 = res.get(2).unwrap().channels()[0];
-        let g3 = res.get(2).unwrap().channels()[1];
-        let b3 = res.get(2).unwrap().channels()[2];
+        // TODO throw instead
+        let r3 = res.get(2).map_or(0, |c| c.channels()[0]);
+        let g3 = res.get(2).map_or(0, |c| c.channels()[1]);
+        let b3 = res.get(2).map_or(0, |c| c.channels()[2]);
         assert_eq!(r3, 2);
         assert_eq!(g3, 2);
         assert_eq!(b3, 3);
@@ -221,9 +222,9 @@ mod tests {
         let b1: Rgb<u8> = Rgb([0, 0, 0]);
         // dark to light
         let res = make_spectrum(Linear1, b2, b1);
-        let r1 = res.first().unwrap().channels()[0];
-        let r2 = res.get(1).unwrap().channels()[0];
-        let r3 = res.get(2).unwrap().channels()[0];
+        let r1 = res.first().map_or(0, |c| c.channels()[0]);
+        let r2 = res.get(1).map_or(0, |c| c.channels()[0]);
+        let r3 = res.get(2).map_or(0, |c| c.channels()[0]);
         assert_eq!(r1, 2);
         assert_eq!(r2, 1);
         assert_eq!(r3, 0);
@@ -236,23 +237,23 @@ mod tests {
         let b1: Rgb<u8> = Rgb([0, 0, 4]);
         // dark to light
         let res = make_spectrum(Linear1, b2, b1);
-        let r1 = res.first().unwrap().channels()[0];
-        let g1 = res.first().unwrap().channels()[1];
-        let b1 = res.first().unwrap().channels()[2];
+        let r1 = res.first().map_or(0, |c| c.channels()[0]);
+        let g1 = res.first().map_or(0, |c| c.channels()[1]);
+        let b1 = res.first().map_or(0, |c| c.channels()[2]);
         assert_eq!(r1, 4);
         assert_eq!(g1, 2);
         assert_eq!(b1, 0);
 
-        let r3 = res.get(2).unwrap().channels()[0];
-        let g3 = res.get(2).unwrap().channels()[1];
-        let b3 = res.get(2).unwrap().channels()[2];
+        let r3 = res.get(2).map_or(0, |c| c.channels()[0]);
+        let g3 = res.get(2).map_or(0, |c| c.channels()[1]);
+        let b3 = res.get(2).map_or(0, |c| c.channels()[2]);
         assert_eq!(r3, 2);
         assert_eq!(g3, 1);
         assert_eq!(b3, 2);
 
-        let r5 = res.get(4).unwrap().channels()[0];
-        let g5 = res.get(4).unwrap().channels()[1];
-        let b5 = res.get(4).unwrap().channels()[2];
+        let r5 = res.get(4).map_or(0, |c| c.channels()[0]);
+        let g5 = res.get(4).map_or(0, |c| c.channels()[1]);
+        let b5 = res.get(4).map_or(0, |c| c.channels()[2]);
         assert_eq!(r5, 0);
         assert_eq!(g5, 0);
         assert_eq!(b5, 4);

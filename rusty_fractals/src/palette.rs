@@ -1,7 +1,6 @@
 use crate::palette_utils;
 use image::Rgb;
 
-const ERROR_MESSAGE: &str = "error in color index";
 
 pub struct Palette {
     pub spectrum: Vec<Rgb<u8>>,
@@ -15,21 +14,21 @@ pub struct Palette3 {
 
 impl Palette {
     pub fn spectrum_value(&self, i: usize) -> Rgb<u8> {
-        *self.spectrum.get(i).expect(ERROR_MESSAGE)
+        *self.spectrum.get(i).unwrap_or(&self.spectrum[0])
     }
 }
 
 impl Palette3 {
     pub fn spectrum_value_red(&self, i: usize) -> u8 {
-        *self.spectrum_red.get(i).expect(ERROR_MESSAGE)
+        *self.spectrum_red.get(i).unwrap_or(&self.spectrum_red[0])
     }
 
     pub fn spectrum_value_green(&self, i: usize) -> u8 {
-        *self.spectrum_green.get(i).expect(ERROR_MESSAGE)
+        *self.spectrum_green.get(i).unwrap_or(&self.spectrum_green[0])
     }
 
     pub fn spectrum_value_blue(&self, i: usize) -> u8 {
-        *self.spectrum_blue.get(i).expect(ERROR_MESSAGE)
+        *self.spectrum_blue.get(i).unwrap_or(&self.spectrum_blue[0])
     }
 }
 

@@ -16,7 +16,7 @@ struct Pix {
 }
 
 impl Pix {
-    pub fn value(&self) -> u64 {
+    pub const fn value(&self) -> u64 {
         self.value
     }
 }
@@ -106,8 +106,9 @@ pub fn perfectly_color_euler_values(data: &DataImage) {
     // paint mismatched pixel amount with the least value color
     let mut pi_red = 0;
     while pi_red < (left_red + zero_value_elements_red) as usize {
-        let sp = pixels_red.get(pi_red).unwrap();
-        data.color_r(sp.x, sp.y, palette3.spectrum_value_red(0));
+        if let Some(sp) = pixels_red.get(pi_red) {
+            data.color_r(sp.x, sp.y, palette3.spectrum_value_red(0));
+        }
         pi_red += 1;
     }
     // color all remaining pixels, these are order by value
@@ -115,21 +116,22 @@ pub fn perfectly_color_euler_values(data: &DataImage) {
         for _ in 0..single_color_use_red {
             // color all these pixels with same color
             pi_red += 1;
-            let sp = pixels_red.get(pi_red).unwrap();
-            if sp.value() <= threshold {
-                data.color_r(sp.x, sp.y, palette3.spectrum_value_red(0));
-            } else {
-                // perfect-color all significant pixels
-                data.color_r(sp.x, sp.y, palette3.spectrum_value_red(palette_color_index));
+            if let Some(sp) = pixels_red.get(pi_red) {
+                if sp.value() <= threshold {
+                    data.color_r(sp.x, sp.y, palette3.spectrum_value_red(0));
+                } else {
+                    // perfect-color all significant pixels
+                    data.color_r(sp.x, sp.y, palette3.spectrum_value_red(palette_color_index));
+                }
             }
         }
     }
 
     let mut pi_green = 0;
     while pi_green < (left_green + zero_value_elements_green) as usize {
-        let sp = pixels_green.get(pi_green).unwrap();
-        data.color_g(sp.x, sp.y, palette3.spectrum_value_green(0));
-
+        if let Some(sp) = pixels_green.get(pi_green) {
+            data.color_g(sp.x, sp.y, palette3.spectrum_value_green(0));
+        }
         pi_green += 1;
     }
     // color all remaining pixels, these are order by value
@@ -137,22 +139,23 @@ pub fn perfectly_color_euler_values(data: &DataImage) {
         for _ in 0..single_color_use_green {
             // color all these pixels with same color
             pi_green += 1;
-            let sp = pixels_green.get(pi_green).unwrap();
-            if sp.value() <= threshold {
-                // color zero-value elements and low-value-noise with the darkest color
-                data.color_g(sp.x, sp.y, palette3.spectrum_value_green(0));
-            } else {
-                // perfect-color all significant pixels
-                data.color_g(sp.x, sp.y, palette3.spectrum_value_green(palette_color_index));
+            if let Some(sp) = pixels_green.get(pi_green) {
+                if sp.value() <= threshold {
+                    // color zero-value elements and low-value-noise with the darkest color
+                    data.color_g(sp.x, sp.y, palette3.spectrum_value_green(0));
+                } else {
+                    // perfect-color all significant pixels
+                    data.color_g(sp.x, sp.y, palette3.spectrum_value_green(palette_color_index));
+                }
             }
         }
     }
 
     let mut pi_blue = 0;
     while pi_blue < (left_blue + zero_value_elements_blue) as usize {
-        let sp = pixels_blue.get(pi_blue).unwrap();
-        data.color_b(sp.x, sp.y, palette3.spectrum_value_blue(0));
-
+        if let Some(sp) = pixels_blue.get(pi_blue) {
+            data.color_b(sp.x, sp.y, palette3.spectrum_value_blue(0));
+        }
         pi_blue += 1;
     }
     // color all remaining pixels, these are order by value
@@ -160,13 +163,14 @@ pub fn perfectly_color_euler_values(data: &DataImage) {
         for _ in 0..single_color_use_blue {
             // color all these pixels with same color
             pi_blue += 1;
-            let sp = pixels_blue.get(pi_blue).unwrap();
-            if sp.value() <= threshold {
-                // color zero-value elements and low-value-noise with the darkest color
-                data.color_b(sp.x, sp.y, palette3.spectrum_value_blue(0));
-            } else {
-                // perfect-color all significant pixels
-                data.color_b(sp.x, sp.y, palette3.spectrum_value_blue(palette_color_index));
+            if let Some(sp) = pixels_blue.get(pi_blue) {
+                if sp.value() <= threshold {
+                    // color zero-value elements and low-value-noise with the darkest color
+                    data.color_b(sp.x, sp.y, palette3.spectrum_value_blue(0));
+                } else {
+                    // perfect-color all significant pixels
+                    data.color_b(sp.x, sp.y, palette3.spectrum_value_blue(palette_color_index));
+                }
             }
         }
     }

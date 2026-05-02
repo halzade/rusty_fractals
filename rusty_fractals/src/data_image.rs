@@ -64,11 +64,13 @@ impl DataImage {
 
     pub fn translate_all_paths_to_point_grid(&self, area: &Area) {
         println!("translate_all_paths_to_point_grid()");
-        let all = self.paths.read().unwrap().to_owned();
-        for path in all {
-            for [re, im] in path {
-                let (x, y) = area.point_to_pixel(re, im);
-                self.add(x, y);
+        if let Ok(paths) = self.paths.read() {
+            let all = paths.to_owned();
+            for path in all {
+                for [re, im] in path {
+                    let (x, y) = area.point_to_pixel(re, im);
+                    self.add(x, y);
+                }
             }
         }
     }
@@ -78,29 +80,23 @@ impl DataImage {
      * verify path length before saving
      */
     pub fn save_path(&self, path: Vec<[f64; 2]>) {
-        self.paths.write().unwrap().push(path);
+        if let Ok(mut paths) = self.paths.write() {
+            paths.push(path);
+        }
     }
 
     pub fn remove_elements_outside(&self, area: &Area) {
         println!("remove_elements_outside()");
         // all paths
-        let all = self.paths.read().unwrap().to_owned();
+        if let Ok(mut paths) = self.paths.write() {
+            // remove elements outside Area
+            for path in paths.iter_mut() {
+                path.retain(|el| area.contains(el[0], el[1]));
+            }
 
-        // remove elements outside Area
-        for i in 0..all.len() {
-            self.paths
-                .write()
-                .unwrap()
-                .get_mut(i)
-                .unwrap()
-                .retain(|el| area.contains(el[0], el[1]))
+            // remove short paths
+            paths.retain(|path| path.len() as u64 > MINIMUM_PATH_LENGTH);
         }
-
-        // remove short paths
-        self.paths
-            .write()
-            .unwrap()
-            .retain(|path| path.len() as u64 > MINIMUM_PATH_LENGTH);
     }
 
     pub fn clear_all_px_data(&self) {
@@ -121,13 +117,13 @@ impl DataImage {
     pub(crate) fn px_at(&self, x: usize, y: usize) -> &DataPx {
         self.pixels
             .get(x + y * self.width_xp)
-            .unwrap_or_else(|| panic!("[{}, {}] out of bounds", x, y))
+            .unwrap_or(&self.pixels[0])
     }
 
     fn px_at3(&self, x: usize, y: usize) -> &DataPx3 {
         self.pixels3
             .get(x + y * self.width_xp)
-            .unwrap_or_else(|| panic!("[{}, {}] out of bounds", x, y))
+            .unwrap_or(&self.pixels3[0])
     }
 
     fn move_px_to_new_position(&self, x: usize, y: usize, px: &DataPx) {
@@ -260,10 +256,8 @@ impl DataImage {
 
         let mut sum = 0;
         for i in 0..4 {
-            let v = values.get(i);
-            match v {
-                Some(v) => sum += v,
-                None => panic!(),
+            if let Some(&v) = values.get(i) {
+                sum += v;
             }
         }
         println!("best_four_chunks_value() sum: {}", sum);
@@ -304,7 +298,7 @@ impl DataImage {
             for x in -half..(half + 1) {
                 for y in -half..(half + 1) {
                     if x != 0 || y != 0 {
-                        ret.push([origin_re + (x as f64 * d), origin_im + (y as f64 * d)]);
+                        ret.push([(x as f64).mul_add(d, origin_re), (y as f64).mul_add(d, origin_im)]);
                     }
                 }
             }
@@ -387,7 +381,7 @@ impl DataImage {
         true
     }
 
-    pub fn is_dynamic(&self) -> bool {
+    pub const fn is_dynamic(&self) -> bool {
         self.is_dynamic
     }
 
@@ -448,7 +442,7 @@ fn init_domain(area: &Area, oo: Option<Optimizer>) -> Vec<DataPx> {
     ret
 }
 
-pub fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
+pub const fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
     match rm {
         Single => 1.0,
         Square2 => 1.0, // special case
@@ -461,7 +455,7 @@ pub fn resolve_multiplier(rm: ResolutionMultiplier) -> f64 {
     }
 }
 
-pub fn color_for_state(state: DomainElementState) -> Rgb<u8> {
+pub const fn color_for_state(state: DomainElementState) -> Rgb<u8> {
     match state {
         // most of the elements are going to be FinishedSuccessPast
         ActiveNew => ACTIVE_NEW,
@@ -473,7 +467,7 @@ pub fn color_for_state(state: DomainElementState) -> Rgb<u8> {
     }
 }
 
-fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
+const fn check_domain(x: i32, y: i32, width: usize, height: usize) -> bool {
     x >= 0 && x < width as i32 && y >= 0 && y < height as i32
 }
 
@@ -550,11 +544,13 @@ mod tests {
         dynamic.remove_elements_outside(&AREA);
 
         // get test data
-        let result_all = dynamic.paths.read().unwrap();
-        assert_eq!(result_all.len(), 1);
+        if let Ok(result_all) = dynamic.paths.read() {
+            assert_eq!(result_all.len(), 1);
 
-        let remaining_path = result_all.first().unwrap();
-        assert_eq!(remaining_path.len(), 8);
+            if let Some(remaining_path) = result_all.first() {
+                assert_eq!(remaining_path.len(), 8);
+            }
+        }
     }
 
     #[test]

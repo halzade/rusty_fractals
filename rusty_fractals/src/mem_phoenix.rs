@@ -23,8 +23,8 @@ impl MemPhoenix {
         self.m.square();
     }
 
-    pub fn new(re: f64, im: f64) -> MemPhoenix {
-        MemPhoenix {
+    pub const fn new(re: f64, im: f64) -> Self {
+        Self {
             m: Mem { re, im, it: 0 },
             prev_prev_re: PHOENIX_INITIALIZER,
             prev_prev_im: PHOENIX_INITIALIZER,
@@ -34,9 +34,9 @@ impl MemPhoenix {
     }
 }
 
-impl MemType<MemPhoenix> for MemPhoenix {
-    fn new(re: f64, im: f64) -> MemPhoenix {
-        MemPhoenix::new(re, im)
+impl MemType<Self> for MemPhoenix {
+    fn new(re: f64, im: f64) -> Self {
+        Self::new(re, im)
     }
 
     fn quad(&self) -> f64 {

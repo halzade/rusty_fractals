@@ -309,7 +309,7 @@ where
 
     fn chunk_calculation_with_wrap(&self, xy: &[u64; 2]) {
         if self.resolution_multiplier == ResolutionMultiplier::Single {
-            panic!()
+            return;
         }
         let (x_from, x_to, y_from, y_to) = self.chunk_boundaries(xy);
         let plank = self.area.plank();
@@ -415,7 +415,7 @@ where
      * domain on which the image is calculate is split to 20 x 20 = 400 chunks
      * this method returns numbers from 0 to 20
      */
-    pub fn chunk_boundaries(&self, xy: &[u64; 2]) -> (usize, usize, usize, usize) {
+    pub const fn chunk_boundaries(&self, xy: &[u64; 2]) -> (usize, usize, usize, usize) {
         let chunk_size_x = (self.width_xl / 20) as u64;
         let chunk_size_y = (self.height_yl / 20) as u64;
         (
@@ -489,7 +489,7 @@ where
         (iterator, length)
     }
 
-    pub fn state_from_path_length(&self, iterator: u64, path_length: u64) -> DomainElementState {
+    pub const fn state_from_path_length(&self, iterator: u64, path_length: u64) -> DomainElementState {
         // path length considered only within Area
         if path_length < self.iteration_min {
             // 0 to min-1
@@ -628,14 +628,11 @@ where
      * This method will paint only final image colors, no pixel states
      */
     pub fn paint_final_calculation_result_colors(&self) {
-        let app = self
-            .app_ref
-            .as_ref()
-            .unwrap()
-            .read()
-            .expect("Failed to lock application reference");
-
-        app.paint_final_calculation_result_colors(&self.data_image);
+        if let Some(app_arc) = self.app_ref.as_ref() {
+            if let Ok(app) = app_arc.read() {
+                app.paint_final_calculation_result_colors(&self.data_image);
+            }
+        }
     }
 
     fn remove_elements_outside(&self) {
@@ -669,29 +666,26 @@ where
         // ms_min have serious impact on parallelization and speed of calculation,
         // don't use less than 100
         const MS_MIN: u64 = 250;
-        let called_in_past_enough = Instant::now()
-            .duration_since(*self.last_partial_refresh.read().unwrap())
-            >= Duration::from_millis(MS_MIN);
+        let called_in_past_enough = self.last_partial_refresh.read().is_ok_and(|last_refresh| Instant::now().duration_since(*last_refresh) >= Duration::from_millis(MS_MIN));
 
         if called_in_past_enough || paint_now {
-            self.app_ref
-                .as_ref()
-                .unwrap()
-                .read()
-                .expect("Failed to lock application reference")
-                .paint_partial_calculation_result_states(&self.data_image);
+            if let Some(app_arc) = self.app_ref.as_ref() {
+                if let Ok(app) = app_arc.read() {
+                    app.paint_partial_calculation_result_states(&self.data_image);
+                }
+            }
 
-            *self.last_partial_refresh.write().unwrap() = Instant::now();
+            if let Ok(mut last_refresh) = self.last_partial_refresh.write() {
+                *last_refresh = Instant::now();
+            }
         }
     }
 
     pub fn paint_pixel_states_now(&self) {
-        self.app_ref
-            .as_ref()
-            .unwrap()
-            .read()
-            .expect("Failed to lock application reference")
-            .paint_pixel_states(&self.data_image);
+        if let Some(app_arc) = self.app_ref.as_ref()
+            && let Ok(app) = app_arc.read() {
+            app.paint_pixel_states(&self.data_image);
+        }
     }
 }
 

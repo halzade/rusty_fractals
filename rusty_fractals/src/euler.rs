@@ -2,7 +2,7 @@ use crate::mathematician;
 use crate::pixel::Spectra;
 use crate::pixel::Spectra::{Blue, Green, Red};
 
-fn _translate_paths_to_pixel_grid() {
+const fn _translate_paths_to_pixel_grid() {
     /*
     for path in paths {
         for i in 0..path.size() - 1 {

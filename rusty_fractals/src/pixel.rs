@@ -16,8 +16,8 @@ pub struct PixelsEuler {
 }
 
 impl PixelsEuler {
-    pub fn init(w: u32, h: u32) -> PixelsEuler {
-        PixelsEuler {
+    pub fn init(w: u32, h: u32) -> Self {
+        Self {
             width: w,
             height: h,
             elements_red: vec![vec![0; w as usize]; h as usize],

@@ -15,7 +15,7 @@ impl Mem {
     }
 
     pub fn square(&mut self) {
-        let temp = (self.re * self.re) - (self.im * self.im);
+        let temp = self.re.mul_add(self.re, -(self.im * self.im));
         self.im *= 2.0 * self.re;
         self.re = temp;
     }
@@ -35,34 +35,28 @@ impl Mem {
 
     /** (a + ib)^3 */
     pub fn binomial3(&mut self) {
-        let temp = (self.re * self.re * self.re) - (3.0 * self.re * self.im * self.im);
-        self.im = (3.0 * self.re * self.re * self.im) - (self.im * self.im * self.im);
+        let temp = (self.re * self.re).mul_add(self.re, -(3.0 * self.re * self.im * self.im));
+        self.im = (3.0 * self.re * self.re).mul_add(self.im, -(self.im * self.im * self.im));
         self.re = temp;
     }
 
     /** (a + ib)^4 */
     pub fn binomial4(&mut self) {
-        let temp = (self.re * self.re * self.re * self.re)
-            - (6.0 * self.re * self.re * self.re * self.im)
-            + (self.im * self.re * self.im * self.im);
-        self.im = (4.0 * self.re * self.re * self.re * self.im)
-            - (4.0 * self.re * self.im * self.im * self.im);
+        let temp = (self.im * self.re * self.im).mul_add(self.im, (self.re * self.re * self.re).mul_add(self.re, -(6.0 * self.re * self.re * self.re * self.im)));
+        self.im = (4.0 * self.re * self.re * self.re).mul_add(self.im, -(4.0 * self.re * self.im * self.im * self.im));
         self.re = temp;
     }
 
     /** (a + ib)^5 */
     pub fn binomial5(&mut self) {
-        let temp = (self.re * self.re * self.re * self.re * self.re)
-            - (10.0 * self.re * self.re * self.re * self.im * self.im)
-            + (5.0 * self.re * self.im * self.im * self.im * self.im);
-        self.im = (5.0 * self.re * self.re * self.re * self.re * self.im)
-            - (10.0 * self.re * self.re * self.im * self.im * self.im)
-            + (self.im * self.im * self.im * self.im * self.im);
+        let temp = (5.0 * self.re * self.im * self.im * self.im).mul_add(self.im, (self.re * self.re * self.re * self.re).mul_add(self.re, -(10.0 * self.re * self.re * self.re * self.im * self.im)));
+        let im_val = (self.im * self.im * self.im * self.im).mul_add(self.im, (5.0 * self.re * self.re * self.re * self.re).mul_add(self.im, -(10.0 * self.re * self.re * self.im * self.im * self.im)));
+        self.im = im_val;
         self.re = temp;
     }
 
     pub fn circle_inversion(&mut self, re: f64, im: f64) {
-        let d = (re * re) + (im * im);
+        let d = re.mul_add(re, im * im);
         self.re = re / d;
         self.im = im / d;
     }
@@ -134,13 +128,13 @@ impl Mem {
     }
 }
 
-impl MemType<Mem> for Mem {
-    fn new(re: f64, im: f64) -> Mem {
-        Mem { re, im, it: 0 }
+impl MemType<Self> for Mem {
+    fn new(re: f64, im: f64) -> Self {
+        Self { re, im, it: 0 }
     }
 
     fn quad(&self) -> f64 {
-        self.re * self.re + self.im * self.im
+        self.re.mul_add(self.re, self.im * self.im)
     }
 
     fn re(&self) -> f64 {

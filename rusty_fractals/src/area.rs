@@ -36,60 +36,59 @@ struct AreaData {
 
 impl Area {
     pub fn width_xl(&self) -> usize {
-        self.data.read().unwrap().width_xl
+        self.data.read().map(|d| d.width_xl).unwrap_or(0)
     }
 
     pub fn width_xp(&self) -> usize {
-        self.data.read().unwrap().width_xp
+        self.data.read().map(|d| d.width_xp).unwrap_or(0)
     }
 
     pub fn height_yl(&self) -> usize {
-        self.data.read().unwrap().height_yl
+        self.data.read().map(|d| d.height_yl).unwrap_or(0)
     }
     pub fn height_yp(&self) -> usize {
-        self.data.read().unwrap().height_yp
+        self.data.read().map(|d| d.height_yp).unwrap_or(0)
     }
 
     pub fn center_re(&self) -> f64 {
-        self.data.read().unwrap().center_re
+        self.data.read().map(|d| d.center_re).unwrap_or(0.0)
     }
 
     pub fn center_im(&self) -> f64 {
-        self.data.read().unwrap().center_im
+        self.data.read().map(|d| d.center_im).unwrap_or(0.0)
     }
 
     pub fn contains(&self, re: f64, im: f64) -> bool {
-        let d = self.data.read().unwrap();
-        re > d.border_low_re
-            && re < d.border_high_re
-            && im > d.border_low_im
-            && im < d.border_high_im
+        self.data.read().is_ok_and(|d| {
+            re > d.border_low_re && re < d.border_high_re && im > d.border_low_im && im < d.border_high_im
+        })
     }
 
     /**
      * Maps pixels [x, y] to their center [re, im]
      */
     pub fn screen_to_domain_re_copy(&self) -> Vec<f64> {
-        self.data.read().unwrap().numbers_re.clone()
+        self.data.read().map(|d| d.numbers_re.clone()).unwrap_or_default()
     }
 
     /**
      * Maps pixels [x, y] to their center [re, im]
      */
     pub fn screen_to_domain_im_copy(&self) -> Vec<f64> {
-        self.data.read().unwrap().numbers_im.clone()
+        self.data.read().map(|d| d.numbers_im.clone()).unwrap_or_default()
     }
 
     /**
      * Check first, if element can convert, only then call this method
      */
     pub fn point_to_pixel(&self, re: f64, im: f64) -> (usize, usize) {
-        let d = self.data.read().unwrap();
-
-        let px = (d.width_xlf64 * (re - d.center_re) / d.width_re) + d.width_half_xlf64;
-        let py = d.height_half_ylf64 - (d.height_ylf64 * (im - d.center_im) / d.height_im);
-
-        (px as usize, py as usize)
+        
+        // TODO throw instead
+        self.data.read().map_or((0, 0), |d| {
+            let px = (d.width_xlf64 * (re - d.center_re) / d.width_re) + d.width_half_xlf64;
+            let py = d.height_half_ylf64 - (d.height_ylf64 * (im - d.center_im) / d.height_im);
+            (px as usize, py as usize)
+        })
     }
 
     pub fn zoom_in(&self) {
@@ -98,104 +97,111 @@ impl Area {
 
     pub fn zoom_in_by(&self, zoom: f64) {
         println!("zoom_in()");
-        let mut d = self.data.write().unwrap();
+        if let Ok(mut d) = self.data.write() {
+            d.width_re *= zoom;
+            d.height_im = d.width_re * ((d.height_yl as f64) / (d.width_xl as f64));
 
-        d.width_re *= zoom;
-        d.height_im = d.width_re * ((d.height_yl as f64) / (d.width_xl as f64));
+            d.plank = d.width_re / d.width_xl as f64;
 
-        d.plank = d.width_re / d.width_xl as f64;
+            d.border_low_re = d.center_re - (d.width_re / 2.0);
+            d.border_high_re = d.center_re + (d.width_re / 2.0);
+            d.border_low_im = d.center_im - d.height_im / 2.0;
+            d.border_high_im = d.center_im + (d.height_im / 2.0);
 
-        d.border_low_re = d.center_re - (d.width_re / 2.0);
-        d.border_high_re = d.center_re + (d.width_re / 2.0);
-        d.border_low_im = d.center_im - d.height_im / 2.0;
-        d.border_high_im = d.center_im + (d.height_im / 2.0);
+            d.width_xlf64 = d.width_xl as f64;
+            d.height_ylf64 = d.height_yl as f64;
+            d.width_half_xlf64 = d.width_xlf64 / 2.0;
+            d.height_half_ylf64 = d.height_ylf64 / 2.0;
 
-        d.width_xlf64 = d.width_xl as f64;
-        d.height_ylf64 = d.height_yl as f64;
-        d.width_half_xlf64 = d.width_xlf64 / 2.0;
-        d.height_half_ylf64 = d.height_ylf64 / 2.0;
+            d.numbers_re.clear();
+            d.numbers_im.clear();
 
-        d.numbers_re.clear();
-        d.numbers_im.clear();
+            // re
+            for x in 0..d.width_xp {
+                let v = d.plank.mul_add(x as f64, d.border_low_re);
+                d.numbers_re.push(v);
+            }
 
-        // re
-        for x in 0..d.width_xp {
-            let v = d.border_low_re + (d.plank * x as f64);
-            d.numbers_re.push(v);
-        }
-
-        // im
-        for y in 0..d.height_yp {
-            let v = d.border_high_im - (d.plank * y as f64);
-            d.numbers_im.push(v);
+            // im
+            for y in 0..d.height_yp {
+                let v = d.plank.mul_add(-(y as f64), d.border_high_im);
+                d.numbers_im.push(v);
+            }
         }
     }
 
     // TODO
     pub fn move_to_initial_coordinates(&self, init_target_re: f64, init_target_im: f64) {
         println!("move_to_initial_coordinates()");
-        let mut d = self.data.write().unwrap();
-        d.center_re = init_target_re;
-        d.center_im = init_target_im;
+        if let Ok(mut d) = self.data.write() {
+            d.center_re = init_target_re;
+            d.center_im = init_target_im;
+        }
     }
 
     pub fn plank(&self) -> f64 {
-        self.data.read().unwrap().plank
+        self.data.read().map(|d| d.plank).unwrap_or(0.0)
     }
 
     // TODO
     pub fn move_target(&self, x: usize, y: usize) {
-        let mut d = self.data.write().unwrap();
-        println!("move_target({}, {})", x, y);
-        let re = d.numbers_re[x];
-        let im = d.numbers_im[y];
-        println!("move_target({}, {})", re, im);
-        d.center_re = re;
-        d.center_im = im;
+        if let Ok(mut d) = self.data.write() {
+            println!("move_target({}, {})", x, y);
+            let re = d.numbers_re[x];
+            let im = d.numbers_im[y];
+            println!("move_target({}, {})", re, im);
+            d.center_re = re;
+            d.center_im = im;
 
-        d.border_low_re = d.center_re - d.width_re / 2.0;
-        d.border_high_re = d.center_re + d.width_re / 2.0;
-        d.border_low_im = d.center_im - d.height_im / 2.0;
-        d.border_high_im = d.center_im + d.height_im / 2.0;
+            d.border_low_re = d.center_re - d.width_re / 2.0;
+            d.border_high_re = d.center_re + d.width_re / 2.0;
+            d.border_low_im = d.center_im - d.height_im / 2.0;
+            d.border_high_im = d.center_im + d.height_im / 2.0;
 
-        d.width_xlf64 = d.width_xl as f64;
-        d.height_ylf64 = d.height_yl as f64;
-        d.width_half_xlf64 = d.width_xlf64 / 2.0;
-        d.height_half_ylf64 = d.height_ylf64 / 2.0;
+            d.width_xlf64 = d.width_xl as f64;
+            d.height_ylf64 = d.height_yl as f64;
+            d.width_half_xlf64 = d.width_xlf64 / 2.0;
+            d.height_half_ylf64 = d.height_ylf64 / 2.0;
 
-        d.numbers_re.clear();
-        d.numbers_im.clear();
+            d.numbers_re.clear();
+            d.numbers_im.clear();
 
-        for x in 0..d.width_xp {
-            let v = d.border_low_re + (d.plank * x as f64);
-            d.numbers_re.push(v);
+            for x in 0..d.width_xp {
+                let v = d.plank.mul_add(x as f64, d.border_low_re);
+                d.numbers_re.push(v);
+            }
+            for y in 0..d.height_yp {
+                let v = d.plank.mul_add(-(y as f64), d.border_high_im);
+                d.numbers_im.push(v);
+            }
+            drop(d);
+            println!("recalculated");
         }
-        for y in 0..d.height_yp {
-            let v = d.border_high_im - (d.plank * y as f64);
-            d.numbers_im.push(v);
-        }
-        println!("recalculated");
     }
 
     pub fn print_info(&self) {
         println!("print_info()");
-        let d = self.data.read().unwrap();
-        println!("width_re:       {:6}", d.width_re);
-        println!("height_im:      {:6}", d.height_im);
-        println!("border_low_re:  {:6}", d.border_low_re);
-        println!("border_high_re: {:6}", d.border_high_re);
-        println!("border_low_im:  {:6}", d.border_low_im);
-        println!("border_high_im: {:6}", d.border_high_im);
-        println!("(plank):        {:6}", d.plank);
+        if let Ok(d) = self.data.read() {
+            println!("width_re:       {:6}", d.width_re);
+            println!("height_im:      {:6}", d.height_im);
+            println!("border_low_re:  {:6}", d.border_low_re);
+            println!("border_high_re: {:6}", d.border_high_re);
+            println!("border_low_im:  {:6}", d.border_low_im);
+            println!("border_high_im: {:6}", d.border_high_im);
+            println!("(plank):        {:6}", d.plank);
+            drop(d);
+        }
     }
 
     pub fn print_more(&self) {
         println!("print_more()");
-        let d = self.data.read().unwrap();
-        println!("width_xlf64:       {:6}", d.width_xlf64);
-        println!("width_half_xlf64:  {:6}", d.width_half_xlf64);
-        println!("height_ylf64:      {:6}", d.height_ylf64);
-        println!("height_half_ylf64: {:6}", d.height_half_ylf64);
+        if let Ok(d) = self.data.read() {
+            println!("width_xlf64:       {:6}", d.width_xlf64);
+            println!("width_half_xlf64:  {:6}", d.width_half_xlf64);
+            println!("height_ylf64:      {:6}", d.height_ylf64);
+            println!("height_half_ylf64: {:6}", d.height_half_ylf64);
+            drop(d);
+        }
     }
 }
 
@@ -228,10 +234,10 @@ pub fn init(config: &FractalConfig) -> Area {
     let mut numbers_re: Vec<f64> = Vec::new();
     let mut numbers_im: Vec<f64> = Vec::new();
     for x in 0..width_xp {
-        numbers_re.push(border_low_re + (plank * x as f64));
+        numbers_re.push(plank.mul_add(x as f64, border_low_re));
     }
     for y in 0..height_yp {
-        numbers_im.push(border_high_im - (plank * y as f64));
+        numbers_im.push(plank.mul_add(-(y as f64), border_high_im));
     }
 
     let area_data = AreaData {
@@ -269,21 +275,21 @@ mod tests {
     fn test_init() {
         let c = fractal::init_trivial_static_config();
         let a = init(&c);
-        let d = a.data.read().unwrap();
+        if let Ok(d) = a.data.read() {
+            assert_eq!(d.border_low_re, -0.5);
+            assert_eq!(d.border_high_re, 0.5);
+            assert_eq!(d.border_low_im, -0.5);
+            assert_eq!(d.border_high_im, 0.5);
 
-        assert_eq!(d.border_low_re, -0.5);
-        assert_eq!(d.border_high_re, 0.5);
-        assert_eq!(d.border_low_im, -0.5);
-        assert_eq!(d.border_high_im, 0.5);
+            // coordinates [0, 0] are at the top left
+            assert_eq!(d.numbers_re.first().copied().unwrap_or(0.0), -0.5);
+            assert_eq!(d.numbers_re.get(1).copied().unwrap_or(0.0), 0.0);
+            assert_eq!(d.numbers_re.get(2).copied().unwrap_or(0.0), 0.5);
 
-        // coordinates [0, 0] are at the top left
-        assert_eq!(*d.numbers_re.first().unwrap(), -0.5);
-        assert_eq!(*d.numbers_re.get(1).unwrap(), 0.0);
-        assert_eq!(*d.numbers_re.get(2).unwrap(), 0.5);
-
-        assert_eq!(*d.numbers_im.first().unwrap(), 0.5);
-        assert_eq!(*d.numbers_im.get(1).unwrap(), 0.0);
-        assert_eq!(*d.numbers_im.get(2).unwrap(), -0.5);
+            assert_eq!(d.numbers_im.first().copied().unwrap_or(0.0), 0.5);
+            assert_eq!(d.numbers_im.get(1).copied().unwrap_or(0.0), 0.0);
+            assert_eq!(d.numbers_im.get(2).copied().unwrap_or(0.0), -0.5);
+        }
     }
 
     #[test]
@@ -391,15 +397,16 @@ mod tests {
 
         a.zoom_in_by(0.5);
 
-        let d = a.data.read().unwrap();
-        assert_eq!(d.center_re, 0.0);
-        assert_eq!(d.center_im, 0.0);
-        assert_eq!(d.width_re, 0.5);
-        assert_eq!(d.height_im, 0.5);
-        assert_eq!(d.border_low_re, -0.25);
-        assert_eq!(d.border_high_re, 0.25);
-        assert_eq!(d.border_low_im, -0.25);
-        assert_eq!(d.border_high_im, 0.25);
+        if let Ok(d) = a.data.read() {
+            assert_eq!(d.center_re, 0.0);
+            assert_eq!(d.center_im, 0.0);
+            assert_eq!(d.width_re, 0.5);
+            assert_eq!(d.height_im, 0.5);
+            assert_eq!(d.border_low_re, -0.25);
+            assert_eq!(d.border_high_re, 0.25);
+            assert_eq!(d.border_low_im, -0.25);
+            assert_eq!(d.border_high_im, 0.25);
+        }
 
         // TODO test numbers re & im
     }
@@ -411,21 +418,22 @@ mod tests {
 
         a.zoom_in();
 
-        let d = a.data.read().unwrap();
-        assert_eq!(d.center_re, 0.0);
-        assert_eq!(d.center_im, 0.0);
-        assert_eq!(d.width_re, 0.98);
-        assert_eq!(d.height_im, 0.98);
+        if let Ok(d) = a.data.read() {
+            assert_eq!(d.center_re, 0.0);
+            assert_eq!(d.center_im, 0.0);
+            assert_eq!(d.width_re, 0.98);
+            assert_eq!(d.height_im, 0.98);
 
-        assert_eq!(d.border_low_re, -0.49);
-        assert_eq!(d.border_high_re, 0.49);
-        assert_eq!(d.border_low_im, -0.49);
-        assert_eq!(d.border_high_im, 0.49);
+            assert_eq!(d.border_low_re, -0.49);
+            assert_eq!(d.border_high_re, 0.49);
+            assert_eq!(d.border_low_im, -0.49);
+            assert_eq!(d.border_high_im, 0.49);
 
-        assert_eq!(d.width_xlf64, 2.0);
-        assert_eq!(d.height_ylf64, 2.0);
-        assert_eq!(d.width_half_xlf64, 1.0);
-        assert_eq!(d.height_half_ylf64, 1.0);
+            assert_eq!(d.width_xlf64, 2.0);
+            assert_eq!(d.height_ylf64, 2.0);
+            assert_eq!(d.width_half_xlf64, 1.0);
+            assert_eq!(d.height_half_ylf64, 1.0);
+        }
 
         // TODO test numbers re & im
     }

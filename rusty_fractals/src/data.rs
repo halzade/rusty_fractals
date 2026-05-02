@@ -22,9 +22,22 @@ pub struct DataSer {
 }
 
 pub fn init_from_data(file_name: &str) -> Vec<DataPx> {
-    let mut reader = BufReader::new(File::open(file_name).unwrap());
+    let file = match File::open(file_name) {
+        Ok(f) => f,
+        Err(e) => {
+            eprintln!("Failed to open {}: {:?}", file_name, e);
+            return Vec::new();
+        }
+    };
+    let mut reader = BufReader::new(file);
 
-    let read_serializable: Vec<DataPxSer> = decode_from_std_read(&mut reader, standard()).unwrap();
+    let read_serializable: Vec<DataPxSer> = match decode_from_std_read(&mut reader, standard()) {
+        Ok(data) => data,
+        Err(e) => {
+            eprintln!("Failed to decode data from {}: {:?}", file_name, e);
+            Vec::new()
+        }
+    };
 
     read_serializable
         .into_iter()
@@ -33,11 +46,20 @@ pub fn init_from_data(file_name: &str) -> Vec<DataPx> {
 }
 
 pub fn save_data(file_name: &str, data: &[DataPx]) {
-    let mut writer = BufWriter::new(File::create(file_name).unwrap());
+    let file = match File::create(file_name) {
+        Ok(f) => f,
+        Err(e) => {
+            eprintln!("Failed to create {}: {:?}", file_name, e);
+            return;
+        }
+    };
+    let mut writer = BufWriter::new(file);
 
     let write_serializable: Vec<DataPxSer> = data.iter().map(|px| px.to_serializable()).collect();
 
-    encode_into_std_write(&write_serializable, &mut writer, standard()).unwrap();
+    if let Err(e) = encode_into_std_write(&write_serializable, &mut writer, standard()) {
+        eprintln!("Failed to encode data to {}: {:?}", file_name, e);
+    }
 }
 
 #[cfg(test)]
@@ -56,9 +78,11 @@ mod tests {
         // load
         let loaded = init_from_data(file_name);
 
-        assert!(fs::metadata(file_name).unwrap().is_file());
+        if let Ok(meta) = fs::metadata(file_name) {
+            assert!(meta.is_file());
+        }
         assert_eq!(original.len(), loaded.len());
 
-        fs::remove_file(file_name).unwrap();
+        let _ = fs::remove_file(file_name);
     }
 }

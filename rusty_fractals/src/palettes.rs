@@ -116,7 +116,7 @@ pub fn palette_linear_red() -> Palette {
     new(Linear1, BLACK, RED)
 }
 
-pub fn init_trivial() -> Palette {
+pub const fn init_trivial() -> Palette {
     Palette {
         spectrum: Vec::new(),
     }

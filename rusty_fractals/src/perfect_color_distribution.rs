@@ -77,22 +77,24 @@ pub fn perfectly_color_mandelbrot_values(
     // paint mismatched pixel amount with the least value color
     let mut pi = 0;
     for _ in 0..left {
-        let mp = pixels.get(pi).expect("pixels error");
-        pi += 1;
-        data.color(mp.x, mp.y, palette.spectrum_value(0));
+        if let Some(mp) = pixels.get(pi) {
+            pi += 1;
+            data.color(mp.x, mp.y, palette.spectrum_value(0));
+        }
     }
 
     for palette_color_index in 0..palette_color_count {
         for _ in 0..single_color_use {
             // color all these pixels with same color
-            let mp = pixels.get(pi).expect("pixels error");
-            pi += 1;
-            // perfect-color all significant pixels
-            data.color(
-                mp.x,
-                mp.y,
-                palette.spectrum_value(palette_color_index as usize),
-            );
+            if let Some(mp) = pixels.get(pi) {
+                pi += 1;
+                // perfect-color all significant pixels
+                data.color(
+                    mp.x,
+                    mp.y,
+                    palette.spectrum_value(palette_color_index as usize),
+                );
+            }
         }
     }
     let pixels_length = pixels.len();
@@ -109,20 +111,22 @@ pub fn perfectly_color_mandelbrot_values(
     println!("zero_left:                  {:8}", zero_left);
     let mut piz = 0;
     for _ in 0..zero_left {
-        let mp = pixels_zero.get(piz).expect("pixel error");
-        piz += 1;
-        data.color(mp.x, mp.y, palette_zero.spectrum_value(0usize));
+        if let Some(mp) = pixels_zero.get(piz) {
+            piz += 1;
+            data.color(mp.x, mp.y, palette_zero.spectrum_value(0usize));
+        }
     }
     for zero_palette_color_index in 0..zero_palette_color_count {
         for _ in 0..zero_single_color_use {
             // color all these pixels with same color
-            let mp = pixels_zero.get(piz).expect("pixel error");
-            piz += 1;
-            data.color(
-                mp.x,
-                mp.y,
-                palette_zero.spectrum_value(zero_palette_color_index as usize),
-            );
+            if let Some(mp) = pixels_zero.get(piz) {
+                piz += 1;
+                data.color(
+                    mp.x,
+                    mp.y,
+                    palette_zero.spectrum_value(zero_palette_color_index as usize),
+                );
+            }
         }
     }
     assert_eq!(pixels_zero.len(), piz);

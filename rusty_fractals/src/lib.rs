@@ -1,5 +1,20 @@
+/*
+ * cargo clippy
+ * cargo clippy --release
+ */
+#![forbid(unsafe_code)]
+#![forbid(clippy::unwrap_used)]
+#![forbid(clippy::expect_used)]
+#![forbid(clippy::panic)]
+#![forbid(clippy::todo)]
+#![forbid(clippy::unimplemented)]
+#![deny(warnings)]
+#![deny(clippy::all)]
+#![deny(clippy::nursery)]
+/*
+ * Implementation
+ */
 extern crate core;
-
 pub mod application;
 pub mod area;
 pub mod constants;

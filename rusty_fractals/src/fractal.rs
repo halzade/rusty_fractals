@@ -59,20 +59,20 @@ impl Optimizer {
      * Nebula domain optimization
      */
     pub fn nebula_optimization() -> Self {
-        fn fn_ok(re: f64, im: f64) -> bool {
+        const fn fn_ok(re: f64, im: f64) -> bool {
             mathematician::is_outside_cardioid(re, im)
                 && mathematician::is_outside_circle(re, im)
                 && mathematician::is_outside_top_circle(re, im)
                 && mathematician::is_outside_bottom_circle(re, im)
         }
-        fn fn_state(re: f64, im: f64) -> DomainElementState {
+        const fn fn_state(re: f64, im: f64) -> DomainElementState {
             if fn_ok(re, im) {
                 ActiveNew
             } else {
                 HibernatedDeepBlack
             }
         }
-        Optimizer {
+        Self {
             initial_state_for: fn_state,
         }
     }
@@ -81,10 +81,10 @@ impl Optimizer {
      * No optimization
      */
     pub fn trivial() -> Self {
-        fn fn_state(_: f64, _: f64) -> DomainElementState {
+        const fn fn_state(_: f64, _: f64) -> DomainElementState {
             ActiveNew
         }
-        Optimizer {
+        Self {
             initial_state_for: fn_state,
         }
     }
@@ -93,7 +93,7 @@ impl Optimizer {
 /**
 - Orbit types for nebula fractals
 */
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum OrbitType {
     // Ignore orbits for Mandelbrot like calculations
     Ignore,
@@ -114,7 +114,7 @@ pub enum OrbitType {
  * Euler fractal
  * - split primes, Fibonacci's and other calculation sequences to RGB spectra
  */
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum FractalCalculationType {
     /** Nebula fractals
      * - drop calculation path to px grid immediately
@@ -163,14 +163,14 @@ impl FractalMath<Mem> for TrivialFractal {
     }
 }
 
-pub fn init_trivial_fractal() -> TrivialFractal {
-    TrivialFractal {}
+pub const fn init_trivial_fractal() -> TrivialFractal {
+    TrivialFractal
 }
 
 /**
  * The smallest possible set to calculate upon is 20 x 20 = 400 px, because of chunks
  */
-pub fn init_trivial_static_config() -> FractalConfig {
+pub const fn init_trivial_static_config() -> FractalConfig {
     FractalConfig {
         name: "Static",
         orbits: Finite,

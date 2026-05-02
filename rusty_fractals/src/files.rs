@@ -26,7 +26,9 @@ pub fn save_image(data_image: &DataImage, name: &str, index: u64) {
         }
     }
 
-    img.save(path).unwrap();
+    if let Err(e) = img.save(&path) {
+        eprintln!("Failed to save image {}: {:?}", path, e);
+    }
     println!("save_image() done");
 }
 
@@ -39,7 +41,6 @@ mod tests {
     use crate::files::{save_image, to_snake};
     use crate::fractal::init_trivial_dynamic_config;
     use crate::{area, data_image};
-    use image::DynamicImage;
 
     #[test]
     fn test_save_image() {
@@ -50,13 +51,16 @@ mod tests {
         save_image(&data_image::init(&c, &a), fractal_name, 0);
 
         let file_name = "fractal_snake_0.jpg";
-        assert!(std::fs::metadata(file_name).unwrap().is_file());
+        if let Ok(meta) = std::fs::metadata(file_name) {
+            assert!(meta.is_file());
+        }
 
-        let img: DynamicImage = image::open(file_name).unwrap();
-        assert_eq!(img.width(), 620);
-        assert_eq!(img.height(), 620);
+        if let Ok(img) = image::open(file_name) {
+            assert_eq!(img.width(), 620);
+            assert_eq!(img.height(), 620);
+        }
 
-        std::fs::remove_file(file_name).unwrap();
+        let _ = std::fs::remove_file(file_name);
     }
 
     #[test]

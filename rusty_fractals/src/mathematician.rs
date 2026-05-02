@@ -19,7 +19,7 @@ static MATHEMATICIAN: Lazy<Mathematician> = Lazy::new(Mathematician::new);
 
 impl Mathematician {
     fn new() -> Self {
-        Mathematician {
+        Self {
             primes: RwLock::new(HashSet::new()),
             fibonacci: RwLock::new(HashSet::new()),
             perfect: RwLock::new(HashSet::new()),
@@ -35,7 +35,7 @@ impl Mathematician {
 /**
  * (t^2 + x^2 - 2at)^2 = 4a^2 (t^2 + x^2)
  */
-pub fn is_outside_cardioid(re: f64, im: f64) -> bool {
+pub const fn is_outside_cardioid(re: f64, im: f64) -> bool {
     // precise value a = 0.25
     let a = 0.24;
     let t = re - 0.24;
@@ -48,12 +48,12 @@ pub fn is_outside_cardioid(re: f64, im: f64) -> bool {
 /**
  * circle with center at re=-1,im=0 and radius 1/4
  */
-pub fn is_outside_circle(re: f64, im: f64) -> bool {
+pub const fn is_outside_circle(re: f64, im: f64) -> bool {
     // precise diameter squared is 0.0625
     ((re + 1.0) * (re + 1.0)) + (im * im) > 0.062
 }
 
-pub fn is_outside_top_circle(re: f64, im: f64) -> bool {
+pub const fn is_outside_top_circle(re: f64, im: f64) -> bool {
     let cx = -0.122561166876;
     let cy = 0.744861766619;
     let r2 = 0.00909;
@@ -64,7 +64,7 @@ pub fn is_outside_top_circle(re: f64, im: f64) -> bool {
     dx * dx + dy * dy > r2
 }
 
-pub fn is_outside_bottom_circle(re: f64, im: f64) -> bool {
+pub const fn is_outside_bottom_circle(re: f64, im: f64) -> bool {
     let cx = -0.122561166876;
     let cy = -0.744861766619;
     let r2 = 0.00909;
@@ -76,53 +76,55 @@ pub fn is_outside_bottom_circle(re: f64, im: f64) -> bool {
 }
 
 pub fn rotate_by(m: &mut Mem, t: f64) {
-    let temp = (1.0 - t * t) / (1.0 + t * t);
-    m.im = (2.0 * t) / (1.0 + t * t);
+    let t2 = t * t;
+    let common = 1.0 + t2;
+    let temp = t.mul_add(-t, 1.0) / common;
+    m.im = (2.0 * t) / common;
     m.re = temp;
 }
 
 pub fn is_prime(n: u64) -> bool {
-    MATHEMATICIAN.primes.read().unwrap().contains(&n)
+    MATHEMATICIAN.primes.read().map(|p| p.contains(&n)).unwrap_or(false)
 }
 
 pub fn is_fibonacci(n: u64) -> bool {
-    MATHEMATICIAN.fibonacci.read().unwrap().contains(&n)
+    MATHEMATICIAN.fibonacci.read().map(|f| f.contains(&n)).unwrap_or(false)
 }
 
 pub fn is_perfect(n: u64) -> bool {
-    MATHEMATICIAN.perfect.read().unwrap().contains(&n)
+    MATHEMATICIAN.perfect.read().map(|p| p.contains(&n)).unwrap_or(false)
 }
 
 pub fn is_square(n: u64) -> bool {
-    MATHEMATICIAN.square.read().unwrap().contains(&n)
+    MATHEMATICIAN.square.read().map(|s| s.contains(&n)).unwrap_or(false)
 }
 
 pub fn is_triangular(n: u64) -> bool {
-    MATHEMATICIAN.triangular.read().unwrap().contains(&n)
+    MATHEMATICIAN.triangular.read().map(|t| t.contains(&n)).unwrap_or(false)
 }
 
 pub fn is_lucas(n: u64) -> bool {
-    MATHEMATICIAN.lucas.read().unwrap().contains(&n)
+    MATHEMATICIAN.lucas.read().map(|l| l.contains(&n)).unwrap_or(false)
 }
 
 pub fn is_lazy(n: u64) -> bool {
-    MATHEMATICIAN.lazy.read().unwrap().contains(&n)
+    MATHEMATICIAN.lazy.read().map(|l| l.contains(&n)).unwrap_or(false)
 }
 
 pub fn is_happy(n: u64) -> bool {
-    MATHEMATICIAN.happy.read().unwrap().contains(&n)
+    MATHEMATICIAN.happy.read().map(|h| h.contains(&n)).unwrap_or(false)
 }
 
 pub fn multiply_by(m: &mut Mem, re: f64, im: f64) {
-    let temp = (m.re * re) - (m.im * im);
-    m.im = (m.re * im) + (re * m.im);
+    let temp = m.re.mul_add(re, -(m.im * im));
+    m.im = m.re.mul_add(im, re * m.im);
     m.re = temp;
 }
 
 pub fn plus_invert(m: &mut Mem) {
     let a = m.re;
     let b = m.im;
-    let quad = (a * a) + (b * b);
+    let quad = a.mul_add(a, b * b);
     m.re += a / quad;
     m.im -= b / quad;
 }
@@ -130,7 +132,7 @@ pub fn plus_invert(m: &mut Mem) {
 pub fn minus_invert(m: &mut Mem) {
     let a = m.re;
     let b = m.im;
-    let quad = (a * a) + (b * b);
+    let quad = a.mul_add(a, b * b);
     m.re -= a / quad;
     m.im += b / quad;
 }
@@ -150,7 +152,9 @@ pub fn init_fibonacci(max: u64) {
     let mut sum;
     while b <= max {
         sum = a + b;
-        MATHEMATICIAN.fibonacci.write().unwrap().insert(sum);
+        if let Ok(mut fib) = MATHEMATICIAN.fibonacci.write() {
+            fib.insert(sum);
+        }
         a = b;
         b = sum;
     }
@@ -162,8 +166,9 @@ pub fn init_fibonacci(max: u64) {
 pub fn init_perfect(max: u64) {
     println!("init_perfect()");
     for i in 1..(max + 1) {
-        if is_perfect_init(i) {
-            MATHEMATICIAN.perfect.write().unwrap().insert(i);
+        if is_perfect_init(i)
+            && let Ok(mut perf) = MATHEMATICIAN.perfect.write() {
+            perf.insert(i);
         }
     }
 }
@@ -185,10 +190,13 @@ pub fn is_perfect_init(num: u64) -> bool {
 pub fn init_primes(max: u64) {
     println!("init_primes()");
     // smallest prime
-    MATHEMATICIAN.primes.write().unwrap().insert(2);
+    if let Ok(mut primes) = MATHEMATICIAN.primes.write() {
+        primes.insert(2);
+    }
     for i in 3..(max + 1) {
-        if is_prime_init(i) {
-            MATHEMATICIAN.primes.write().unwrap().insert(i);
+        if is_prime_init(i)
+            && let Ok(mut primes) = MATHEMATICIAN.primes.write() {
+            primes.insert(i);
         }
     }
 }
@@ -215,7 +223,9 @@ pub fn init_squares(max: u64) {
     let investigate_to = f64::sqrt(max as f64) as u64 + 1;
     for i in 0..investigate_to {
         sq = i * i;
-        MATHEMATICIAN.square.write().unwrap().insert(sq);
+        if let Ok(mut squares) = MATHEMATICIAN.square.write() {
+            squares.insert(sq);
+        }
     }
 }
 
@@ -226,11 +236,9 @@ pub fn init_triangular(max: u64) {
     println!("init_triangular()");
     let mut n = 1;
     while n * (n + 1) / 2 <= max {
-        MATHEMATICIAN
-            .triangular
-            .write()
-            .unwrap()
-            .insert(n * (n + 1) / 2);
+        if let Ok(mut tri) = MATHEMATICIAN.triangular.write() {
+            tri.insert(n * (n + 1) / 2);
+        }
         n += 1;
     }
 }
@@ -242,7 +250,9 @@ pub fn init_lucas(max: u64) {
     println!("init_lucas()");
     let (mut a, mut b) = (2u64, 1u64);
     while a <= max {
-        MATHEMATICIAN.lucas.write().unwrap().insert(a);
+        if let Ok(mut lucas) = MATHEMATICIAN.lucas.write() {
+            lucas.insert(a);
+        }
         (a, b) = (b, a + b);
     }
 }
@@ -257,14 +267,15 @@ pub fn init_happy(max: u64) {
             n = n
                 .to_string()
                 .chars()
-                .map(|c| (c.to_digit(10).unwrap() as u64).pow(2))
+                .map(|c| (c.to_digit(10).unwrap_or(0) as u64).pow(2))
                 .sum();
         }
         n == 1
     }
     for i in 1..=max {
-        if is_happy(i) {
-            MATHEMATICIAN.happy.write().unwrap().insert(i);
+        if is_happy(i)
+            && let Ok(mut happy) = MATHEMATICIAN.happy.write() {
+            happy.insert(i);
         }
     }
 }
@@ -280,21 +291,23 @@ pub fn init_lazy(max: u64) {
         if val > max {
             break;
         }
-        MATHEMATICIAN.lazy.write().unwrap().insert(val);
+        if let Ok(mut lazy) = MATHEMATICIAN.lazy.write() {
+            lazy.insert(val);
+        }
         n += 1;
     }
 }
 
 pub fn clear() {
     println!("clear()");
-    MATHEMATICIAN.primes.write().unwrap().clear();
-    MATHEMATICIAN.fibonacci.write().unwrap().clear();
-    MATHEMATICIAN.perfect.write().unwrap().clear();
-    MATHEMATICIAN.square.write().unwrap().clear();
-    MATHEMATICIAN.triangular.write().unwrap().clear();
-    MATHEMATICIAN.lucas.write().unwrap().clear();
-    MATHEMATICIAN.lazy.write().unwrap().clear();
-    MATHEMATICIAN.happy.write().unwrap().clear();
+    if let Ok(mut primes) = MATHEMATICIAN.primes.write() { primes.clear(); }
+    if let Ok(mut fib) = MATHEMATICIAN.fibonacci.write() { fib.clear(); }
+    if let Ok(mut perf) = MATHEMATICIAN.perfect.write() { perf.clear(); }
+    if let Ok(mut sq) = MATHEMATICIAN.square.write() { sq.clear(); }
+    if let Ok(mut tri) = MATHEMATICIAN.triangular.write() { tri.clear(); }
+    if let Ok(mut lucas) = MATHEMATICIAN.lucas.write() { lucas.clear(); }
+    if let Ok(mut lazy) = MATHEMATICIAN.lazy.write() { lazy.clear(); }
+    if let Ok(mut happy) = MATHEMATICIAN.happy.write() { happy.clear(); }
 }
 
 #[cfg(test)]

@@ -57,27 +57,29 @@ pub fn perfectly_color_nebula_values(data: &DataImage, palette: &Palette) {
     // paint mismatched pixel amount with the least value color
     let mut pi = 0;
     for _ in 0..(left + zero_value_elements) {
-        let sp = pixels.get(pi).expect("pixels error");
-        pi += 1;
-        data.color(sp.x, sp.y, palette.spectrum_value(0));
+        if let Some(sp) = pixels.get(pi) {
+            pi += 1;
+            data.color(sp.x, sp.y, palette.spectrum_value(0));
+        }
     }
 
     // color all remaining pixels, these are order by value
     for palette_color_index in 0..palette_color_count {
         for _ in 0..single_color_use {
             // color all these pixels with same color
-            let sp = pixels.get(pi).expect("pixels error");
-            pi += 1;
-            if sp.value <= COLORING_THRESHOLD {
-                // color zero-value elements and low-value-noise with the darkest color
-                data.color(sp.x, sp.y, palette.spectrum_value(0));
-            } else {
-                // perfect-color all significant pixels
-                data.color(
-                    sp.x,
-                    sp.y,
-                    palette.spectrum_value(palette_color_index as usize),
-                );
+            if let Some(sp) = pixels.get(pi) {
+                pi += 1;
+                if sp.value <= COLORING_THRESHOLD {
+                    // color zero-value elements and low-value-noise with the darkest color
+                    data.color(sp.x, sp.y, palette.spectrum_value(0));
+                } else {
+                    // perfect-color all significant pixels
+                    data.color(
+                        sp.x,
+                        sp.y,
+                        palette.spectrum_value(palette_color_index as usize),
+                    );
+                }
             }
         }
     }

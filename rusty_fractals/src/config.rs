@@ -88,7 +88,7 @@ pub struct EulerImage {
 }
 
 impl NebulaImage {
-    pub fn init(&self) -> FractalConfig {
+    pub const fn init(&self) -> FractalConfig {
         FractalConfig {
             name: self.name,
             orbits: self.orbits,
@@ -112,7 +112,7 @@ impl NebulaImage {
 }
 
 impl NebulaVideo {
-    pub fn init(&self) -> FractalConfig {
+    pub const fn init(&self) -> FractalConfig {
         FractalConfig {
             name: self.name,
             orbits: self.orbits,
@@ -136,7 +136,7 @@ impl NebulaVideo {
 }
 
 impl MandelbrotImage {
-    pub fn init(&self) -> FractalConfig {
+    pub const fn init(&self) -> FractalConfig {
         FractalConfig {
             name: self.name,
             orbits: Ignore,
@@ -160,7 +160,7 @@ impl MandelbrotImage {
 }
 
 impl MandelbrotVideo {
-    pub fn init(&self) -> FractalConfig {
+    pub const fn init(&self) -> FractalConfig {
         FractalConfig {
             name: self.name,
             orbits: Ignore,
@@ -184,7 +184,7 @@ impl MandelbrotVideo {
 }
 
 impl EulerImage {
-    pub fn init(&self) -> FractalConfig {
+    pub const fn init(&self) -> FractalConfig {
         FractalConfig {
             name: self.name,
             orbits: self.orbits,
